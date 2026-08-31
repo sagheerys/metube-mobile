@@ -1,0 +1,13 @@
+# نهايات أسطر موحدة (LF) مع استثناء سكربتات ويندوز
+* text=auto eol=lf
+*.ps1 text eol=crlf
+*.cmd text eol=crlf
+*.bat text eol=crlf
+
+# ثنائيات
+*.png binary
+*.jpg binary
+*.jks binary
+*.keystore binary
+*.ttf binary
+*.otf binary

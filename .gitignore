@@ -1,0 +1,44 @@
+# ===== Flutter / Dart =====
+.dart_tool/
+.packages
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+coverage/
+*.lock.json
+
+# ===== Android =====
+**/android/.gradle/
+**/android/local.properties
+**/android/key.properties
+*.keystore
+*.jks
+captures/
+
+# ===== مخرجات لا تدخل المستودع (درس النسخ القديمة: APK 62MB وفيديوهات داخل git!) =====
+*.apk
+*.aab
+*.zip
+*.mp4
+*.metube_backup*.json
+metube_*_backup.json
+
+# ===== أسرار =====
+.env
+.env.*
+*.secret
+
+# ===== IDE / OS =====
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.iml
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ===== سجلات ومؤقتات =====
+*.log
+logs/
+tmp/
