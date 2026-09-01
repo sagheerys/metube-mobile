@@ -1,0 +1,30 @@
+﻿{
+  "done": [
+    {
+      "id": "blocked-1",
+      "title": "Instagram reel blocked",
+      "url": "https://www.instagram.com/reel/Cxyz1234567/",
+      "status": "error",
+      "msg": "ERROR: [Instagram] Cxyz1234567: You need to log in to access this content. Use --cookies for authentication",
+      "timestamp": 1788243000000
+    },
+    {
+      "id": "blocked-2",
+      "title": null,
+      "url": "https://www.youtube.com/watch?v=abc123def45",
+      "status": "error",
+      "error": "Sign in to confirm you're not a bot. This helps protect our community",
+      "timestamp": 1788243100000
+    },
+    {
+      "id": "plain-fail",
+      "title": "Ordinary failure",
+      "url": "https://vimeo.com/123",
+      "status": "failed",
+      "message": "Unsupported URL",
+      "timestamp": 1788243200000
+    }
+  ],
+  "queue": []
+}
+

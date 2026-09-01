@@ -1,0 +1,51 @@
+{
+  "done": [
+    {
+      "id": "dQw4w9WgXcQ",
+      "title": "Rick Astley - Never Gonna Give You Up (Official Video)",
+      "url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+      "quality": "1080",
+      "format": "mp4",
+      "status": "finished",
+      "msg": null,
+      "percent": 100,
+      "filename": "Rick Astley - Never Gonna Give You Up (Official Video).dQw4w9WgXcQ.mp4",
+      "size": 104857600,
+      "timestamp": 1788242700000,
+      "uploader": "Rick Astley [dQw4w9WgXcQ]"
+    },
+    {
+      "id": "sc-track-9",
+      "title": "أغنية تجريبية من ساوند كلاود",
+      "url": "https://soundcloud.com/artist-name/some-track",
+      "quality": "audio",
+      "format": "mp3",
+      "status": "completed",
+      "file": "أغنية تجريبية من ساوند كلاود.sc-track-9.mp3",
+      "artist": "Artist Name",
+      "timestamp": 1788242800000000000
+    },
+    {
+      "_id": "fb-reel-1",
+      "name": "Facebook reel without filename yet",
+      "url": "https://www.facebook.com/reel/1234567890123456",
+      "state": "done",
+      "channel_id": "SomePage",
+      "datetime": "2026-09-01T06:30:00Z"
+    },
+    {
+      "id": "entry-thumbs",
+      "title": "Item with entry.thumbnails ladder",
+      "url": "https://vimeo.com/76979871",
+      "status": "finished",
+      "filename": "vimeo_item.mp4",
+      "entry": {
+        "thumbnails": [
+          { "url": "https://i.vimeocdn.com/video/low.jpg" },
+          { "url": "https://i.vimeocdn.com/video/high.jpg" }
+        ]
+      }
+    }
+  ],
+  "queue": []
+}

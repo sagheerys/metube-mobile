@@ -1,0 +1,38 @@
+{
+  "done": [],
+  "queue": [
+    {
+      "id": "dQw4w9WgXcQ",
+      "title": "Rick Astley - Never Gonna Give You Up (Official Video)",
+      "url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+      "quality": "1080",
+      "format": "mp4",
+      "status": "downloading",
+      "msg": null,
+      "percent": 45.3,
+      "speed": 1258291.2,
+      "eta": 42,
+      "filename": null,
+      "size": null,
+      "timestamp": 1788242400000
+    },
+    {
+      "id": "prep-1",
+      "title": null,
+      "url": "https://soundcloud.com/artist-name/some-track",
+      "quality": "best",
+      "format": "any",
+      "state": "preparing",
+      "progress": 0,
+      "timestamp": 1788242460000
+    }
+  ],
+  "pending": [
+    {
+      "_id": "pend-1",
+      "name": "قائمة الانتظار — مقطع معلق",
+      "url": "https://www.tiktok.com/@user/video/7301234567890123456",
+      "status": "pending"
+    }
+  ]
+}
