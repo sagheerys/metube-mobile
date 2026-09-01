@@ -39,8 +39,11 @@ class MTVideoIconButton extends StatelessWidget {
           child: SizedBox(
             width: size,
             height: size,
-            child: Icon(icon,
-                size: size * 0.42, color: MTPalette.serverCardInk),
+            child: Icon(
+              icon,
+              size: size * 0.42,
+              color: MTPalette.serverCardInk,
+            ),
           ),
         ),
       ),
@@ -97,8 +100,10 @@ class MTVideoTopBar extends StatelessWidget {
                 item?.title ?? '',
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: text.titleMedium!
-                    .copyWith(color: MTPalette.serverCardInk, fontSize: 13.5),
+                style: text.titleMedium!.copyWith(
+                  color: MTPalette.serverCardInk,
+                  fontSize: 13.5,
+                ),
               ),
               if (subtitleParts.isNotEmpty)
                 Text(
@@ -106,7 +111,8 @@ class MTVideoTopBar extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: text.labelSmall!.copyWith(
-                      color: MTPalette.serverCardInk.withValues(alpha: 0.45)),
+                    color: MTPalette.serverCardInk.withValues(alpha: 0.45),
+                  ),
                 ),
             ],
           ),
@@ -142,41 +148,46 @@ class MTVideoCenterControls extends StatelessWidget {
   Widget build(BuildContext context) {
     final p = MTThemeX.of(context).palette;
     final l10n = context.mtl;
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        _Seek(
-          icon: Icons.replay_10_rounded,
-          label: l10n.seekBackward10,
-          onTap: () => session.seekBy(const Duration(seconds: -10)),
-        ),
-        const SizedBox(width: MTSpace.xxl),
-        Material(
-          color: p.accent.withValues(alpha: 0.94),
-          borderRadius: BorderRadius.circular(20),
-          child: InkWell(
-            onTap: session.playPause,
+    // نفس قاعدة شريط الصوت: رموز النقل والتقديم لا تنعكس مع اللغة،
+    // و`replay_10`/`forward_10` تحملان الرقم «10» فعكسها يقلبه.
+    return Directionality(
+      textDirection: TextDirection.ltr,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          _Seek(
+            icon: Icons.replay_10_rounded,
+            label: l10n.seekBackward10,
+            onTap: () => session.seekBy(const Duration(seconds: -10)),
+          ),
+          const SizedBox(width: MTSpace.xxl),
+          Material(
+            color: p.accent.withValues(alpha: 0.94),
             borderRadius: BorderRadius.circular(20),
-            child: SizedBox(
-              width: 58,
-              height: 58,
-              child: Icon(
-                session.isPlaying
-                    ? Icons.pause_rounded
-                    : Icons.play_arrow_rounded,
-                size: 26,
-                color: p.onAccent,
+            child: InkWell(
+              onTap: session.playPause,
+              borderRadius: BorderRadius.circular(20),
+              child: SizedBox(
+                width: 58,
+                height: 58,
+                child: Icon(
+                  session.isPlaying
+                      ? Icons.pause_rounded
+                      : Icons.play_arrow_rounded,
+                  size: 26,
+                  color: p.onAccent,
+                ),
               ),
             ),
           ),
-        ),
-        const SizedBox(width: MTSpace.xxl),
-        _Seek(
-          icon: Icons.forward_10_rounded,
-          label: l10n.seekForward10,
-          onTap: () => session.seekBy(const Duration(seconds: 10)),
-        ),
-      ],
+          const SizedBox(width: MTSpace.xxl),
+          _Seek(
+            icon: Icons.forward_10_rounded,
+            label: l10n.seekForward10,
+            onTap: () => session.seekBy(const Duration(seconds: 10)),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -190,10 +201,10 @@ class _Seek extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => IconButton(
-        onPressed: onTap,
-        tooltip: label,
-        icon: Icon(icon, size: 28, color: MTPalette.serverCardInk),
-      );
+    onPressed: onTap,
+    tooltip: label,
+    icon: Icon(icon, size: 28, color: MTPalette.serverCardInk),
+  );
 }
 
 /// الشريط السفلي: التقدم والأزمنة وأوضاع التشغيل وزر القائمة.

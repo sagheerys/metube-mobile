@@ -118,12 +118,16 @@ class _ShellScreenState extends ConsumerState<ShellScreen>
       body: widget.navigationShell,
       floatingActionButton: branch == 2
           ? null
-          : MTFab(
-              label: clipboardUrl == null
-                  ? l10n.addLinkFab
-                  : l10n.clipboardLinkReady,
-              highlighted: clipboardUrl != null,
-              onPressed: _onFabPressed,
+          // يختفي تحت أي ورقة أو حوار: كان يحجب رابط «حول المقطع»
+          // ويزاحم أفعال القوائم السفلية (بلاغ المالك 2026-09-02).
+          : MTHiddenUnderRoutes(
+              child: MTFab(
+                label: clipboardUrl == null
+                    ? l10n.addLinkFab
+                    : l10n.clipboardLinkReady,
+                highlighted: clipboardUrl != null,
+                onPressed: _onFabPressed,
+              ),
             ),
       // م-22: المشغل المصغر شريط دائم **فوق** الشريط السفلي — داخل نفس
       // الفتحة ليحسب Scaffold مساحته ويرفع زر الإضافة فوقه (سجل §4).

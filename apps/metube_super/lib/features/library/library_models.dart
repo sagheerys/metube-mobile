@@ -57,6 +57,9 @@ class LibraryItem {
         _ => MTMediaLocation.none,
       };
 
+  /// [cachedThumb] هو غلاف فهرس الأغلفة — **المصدر الوحيد فعلياً على
+  /// سيرفر المالك**: `/history` لا يرجع `thumbnail` لأي عنصر (صفر من
+  /// 252)، والغلاف يُولَّد محلياً بـ `MediaProbe` (بلاغ المالك).
   factory LibraryItem.fromHistory(
     HistoryItem item, {
     String? localPath,
@@ -64,6 +67,7 @@ class LibraryItem {
     List<String> tags = const [],
     Duration? duration,
     double? aspectRatio,
+    String? cachedThumb,
   }) =>
       LibraryItem(
         duration: duration,
@@ -71,7 +75,7 @@ class LibraryItem {
         canonicalUrl: item.canonicalUrl,
         title: item.title ?? item.filename ?? item.canonicalUrl,
         uploader: item.uploader,
-        thumbnail: item.thumbnail,
+        thumbnail: item.thumbnail ?? cachedThumb,
         serverFilename: item.filename,
         localPath: localPath,
         timestamp: item.timestamp,

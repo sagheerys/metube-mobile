@@ -27,37 +27,51 @@ class MTPlayerControlsRow extends StatelessWidget {
       stream: handler.playbackState,
       builder: (context, snapshot) {
         final playing = snapshot.data?.playing ?? false;
-        return Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            IconButton(
-              onPressed: () => handler.setShuffle(!handler.shuffleEnabled),
-              tooltip: l10n.shuffle,
-              icon: Icon(
-                Icons.shuffle_rounded,
-                size: 21,
-                color: handler.shuffleEnabled ? p.accent : p.ink3,
+        // **شريط التحكم لا ينعكس مع اللغة** (بلاغ المالك 2026-09-02:
+        // «أزرار الانتقال يمين ويسار مقلوبة»). في RTL كان الصف يعكس
+        // *المواضع* بينما تبقى الأسهم كما هي — «السابق» يقع يميناً
+        // وسهمه يشير يساراً. وعكس الأيقونات ليس حلاً: `replay_10`
+        // و`forward_10` تحملان الرقم «10» فينقلب معها.
+        // كل المشغلات المرجعية (يوتيوب، سبوتيفاي) تثبّت هذا الشريط —
+        // رموز النقل عالمية لا نص يُقرأ باتجاه.
+        return Directionality(
+          textDirection: TextDirection.ltr,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              IconButton(
+                onPressed: () => handler.setShuffle(!handler.shuffleEnabled),
+                tooltip: l10n.shuffle,
+                icon: Icon(
+                  Icons.shuffle_rounded,
+                  size: 21,
+                  color: handler.shuffleEnabled ? p.accent : p.ink3,
+                ),
               ),
-            ),
-            IconButton(
-              onPressed: handler.skipToPrevious,
-              tooltip: l10n.previous,
-              icon: Icon(Icons.skip_previous_rounded, size: 32, color: p.ink2),
-            ),
-            _PlayButton(
-              size: size,
-              playing: playing,
-              palette: p,
-              label: playing ? l10n.pause : l10n.play,
-              onTap: playing ? handler.pause : handler.play,
-            ),
-            IconButton(
-              onPressed: handler.skipToNext,
-              tooltip: l10n.next,
-              icon: Icon(Icons.skip_next_rounded, size: 32, color: p.ink2),
-            ),
-            _ModeButton(handler: handler, palette: p),
-          ],
+              IconButton(
+                onPressed: handler.skipToPrevious,
+                tooltip: l10n.previous,
+                icon: Icon(
+                  Icons.skip_previous_rounded,
+                  size: 32,
+                  color: p.ink2,
+                ),
+              ),
+              _PlayButton(
+                size: size,
+                playing: playing,
+                palette: p,
+                label: playing ? l10n.pause : l10n.play,
+                onTap: playing ? handler.pause : handler.play,
+              ),
+              IconButton(
+                onPressed: handler.skipToNext,
+                tooltip: l10n.next,
+                icon: Icon(Icons.skip_next_rounded, size: 32, color: p.ink2),
+              ),
+              _ModeButton(handler: handler, palette: p),
+            ],
+          ),
         );
       },
     );
@@ -81,30 +95,30 @@ class _PlayButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Semantics(
-        button: true,
-        label: label,
-        child: Material(
-          color: palette.accent,
-          borderRadius: BorderRadius.circular(size / 3),
-          child: InkWell(
-            onTap: onTap,
+    button: true,
+    label: label,
+    child: Material(
+      color: palette.accent,
+      borderRadius: BorderRadius.circular(size / 3),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(size / 3),
+        child: Container(
+          width: size,
+          height: size,
+          decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(size / 3),
-            child: Container(
-              width: size,
-              height: size,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(size / 3),
-                boxShadow: MTShadow.fab(palette),
-              ),
-              child: Icon(
-                playing ? Icons.pause_rounded : Icons.play_arrow_rounded,
-                size: size * 0.42,
-                color: palette.onAccent,
-              ),
-            ),
+            boxShadow: MTShadow.fab(palette),
+          ),
+          child: Icon(
+            playing ? Icons.pause_rounded : Icons.play_arrow_rounded,
+            size: size * 0.42,
+            color: palette.onAccent,
           ),
         ),
-      );
+      ),
+    ),
+  );
 }
 
 class _ModeButton extends StatelessWidget {
@@ -129,16 +143,15 @@ class _ModeButton extends StatelessWidget {
 }
 
 IconData mtPlayModeIcon(PlayMode mode) => switch (mode) {
-      PlayMode.autoNext => Icons.playlist_play_rounded,
-      PlayMode.repeatOne => Icons.repeat_one_rounded,
-      PlayMode.repeatAll => Icons.repeat_rounded,
-      PlayMode.stopAtEnd => Icons.stop_circle_outlined,
-    };
+  PlayMode.autoNext => Icons.playlist_play_rounded,
+  PlayMode.repeatOne => Icons.repeat_one_rounded,
+  PlayMode.repeatAll => Icons.repeat_rounded,
+  PlayMode.stopAtEnd => Icons.stop_circle_outlined,
+};
 
-String mtPlayModeLabel(BuildContext context, PlayMode mode) =>
-    switch (mode) {
-      PlayMode.autoNext => context.mtl.modeAutoNext,
-      PlayMode.repeatOne => context.mtl.modeRepeatOne,
-      PlayMode.repeatAll => context.mtl.modeRepeatAll,
-      PlayMode.stopAtEnd => context.mtl.modeStopAtEnd,
-    };
+String mtPlayModeLabel(BuildContext context, PlayMode mode) => switch (mode) {
+  PlayMode.autoNext => context.mtl.modeAutoNext,
+  PlayMode.repeatOne => context.mtl.modeRepeatOne,
+  PlayMode.repeatAll => context.mtl.modeRepeatAll,
+  PlayMode.stopAtEnd => context.mtl.modeStopAtEnd,
+};

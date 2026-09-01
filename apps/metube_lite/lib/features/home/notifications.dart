@@ -35,15 +35,20 @@ class DownloadNotifications {
         ?.requestNotificationsPermission();
   }
 
+  /// [percent] = null ⇒ شريط **غير محدد** (طور بلا نسبة: الانتظار في
+  /// الطابور، الإضافة للسيرفر، تنظيفه). النص الثانوي [body] يقول أين
+  /// وصلنا بالضبط — «يحمّل على السيرفر» ليس كـ«يسحب إلى جهازك».
   Future<void> showProgress(
     int id, {
     required String title,
     required String channelName,
-    required int percent,
+    required int? percent,
+    String? body,
   }) =>
       _plugin.show(
         id: id,
         title: title,
+        body: body,
         notificationDetails: NotificationDetails(
           android: AndroidNotificationDetails(
             progressChannelId,
@@ -52,8 +57,9 @@ class DownloadNotifications {
             priority: Priority.low,
             onlyAlertOnce: true,
             showProgress: true,
+            indeterminate: percent == null,
             maxProgress: 100,
-            progress: percent.clamp(0, 100),
+            progress: (percent ?? 0).clamp(0, 100),
             ongoing: true,
             playSound: false,
           ),

@@ -1,4 +1,5 @@
 import 'package:go_router/go_router.dart';
+import 'package:mt_ui/mt_ui.dart';
 
 import 'features/audio/audio_screen.dart';
 import 'features/batch/batch_screen.dart';
@@ -16,6 +17,9 @@ import 'features/shell/shell_screen.dart';
 
 /// جدول المسارات الواحد (`03-APP-FLOW.md` §1) — لا Navigator.push مباشر.
 final router = GoRouter(
+  // م-2: يُعلم الغلافَ بما فُتح فوقه ليخفي زر الإضافة العائم — كان
+  // يُرسم فوق كل ورقة سفلية وحوار فيحجب محتواها (بلاغ المالك).
+  observers: [MTRouteDepth.instance],
   routes: [
     StatefulShellRoute.indexedStack(
       builder: (context, state, navigationShell) =>

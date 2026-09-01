@@ -25,6 +25,19 @@ class MainActivity : AudioServiceActivity() {
             .setMethodCallHandler { call, result ->
                 when (call.method) {
                     "requestNotifications" -> result.success(requestNotifications())
+                    // م-18/م-35: سبر عناصر المكتبة (مدة + أبعاد + غلاف)
+                    // على خيط جانبي — يقرأ ترويسة الملف من السيرفر
+                    // بطلبات نطاق، فلا ينزّل شيئاً كاملاً.
+                    "probeMedia" -> {
+                        val items = call.argument<List<Map<String, Any?>>>("items")
+                            ?: emptyList()
+                        val headers = call.argument<Map<String, String>>("headers")
+                            ?: emptyMap()
+                        Thread {
+                            val data = MediaProbe.scan(applicationContext, items, headers)
+                            runOnUiThread { result.success(data) }
+                        }.start()
+                    }
                     else -> result.notImplemented()
                 }
             }

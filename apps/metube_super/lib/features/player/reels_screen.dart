@@ -36,6 +36,12 @@ class _ReelsScreenState extends ConsumerState<ReelsScreen> {
       );
     }
 
+    // تُقرأ هنا لا داخل المُنشئات: `ref.watch` مسموح في `build` وحده،
+    // وهي التي تُعيد بناء الأفعال حين تتغير المكتبة أو يتقدم السحب.
+    final library = ref.watch(visibleLibraryProvider).value ?? const [];
+    final byUrl = {for (final item in library) item.canonicalUrl: item};
+    final pulls = ref.watch(offlinePullProgressProvider);
+
     final lane = ShortsLane.from(request.items);
     final startUrl = request.items[request.startIndex].canonicalUrl;
     final laneIndex = lane.laneIndexOf(startUrl);
@@ -60,23 +66,46 @@ class _ReelsScreenState extends ConsumerState<ReelsScreen> {
         if (item.uploader != null) item.uploader!,
         if (item.hasLocal) l10n.availabilityOffline,
       ].join(' · '),
-      isFavorite: (item) => _libraryItemOf(item)?.favorite ?? false,
+      isFavorite: (item) => byUrl[item.canonicalUrl]?.favorite ?? false,
       onToggleFavorite: (item) =>
           ref.read(libraryActionsProvider).toggleFavorite(item.canonicalUrl),
-      actionsBuilder: (item) => [
-        if (!item.hasLocal)
-          // عمود الأفعال ضيّق ⇒ عناوين قصيرة (مرجع الريلز).
+      // **الحالة تُقرأ من المكتبة الحيّة لا من عنصر التشغيل** (بلاغ
+      // المالك 2026-09-02): `PlaylistItem` لقطة وقت فتح المشغل، فبقي
+      // زر التنزيل كما هو بعد اكتمال الإتاحة. و`pulls` يعرض النسبة
+      // فلا يبدو الزر ميتاً أثناء السحب.
+      actionsBuilder: (item) {
+        final match = byUrl[item.canonicalUrl];
+        final offline = match?.isOffline ?? item.hasLocal;
+        final progress = pulls[item.canonicalUrl];
+        return [
+          if (progress != null)
+            MTPlayerAction(
+              icon: Icons.downloading_rounded,
+              label: '${(progress * 100).round()}٪',
+              onTap: () {},
+            )
+          else if (!offline)
+            // نفس تسمية المشغل العرضي: كان «تنزيل» هنا و«إتاحة دون
+            // اتصال» هناك لنفس الفعل بالضبط.
+            MTPlayerAction(
+              icon: Icons.download_rounded,
+              label: l10n.saveToDevice,
+              onTap: () => _makeOffline(item),
+            )
+          else
+            MTPlayerAction(
+              icon: Icons.offline_pin_rounded,
+              label: l10n.savedOnDevice,
+              highlighted: true,
+              onTap: () {},
+            ),
           MTPlayerAction(
-            icon: Icons.download_rounded,
-            label: l10n.download,
-            onTap: () => _makeOffline(item),
+            icon: Icons.share_rounded,
+            label: l10n.share,
+            onTap: () => _share(item),
           ),
-        MTPlayerAction(
-          icon: Icons.share_rounded,
-          label: l10n.share,
-          onTap: () => _share(item),
-        ),
-      ],
+        ];
+      },
       // لا يُعرض الزر أصلاً إن كانت القائمة المعروضة كلها قِصار.
       onContinueRest: lane.nextNonShortIndex(request.items) == null
           ? null
@@ -95,7 +124,18 @@ class _ReelsScreenState extends ConsumerState<ReelsScreen> {
   Future<void> _makeOffline(PlaylistItem item) async {
     final match = _libraryItemOf(item);
     if (match == null) return;
-    await ref.read(libraryActionsProvider).makeOffline(match);
+    final l10n = context.mtl;
+    try {
+      await ref.read(libraryActionsProvider).makeOffline(match);
+      if (mounted) {
+        showMTSnack(context, l10n.availableOfflineNow,
+            type: MTSnackType.success);
+      }
+    } on Object {
+      if (mounted) {
+        showMTSnack(context, l10n.failed, type: MTSnackType.error);
+      }
+    }
   }
 
   Future<void> _share(PlaylistItem item) async {

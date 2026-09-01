@@ -39,6 +39,30 @@ abstract final class MTMotion {
   static const Duration fast = Duration(milliseconds: 160);
   static const Duration medium = Duration(milliseconds: 320);
   static const Duration slow = Duration(milliseconds: 640);
+
+  // ── الحركة (سجل §4 · أُضيفت 2026-09-02 بطلب المالك) ───────────────
+  // المبدأ: **سريع عند الخروج، هادئ عند الدخول**، والحركة تُلمَح ولا
+  // تُشاهَد — «وهج» هوية تحريرية دافئة لا واجهة ألعاب: لا ارتداد مرح
+  // ولا انزلاق طويل. كل مدة هنا ≤ نصف ثانية.
+
+  /// دخول مؤكَّد: يتسارع ثم يستقر بلا تجاوز.
+  static const Curve entrance = Cubic(0.2, 0, 0, 1);
+
+  /// خروج حاسم — المغادر لا يستحق انتباهاً.
+  static const Curve exit = Cubic(0.3, 0, 1, 1);
+
+  /// نبضة عنصر صغير (شارة، زر، رقاقة).
+  static const Duration tap = Duration(milliseconds: 180);
+
+  /// انتقال شاشة كاملة.
+  static const Duration page = Duration(milliseconds: 300);
+
+  /// تأخير كل عنصر تالٍ في ظهور قائمة متتابع.
+  static const Duration stagger = Duration(milliseconds: 28);
+
+  /// أقصى عدد عناصر تتلقى تأخيراً متتابعاً — بعدها الظهور فوري، وإلا
+  /// انتظر العنصر الخمسون ثانية ونصفاً قبل أن يظهر.
+  static const int staggerLimit = 8;
 }
 
 /// الطباعة المعتمدة: عناوين Noto Kufi Arabic (700/500) · نصوص Tajawal.

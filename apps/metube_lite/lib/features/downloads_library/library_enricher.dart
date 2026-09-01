@@ -33,10 +33,12 @@ class LibraryEnricher {
   /// يسبر ما ينقصه غلاف أو أبعاد. آمن للاستدعاء المتكرر.
   Future<void> enrich(List<LocalItem> items) async {
     if (_running) return;
+    // ترتيب السبر = ترتيب العرض الافتراضي (الأحدث أولاً)، وإلا ظهرت
+    // الأغلفة في آخر القائمة أولاً حيث لا ينظر أحد.
     final pending = [
       for (final item in items)
         if (_needsProbe(item)) item,
-    ];
+    ]..sort((a, b) => b.modified.compareTo(a.modified));
     if (pending.isEmpty) return;
 
     _running = true;

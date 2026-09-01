@@ -97,7 +97,7 @@ class _Grid extends ConsumerWidget {
           for (final entry in playlist.items.take(2))
             if ((byKey[entry.canonicalUrl]?.thumbnail ?? entry.cachedThumb)
                 case final String url)
-              artworkFor(url),
+              ?artworkFor(url),
         ];
 
     // حالة فارغة صريحة (تدقيق 8.1): بلاطة «+» وحدها لا تشرح شيئاً.

@@ -66,6 +66,10 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
       subtitleBuilder: _subtitle,
       actions: _actions(session),
       onContinueAsAudio: (item, position) => _continueAsAudio(item, position),
+      // **لا يُسأل مرتين** (بلاغ المالك 2026-09-02): من نقل المقطع
+      // للصوت فعلاً ثم ضغط رجوع كان يُسأل «متابعة صوتاً؟» عن مقطع
+      // يسمعه بالفعل.
+      shouldOfferContinueAsAudio: _shouldOfferAudio,
       // م-38: حفظ جلسة التشغيل الحالية كقائمة دائمة.
       onSaveQueueAsPlaylist: () => _saveQueue(session.orderedItems),
       onShowPlaylist: request.playlistId == null
@@ -83,12 +87,23 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
     final l10n = context.mtl;
     final item = session.current;
     if (item == null) return const [];
+    // **تسمية واحدة لفعل واحد** (بلاغ المالك 2026-09-02): كان الفعل
+    // نفسه اسمه «تنزيل» في الريلز و«إتاحة دون اتصال» هنا. والتسمية
+    // الجديدة قصيرة عمداً — عمود أفعال الريلز يقصّ الطويلة.
+    final pulling = ref.watch(offlinePullProgressProvider)[item.canonicalUrl];
+    final offline = item.hasLocal;
     return [
       MTPlayerAction(
-        icon: Icons.download_rounded,
-        label: item.hasLocal ? l10n.availabilityOffline : l10n.makeOffline,
-        highlighted: item.hasLocal,
-        onTap: item.hasLocal ? () {} : () => _makeOffline(item),
+        icon: pulling != null
+            ? Icons.downloading_rounded
+            : (offline
+                ? Icons.offline_pin_rounded
+                : Icons.download_rounded),
+        label: pulling != null
+            ? '${(pulling * 100).round()}٪'
+            : (offline ? l10n.savedOnDevice : l10n.saveToDevice),
+        highlighted: offline,
+        onTap: (offline || pulling != null) ? () {} : () => _makeOffline(item),
       ),
       MTPlayerAction(
         icon: Icons.headphones_rounded,
@@ -138,6 +153,17 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
     final match = _libraryItemOf(item);
     if (match == null) return;
     await ref.read(libraryActionsProvider).smartShare(match);
+  }
+
+  /// السؤال يستحق أن يُطرح فقط إن كان هناك ما يُنقل: مقطع حالي، ولم
+  /// يكن مشغل الصوت يشتغله أصلاً.
+  bool _shouldOfferAudio() {
+    final current = ref.read(videoSessionProvider).current;
+    if (current == null) return false;
+    final handler = ref.read(audioHandlerProvider);
+    final playingSame =
+        handler.currentItem?.canonicalUrl == current.canonicalUrl;
+    return !(playingSame && handler.playbackState.value.playing);
   }
 
   /// م-23: متابعة نفس العنصر صوتاً بالخلفية من نفس الثانية.

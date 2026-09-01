@@ -728,5 +728,17 @@
   "waiting": "Waiting for server...",
   "yourPlaylists": "Your playlists",
   "yourTags": "Your tags",
-  "youtubeDownloadStarting": "Starting YouTube download..."
+  "youtubeDownloadStarting": "Starting YouTube download...",
+  "addingToServer": "Sending to the server…",
+  "availableOfflineNow": "Now available offline",
+  "preparingToShare": "Preparing to share… {percent}%",
+  "@preparingToShare": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "saveToDevice": "Save to device",
+  "savedOnDevice": "Saved on device"
 }

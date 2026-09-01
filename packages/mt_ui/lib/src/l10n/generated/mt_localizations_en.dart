@@ -1512,4 +1512,21 @@ class MTLocalizationsEn extends MTLocalizations {
 
   @override
   String get youtubeDownloadStarting => 'Starting YouTube download...';
+
+  @override
+  String get addingToServer => 'Sending to the server…';
+
+  @override
+  String get availableOfflineNow => 'Now available offline';
+
+  @override
+  String preparingToShare(String percent) {
+    return 'Preparing to share… $percent%';
+  }
+
+  @override
+  String get saveToDevice => 'Save to device';
+
+  @override
+  String get savedOnDevice => 'Saved on device';
 }

@@ -63,12 +63,50 @@ final downloadWatcherProvider = Provider<void>((ref) {
     for (final task in tasks) {
       final id = idOf(task);
       switch (task.phase) {
+        // **بلاغ المالك 2026-09-02:** الإشعار كان يبدأ عند السحب فقط،
+        // فمرحلة السيرفر كلها (وهي الأطول عادة) تمر بلا أي إشعار —
+        // يبدو التطبيق ساكناً. الآن كل مرحلة تُعلن نفسها.
+        case TaskPhase.queued:
+          await notifications.showProgress(
+            id,
+            title: task.title ?? texts.downloadingTitle,
+            body: texts.queuedSection,
+            channelName: texts.activeDownloads,
+            // طور بلا نسبة معروفة ⇒ شريط غير محدد لا شريط صفري ساكن.
+            percent: null,
+          );
+        case TaskPhase.adding:
+          await notifications.showProgress(
+            id,
+            title: task.title ?? texts.downloadingTitle,
+            body: texts.addingToServer,
+            channelName: texts.activeDownloads,
+            percent: null,
+          );
+        case TaskPhase.polling:
+          await notifications.showProgress(
+            id,
+            title: task.title ?? texts.downloadingTitle,
+            body: texts
+                .onServerProgress((task.progress * 100).toStringAsFixed(0)),
+            channelName: texts.activeDownloads,
+            percent: (task.progress * 100).round(),
+          );
         case TaskPhase.pulling:
           await notifications.showProgress(
             id,
             title: task.title ?? texts.downloadingTitle,
+            body: texts.pullingToDevice,
             channelName: texts.activeDownloads,
             percent: (task.progress * 100).round(),
+          );
+        case TaskPhase.deleting:
+          await notifications.showProgress(
+            id,
+            title: task.title ?? texts.downloadingTitle,
+            body: texts.cleaningServer,
+            channelName: texts.activeDownloads,
+            percent: null,
           );
         case TaskPhase.completed:
           if (!notified.add(task.id)) break;
@@ -95,8 +133,6 @@ final downloadWatcherProvider = Provider<void>((ref) {
           );
         case TaskPhase.cancelled:
           await notifications.cancel(id);
-        default:
-          break;
       }
     }
     await syncBackground(tasks.any((t) => !t.isFinished));

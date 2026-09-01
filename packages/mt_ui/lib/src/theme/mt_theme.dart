@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../tokens/tokens.dart';
+import '../widgets/mt_motion.dart';
 
 /// امتداد الثيم — يوصل لوحة «وهج» لكل ودجت عبر
 /// `MTThemeX.of(context)` بدل أي لون مثبت (القاعدة 5).
@@ -109,6 +110,9 @@ ThemeData mtTheme(MTVariant variant, Brightness brightness) {
     scaffoldBackgroundColor: p.bg,
     fontFamily: 'packages/${MTType.package}/${MTType.body}',
     splashFactory: InkSparkle.splashFactory,
+    // انتقال الشاشات: انزلاق أفقي يحترم اتجاه اللغة بدل الصعود الرأسي
+    // الافتراضي الذي لا يقول شيئاً عن علاقة الشاشتين (طلب المالك).
+    pageTransitionsTheme: mtPageTransitionsTheme,
     dividerTheme: DividerThemeData(color: p.line, thickness: 1, space: 1),
     textTheme: TextTheme(
       headlineLarge: display(24, FontWeight.w700),

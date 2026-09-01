@@ -65,6 +65,9 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
       subtitleBuilder: _subtitle,
       actions: _actions(session),
       onContinueAsAudio: (item, position) => _continueAsAudio(item, position),
+      // **لا يُسأل مرتين** (بلاغ المالك 2026-09-02): من نقل المقطع
+      // للصوت فعلاً ثم ضغط رجوع كان يُسأل عن مقطع يسمعه بالفعل.
+      shouldOfferContinueAsAudio: _shouldOfferAudio,
       onSaveQueueAsPlaylist: () => _saveQueue(session.orderedItems),
       onShowPlaylist: request.playlistId == null
           ? null
@@ -121,6 +124,17 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
     final match = _libraryItemOf(item);
     if (match == null) return;
     await ref.read(libraryActionsProvider).share([match]);
+  }
+
+  /// السؤال يستحق أن يُطرح فقط إن كان هناك ما يُنقل: مقطع حالي، ولم
+  /// يكن مشغل الصوت يشتغله أصلاً.
+  bool _shouldOfferAudio() {
+    final current = ref.read(videoSessionProvider).current;
+    if (current == null) return false;
+    final handler = ref.read(audioHandlerProvider);
+    final playingSame =
+        handler.currentItem?.canonicalUrl == current.canonicalUrl;
+    return !(playingSame && handler.playbackState.value.playing);
   }
 
   /// م-23: متابعة نفس العنصر صوتاً بالخلفية من نفس الثانية.

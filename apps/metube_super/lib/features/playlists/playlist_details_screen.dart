@@ -1,4 +1,3 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -7,6 +6,7 @@ import 'package:mt_media/mt_media.dart';
 import 'package:mt_ui/mt_ui.dart';
 
 import '../../di.dart';
+import '../library/artwork_view.dart';
 import '../home/add_flow.dart' show platformKindOf;
 import 'playlist_dialogs.dart';
 import 'playlists_providers.dart';
@@ -166,14 +166,7 @@ class _ReorderableItems extends ConsumerWidget {
             title: item.title,
             subtitle: item.uploader,
             playing: item.canonicalUrl == playingUrl,
-            thumbnail: item.artworkUrl == null
-                ? null
-                : CachedNetworkImage(
-                    imageUrl: item.artworkUrl!,
-                    httpHeaders: headers,
-                    fit: BoxFit.cover,
-                    errorWidget: (_, _, _) => const SizedBox.shrink(),
-                  ),
+            thumbnail: artworkFor(item.artworkUrl, headers: headers),
             platform: platformKindOf(
                 MediaPlatform.detect(item.canonicalUrl)),
             compact: true,

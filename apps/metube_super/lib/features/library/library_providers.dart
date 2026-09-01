@@ -47,6 +47,7 @@ final libraryItemsProvider = FutureProvider<List<LibraryItem>>((ref) async {
       tags: userTags(entry.canonicalUrl),
       duration: shape?.duration,
       aspectRatio: shape?.aspectRatio,
+      cachedThumb: artwork[entry.canonicalUrl],
     ));
   }
 

@@ -1,4 +1,4 @@
-package com.yasir.metubelite
+package com.yasir.metubesuper
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -8,44 +8,71 @@ import java.io.File
 import java.io.FileOutputStream
 
 /**
- * م-18 + م-35: سبر ملف وسائط محلي بلا تشغيله.
+ * م-18 + م-35 لـ Super: سبر عنصر بلا تشغيله — **من ملف محلي أو من بثّ
+ * السيرفر مباشرة**.
  *
- * **لماذا أصلاً:** سيرفر المالك لا يرجع حقل `thumbnail` لأي عنصر (فُحص:
- * صفر من 252)، ومكتبة Lite المهاجَرة ملفاتٌ على القرص بلا أي بيانات —
- * فبلا هذا السبر تبقى المكتبة كلها بلا أغلفة، ويبقى «مسار القِصار»
- * فارغاً لأن الأبعاد كانت تُتعلَّم **عند أول تشغيل فقط** (خلل مصطاد على
- * جهاز المالك 2026-09-01: «الريلز لا تعمل إلا إذا شغّلتها أول مرة»).
+ * **لماذا الشبكة أيضاً:** سيرفر المالك لا يرجع حقل `thumbnail` لأي عنصر
+ * (فُحص: صفر من 252)، ومعظم مكتبته إنستقرام بلا نسخة محلية — فلا مصدر
+ * للغلاف ولا للأبعاد إلا الملف نفسه على السيرفر.
+ * `MediaMetadataRetriever` يقرأ الترويسة بطلبات نطاق (Range) ولا ينزّل
+ * الملف كاملاً، فالكلفة على الشبكة المحلية أجزاء من الثانية.
  *
- * `MediaMetadataRetriever` من إطار أندرويد يعطي الثلاثة في فتحة واحدة:
- * المدة، والأبعاد، وغلافاً — المضمّن للصوت أو لقطة إطار للفيديو.
+ * هذا هو أيضاً ما يملأ «مسار القِصار»: الأبعاد كانت تُتعلَّم عند أول
+ * تشغيل فقط، فمكتبة السيرفر كلها خارج المسار (بلاغ المالك: «الريلز لا
+ * تعمل إلا إذا شغّلتها أول مرة»).
  */
 object MediaProbe {
 
-    /** أقصى ضلع للمصغرة المحفوظة — بطاقة المكتبة 98×62 نقطة. */
     private const val MAX_EDGE = 480
 
-    fun scan(context: Context, paths: List<String>): List<Map<String, Any?>> {
+    /**
+     * [items] لكل عنصر: `key` (مفتاح التخزين)، و`path` أو `url`،
+     * و`headers` اختيارية للمصادقة.
+     */
+    fun scan(
+        context: Context,
+        items: List<Map<String, Any?>>,
+        headers: Map<String, String>,
+    ): List<Map<String, Any?>> {
         val dir = File(context.cacheDir, "thumbs").apply { mkdirs() }
-        return paths.map { probe(dir, it) }
+        return items.map { probe(dir, it, headers) }
     }
 
-    private fun probe(dir: File, path: String): Map<String, Any?> {
+    private fun probe(
+        dir: File,
+        item: Map<String, Any?>,
+        headers: Map<String, String>,
+    ): Map<String, Any?> {
         val out = HashMap<String, Any?>()
-        out["path"] = path
-        val file = File(path)
-        if (!file.exists()) return out
+        val key = item["key"]?.toString() ?: return out
+        out["key"] = key
+        val path = item["path"]?.toString()
+        val url = item["url"]?.toString()
 
         val retriever = MediaMetadataRetriever()
         try {
-            retriever.setDataSource(path)
+            // اسم المخبأ يعتمد المصدر: الملف بزمن تعديله، والبثّ بمفتاحه.
+            val target: File
+            if (path != null) {
+                val file = File(path)
+                if (!file.exists()) return out
+                retriever.setDataSource(path)
+                target = File(dir, "${file.path.hashCode()}_${file.lastModified()}.jpg")
+            } else if (url != null) {
+                retriever.setDataSource(url, headers)
+                target = File(dir, "n${key.hashCode()}.jpg")
+            } else {
+                return out
+            }
+
             out["durationMs"] = retriever
                 .extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
                 ?.toLongOrNull()
             readSize(retriever, out)
-            out["thumb"] = thumbnail(retriever, dir, file)?.absolutePath
+            out["thumb"] = thumbnail(retriever, target)?.absolutePath
         } catch (_: Throwable) {
-            // ملف تالف أو ترميز لا يفهمه الجهاز — يُتجاوز بصمت: المكتبة
-            // تعرض العنصر بلا غلاف بدل أن يسقط المسح كله.
+            // ترميز غير مدعوم، أو السيرفر غير متاح الآن — يُتجاوز بصمت
+            // ويُعاد المحاولة في جلسة لاحقة.
         } finally {
             try {
                 retriever.release()
@@ -55,11 +82,7 @@ object MediaProbe {
         return out
     }
 
-    /**
-     * الأبعاد **بعد** تطبيق دوران التسجيل: مقاطع الجوال العمودية تُخزَّن
-     * أفقياً مع `rotation=90`، وبدون القلب تُصنَّف عرضية فتسقط من مسار
-     * القِصار الذي يشترط `aspectRatio < 1`.
-     */
+    /** الأبعاد **بعد** تطبيق دوران التسجيل — بدونه يُصنّف العمودي أفقياً. */
     private fun readSize(r: MediaMetadataRetriever, out: HashMap<String, Any?>) {
         val w = r.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH)
             ?.toIntOrNull() ?: return
@@ -74,16 +97,8 @@ object MediaProbe {
         out["height"] = if (swap) w else h
     }
 
-    /** الغلاف المضمّن أولاً (الصوت)، وإلا لقطة إطار (الفيديو). */
-    private fun thumbnail(
-        r: MediaMetadataRetriever,
-        dir: File,
-        file: File,
-    ): File? {
-        // الاسم يحمل زمن التعديل: ملف استُبدل بنفس المسار يولّد غلافاً جديداً.
-        val target = File(dir, "${file.path.hashCode()}_${file.lastModified()}.jpg")
+    private fun thumbnail(r: MediaMetadataRetriever, target: File): File? {
         if (target.exists() && target.length() > 0) return target
-
         val embedded = r.embeddedPicture
         val bitmap = if (embedded != null) {
             BitmapFactory.decodeByteArray(embedded, 0, embedded.size)
@@ -103,10 +118,11 @@ object MediaProbe {
         }
     }
 
+
     /**
-     * لقطة إطار بسلسلة بدائل: بعض المقاطع (HEVC خاصة) تُرجع null لأول
-     * محاولة بينما تنجح الثانية. الترتيب من الأدق للأرخص، وثانية واحدة
-     * أولاً لأن الإطار صفر أسودُ في كثير من المقاطع.
+     * لقطة إطار بسلسلة بدائل: بعض المقاطع (HEVC خاصة، وكل مقطع تُقرأ
+     * ترويسته من الشبكة) تُرجع null لأول محاولة بينما تنجح الثانية.
+     * الترتيب من الأدق للأرخص.
      */
     private fun firstFrame(r: MediaMetadataRetriever): Bitmap? {
         val attempts: List<() -> Bitmap?> = listOf(

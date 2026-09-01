@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -12,6 +11,7 @@ import '../home/add_flow.dart';
 import '../player/playback_providers.dart';
 import '../playlists/add_to_playlist_sheet.dart';
 import '../tags/item_tags_sheet.dart';
+import 'artwork_view.dart';
 import 'library_actions.dart';
 import 'library_models.dart';
 import 'library_providers.dart';
@@ -185,7 +185,27 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
             ],
           ),
         ),
+        // **البيانات الموجودة تفوز على حالة التحميل** (نفس علاج وميض
+        // Lite): الاستطلاع الحي كل ثانيتين يُبطل السجل، وكل إبطال يمر
+        // بـ `AsyncLoading` محتفظاً ببياناته — مطابقتها أولاً كانت
+        // تستبدل المكتبة بدوّارة مرتين في الثانية أثناء أي تحميل.
         ...switch (itemsAsync) {
+          AsyncValue(:final value?) when value.isNotEmpty => [
+              SliverPadding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: MTSpace.pagePad),
+                sliver: SliverList.builder(
+                  itemCount: value.length,
+                  // ظهور متتابع للعناصر الأولى فقط — يشرح أن القائمة
+                  // تُبنى، ولا يؤخر شيئاً عند التمرير السريع.
+                  itemBuilder: (context, index) => MTFadeSlideIn(
+                    key: ValueKey(value[index].canonicalUrl),
+                    index: index,
+                    child: _itemCard(l10n, options, value[index]),
+                  ),
+                ),
+              ),
+            ],
           AsyncLoading() => [
               const SliverToBoxAdapter(
                 child: Padding(
@@ -217,17 +237,6 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                   message: options.query.isEmpty
                       ? l10n.emptyLibraryMessage
                       : l10n.noResultsMessage,
-                ),
-              ),
-            ],
-          AsyncValue(:final value?) => [
-              SliverPadding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: MTSpace.pagePad),
-                sliver: SliverList.builder(
-                  itemCount: value.length,
-                  itemBuilder: (context, index) =>
-                      _itemCard(l10n, options, value[index]),
                 ),
               ),
             ],
@@ -353,21 +362,21 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       MTLocalizations l10n, LibraryViewOptions options, LibraryItem item) {
     final controller = ref.read(libraryViewProvider.notifier);
     final actions = ref.read(libraryActionsProvider);
+    // **تقدّم السحب كان يُحسب ولا يعرضه أحد** (بلاغ المالك 2026-09-02:
+    // «لا يظهر العداد، يبدو كأنه لا يستجيب») — سواء من «حفظ للجهاز»
+    // أو من المشاركة التي تسحب نسخة مؤقتة أولاً.
+    final pulling =
+        ref.watch(offlinePullProgressProvider)[item.canonicalUrl];
     return MTMediaCard(
       title: item.title,
-      subtitle: [
-        if (item.uploader != null) item.uploader!,
-        if (item.timestamp != null) mtTimeAgo(context, item.timestamp!),
-      ].join(' · '),
-      thumbnail: item.thumbnail == null
-          ? null
-          : CachedNetworkImage(
-              imageUrl: item.thumbnail!,
-              httpHeaders:
-                  ref.read(apiClientProvider)?.streamingHeaders,
-              fit: BoxFit.cover,
-              errorWidget: (_, _, _) => const SizedBox.shrink(),
-            ),
+      subtitle: pulling != null
+          ? '${l10n.pullingToDevice} ${(pulling * 100).round()}٪'
+          : [
+              if (item.uploader != null) item.uploader!,
+              if (item.timestamp != null) mtTimeAgo(context, item.timestamp!),
+            ].join(' · '),
+      thumbnail: artworkFor(item.thumbnail,
+          headers: ref.read(apiClientProvider)?.streamingHeaders),
       platform: platformKindOf(MediaPlatform.detect(item.canonicalUrl)),
       location: item.location,
       locationLabel: switch (item.location) {

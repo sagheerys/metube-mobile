@@ -94,26 +94,42 @@ class LibraryActions {
   Future<void> deleteLocalOnly(LibraryItem item) => removeLocalCopy(item);
 
   /// مشاركة ذكية (م-17): الملف المحلي إن وُجد وإلا تحميل-ثم-مشاركة.
+  /// **بلاغ المالك 2026-09-02:** «لا يظهر عداد أنه يحمّل، يبدو كأنه لا
+  /// يستجيب». التقدّم كان يُحسب في [offlinePullProgressProvider] ولا
+  /// يعرضه أحد — الآن تعرضه شاشات المشاركة، والملف المؤقت **يُحذف بعد
+  /// المشاركة** بدل تركه يتراكم في مجلد النظام المؤقت.
   Future<void> smartShare(LibraryItem item) async {
-    var path = item.localPath;
-    if (path == null) {
-      final filename = item.serverFilename;
-      if (filename == null) throw const UnsafeFilenameException();
-      final tmp = await getTemporaryDirectory();
-      path =
-          '${tmp.path}/${buildLocalFilename(item.title, serverFilename: filename)}';
-      _setProgress(item.canonicalUrl, 0);
+    final localPath = item.localPath;
+    if (localPath != null) {
+      await Share.shareXFiles([XFile(localPath)]);
+      return;
+    }
+    final filename = item.serverFilename;
+    if (filename == null) throw const UnsafeFilenameException();
+    final tmp = await getTemporaryDirectory();
+    final path =
+        '${tmp.path}/${buildLocalFilename(item.title, serverFilename: filename)}';
+    _setProgress(item.canonicalUrl, 0);
+    try {
+      await Transfer(api: _api).pull(
+        serverFilename: filename,
+        savePath: path,
+        onProgress: (p) => _setProgress(item.canonicalUrl, p),
+      );
+    } finally {
+      _clearProgress(item.canonicalUrl);
+    }
+    try {
+      await Share.shareXFiles([XFile(path)]);
+    } finally {
+      // نسخة عابرة لا يعرفها فهرس «دون اتصال» — تركها تسريب صامت.
       try {
-        await Transfer(api: _api).pull(
-          serverFilename: filename,
-          savePath: path,
-          onProgress: (p) => _setProgress(item.canonicalUrl, p),
-        );
-      } finally {
-        _clearProgress(item.canonicalUrl);
+        final file = File(path);
+        if (await file.exists()) await file.delete();
+      } on FileSystemException {
+        // تطبيق المشاركة ما زال يقرؤه — ينظفه النظام لاحقاً.
       }
     }
-    await Share.shareXFiles([XFile(path)]);
   }
 
   void _setProgress(String url, double value) {

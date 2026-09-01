@@ -86,6 +86,9 @@ class MTVideoInfoSheet extends StatelessWidget {
             Divider(color: p.line, height: 1),
             const SizedBox(height: MTSpace.md),
             MTQueuePanel(
+              // داخل `ListView` أعلاه — بدون هذا يبتلع مجرى القائمة
+              // الداخلية السحبَ فلا يمرَّر قسم «التالي» إطلاقاً.
+              nested: true,
               items: ordered,
               currentIndex: currentIndex,
               artwork: artwork,

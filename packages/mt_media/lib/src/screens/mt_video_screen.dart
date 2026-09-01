@@ -39,6 +39,7 @@ class MTVideoScreen extends StatelessWidget {
     this.onSaveQueueAsPlaylist,
     this.onShowPlaylist,
     this.onContinueAsAudio,
+    this.shouldOfferContinueAsAudio,
     this.playlistName,
   });
 
@@ -54,11 +55,22 @@ class MTVideoScreen extends StatelessWidget {
 
   /// م-23: المزامنة الذكية — متابعة نفس العنصر صوتاً من نفس الثانية.
   final void Function(PlaylistItem item, Duration position)? onContinueAsAudio;
+
+  /// **متى يُسأل السؤال** (بلاغ المالك 2026-09-02: «بعد المتابعة في
+  /// الخلفية والضغط رجوع تظهر الرسالة، المفترض لا تظهر»). كان الشرط
+  /// `onContinueAsAudio == null` وحده، أي يُسأل في كل خروج — حتى بعد أن
+  /// يكون المستخدم قد نقل المقطع للصوت فعلاً. التطبيق وحده يعرف حالة
+  /// مشغل الصوت، فهو من يقرر.
+  final bool Function()? shouldOfferContinueAsAudio;
   final String? playlistName;
+
+  bool get _offersAudio =>
+      onContinueAsAudio != null &&
+      (shouldOfferContinueAsAudio?.call() ?? true);
 
   @override
   Widget build(BuildContext context) => PopScope(
-        canPop: onContinueAsAudio == null,
+        canPop: !_offersAudio,
         onPopInvokedWithResult: (didPop, _) {
           if (!didPop) _askContinueAsAudio(context);
         },

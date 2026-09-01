@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -27,9 +29,35 @@ class LibraryScreen extends ConsumerStatefulWidget {
 }
 
 class _LibraryScreenState extends ConsumerState<LibraryScreen> {
+  /// إبراز نقرة إشعار الاكتمال — **مؤقت**. كان يُضبط ولا يُطفأ أبداً
+  /// فيبقى العنصر بمظهر «محدد» إلى الأبد (بلاغ المالك 2026-09-02).
+  static const highlightDuration = Duration(seconds: 6);
+  Timer? _highlightTimer;
+
+  void _clearHighlight() {
+    _highlightTimer?.cancel();
+    _highlightTimer = null;
+    if (ref.read(highlightedItemProvider) != null) {
+      ref.read(highlightedItemProvider.notifier).state = null;
+    }
+  }
+
+  @override
+  void dispose() {
+    _highlightTimer?.cancel();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.mtl;
+    ref.listen<String?>(highlightedItemProvider, (_, next) {
+      _highlightTimer?.cancel();
+      if (next == null) return;
+      _highlightTimer = Timer(highlightDuration, () {
+        if (mounted) _clearHighlight();
+      });
+    });
     final options = ref.watch(libraryViewProvider);
     final active = ref.watch(activeTasksProvider);
     final settings = ref.watch(settingsProvider);
@@ -165,7 +193,28 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
             ],
           ),
         ),
+        // **ترتيب الحالات مقصود (بلاغ المالك 2026-09-02):** كل إبطال
+        // للمكتبة يمر بـ `AsyncLoading` **محتفظاً بالبيانات السابقة**؛
+        // مطابقتها أولاً كانت تستبدل القائمة بدوّارة لجزء من الثانية —
+        // «وميض» متواصل أثناء التحميل حيث تتجدد المكتبة مراراً.
+        // البيانات الموجودة تفوز دائماً، ولا دوّارة إلا في أول تحميل.
         ...switch (itemsAsync) {
+          AsyncValue(:final value?) when value.isNotEmpty => [
+              SliverPadding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: MTSpace.pagePad),
+                sliver: SliverList.builder(
+                  itemCount: value.length,
+                  // ظهور متتابع للعناصر الأولى فقط — يشرح أن القائمة
+                  // تُبنى، ولا يؤخر شيئاً عند التمرير السريع.
+                  itemBuilder: (context, index) => MTFadeSlideIn(
+                    key: ValueKey(value[index].key),
+                    index: index,
+                    child: _itemCard(l10n, options, value[index]),
+                  ),
+                ),
+              ),
+            ],
           AsyncLoading() => [
               const SliverToBoxAdapter(
                 child: Padding(
@@ -197,17 +246,6 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                   message: options.query.isEmpty
                       ? l10n.noDownloadsMessage
                       : l10n.noResultsMessage,
-                ),
-              ),
-            ],
-          AsyncValue(:final value?) => [
-              SliverPadding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: MTSpace.pagePad),
-                sliver: SliverList.builder(
-                  itemCount: value.length,
-                  itemBuilder: (context, index) =>
-                      _itemCard(l10n, options, value[index]),
                 ),
               ),
             ],
@@ -272,8 +310,10 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       thumbnail:
           item.thumbnail == null ? null : artworkFor(item.thumbnail),
       platform: platformKindOf(item.platform),
-      location: MTMediaLocation.offline,
-      locationLabel: l10n.availabilityOffline,
+      // **لا شارة موقع في Lite** (بلاغ المالك 2026-09-02): كل عنصر في
+      // هذه المكتبة ملف على الجهاز بحكم بنائها من مسح المجلد، فـ«بلا
+      // اتصال» على كل بطاقة معلومة صفرية وضجيج بصري. الشارة تبقى في
+      // Super حيث يتعايش المحلي والسيرفري.
       compact: options.compact,
       favorite: item.favorite,
       selected: options.selection.contains(item.key) || highlighted,
@@ -285,7 +325,12 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       },
       onTap: options.selecting
           ? () => controller.toggleSelected(item.key)
-          : () => _play(item),
+          : () {
+              // الإبراز مؤقت بطبعه: أي نقرة تُطفئه فوراً وإلا بقي
+              // العنصر «محدداً» للأبد (بلاغ المالك 2026-09-02).
+              if (highlighted) _clearHighlight();
+              _play(item);
+            },
       onLongPress: () => controller.toggleSelected(item.key),
       onMore: () => showItemActionsSheet(context, ref, item),
     );

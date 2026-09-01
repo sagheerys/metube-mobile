@@ -1,3 +1,4 @@
+import 'package:flutter/widgets.dart' show SizedBox;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mt_core/mt_core.dart';
 import 'package:mt_media/mt_media.dart';
@@ -85,8 +86,8 @@ Future<bool> saveQueueAsPlaylist(
 
 /// باني المصغرات للمشغلات (م-18): أغلفة المنصات المحفوظة في فهرس
 /// الأغلفة — بلا ترويسات مصادقة (لا شيء منها من سيرفر العائلة).
-MTArtworkBuilder artworkBuilderFor(WidgetRef ref) =>
-    (context, item) => artworkFor(item.artworkUrl);
+MTArtworkBuilder artworkBuilderFor(WidgetRef ref) => (context, item) =>
+    artworkFor(item.artworkUrl) ?? const SizedBox.shrink();
 
 /// المنصة المعروضة لعنصر تشغيل — مفتاحه قد يكون مساراً لا رابطاً.
 MediaPlatform platformOfKey(String key) =>

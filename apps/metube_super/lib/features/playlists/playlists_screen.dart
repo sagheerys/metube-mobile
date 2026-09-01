@@ -1,4 +1,3 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -6,6 +5,7 @@ import 'package:mt_core/mt_core.dart';
 import 'package:mt_ui/mt_ui.dart';
 
 import '../../di.dart';
+import '../library/artwork_view.dart';
 import '../library/library_providers.dart';
 import '../player/playback_providers.dart';
 import '../tags/manage_tags_sheet.dart';
@@ -111,12 +111,7 @@ class _Grid extends ConsumerWidget {
           for (final entry in playlist.items.take(2))
             if ((byUrl[entry.canonicalUrl]?.thumbnail ?? entry.cachedThumb)
                 case final String url)
-              CachedNetworkImage(
-                imageUrl: url,
-                httpHeaders: headers,
-                fit: BoxFit.cover,
-                errorWidget: (_, _, _) => const SizedBox.shrink(),
-              ),
+              ?artworkFor(url, headers: headers),
         ];
 
     // حالة فارغة صريحة (تدقيق 8.1): بلاطة «+» وحدها لا تشرح شيئاً.

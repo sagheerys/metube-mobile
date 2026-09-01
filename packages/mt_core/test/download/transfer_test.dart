@@ -33,6 +33,45 @@ void main() {
       expect(progress, [0.5, 1.0]);
     });
 
+    // انحدار (بلاغ المالك 2026-09-02): «يظهر المقطع في المكتبة قبل
+    // اكتمال تحميله». مكتبة Lite تُبنى من **مسح المجلد**، وDio يكتب
+    // تدريجياً — فكان الملف النهائي موجوداً منذ أول بايت.
+    test('الملف النهائي لا يظهر إلا بعد الاكتمال — الجزئي في .part',
+        () async {
+      final api = FakeApi();
+      final finalPath = pathOf('a.mp4');
+      final partPath = '$finalPath${Transfer.partSuffix}';
+      var existedDuringPull = false;
+
+      await makeTransfer(api).pull(
+        serverFilename: 'a.mp4',
+        savePath: finalPath,
+        onProgress: (_) {
+          // أثناء التقدم: الجزئي موجود والنهائي لا.
+          if (File(finalPath).existsSync()) existedDuringPull = true;
+        },
+      );
+
+      expect(existedDuringPull, isFalse,
+          reason: 'المسار النهائي ظهر قبل الاكتمال ⇒ يراه مسح المكتبة');
+      expect(File(finalPath).existsSync(), isTrue);
+      expect(File(partPath).existsSync(), isFalse,
+          reason: 'الجزئي يُعاد تسميته لا يُترك');
+      expect(Transfer.partSuffix, isNot(contains('mp4')),
+          reason: 'اللاحقة يجب ألا تكون امتداد وسائط');
+    });
+
+    test('فشل كل المحاولات ⇒ لا ملف نهائي ولا جزئي متروك', () async {
+      final api = FakeApi()..failDownloadsBeforeSuccess = 99;
+      final finalPath = pathOf('a.mp4');
+      await expectLater(
+        makeTransfer(api).pull(serverFilename: 'a.mp4', savePath: finalPath),
+        throwsA(isA<NetworkException>()),
+      );
+      expect(File(finalPath).existsSync(), isFalse);
+      expect(File('$finalPath${Transfer.partSuffix}').existsSync(), isFalse);
+    });
+
     test('فشلان ثم نجاح: 3 محاولات وحذف الجزئي قبل كل واحدة', () async {
       final api = FakeApi()..failDownloadsBeforeSuccess = 2;
       await makeTransfer(api).pull(

@@ -489,5 +489,10 @@
   "waiting": "بانتظار السيرفر...",
   "yourPlaylists": "قوائمك",
   "yourTags": "وسومك",
-  "youtubeDownloadStarting": "جاري بدء تحميل يوتيوب..."
+  "youtubeDownloadStarting": "جاري بدء تحميل يوتيوب...",
+  "addingToServer": "يُرسَل للسيرفر…",
+  "availableOfflineNow": "صار متاحاً دون اتصال",
+  "preparingToShare": "يُجهَّز للمشاركة… {percent}٪",
+  "saveToDevice": "حفظ للجهاز",
+  "savedOnDevice": "محفوظ للجهاز"
 }

@@ -2851,6 +2851,36 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'Starting YouTube download...'**
   String get youtubeDownloadStarting;
+
+  /// No description provided for @addingToServer.
+  ///
+  /// In en, this message translates to:
+  /// **'Sending to the server…'**
+  String get addingToServer;
+
+  /// No description provided for @availableOfflineNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Now available offline'**
+  String get availableOfflineNow;
+
+  /// No description provided for @preparingToShare.
+  ///
+  /// In en, this message translates to:
+  /// **'Preparing to share… {percent}%'**
+  String preparingToShare(String percent);
+
+  /// No description provided for @saveToDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'Save to device'**
+  String get saveToDevice;
+
+  /// No description provided for @savedOnDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved on device'**
+  String get savedOnDevice;
 }
 
 class _MTLocalizationsDelegate extends LocalizationsDelegate<MTLocalizations> {

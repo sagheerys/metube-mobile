@@ -8,6 +8,7 @@ import 'package:mt_ui/mt_ui.dart';
 import '../../di.dart';
 import '../home/add_flow.dart';
 import '../home/reception.dart';
+import '../library/library_enricher.dart';
 import '../player/playback_providers.dart';
 import '../shared/notification_permission.dart';
 
@@ -105,17 +106,24 @@ class _ShellScreenState extends ConsumerState<ShellScreen>
 
     // يبقى محقونًا حياً ليتابع تغيّر إعدادات السيرفر أثناء التشغيل.
     ref.watch(playbackWiringProvider);
+    // م-18/م-35: أغلفة وأبعاد عناصر المكتبة — يعيش بعمر التطبيق كي لا
+    // يتوقف السبر عند مغادرة شاشة المكتبة.
+    ref.watch(libraryEnrichmentProvider);
 
     return Scaffold(
       body: widget.navigationShell,
       floatingActionButton: branch == 2
           ? null
-          : MTFab(
-              label: clipboardUrl == null
-                  ? l10n.addLinkFab
-                  : l10n.clipboardLinkReady,
-              highlighted: clipboardUrl != null,
-              onPressed: _onFabPressed,
+          // يختفي تحت أي ورقة أو حوار: كان يحجب رابط «حول المقطع»
+          // ويزاحم أفعال القوائم السفلية (بلاغ المالك 2026-09-02).
+          : MTHiddenUnderRoutes(
+              child: MTFab(
+                label: clipboardUrl == null
+                    ? l10n.addLinkFab
+                    : l10n.clipboardLinkReady,
+                highlighted: clipboardUrl != null,
+                onPressed: _onFabPressed,
+              ),
             ),
       // م-22: المشغل المصغر شريط دائم **فوق** الشريط السفلي — داخل نفس
       // الفتحة ليحسب Scaffold مساحته ويرفع زر الإضافة فوقه (سجل §4).

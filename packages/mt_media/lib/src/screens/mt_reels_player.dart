@@ -9,6 +9,7 @@ import '../models/playback_source.dart';
 import '../models/playlist_item.dart';
 import '../video/reels_overlay.dart';
 import '../video/shorts_lane.dart';
+import '../widgets/media_time.dart';
 import 'mt_video_screen.dart';
 
 /// **مشغل الريلز (م-35)** — غامر بسحب عمودي داخل «مسار القِصار» فقط:
@@ -67,13 +68,26 @@ class _MTReelsPlayerState extends State<MTReelsPlayer> {
   @override
   void initState() {
     super.initState();
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+    // **شريط الحالة يبقى مرئياً (بلاغ المالك 2026-09-02):** إنستقرام
+    // وتيك توك يمدّان الفيديو خلف الشريط ولا يخفيانه — الساعة والبطارية
+    // حق المستخدم، و`immersiveSticky` كان يبتلعهما ويجعل السحب من الحافة
+    // يستدعي الشريط بدل تغيير المقطع.
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.light,
+      statusBarBrightness: Brightness.dark,
+      systemNavigationBarColor: Colors.transparent,
+      systemNavigationBarIconBrightness: Brightness.light,
+    ));
     WidgetsBinding.instance.addPostFrameCallback((_) => _load(_index));
   }
 
   @override
   void dispose() {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    // إعادة أيقونات النظام لما يقرره الثيم — الريلز وحده داكن دائماً.
+    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light);
     _controller?.dispose();
     _pages.dispose();
     super.dispose();
@@ -344,32 +358,120 @@ class _Gradient extends StatelessWidget {
       );
 }
 
-class _Progress extends StatelessWidget {
+/// شريط تقدّم الريلز — **قابل للسحب** (بلاغ المالك 2026-09-02: «لا
+/// تستطيع التقديم والترجيع ولا إمساك العداد»).
+///
+/// أثناء السحب نعرض موضع الإصبع لا موضع المشغل، وإلا قفز المؤشر للخلف
+/// مع كل تحديث من المشغل فبدا الشريط «يقاوم» الإصبع. ومنطقة اللمس
+/// **٢٤ نقطة** حول خيط سمكه ٣ — الشريط النحيل جميل ولا يُمسك.
+class _Progress extends StatefulWidget {
   const _Progress({this.controller});
 
   final VideoPlayerController? controller;
 
   @override
+  State<_Progress> createState() => _ProgressState();
+}
+
+class _ProgressState extends State<_Progress> {
+  double? _dragFraction;
+
+  Duration _durationOf(VideoPlayerController c) => c.value.duration;
+
+  void _seekToFraction(double fraction) {
+    final controller = widget.controller;
+    if (controller == null) return;
+    final total = _durationOf(controller);
+    if (total <= Duration.zero) return;
+    controller.seekTo(total * fraction.clamp(0, 1));
+  }
+
+  /// الكسر من إحداثي أفقي — **يحترم RTL**: أقصى «بداية» الاتجاه = 0.
+  double _fractionFrom(Offset local, double width) {
+    if (width <= 0) return 0;
+    final raw = (local.dx / width).clamp(0.0, 1.0);
+    return Directionality.of(context) == TextDirection.rtl ? 1 - raw : raw;
+  }
+
+  @override
   Widget build(BuildContext context) {
     final p = MTThemeX.of(context).palette;
-    final value = controller;
-    if (value == null || !value.value.isInitialized) {
-      return const SizedBox(height: 3);
+    final controller = widget.controller;
+    if (controller == null || !controller.value.isInitialized) {
+      return const SizedBox(height: 24);
     }
-    return ValueListenableBuilder<VideoPlayerValue>(
-      valueListenable: value,
-      builder: (context, state, _) {
-        final total = state.duration.inMilliseconds;
-        return ClipRRect(
-          borderRadius: BorderRadius.circular(2),
-          child: LinearProgressIndicator(
-            value: total <= 0
-                ? 0
-                : (state.position.inMilliseconds / total).clamp(0, 1),
-            minHeight: 3,
-            backgroundColor:
-                MTPalette.serverCardInk.withValues(alpha: 0.2),
-            valueColor: AlwaysStoppedAnimation(p.accent),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width = constraints.maxWidth;
+        void update(Offset local) =>
+            setState(() => _dragFraction = _fractionFrom(local, width));
+
+        return GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onHorizontalDragStart: (d) {
+            update(d.localPosition);
+            controller.pause();
+          },
+          onHorizontalDragUpdate: (d) => update(d.localPosition),
+          onHorizontalDragEnd: (_) {
+            final fraction = _dragFraction;
+            if (fraction != null) _seekToFraction(fraction);
+            setState(() => _dragFraction = null);
+            controller.play();
+          },
+          onHorizontalDragCancel: () =>
+              setState(() => _dragFraction = null),
+          // نقرة على الشريط = قفزة مباشرة (بلا سحب).
+          onTapDown: (d) {
+            final fraction = _fractionFrom(d.localPosition, width);
+            _seekToFraction(fraction);
+          },
+          child: SizedBox(
+            height: 24,
+            child: Center(
+              child: ValueListenableBuilder<VideoPlayerValue>(
+                valueListenable: controller,
+                builder: (context, state, _) {
+                  final total = state.duration.inMilliseconds;
+                  final playedFraction = total <= 0
+                      ? 0.0
+                      : (state.position.inMilliseconds / total)
+                          .clamp(0.0, 1.0);
+                  final dragging = _dragFraction != null;
+                  final shown = _dragFraction ?? playedFraction;
+                  return Row(
+                    children: [
+                      Expanded(
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(3),
+                          child: LinearProgressIndicator(
+                            value: shown,
+                            // يثخن تحت الإصبع: تأكيد أن السحب أُمسك.
+                            minHeight: dragging ? 6 : 3,
+                            backgroundColor: MTPalette.serverCardInk
+                                .withValues(alpha: 0.25),
+                            valueColor: AlwaysStoppedAnimation(p.accent),
+                          ),
+                        ),
+                      ),
+                      if (dragging) ...[
+                        const SizedBox(width: MTSpace.sm),
+                        Text(
+                          mtFormatDuration(state.duration * shown),
+                          style: TextStyle(
+                            fontFamily: MTType.body,
+                            package: MTType.package,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: MTPalette.serverCardInk,
+                          ),
+                        ),
+                      ],
+                    ],
+                  );
+                },
+              ),
+            ),
           ),
         );
       },

@@ -18,6 +18,7 @@ class MTQueuePanel extends StatelessWidget {
     this.onShowAll,
     this.playlistName,
     this.dark = false,
+    this.nested = false,
   });
 
   /// العناصر بترتيب التشغيل الفعلي.
@@ -35,6 +36,13 @@ class MTQueuePanel extends StatelessWidget {
   final VoidCallback? onShowAll;
   final String? playlistName;
   final bool dark;
+
+  /// **داخل أب قابل للتمرير؟** (بلاغ المالك 2026-09-02: «لا تستطيع تمرير
+  /// قائمة الفيديوهات السفلية»). القائمة الداخلية كانت `shrinkWrap` بلا
+  /// `physics`، أي مجرى تمرير مستقل بارتفاع محتواها بالضبط ⇒ لا مدى
+  /// لديه ليتحرك، **ويبتلع السحب** فلا يصل للأب. الحل ليس إلغاء
+  /// `shrinkWrap` بل تعطيل فيزياء الابن ليمرّر الأبُ الكلَّ.
+  final bool nested;
 
   @override
   Widget build(BuildContext context) {
@@ -79,6 +87,8 @@ class MTQueuePanel extends StatelessWidget {
             artwork: artwork,
             dark: dark,
             shrinkWrap: true,
+            physics:
+                nested ? const NeverScrollableScrollPhysics() : null,
             onTap: onSelect,
           ),
         ),

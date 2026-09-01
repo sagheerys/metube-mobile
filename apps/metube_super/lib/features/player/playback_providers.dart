@@ -1,10 +1,10 @@
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart' show SizedBox;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mt_core/mt_core.dart';
 import 'package:mt_media/mt_media.dart';
 
 import '../../di.dart';
+import '../library/artwork_view.dart';
 import '../library/library_models.dart';
 import '../library/library_providers.dart';
 import '../playlists/playlists_providers.dart';
@@ -88,14 +88,6 @@ Future<bool> saveQueueAsPlaylist(
 /// باني المصغرات للمشغلات — الصور البعيدة بترويسات المصادقة (م-18).
 MTArtworkBuilder artworkBuilderFor(WidgetRef ref) {
   final headers = ref.read(apiClientProvider)?.streamingHeaders;
-  return (context, item) {
-    final url = item.artworkUrl;
-    if (url == null || url.isEmpty) return const SizedBox.shrink();
-    return CachedNetworkImage(
-      imageUrl: url,
-      httpHeaders: headers,
-      fit: BoxFit.cover,
-      errorWidget: (_, _, _) => const SizedBox.shrink(),
-    );
-  };
+  return (context, item) =>
+      artworkFor(item.artworkUrl, headers: headers) ?? const SizedBox.shrink();
 }
