@@ -19,8 +19,13 @@ Future<void> main(List<String> args) async {
       ? DeletePolicy.autoDelete
       : DeletePolicy.keepOnServer;
 
+  // '-' = بلا اعتمادات (أصداف Windows تُسقط "" الفارغة)
   final client = MeTubeApiClient(
-    config: ServerConfig(baseUrl: baseUrl, username: user, password: pass),
+    config: ServerConfig(
+      baseUrl: baseUrl,
+      username: user == '-' ? null : user,
+      password: pass == '-' ? null : pass,
+    ),
   );
 
   print('▸ testConnection...');

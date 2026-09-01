@@ -95,6 +95,21 @@ void main() {
           isFalse);
     });
 
+    test(
+        'انحدار السيرفر الحقيقي: رابطا watch بمعرفين مختلفين لا يتساويان '
+        'عبر التطبيع (كاد يحذف عنصراً بريئاً)', () {
+      expect(
+          UrlKit.urlsMatch(
+              'https://www.youtube.com/watch?v=jNQXAC9IVRw',
+              'https://www.youtube.com/watch?v=Z1qxr2b0-VA'),
+          isFalse);
+      // ورابط watch لا يطابق رابط يوتيوب بلا معرف
+      expect(
+          UrlKit.urlsMatch('https://www.youtube.com/watch?v=jNQXAC9IVRw',
+              'https://www.youtube.com/playlist?list=PLx'),
+          isFalse);
+    });
+
     test('فارغ ⇒ false', () {
       expect(UrlKit.urlsMatch('', 'https://a.com'), isFalse);
     });

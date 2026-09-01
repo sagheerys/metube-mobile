@@ -75,15 +75,23 @@ abstract final class UrlKit {
 
   /// المطابقة الضبابية بين الرابط المُدخل ورابط `/history` المُقنون —
   /// السلّم: حرفي → معرف YouTube → معرف رقمي → تطبيع → احتواء.
+  ///
+  /// **قاعدة حاسمة (خطأ مُصطاد على السيرفر الحقيقي 2026-09-01):** معرفا
+  /// YouTube مرجعان نهائيان — إن وُجدا معاً واختلفا فلا تطابق أبداً، ولا
+  /// يُسمح بسقوط روابط watch إلى رتبة التطبيع (التي تمسح الاستعلام فتسوّي
+  /// كل `youtube.com/watch` ببعضها — وكاد ذلك يحذف عنصراً بريئاً).
   static bool urlsMatch(String url1, String url2) {
     if (url1.isEmpty || url2.isEmpty) return false;
     if (url1 == url2) return true;
 
     final id1 = youtubeVideoId(url1) ?? '';
     final id2 = youtubeVideoId(url2) ?? '';
-    if (id1.isNotEmpty && id2.isNotEmpty && id1 == id2) return true;
+    if (id1.isNotEmpty && id2.isNotEmpty) return id1 == id2;
     if (id1.isNotEmpty && url2.contains(id1)) return true;
     if (id2.isNotEmpty && url1.contains(id2)) return true;
+    // رابط واحد فقط له معرف YouTube والآخر بلا معرف ⇒ لا نكمل لرتب
+    // التطبيع المتساهلة (خطر التسوية على مسار watch المشترك).
+    if (id1.isNotEmpty || id2.isNotEmpty) return false;
 
     final numId1 = longestNumericId(url1);
     final numId2 = longestNumericId(url2);
