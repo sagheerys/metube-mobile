@@ -72,7 +72,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         title: Text(title),
         subtitle:
             Text(subtitle, style: Theme.of(context).textTheme.bodySmall),
-        trailing: const Icon(Icons.chevron_left_rounded),
+        trailing: const Icon(Icons.chevron_right_rounded),
         onTap: () => context.go(route),
       );
 

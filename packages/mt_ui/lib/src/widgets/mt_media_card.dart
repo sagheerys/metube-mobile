@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show HapticFeedback;
 
+import '../l10n/l10n.dart';
 import '../theme/mt_theme.dart';
 import '../tokens/tokens.dart';
 import 'mt_equalizer.dart';
@@ -48,19 +50,42 @@ class MTMediaCard extends StatelessWidget {
   final VoidCallback? onFavoriteToggle;
   final VoidCallback? onMore;
 
+  /// وصف قارئ الشاشة: العنوان ثم ما يميّز حالة البطاقة (م-2.7 «RTL
+  /// وSemantics»). يُبنى نصاً واحداً لأن القارئ يقرأ البطاقة كوحدة.
+  String _semanticsLabel(MTLocalizations l10n) => [
+        title,
+        ?subtitle,
+        ?locationLabel,
+        if (favorite) l10n.favorites,
+        if (playing) l10n.nowPlaying,
+      ].join('، ');
+
   @override
   Widget build(BuildContext context) {
     final x = MTThemeX.of(context);
     final p = x.palette;
+    final l10n = context.mtl;
     final text = Theme.of(context).textTheme;
     final thumbW = compact ? 64.0 : 98.0;
     final thumbH = compact ? 40.0 : 62.0;
 
-    return Material(
+    return Semantics(
+      button: onTap != null,
+      selected: selected,
+      label: _semanticsLabel(l10n),
+      // الأزرار الداخلية تحتفظ بدلالتها؛ النصوص تُستبدل بالوصف الموحّد.
+      explicitChildNodes: true,
+      child: Material(
       color: selected ? p.accentSoft : Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        onLongPress: onLongPress,
+        onLongPress: onLongPress == null
+            ? null
+            : () {
+                // ر-6: الدخول لوضع التحديد يستحق نبضة تأكيد.
+                HapticFeedback.selectionClick();
+                onLongPress!();
+              },
         child: Container(
           padding: EdgeInsets.symmetric(
             vertical: compact ? MTSpace.xs : MTSpace.md - 1,
@@ -92,11 +117,15 @@ class MTMediaCard extends StatelessWidget {
                     SizedBox(height: compact ? 3 : 6),
                     Row(
                       children: [
-                        MTPlatformChip(kind: platform),
+                        // المنصة المجهولة لا تستحق رمزاً ولا فاصلاً:
+                        // «• · منذ ٣ دقائق» ضجيج بصري (تدقيق 8.1).
+                        if (platform != MTPlatformKind.other)
+                          MTPlatformChip(kind: platform),
                         if (subtitle != null) ...[
-                          Text(' · ',
-                              style:
-                                  text.bodySmall!.copyWith(color: p.ink3)),
+                          if (platform != MTPlatformKind.other)
+                            Text(' · ',
+                                style:
+                                    text.bodySmall!.copyWith(color: p.ink3)),
                           Flexible(
                             child: Text(subtitle!,
                                 maxLines: 1,
@@ -123,7 +152,13 @@ class MTMediaCard extends StatelessWidget {
                 ),
               if (onFavoriteToggle != null)
                 IconButton(
-                  onPressed: onFavoriteToggle,
+                  tooltip: favorite
+                      ? l10n.removeFromFavorites
+                      : l10n.addToFavorites,
+                  onPressed: () {
+                    HapticFeedback.selectionClick();
+                    onFavoriteToggle!();
+                  },
                   visualDensity: VisualDensity.compact,
                   icon: Icon(
                     favorite
@@ -135,6 +170,7 @@ class MTMediaCard extends StatelessWidget {
                 ),
               if (onMore != null)
                 IconButton(
+                  tooltip: l10n.itemOptions,
                   onPressed: onMore,
                   visualDensity: VisualDensity.compact,
                   icon: Icon(Icons.more_vert_rounded,
@@ -143,6 +179,7 @@ class MTMediaCard extends StatelessWidget {
             ],
           ),
         ),
+      ),
       ),
     );
   }

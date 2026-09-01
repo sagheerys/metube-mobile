@@ -1,4 +1,4 @@
-﻿<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- الشبكة: البث والسحب من سيرفر المالك (يضيفها Flutter في debug فقط). -->
     <uses-permission android:name="android.permission.INTERNET"/>
     <!-- التشغيل الخلفي وإشعار الوسائط (م-21) + إبقاء الشاشة أثناء الفيديو. -->

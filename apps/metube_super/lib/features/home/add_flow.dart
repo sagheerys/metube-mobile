@@ -30,34 +30,29 @@ Future<void> openAddSheet(
   String? initialUrl,
 }) async {
   final l10n = context.mtl;
-  final controller =
-      TextEditingController(text: UrlKit.extractUrl(initialUrl ?? ''));
-
   await showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
-    // الراوتر والمُراسِل يُلتقطان **قبل** فتح الورقة: البحث عنهما بسياق
-    // الورقة بعد `Navigator.pop` يفجّر تأكيد `_dependents.isEmpty`
-    // (نفس درس المرحلة 6 — عنصر مُبطَّل لا يُستعلم عنه).
+    // الراوتر والمُراسِل يُلتقطان **قبل** فتح الورقة: استعمالهما بسياق
+    // الورقة بعد `Navigator.pop` يستعلم عن عنصر مُبطَّل.
     builder: (sheetContext) => _AddSheet(
-      controller: controller,
+      initialUrl: initialUrl,
       l10n: l10n,
       router: GoRouter.of(context),
       messenger: ScaffoldMessenger.of(context),
     ),
   );
-  controller.dispose();
 }
 
 class _AddSheet extends ConsumerStatefulWidget {
   const _AddSheet({
-    required this.controller,
+    required this.initialUrl,
     required this.l10n,
     required this.router,
     required this.messenger,
   });
 
-  final TextEditingController controller;
+  final String? initialUrl;
   final MTLocalizations l10n;
 
   /// ملتقطان من سياق الشاشة المستضيفة — يبقيان صالحين بعد إغلاق الورقة.
@@ -69,8 +64,21 @@ class _AddSheet extends ConsumerStatefulWidget {
 }
 
 class _AddSheetState extends ConsumerState<_AddSheet> {
+  /// **الورقة تملك المتحكم وتصرّفه بنفسها.** تصريفه في `openAddSheet`
+  /// بعد `await showModalBottomSheet` كان يقع **أثناء حركة الإغلاق**،
+  /// والحقل ما زال يُعاد بناؤه ⇒ «TextEditingController used after being
+  /// disposed» ثم شاشة حمراء (`_dependents.isEmpty`). `dispose` هنا لا
+  /// يعمل إلا بعد زوال المسار فعلياً.
+  late final TextEditingController _controller =
+      TextEditingController(text: UrlKit.extractUrl(widget.initialUrl ?? ''));
   late String _quality = ref.read(settingsProvider).quality.wire;
-  late String _url = widget.controller.text;
+  late String _url = _controller.text;
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -91,7 +99,7 @@ class _AddSheetState extends ConsumerState<_AddSheet> {
     return MTUrlInputSheet(
       title: l10n.addUrl,
       urlHint: l10n.pasteUrlHint,
-      controller: widget.controller,
+      controller: _controller,
       onUrlChanged: (value) => setState(() => _url = value),
       platform: platformKindOf(platform),
       platformLabel: platform == MediaPlatform.other ? null : platform.label,
@@ -105,7 +113,7 @@ class _AddSheetState extends ConsumerState<_AddSheet> {
 
   void _submit() {
     final l10n = widget.l10n;
-    final url = UrlKit.extractUrl(widget.controller.text);
+    final url = UrlKit.extractUrl(_controller.text);
     if (!url.startsWith('http')) {
       showMTSnack(context, l10n.invalidUrl, type: MTSnackType.error);
       return;

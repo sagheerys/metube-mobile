@@ -68,6 +68,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       actions: [
         // شارة التحميلات النشطة (النموذج أ) — تفتح ورقة الإدارة.
         IconButton(
+          tooltip: l10n.activeDownloadsSheet,
           onPressed: () => showDownloadsSheet(context),
           icon: Badge(
             isLabelVisible: activeCount > 0,
@@ -78,6 +79,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
           ),
         ),
         IconButton(
+          tooltip: l10n.sortBy,
           onPressed: () => showSortSheet(context, ref),
           icon: const Icon(Icons.tune_rounded),
         ),

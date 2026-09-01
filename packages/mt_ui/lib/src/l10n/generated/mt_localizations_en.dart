@@ -51,6 +51,9 @@ class MTLocalizationsEn extends MTLocalizations {
   }
 
   @override
+  String get addToFavorites => 'Add to favorites';
+
+  @override
   String get addedToFavorites => 'Added to favorites';
 
   @override
@@ -654,6 +657,9 @@ class MTLocalizationsEn extends MTLocalizations {
   String get invalidUrl => 'Enter a valid link';
 
   @override
+  String get itemOptions => 'Item options';
+
+  @override
   String get keyExportFailed => 'Failed to export backup key';
 
   @override
@@ -1097,6 +1103,9 @@ class MTLocalizationsEn extends MTLocalizations {
 
   @override
   String get removeOfflineTitle => 'Remove Offline Copy';
+
+  @override
+  String get removeFromFavorites => 'Remove from favorites';
 
   @override
   String get removedFromFavorites => 'Removed from favorites';

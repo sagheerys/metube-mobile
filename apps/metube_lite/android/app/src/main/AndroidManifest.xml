@@ -56,6 +56,15 @@
                 <data android:mimeType="text/plain"/>
             </intent-filter>
         </activity>
+        <!-- م-10: خدمة `flutter_background` الأمامية التي تُبقي التحميل
+             حياً بالخلفية. **بدون هذا التصريح** يرفض النظام تشغيلها
+             (`Unable to start service … IsolateHolderService: not found`)
+             فيبقى وضع الخلفية معطلاً بصمت — خلل مصطاد في المرحلة 8. -->
+        <service
+            android:name="de.julianassmann.flutter_background.IsolateHolderService"
+            android:foregroundServiceType="dataSync"
+            android:enabled="true"
+            android:exported="false"/>
         <!-- خدمة الصوت الخلفي ومستقبل أزرار الوسائط (audio_service). -->
         <service
             android:name="com.ryanheise.audioservice.AudioService"

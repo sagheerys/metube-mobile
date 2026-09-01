@@ -119,6 +119,33 @@ class _Grid extends ConsumerWidget {
               ),
         ];
 
+    // حالة فارغة صريحة (تدقيق 8.1): بلاطة «+» وحدها لا تشرح شيئاً.
+    if (playlists.isEmpty) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(bottom: MTSpace.sm),
+            child: Text(
+              l10n.noPlaylistsMessage,
+              textAlign: TextAlign.center,
+              style: Theme.of(context)
+                  .textTheme
+                  .bodySmall!
+                  .copyWith(color: MTThemeX.of(context).palette.ink3),
+            ),
+          ),
+          SizedBox(
+            height: 150,
+            child: _NewPlaylistTile(
+              label: l10n.newPlaylistAction,
+              onTap: () => showCreatePlaylistDialog(context, ref),
+            ),
+          ),
+        ],
+      );
+    }
+
     return GridView.count(
       crossAxisCount: 2,
       shrinkWrap: true,

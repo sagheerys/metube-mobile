@@ -40,6 +40,22 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.4
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/icons/
+
+# أيقونة المشغّل من الهوية المعتمدة (سجل §4: أيقونتان توأمان).
+# تُولَّد الصور بـ `python tool/make_icons.py` ثم:
+#   dart run flutter_launcher_icons
+flutter_launcher_icons:
+  android: true
+  ios: false
+  image_path: assets/icons/icon.png
+  # الطبقة الأمامية رمز وحده: القناع الدائري في بعض المشغّلات يقصّ
+  # الشارة السفلية، والتمييز الحقيقي بين النسختين لونها ورمزها.
+  adaptive_icon_background: "#FBF6EE"
+  adaptive_icon_foreground: assets/icons/icon_foreground.png
+  min_sdk_android: 23

@@ -17,7 +17,7 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get aboutDescription =>
-      'تطبيق خفيف وسريع لتحميل الفيديوهات من مختلف المنصات عبر سيرفر MeTube مع مشغل فيديو مدمج وادارة قوائم التشغيل.';
+      'تطبيق خفيف وسريع لتحميل الفيديوهات من مختلف المنصات عبر سيرفر MeTube مع مشغل فيديو مدمج وإدارة قوائم التشغيل.';
 
   @override
   String get activeDownloads => 'التحميلات النشطة';
@@ -49,6 +49,9 @@ class MTLocalizationsAr extends MTLocalizations {
   String addedNToServer(int count) {
     return 'أُضيف $count إلى الخادم';
   }
+
+  @override
+  String get addToFavorites => 'أضف للمفضلة';
 
   @override
   String get addedToFavorites => 'أُضيف إلى المفضلة';
@@ -175,11 +178,11 @@ class MTLocalizationsAr extends MTLocalizations {
   String get backupRestore => 'النسخ الاحتياطي والاستعادة';
 
   @override
-  String get backupSettings => 'نسخ جميع البيانات احتياطيا';
+  String get backupSettings => 'نسخ جميع البيانات احتياطياً';
 
   @override
   String get backupSettingsSubtitle =>
-      'تصدير الاعدادات وبيانات الفيديوهات الى مجلد التحميلات';
+      'تصدير الإعدادات وبيانات الفيديوهات إلى مجلد التحميلات';
 
   @override
   String backupSuccess(Object path) {
@@ -313,7 +316,7 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String deleteMultipleConfirm(int count) {
-    return 'حذف $count فيديو؟\n\nسيتم ازالة الملفات من جهازك.';
+    return 'حذف $count فيديو؟\n\nسيتم إزالة الملفات من جهازك.';
   }
 
   @override
@@ -468,7 +471,7 @@ class MTLocalizationsAr extends MTLocalizations {
   String get enterFullscreen => 'ملء الشاشة';
 
   @override
-  String get enterUrl => 'ادخل الرابط';
+  String get enterUrl => 'أدخل الرابط';
 
   @override
   String get enterUrlHint => 'الصق رابط الفيديو هنا...';
@@ -557,13 +560,13 @@ class MTLocalizationsAr extends MTLocalizations {
   String get featureBilingual => 'دعم اللغة العربية والانجليزية';
 
   @override
-  String get featureDownload => 'تحميل فيديوهات من يوتيوب ومنصات اخرى';
+  String get featureDownload => 'تحميل فيديوهات من يوتيوب ومنصات أخرى';
 
   @override
   String get featurePlayer => 'تحميل مباشر عبر مشاركة الروابط من أي تطبيق';
 
   @override
-  String get featurePlaylists => 'انشاء وادارة قوائم التشغيل';
+  String get featurePlaylists => 'إنشاء وإدارة قوائم التشغيل';
 
   @override
   String get featureThemes => 'وضع داكن وفاتح';
@@ -648,6 +651,9 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get invalidUrl => 'أدخل رابطاً صالحاً';
+
+  @override
+  String get itemOptions => 'خيارات العنصر';
 
   @override
   String get keyExportFailed => 'فشل تصدير مفتاح النسخ الاحتياطي';
@@ -825,7 +831,7 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get noDownloadsMessage =>
-      'ستظهر الفيديوهات المحملة هنا.\nشارك رابط فيديو او استخدم زر اضافة رابط.';
+      'ستظهر الفيديوهات المحملة هنا.\nشارك رابط فيديو أو استخدم زر إضافة رابط.';
 
   @override
   String get noLogsFound => 'لا توجد سجلّات';
@@ -1095,6 +1101,9 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get removeOfflineTitle => 'إزالة النسخة المحلية';
+
+  @override
+  String get removeFromFavorites => 'أزل من المفضلة';
 
   @override
   String get removedFromFavorites => 'أُزيل من المفضلة';
@@ -1464,7 +1473,7 @@ class MTLocalizationsAr extends MTLocalizations {
   String get usernameRequired => 'اسم المستخدم مطلوب';
 
   @override
-  String get version => 'الاصدار';
+  String get version => 'الإصدار';
 
   @override
   String get videoAdded => 'أُضيف إلى القائمة';

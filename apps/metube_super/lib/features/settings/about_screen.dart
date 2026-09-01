@@ -79,7 +79,7 @@ class AboutScreen extends StatelessWidget {
             contentPadding: EdgeInsets.zero,
             leading: Icon(Icons.description_outlined, color: p.ink2),
             title: Text(l10n.licenses),
-            trailing: const Icon(Icons.chevron_left_rounded),
+            trailing: const Icon(Icons.chevron_right_rounded),
             onTap: () => showLicensePage(
               context: context,
               applicationName: l10n.appTitle,

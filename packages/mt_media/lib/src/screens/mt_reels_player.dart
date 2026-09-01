@@ -145,6 +145,9 @@ class _MTReelsPlayerState extends State<MTReelsPlayer> {
                     onTap: _togglePlay,
                     onDoubleTap: () {
                       final target = widget.lane.items[page];
+                      // م-36: الضغطة المزدوجة إيماءة عمياء — النبضة هي
+                      // التأكيد الوحيد أن التبديل وقع فعلاً.
+                      HapticFeedback.selectionClick();
                       widget.onToggleFavorite?.call(target);
                       setState(() {});
                     },

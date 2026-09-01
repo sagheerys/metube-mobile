@@ -92,6 +92,11 @@ void main() {
       var toggled = false;
       await tester.pumpWidget(MaterialApp(
         theme: mtTheme(MTVariant.superApp, Brightness.light),
+        // البطاقة تقرأ الترجمة لتلميحات الأزرار ووصف قارئ الشاشة
+        // (تدقيق 8.1) — فتحتاج المندوبين مثل أي شاشة حقيقية.
+        locale: const Locale('ar'),
+        localizationsDelegates: MTLocalizations.localizationsDelegates,
+        supportedLocales: MTLocalizations.supportedLocales,
         home: Scaffold(
           body: MTMediaCard(
             title: 'عنوان',

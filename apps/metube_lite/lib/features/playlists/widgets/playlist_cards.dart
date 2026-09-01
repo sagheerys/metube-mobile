@@ -54,9 +54,9 @@ class SmartPlaylistCard extends StatelessWidget {
             clipBehavior: Clip.none,
             children: [
               // توهّج ناعم أعلى البطاقة — تدرّج شعاعي يتلاشى، لا قرص حاد.
-              Positioned(
+              PositionedDirectional(
                 top: -34,
-                right: -24,
+                end: -24,
                 child: Container(
                   width: 110,
                   height: 92,

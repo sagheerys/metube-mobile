@@ -170,6 +170,12 @@ abstract class MTLocalizations {
   /// **'Added {count} to server'**
   String addedNToServer(int count);
 
+  /// No description provided for @addToFavorites.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to favorites'**
+  String get addToFavorites;
+
   /// No description provided for @addedToFavorites.
   ///
   /// In en, this message translates to:
@@ -1262,6 +1268,12 @@ abstract class MTLocalizations {
   /// **'Enter a valid link'**
   String get invalidUrl;
 
+  /// No description provided for @itemOptions.
+  ///
+  /// In en, this message translates to:
+  /// **'Item options'**
+  String get itemOptions;
+
   /// No description provided for @keyExportFailed.
   ///
   /// In en, this message translates to:
@@ -2071,6 +2083,12 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'Remove Offline Copy'**
   String get removeOfflineTitle;
+
+  /// No description provided for @removeFromFavorites.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from favorites'**
+  String get removeFromFavorites;
 
   /// No description provided for @removedFromFavorites.
   ///
