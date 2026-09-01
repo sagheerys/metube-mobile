@@ -1,0 +1,179 @@
+import 'dart:io';
+
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mt_core/mt_core.dart';
+import 'package:mt_media/mt_media.dart' show MediaShape;
+
+import '../../di.dart';
+import 'local_item.dart';
+
+/// المكتبة المحلية (م-12): **مسح المجلد** هو المصدر — الملف الموجود
+/// فعلاً يُعرض، والفهارس تُثريه فقط. هكذا تظهر ملفات Lite القديم بعد
+/// الهجرة، وتختفي الملفات المحذوفة من خارج التطبيق بلا أشباح.
+final localMediaProvider = FutureProvider<List<LocalItem>>((ref) async {
+  final offline = await ref.watch(offlineIndexProvider).readAll();
+  final titles = await ref.watch(titleIndexProvider).readAll();
+  final artwork = await ref.watch(artworkIndexProvider).readAll();
+  final tags = await ref.watch(tagsIndexProvider).readAll();
+  final Map<String, MediaShape> shapes =
+      await ref.watch(mediaShapeIndexProvider).readAll();
+
+  // عكس فهرس «دون اتصال» (canonicalUrl → مسار) لنعرف رابط كل ملف.
+  final urlOfPath = {
+    for (final MapEntry(:key, :value) in offline.entries) value: key,
+  };
+
+  final dir = Directory(liteMediaDir);
+  if (!await dir.exists()) return const [];
+
+  final items = <LocalItem>[];
+  await for (final entity in dir.list(followLinks: false)) {
+    if (entity is! File || !isMediaFile(entity.path)) continue;
+    final path = entity.path.replaceAll(r'\', '/');
+    final url = urlOfPath[path];
+    final key = url ?? path;
+    final stat = await entity.stat();
+    final shape = shapes[key];
+    items.add(LocalItem(
+      key: key,
+      path: path,
+      canonicalUrl: url,
+      title: titles[key] ??
+          titles[path] ??
+          LocalItem.titleFromFilename(path.split('/').last),
+      sizeBytes: stat.size,
+      modified: stat.modified,
+      thumbnail: artwork[key] ?? artwork[path],
+      favorite: (tags[key] ?? tags[path] ?? const [])
+          .contains(MTConstants.favoritesSystemTag),
+      duration: shape?.duration,
+      aspectRatio: shape?.aspectRatio,
+    ));
+  }
+  return items;
+});
+
+/// خيارات العرض + التحديد المتعدد — الفرز والعرض محفوظان (م-14).
+class LibraryViewOptions {
+  const LibraryViewOptions({
+    this.scope = LocalScope.all,
+    this.type = MediaTypeFilter.all,
+    this.query = '',
+    this.platform,
+    this.sort = LibrarySort.newest,
+    this.compact = false,
+    this.selection = const {},
+  });
+
+  final LocalScope scope;
+  final MediaTypeFilter type;
+  final String query;
+
+  /// مرشح المنصة بعدادات حية (م-14 — خاص بـ Lite).
+  final MediaPlatform? platform;
+  final LibrarySort sort;
+  final bool compact;
+
+  /// مفاتيح العناصر المحددة — غير فارغة = وضع التحديد (ر-6).
+  final Set<String> selection;
+
+  bool get selecting => selection.isNotEmpty;
+
+  LibraryViewOptions copyWith({
+    LocalScope? scope,
+    MediaTypeFilter? type,
+    String? query,
+    MediaPlatform? Function()? platform,
+    LibrarySort? sort,
+    bool? compact,
+    Set<String>? selection,
+  }) =>
+      LibraryViewOptions(
+        scope: scope ?? this.scope,
+        type: type ?? this.type,
+        query: query ?? this.query,
+        platform: platform == null ? this.platform : platform(),
+        sort: sort ?? this.sort,
+        compact: compact ?? this.compact,
+        selection: selection ?? this.selection,
+      );
+}
+
+class LibraryViewNotifier extends Notifier<LibraryViewOptions> {
+  @override
+  LibraryViewOptions build() {
+    _restore();
+    return const LibraryViewOptions();
+  }
+
+  Future<void> _restore() async {
+    final store = ref.read(keyValueStoreProvider);
+    final sortName = await store.getString('video_sort_option');
+    final compact = await store.getBool('library_compact_view') ?? false;
+    state = state.copyWith(
+      sort: LibrarySort.values.where((s) => s.name == sortName).firstOrNull ??
+          LibrarySort.newest,
+      compact: compact,
+    );
+  }
+
+  void setScope(LocalScope scope) => state = state.copyWith(scope: scope);
+  void setType(MediaTypeFilter type) => state = state.copyWith(type: type);
+  void setQuery(String query) => state = state.copyWith(query: query);
+  void setPlatform(MediaPlatform? platform) =>
+      state = state.copyWith(platform: () => platform);
+
+  Future<void> setSort(LibrarySort sort) async {
+    state = state.copyWith(sort: sort);
+    await ref.read(prefsMutexProvider).run(() =>
+        ref.read(keyValueStoreProvider).setString('video_sort_option', sort.name));
+  }
+
+  Future<void> setCompact(bool compact) async {
+    state = state.copyWith(compact: compact);
+    await ref.read(prefsMutexProvider).run(() => ref
+        .read(keyValueStoreProvider)
+        .setBool('library_compact_view', compact));
+  }
+
+  void toggleSelected(String key) {
+    final selection = Set<String>.from(state.selection);
+    selection.contains(key) ? selection.remove(key) : selection.add(key);
+    state = state.copyWith(selection: selection);
+  }
+
+  void selectAll(Iterable<String> keys) =>
+      state = state.copyWith(selection: {...keys});
+
+  void clearSelection() => state = state.copyWith(selection: const {});
+}
+
+final libraryViewProvider =
+    NotifierProvider<LibraryViewNotifier, LibraryViewOptions>(
+        LibraryViewNotifier.new);
+
+/// القائمة المعروضة بعد التصفية والفرز.
+final visibleLibraryProvider = Provider<AsyncValue<List<LocalItem>>>((ref) {
+  final options = ref.watch(libraryViewProvider);
+  return ref.watch(localMediaProvider).whenData(
+        (items) => buildLocalLibraryView(
+          items,
+          scope: options.scope,
+          type: options.type,
+          query: options.query,
+          platform: options.platform,
+          sort: options.sort,
+        ),
+      );
+});
+
+/// عدّادات رقائق المنصات — تُحسب على المكتبة كاملة لا على المعروض،
+/// كي لا تختفي الرقاقة التي تنقر عليها.
+final platformCountsProvider =
+    Provider<List<MapEntry<MediaPlatform, int>>>((ref) {
+  final items = ref.watch(localMediaProvider).value ?? const [];
+  return platformCounts(items);
+});
+
+/// العنصر الذي يجب إبرازه (نقرة إشعار الاكتمال — `03-APP-FLOW.md` §1).
+final highlightedItemProvider = StateProvider<String?>((ref) => null);

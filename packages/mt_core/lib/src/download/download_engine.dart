@@ -134,6 +134,8 @@ class DownloadEngine {
       task = _emit(task.copyWith(
         canonicalUrl: done.canonicalUrl,
         serverFilename: done.filename,
+        title: done.title,
+        thumbnail: done.thumbnail,
       ));
 
       // Super: يكتفي ببقاء العنصر على السيرفر — لا سحب ولا حذف.

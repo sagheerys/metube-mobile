@@ -108,6 +108,10 @@ class MTLocalizationsAr extends MTLocalizations {
   String get autoPlayOff => 'التشغيل التلقائي: متوقف';
 
   @override
+  String get autoBackupNote =>
+      'تُحفظ نسخة تلقائياً بعد كل تغيير في Downloads/MeTube_Lite';
+
+  @override
   String get autoRestoreSuccess =>
       'تمت استعادة البيانات من النسخة الاحتياطية بنجاح!';
 
@@ -217,6 +221,9 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get clearAllSettings => 'مسح كل الإعدادات';
+
+  @override
+  String get cleaningServer => 'جارٍ تنظيف السيرفر...';
 
   @override
   String get clearLogs => 'مسح السجلّات';
@@ -331,6 +338,11 @@ class MTLocalizationsAr extends MTLocalizations {
   @override
   String deleteVideoConfirm(Object title) {
     return 'حذف \\\"$title\\\"؟\n\nسيؤدي هذا إلى إزالة الملف من جهازك.';
+  }
+
+  @override
+  String deletedCount(Object count) {
+    return 'حُذف $count';
   }
 
   @override

@@ -28,6 +28,8 @@ class DownloadTask {
     this.resolvedUrl,
     this.canonicalUrl,
     this.serverFilename,
+    this.title,
+    this.thumbnail,
     this.localPath,
     this.phase = TaskPhase.queued,
     this.progress = 0,
@@ -48,6 +50,12 @@ class DownloadTask {
   /// من `/history` — **الوحيد** الصالح للحذف والفهرسة.
   final String? canonicalUrl;
   final String? serverFilename;
+
+  /// عنوان السيرفر وغلافه لحظة الاكتمال — يُستعملان لاسم الملف المحلي
+  /// (§2.4) وفهرسي العنوان والغلاف وإشعار الاكتمال (م-9). **لا يُختلقان**
+  /// إن غابا (فخ §6.3).
+  final String? title;
+  final String? thumbnail;
   final String? localPath;
   final Quality quality;
   final TaskPhase phase;
@@ -73,6 +81,8 @@ class DownloadTask {
     String? resolvedUrl,
     String? canonicalUrl,
     String? serverFilename,
+    String? title,
+    String? thumbnail,
     String? localPath,
     TaskPhase? phase,
     double? progress,
@@ -85,6 +95,8 @@ class DownloadTask {
         resolvedUrl: resolvedUrl ?? this.resolvedUrl,
         canonicalUrl: canonicalUrl ?? this.canonicalUrl,
         serverFilename: serverFilename ?? this.serverFilename,
+        title: title ?? this.title,
+        thumbnail: thumbnail ?? this.thumbnail,
         localPath: localPath ?? this.localPath,
         phase: phase ?? this.phase,
         progress: progress ?? this.progress,

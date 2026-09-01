@@ -100,7 +100,7 @@ void main() {
         'videoMetadata': {
           'https://youtu.be/dQw4w9WgXcQ': {'title': 'قديم'},
         },
-        'playbackPositions': {'https://youtu.be/dQw4w9WgXcQ': 42000},
+        'playbackPositions': {'https://youtu.be/dQw4w9WgXcQ': '42'},
         'savedPlaylists': [
           {
             'name': 'قديمة',
@@ -125,7 +125,10 @@ void main() {
       expect(await store.getString('video_quality'), '720');
       expect(await store.getString('theme_mode'), 'dark');
       expect(await store.getString('app_locale'), 'ar');
-      expect(await store.getInt('player_play_mode'), 1);
+      expect(await store.get('player_play_mode'), isNull,
+          reason: 'الوضع الرقمي القديم يُزال في هجرة الأشكال');
+      expect(await store.getInt('playback_pos_https://youtu.be/dQw4w9WgXcQ'),
+          42000);
       expect(await secrets.read(SecretKeys.username), 'family-user');
 
       // القوائم القديمة تُقرأ عبر PlaylistsStore بصيغة legacy
@@ -133,6 +136,32 @@ void main() {
           PlaylistsStore(store: store, mutex: PrefsMutex());
       final imported = await playlists.readAll();
       expect(imported.single.items.single.isLegacy, isTrue);
+    });
+
+    /// شكل مصطاد على **نسخة Lite الحقيقية للمالك** (2026-09-01): 32
+    /// موضعاً بالثواني نصاً كانت تُستورد ميتة لأن هجرة الأشكال كانت
+    /// تعمل على مسار `MTSBACKUP1` وحده.
+    test('مواضع Lite القديمة تُهاجَر لمفاتيح §5.1 والوضع الرقمي يُزال',
+        () async {
+      final key = BackupCrypto.generateKeyBase64();
+      await service.importKeyFile('MTKEY1\n$key\n');
+      await service.importFromString(BackupCrypto.encrypt(
+        plaintext: json.encode({
+          'app': 'MeTube Lite',
+          'settings': {'playMode': 1},
+          'playbackPositions': {
+            'https://youtu.be/abc': '12',
+            'https://youtu.be/def': 305,
+          },
+        }),
+        keyBase64: key,
+        header: BackupCrypto.headerLegacyLite,
+      ));
+      expect(await store.getInt('playback_pos_https://youtu.be/abc'), 12000);
+      expect(await store.getInt('playback_pos_https://youtu.be/def'), 305000);
+      expect(await store.getString('video_playback_positions'), isNull);
+      expect(await store.get('player_play_mode'), isNull,
+          reason: 'الرقم القديم يُزال ليعود الوضع للافتراضي');
     });
 
     test('جودة قديمة غير صالحة تُجبر على best', () async {

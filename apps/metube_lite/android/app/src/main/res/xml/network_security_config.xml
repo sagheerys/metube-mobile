@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  TRD §4: Lite يقيّد cleartext بالنطاقات الخاصة (Super يسمح به عاماً).
+
+  فخ §6.2 الموثق: <domain> **لا يدعم CIDR** — يُتجاهل بصمت، فلا يمكن
+  كتابة «كل 192.168.0.0/16». لذلك تُسرد المضيفات صراحةً.
+
+  لماذا لا يؤذي هذا Lite: طبقة الشبكة الوحيدة هنا هي Dio (إضافة/استطلاع/
+  سحب/حذف) وهي تعمل فوق HttpClient الخاص بـ Dart فلا يمسّها هذا الإعداد
+  أصلاً — و**Lite لا يبث من السيرفر إطلاقاً** (المكتبة محلية بالكامل،
+  البث ميزة Super). الإعداد هنا حزام أمان لمكتبات جافا (ExoPlayer/OkHttp)
+  إن استُدعيت مستقبلاً على مضيف محلي.
+
+  إن تغيّر عنوان سيرفر العائلة داخل الشبكة ⇒ يُضاف هنا.
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <certificates src="system"/>
+        </trust-anchors>
+    </base-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="false">192.168.1.10</domain>
+        <domain includeSubdomains="false">10.0.2.2</domain>
+        <domain includeSubdomains="false">localhost</domain>
+    </domain-config>
+</network-security-config>

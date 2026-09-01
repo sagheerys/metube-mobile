@@ -136,6 +136,10 @@ class BackupService {
           restored++;
         }
       }
+      // نفس هجرة الأشكال المطبقة على `MTSBACKUP1` — Lite القديم يخزّن
+      // المواضع **ثوانٍ نصاً** و`playMode` رقماً (مُثبت على نسخة المالك
+      // الحقيقية 2026-09-01: 32 موضعاً كانت تُستورد ميتة بلا هذا السطر).
+      await _migrateLegacyShapes();
     });
     await _restoreUsername(settings['username']?.toString());
     return ImportResult(

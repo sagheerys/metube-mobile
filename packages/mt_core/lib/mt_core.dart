@@ -32,6 +32,7 @@ export 'src/storage/offline_index.dart';
 export 'src/storage/playlists_store.dart';
 export 'src/storage/secret_store.dart';
 export 'src/storage/tags_index.dart';
+export 'src/storage/title_index.dart';
 export 'src/storage/url_keyed_index.dart';
 export 'src/urls/platform_detector.dart';
 export 'src/urls/playlist_detector.dart';

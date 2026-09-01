@@ -278,6 +278,12 @@ abstract class MTLocalizations {
   /// **'Auto-play next: OFF'**
   String get autoPlayOff;
 
+  /// No description provided for @autoBackupNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved automatically after every change to Downloads/MeTube_Lite'**
+  String get autoBackupNote;
+
   /// No description provided for @autoRestoreSuccess.
   ///
   /// In en, this message translates to:
@@ -475,6 +481,12 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'Clear All Settings'**
   String get clearAllSettings;
+
+  /// No description provided for @cleaningServer.
+  ///
+  /// In en, this message translates to:
+  /// **'Cleaning up the server...'**
+  String get cleaningServer;
 
   /// No description provided for @clearLogs.
   ///
@@ -685,6 +697,12 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'Delete \\\"{title}\\\"?\n\nThis will remove the file from your device.'**
   String deleteVideoConfirm(Object title);
+
+  /// No description provided for @deletedCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} deleted'**
+  String deletedCount(Object count);
 
   /// No description provided for @deletedFromServer.
   ///
