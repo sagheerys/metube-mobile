@@ -53,6 +53,11 @@ class MTAudioHandler extends BaseAudioHandler with SeekHandler {
   PlayMode get playMode => _playMode;
   bool get shuffleEnabled => _queue.shuffle;
   PlaylistItem? get currentItem => _queue.current;
+
+  /// العناصر بترتيب الإدراج (فهارسها هي التي يقبلها [skipToQueueItem]).
+  List<PlaylistItem> get items => _queue.items;
+
+  /// العناصر بترتيب التشغيل الفعلي — لعرض «التالي».
   List<PlaylistItem> get orderedItems => _queue.ordered;
   int get currentIndex => _queue.index;
   Stream<Duration> get positionStream => player.positionStream;

@@ -19,6 +19,8 @@ class LibraryItem {
     this.isAudio = false,
     this.favorite = false,
     this.tags = const [],
+    this.duration,
+    this.aspectRatio,
   });
 
   final String canonicalUrl;
@@ -34,7 +36,19 @@ class LibraryItem {
   final bool favorite;
   final List<String> tags;
 
+  /// أبعاد المقطع من `media_shape_index` — تُعرف بعد أول تشغيل (م-35).
+  final Duration? duration;
+  final double? aspectRatio;
+
   bool get isOffline => localPath != null;
+
+  /// فيديو عمودي ≤٣ دقائق ⇒ «قِصار» (المجهول ليس قصيراً — لا تخمين).
+  bool get isShortForm =>
+      !isAudio &&
+      duration != null &&
+      duration! <= const Duration(minutes: 3) &&
+      aspectRatio != null &&
+      aspectRatio! < 1;
 
   MTMediaLocation get location => switch ((isOffline, onServer)) {
         (true, true) => MTMediaLocation.both,
@@ -48,8 +62,12 @@ class LibraryItem {
     String? localPath,
     bool favorite = false,
     List<String> tags = const [],
+    Duration? duration,
+    double? aspectRatio,
   }) =>
       LibraryItem(
+        duration: duration,
+        aspectRatio: aspectRatio,
         canonicalUrl: item.canonicalUrl,
         title: item.title ?? item.filename ?? item.canonicalUrl,
         uploader: item.uploader,
@@ -71,10 +89,14 @@ class LibraryItem {
     bool favorite = false,
     List<String> tags = const [],
     String? cachedThumb,
+    Duration? duration,
+    double? aspectRatio,
   }) {
     final basename = localPath.split(RegExp(r'[/\\]')).last;
     final dot = basename.lastIndexOf('.');
     return LibraryItem(
+      duration: duration,
+      aspectRatio: aspectRatio,
       canonicalUrl: canonicalUrl,
       title: dot > 0 ? basename.substring(0, dot) : basename,
       localPath: localPath,
@@ -98,7 +120,7 @@ class LibraryItem {
 /// مرشحات المكتبة (م-13/م-14): الكل / ♥ المفضلة / دون اتصال / سيرفر.
 enum LibraryScope { all, favorites, offline, onServer }
 
-enum MediaTypeFilter { all, video, audio }
+enum MediaTypeFilter { all, video, audio, shorts }
 
 /// خيارات الفرز المحفوظة (video_sort_option §5.1).
 enum LibrarySort { newest, oldest, nameAZ, nameZA, largest, smallest }
@@ -125,6 +147,8 @@ List<LibraryItem> buildLibraryView(
       MediaTypeFilter.all => true,
       MediaTypeFilter.audio => item.isAudio,
       MediaTypeFilter.video => !item.isAudio,
+      // ⚡ قِصار (م-35): العمودية القصيرة المعروفة الأبعاد فقط.
+      MediaTypeFilter.shorts => item.isShortForm,
     };
     if (!typeOk) return false;
     if (tag != null && !item.tags.contains(tag)) return false;

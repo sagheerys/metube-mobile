@@ -9,6 +9,7 @@ import 'package:mt_ui/mt_ui.dart';
 
 import '../../di.dart';
 import '../home/add_flow.dart';
+import '../player/playback_providers.dart';
 import 'library_actions.dart';
 import 'library_models.dart';
 import 'library_providers.dart';
@@ -230,6 +231,14 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                   options.type == MediaTypeFilter.audio
                       ? MediaTypeFilter.all
                       : MediaTypeFilter.audio)),
+          const SizedBox(width: MTSpace.xs),
+          // م-35: رقاقة «⚡ قِصار» تجمع العمودية القصيرة.
+          chip('⚡ ${l10n.shortsFilter}',
+              options.type == MediaTypeFilter.shorts,
+              () => controller.setType(
+                  options.type == MediaTypeFilter.shorts
+                      ? MediaTypeFilter.all
+                      : MediaTypeFilter.shorts)),
         ],
       ),
     );
@@ -253,6 +262,27 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       isError: task.phase == TaskPhase.failed,
       onCancel: () => engine?.cancel(task.id),
     );
+  }
+
+  /// ر-4: نقرة عنصر — صوتي ⇒ تشغيل خلفي فوراً وظهور المشغل المصغر؛
+  /// مرئي ⇒ `/player`. قائمة التشغيل الداخلية = **المكتبة المعروضة**
+  /// وقت النقر بنفس فرزها وتصفيتها.
+  Future<void> _play(LibraryItem tapped) async {
+    final visible = ref.read(visibleLibraryProvider).value ?? const [];
+    final items = [for (final item in visible) toPlaylistItem(item)];
+    final index =
+        visible.indexWhere((i) => i.canonicalUrl == tapped.canonicalUrl);
+    if (items.isEmpty || index < 0) return;
+
+    if (tapped.isAudio) {
+      await ref.read(audioHandlerProvider).playItems(items, startIndex: index);
+      return;
+    }
+    ref.read(playbackRequestProvider.notifier).state =
+        PlaybackRequest(items: items, startIndex: index);
+    if (!mounted) return;
+    // م-35: العمودي القصير يفتح في الريلز؛ غيره في المشغل العادي.
+    context.push(tapped.isShortForm ? '/reels' : '/player');
   }
 
   Widget _itemCard(
@@ -296,8 +326,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       },
       onTap: options.selecting
           ? () => controller.toggleSelected(item.canonicalUrl)
-          // ر-4 (المرحلة 5): المشغلات لاحقاً.
-          : () => showMTSnack(context, l10n.comingSoonPhase),
+          : () => _play(item),
       onLongPress: () => controller.toggleSelected(item.canonicalUrl),
       onMore: () => showItemActionsSheet(context, ref, item),
     );

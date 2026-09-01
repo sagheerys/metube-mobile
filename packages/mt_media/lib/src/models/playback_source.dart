@@ -58,7 +58,9 @@ class PlaybackSourceResolver {
     bool Function(String path)? fileExists,
   }) : _fileExists = fileExists ?? _defaultExists;
 
-  final ServerStreamEndpoint endpoint;
+  /// قابلة للتحديث عند تغيّر إعدادات السيرفر — المشغل الحي يلتقط
+  /// الرابط الجديد بلا إعادة بناء الجلسة.
+  ServerStreamEndpoint endpoint;
   final bool Function(String path) _fileExists;
 
   static bool _defaultExists(String path) => File(path).existsSync();

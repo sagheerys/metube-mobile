@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mt_ui/mt_ui.dart';
 
+import 'features/audio/audio_screen.dart';
 import 'features/library/library_screen.dart';
+import 'features/player/player_screen.dart';
+import 'features/player/reels_screen.dart';
 import 'features/settings/network_screen.dart';
 import 'features/settings/settings_screen.dart';
 import 'features/shell/shell_screen.dart';
@@ -40,19 +43,14 @@ final router = GoRouter(
         ]),
       ],
     ),
-    // مشغلات المرحلة 5 وشاشة الدفعي (6.3) — مسارات جاهزة بأغلفة مؤقتة.
+    // شاشة الدفعي (6.3) — غلاف مؤقت؛ المشغلات صارت حقيقية (المرحلة 5).
     GoRoute(
         path: '/batch',
         builder: (_, _) =>
             const _PhasePlaceholder(icon: Icons.playlist_add_rounded)),
-    GoRoute(
-        path: '/player',
-        builder: (_, _) =>
-            const _PhasePlaceholder(icon: Icons.play_circle_rounded)),
-    GoRoute(
-        path: '/audio',
-        builder: (_, _) =>
-            const _PhasePlaceholder(icon: Icons.music_note_rounded)),
+    GoRoute(path: '/player', builder: (_, _) => const PlayerScreen()),
+    GoRoute(path: '/reels', builder: (_, _) => const ReelsScreen()),
+    GoRoute(path: '/audio', builder: (_, _) => const AudioScreen()),
   ],
 );
 

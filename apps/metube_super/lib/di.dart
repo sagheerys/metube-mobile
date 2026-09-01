@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mt_core/mt_core.dart';
+import 'package:mt_media/mt_media.dart';
 
 import 'features/settings/settings_state.dart';
 import 'features/shared/stores.dart';
@@ -93,6 +94,47 @@ final historyProvider = FutureProvider<HistoryResponse?>((ref) async {
   final api = ref.watch(apiClientProvider);
   if (api == null) return null;
   return api.fetchHistory();
+});
+
+// ── التشغيل (المرحلة 5) ──
+
+final playbackPrefsProvider = Provider((ref) => PlaybackPrefs(
+      store: ref.watch(keyValueStoreProvider),
+      mutex: ref.watch(prefsMutexProvider),
+    ));
+
+final playbackPositionsProvider = Provider((ref) => PlaybackPositionStore(
+      store: ref.watch(keyValueStoreProvider),
+      mutex: ref.watch(prefsMutexProvider),
+    ));
+
+/// أبعاد المقاطع (م-35) — تُملأ انتهازياً عند أول تشغيل.
+final mediaShapeIndexProvider = Provider((ref) => MediaShapeIndex(
+      store: ref.watch(keyValueStoreProvider),
+      mutex: ref.watch(prefsMutexProvider),
+    ));
+
+final audioStateStoreProvider = Provider((ref) => AudioStateStore(
+      store: ref.watch(keyValueStoreProvider),
+      mutex: ref.watch(prefsMutexProvider),
+    ));
+
+/// يُتجاوز في main — يُبنى قبل `AudioService.init` ويُشارَك مع الفيديو
+/// فتنطبق القاعدة الذهبية بنفس المنطق على المشغلين.
+final playbackResolverProvider = Provider<PlaybackSourceResolver>(
+    (ref) => throw UnimplementedError('overridden in main'));
+
+/// معالج الصوت الخلفي — يُتجاوز في main بعد `AudioService.init`.
+final audioHandlerProvider = Provider<MTAudioHandler>(
+    (ref) => throw UnimplementedError('overridden in main'));
+
+/// يوصل رابط السيرفر الحالي بمحلّل المصادر — تغيّر الإعدادات يلتقطه
+/// المشغل الحي بلا إعادة بناء (نفس نمط TRD §3.1).
+final playbackWiringProvider = Provider<void>((ref) {
+  final api = ref.watch(apiClientProvider);
+  ref.watch(playbackResolverProvider).endpoint = api == null
+      ? ServerStreamEndpoint.none
+      : ServerStreamEndpoint.fromApi(api);
 });
 
 /// محلّل الروابط (م-28): probe بنفس اعتمادات الحساب.

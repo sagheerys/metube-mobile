@@ -16,6 +16,7 @@ dependencies:
     path: ../../packages/mt_media
   mt_ui:
     path: ../../packages/mt_ui
+  audio_service: ^0.18.15
   cached_network_image: ^3.4.1
   connectivity_plus: ^6.1.0
   flutter_riverpod: ^2.6.1

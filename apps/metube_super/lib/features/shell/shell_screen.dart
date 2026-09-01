@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mt_core/mt_core.dart';
+import 'package:mt_media/mt_media.dart';
 import 'package:mt_ui/mt_ui.dart';
 
 import '../../di.dart';
 import '../home/add_flow.dart';
 import '../home/reception.dart';
+import '../player/playback_providers.dart';
 
 /// غلاف النموذج أ: 3 وجهات سفلية + الطبقة العائمة (زر الإضافة الذكي) —
 /// الزر يظهر في المكتبة والقوائم ويختفي في الإعدادات.
@@ -31,6 +33,10 @@ class _ShellScreenState extends ConsumerState<ShellScreen>
     _shareReceiver!.start();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(clipboardRefresherProvider)();
+      // م-21: إحياء جلسة الصوت المحفوظة (بلا تشغيل تلقائي) بعد أن يضبط
+      // playbackWiringProvider رابط السيرفر الحالي.
+      ref.read(playbackWiringProvider);
+      ref.read(audioHandlerProvider).restoreSession();
     });
   }
 
@@ -94,8 +100,19 @@ class _ShellScreenState extends ConsumerState<ShellScreen>
     final branch = widget.navigationShell.currentIndex;
     final clipboardUrl = ref.watch(clipboardUrlProvider);
 
+    // يبقى محقونًا حياً ليتابع تغيّر إعدادات السيرفر أثناء التشغيل.
+    ref.watch(playbackWiringProvider);
+
     return Scaffold(
       body: widget.navigationShell,
+      // م-22: المشغل المصغر فوق الشريط السفلي في المكتبة والقوائم.
+      bottomSheet: branch == 2
+          ? null
+          : MTMiniPlayer(
+              handler: ref.watch(audioHandlerProvider),
+              artwork: artworkBuilderFor(ref),
+              onOpen: () => GoRouter.of(context).push('/audio'),
+            ),
       floatingActionButton: branch == 2
           ? null
           : MTFab(

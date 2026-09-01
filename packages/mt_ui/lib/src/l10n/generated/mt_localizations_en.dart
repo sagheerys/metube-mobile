@@ -225,6 +225,19 @@ class MTLocalizationsEn extends MTLocalizations {
   String get contactDeveloper => 'Contact Developer';
 
   @override
+  String get continueAsAudio => 'Continue as audio';
+
+  @override
+  String get continueAsAudioBody =>
+      'Keep playing this as audio from the same second?';
+
+  @override
+  String get continueAsAudioNo => 'No, stop';
+
+  @override
+  String get continueAsAudioTitle => 'Continue in the background?';
+
+  @override
   String get copiedToClipboard => 'Copied to clipboard';
 
   @override
@@ -411,6 +424,9 @@ class MTLocalizationsEn extends MTLocalizations {
   String get endpointUrl => 'Endpoint URL';
 
   @override
+  String get enterFullscreen => 'Fullscreen';
+
+  @override
   String get enterUrl => 'Enter URL';
 
   @override
@@ -453,6 +469,9 @@ class MTLocalizationsEn extends MTLocalizations {
 
   @override
   String get errorLogsSubtitle => 'View app logs for diagnostics';
+
+  @override
+  String get exitFullscreen => 'Exit fullscreen';
 
   @override
   String get exportBackupKey => 'Export Backup Key';
@@ -676,6 +695,9 @@ class MTLocalizationsEn extends MTLocalizations {
   }
 
   @override
+  String get lockTouch => 'Lock touch';
+
+  @override
   String get logsShareText =>
       'MeTube Super logs (URLs/IPs/credentials redacted)';
 
@@ -711,6 +733,9 @@ class MTLocalizationsEn extends MTLocalizations {
 
   @override
   String get modeRepeatOne => 'Repeat one';
+
+  @override
+  String get modeStopAtEnd => 'Stop at end';
 
   @override
   String get navLibrary => 'Library';
@@ -753,6 +778,9 @@ class MTLocalizationsEn extends MTLocalizations {
   @override
   String get noPasswordTip =>
       'No password? Leave auth fields empty for open servers!';
+
+  @override
+  String get noPlayableSource => 'This item has no playable source';
 
   @override
   String get noPlaylists => 'No playlists';
@@ -820,9 +848,6 @@ class MTLocalizationsEn extends MTLocalizations {
   String get password => 'Password';
 
   @override
-  String get preferences => 'Preferences';
-
-  @override
   String get passwordRequired => 'Password is required';
 
   @override
@@ -855,6 +880,9 @@ class MTLocalizationsEn extends MTLocalizations {
   String get playAllFavorites => 'Play all favorites';
 
   @override
+  String get playModeLabel => 'Mode';
+
+  @override
   String get playbackError => 'Playback Error';
 
   @override
@@ -865,6 +893,9 @@ class MTLocalizationsEn extends MTLocalizations {
 
   @override
   String get playerLoading => 'Loading video...';
+
+  @override
+  String get playingFromDevice => 'Playing from your device';
 
   @override
   String get playlist => 'Playlist';
@@ -896,6 +927,9 @@ class MTLocalizationsEn extends MTLocalizations {
 
   @override
   String get pleaseEnterUrl => 'Please enter a URL';
+
+  @override
+  String get preferences => 'Preferences';
 
   @override
   String get preparingDownload => 'Preparing download...';
@@ -931,9 +965,20 @@ class MTLocalizationsEn extends MTLocalizations {
   String get qualityHelper => 'Sent to the server for new downloads';
 
   @override
+  String queueItemsCount(int count) {
+    return '$count items';
+  }
+
+  @override
+  String get queueLabel => 'Queue';
+
+  @override
   String queuePosition(int position) {
     return 'Queue position: $position';
   }
+
+  @override
+  String get queueSavedAsPlaylist => 'Saved as a playlist';
 
   @override
   String get queued => 'Queued';
@@ -948,10 +993,16 @@ class MTLocalizationsEn extends MTLocalizations {
   String get reelsEndBack => 'Back to library';
 
   @override
+  String get reelsEndContinue => 'Continue the rest of the list';
+
+  @override
   String get reelsEndReplay => 'Replay from the start';
 
   @override
   String get reelsEndTitle => 'End of the shorts lane';
+
+  @override
+  String get reelsSwipeHint => 'Swipe up for the next short';
 
   @override
   String get refresh => 'Refresh';
@@ -1068,6 +1119,12 @@ class MTLocalizationsEn extends MTLocalizations {
   String get searchVideos => 'Search videos...';
 
   @override
+  String get seekBackward10 => 'Back 10 seconds';
+
+  @override
+  String get seekForward10 => 'Forward 10 seconds';
+
+  @override
   String get selectAll => 'Select All';
 
   @override
@@ -1157,6 +1214,9 @@ class MTLocalizationsEn extends MTLocalizations {
   String get shareVia => 'Share';
 
   @override
+  String get shortsFilter => 'Shorts';
+
+  @override
   String get shuffle => 'Shuffle';
 
   @override
@@ -1235,6 +1295,9 @@ class MTLocalizationsEn extends MTLocalizations {
   String get streamUrlUnavailable => 'Stream URL not available';
 
   @override
+  String get streamingFromServer => 'Streaming from the server';
+
+  @override
   String get supportedPlatforms =>
       'Supported: YouTube, Twitter/X, Instagram, TikTok, Facebook, Vimeo & more';
 
@@ -1294,10 +1357,18 @@ class MTLocalizationsEn extends MTLocalizations {
   String get undo => 'Undo';
 
   @override
+  String get unlockTouch => 'Unlock';
+
+  @override
   String get unpinPlaylist => 'Unpin';
 
   @override
   String get upNext => 'Up next';
+
+  @override
+  String upNextIn(String name) {
+    return 'Up next in «$name»';
+  }
 
   @override
   String get urlMustStartWith => 'URL must start with http:// or https://';

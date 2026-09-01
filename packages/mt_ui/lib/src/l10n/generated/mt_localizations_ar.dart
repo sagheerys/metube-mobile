@@ -224,6 +224,18 @@ class MTLocalizationsAr extends MTLocalizations {
   String get contactDeveloper => 'تواصل مع المطور';
 
   @override
+  String get continueAsAudio => 'متابعة صوتاً';
+
+  @override
+  String get continueAsAudioBody => 'أُتابع تشغيله صوتاً من نفس الثانية؟';
+
+  @override
+  String get continueAsAudioNo => 'لا، أوقف';
+
+  @override
+  String get continueAsAudioTitle => 'متابعة بالخلفية؟';
+
+  @override
   String get copiedToClipboard => 'نُسِخ إلى الحافظة';
 
   @override
@@ -410,6 +422,9 @@ class MTLocalizationsAr extends MTLocalizations {
   String get endpointUrl => 'عنوان نقطة النهاية';
 
   @override
+  String get enterFullscreen => 'ملء الشاشة';
+
+  @override
   String get enterUrl => 'ادخل الرابط';
 
   @override
@@ -452,6 +467,9 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get errorLogsSubtitle => 'عرض سجلات التطبيق للتشخيص';
+
+  @override
+  String get exitFullscreen => 'خروج من ملء الشاشة';
 
   @override
   String get exportBackupKey => 'تصدير مفتاح النسخ الاحتياطي';
@@ -673,6 +691,9 @@ class MTLocalizationsAr extends MTLocalizations {
   }
 
   @override
+  String get lockTouch => 'قفل اللمس';
+
+  @override
   String get logsShareText =>
       'سجلّات MeTube Super (مع تنقيح الروابط/العناوين/بيانات الدخول)';
 
@@ -708,6 +729,9 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get modeRepeatOne => 'تكرار الحالي';
+
+  @override
+  String get modeStopAtEnd => 'إيقاف عند النهاية';
 
   @override
   String get navLibrary => 'المكتبة';
@@ -750,6 +774,9 @@ class MTLocalizationsAr extends MTLocalizations {
   @override
   String get noPasswordTip =>
       'بلا كلمة مرور؟ اترك حقول المصادقة فارغة للخوادم المفتوحة!';
+
+  @override
+  String get noPlayableSource => 'لا مصدر لتشغيل هذا العنصر';
 
   @override
   String get noPlaylists => 'لا توجد قوائم';
@@ -817,9 +844,6 @@ class MTLocalizationsAr extends MTLocalizations {
   String get password => 'كلمة المرور';
 
   @override
-  String get preferences => 'التفضيلات';
-
-  @override
   String get passwordRequired => 'كلمة المرور مطلوبة';
 
   @override
@@ -852,6 +876,9 @@ class MTLocalizationsAr extends MTLocalizations {
   String get playAllFavorites => 'شغّل المفضلة كلها';
 
   @override
+  String get playModeLabel => 'الوضع';
+
+  @override
   String get playbackError => 'خطأ في التشغيل';
 
   @override
@@ -862,6 +889,9 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get playerLoading => 'جارٍ تحميل الفيديو...';
+
+  @override
+  String get playingFromDevice => 'تشغيل من جهازك';
 
   @override
   String get playlist => 'قائمة التشغيل';
@@ -893,6 +923,9 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get pleaseEnterUrl => 'الرجاء إدخال رابط';
+
+  @override
+  String get preferences => 'التفضيلات';
 
   @override
   String get preparingDownload => 'جارٍ تجهيز التنزيل...';
@@ -928,9 +961,20 @@ class MTLocalizationsAr extends MTLocalizations {
   String get qualityHelper => 'تُرسَل إلى الخادم لعمليات التنزيل الجديدة';
 
   @override
+  String queueItemsCount(int count) {
+    return '$count عنصراً';
+  }
+
+  @override
+  String get queueLabel => 'قائمة الانتظار';
+
+  @override
   String queuePosition(int position) {
     return 'الموقع في الطابور: $position';
   }
+
+  @override
+  String get queueSavedAsPlaylist => 'حُفظت كقائمة تشغيل';
 
   @override
   String get queued => 'في الانتظار';
@@ -945,10 +989,16 @@ class MTLocalizationsAr extends MTLocalizations {
   String get reelsEndBack => 'عودة للمكتبة';
 
   @override
+  String get reelsEndContinue => 'متابعة بقية القائمة';
+
+  @override
   String get reelsEndReplay => 'أعد من البداية';
 
   @override
   String get reelsEndTitle => 'انتهى مسار القِصار';
+
+  @override
+  String get reelsSwipeHint => 'اسحب لأعلى للمقطع التالي';
 
   @override
   String get refresh => 'تحديث';
@@ -1064,6 +1114,12 @@ class MTLocalizationsAr extends MTLocalizations {
   String get searchVideos => 'بحث في الفيديوهات...';
 
   @override
+  String get seekBackward10 => 'إرجاع ١٠ ثوانٍ';
+
+  @override
+  String get seekForward10 => 'تقديم ١٠ ثوانٍ';
+
+  @override
   String get selectAll => 'تحديد الكل';
 
   @override
@@ -1153,6 +1209,9 @@ class MTLocalizationsAr extends MTLocalizations {
   String get shareVia => 'مشاركة';
 
   @override
+  String get shortsFilter => 'قِصار';
+
+  @override
   String get shuffle => 'تبديل عشوائي';
 
   @override
@@ -1231,6 +1290,9 @@ class MTLocalizationsAr extends MTLocalizations {
   String get streamUrlUnavailable => 'رابط البث غير متاح';
 
   @override
+  String get streamingFromServer => 'بث مباشر من السيرفر';
+
+  @override
   String get supportedPlatforms =>
       'المدعومة: يوتيوب، تويتر/X، إنستغرام، تيك توك، فيسبوك، فيميو والمزيد';
 
@@ -1290,10 +1352,18 @@ class MTLocalizationsAr extends MTLocalizations {
   String get undo => 'تراجع';
 
   @override
+  String get unlockTouch => 'فك القفل';
+
+  @override
   String get unpinPlaylist => 'إلغاء التثبيت';
 
   @override
   String get upNext => 'التالي';
+
+  @override
+  String upNextIn(String name) {
+    return 'التالي في «$name»';
+  }
 
   @override
   String get urlMustStartWith => 'يجب أن يبدأ الرابط بـ http:// أو https://';

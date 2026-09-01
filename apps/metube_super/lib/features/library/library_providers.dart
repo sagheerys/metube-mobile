@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mt_core/mt_core.dart';
+import 'package:mt_media/mt_media.dart' show MediaShape;
 
 import '../../di.dart';
 import 'library_models.dart';
@@ -11,6 +12,8 @@ final libraryItemsProvider = FutureProvider<List<LibraryItem>>((ref) async {
   final offline = await ref.watch(offlineIndexProvider).readAll();
   final tags = await ref.watch(tagsIndexProvider).readAll();
   final artwork = await ref.watch(artworkIndexProvider).readAll();
+  final Map<String, MediaShape> shapes =
+      await ref.watch(mediaShapeIndexProvider).readAll();
 
   List<String> userTags(String url) => [
         for (final t in tags[url] ?? const <String>[])
@@ -36,11 +39,14 @@ final libraryItemsProvider = FutureProvider<List<LibraryItem>>((ref) async {
     } else {
       matchedLocal.add(entry.canonicalUrl);
     }
+    final shape = shapes[entry.canonicalUrl];
     items.add(LibraryItem.fromHistory(
       entry,
       localPath: localPath,
       favorite: isFavorite(entry.canonicalUrl),
       tags: userTags(entry.canonicalUrl),
+      duration: shape?.duration,
+      aspectRatio: shape?.aspectRatio,
     ));
   }
 
@@ -53,6 +59,8 @@ final libraryItemsProvider = FutureProvider<List<LibraryItem>>((ref) async {
       favorite: isFavorite(key),
       tags: userTags(key),
       cachedThumb: artwork[key],
+      duration: shapes[key]?.duration,
+      aspectRatio: shapes[key]?.aspectRatio,
     ));
   }
   return items;

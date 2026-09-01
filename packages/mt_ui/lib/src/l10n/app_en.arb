@@ -170,6 +170,13 @@
       }
     }
   },
+  "@queueItemsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "@queuePosition": {
     "placeholders": {
       "position": {
@@ -229,6 +236,13 @@
     "placeholders": {
       "count": {
         "type": "int"
+      }
+    }
+  },
+  "@upNextIn": {
+    "placeholders": {
+      "name": {
+        "type": "String"
       }
     }
   },
@@ -305,6 +319,10 @@
   "connectionFailed": "Connection failed",
   "connectionSuccessful": "Connected successfully — settings saved",
   "contactDeveloper": "Contact Developer",
+  "continueAsAudio": "Continue as audio",
+  "continueAsAudioBody": "Keep playing this as audio from the same second?",
+  "continueAsAudioNo": "No, stop",
+  "continueAsAudioTitle": "Continue in the background?",
   "copiedToClipboard": "Copied to clipboard",
   "couldNotLoadPlaylist": "Couldn't load this playlist. Check the URL and your connection.",
   "create": "Create",
@@ -361,6 +379,7 @@
   "endpointReachable": "Reachable",
   "endpointUnreachable": "Unreachable",
   "endpointUrl": "Endpoint URL",
+  "enterFullscreen": "Fullscreen",
   "enterUrl": "Enter URL",
   "enterUrlHint": "Paste video URL here...",
   "enterUrlPrompt": "Enter a video URL to download:",
@@ -374,6 +393,7 @@
   "errorGeneric": "Error: {message}",
   "errorLogs": "Error Logs",
   "errorLogsSubtitle": "View app logs for diagnostics",
+  "exitFullscreen": "Exit fullscreen",
   "exportBackupKey": "Export Backup Key",
   "exportBackupKeySubtitle": "Required to restore backup on a new phone or after Clear Data",
   "exportKeySubtitle": "Required to restore on a new phone or after reinstall",
@@ -439,6 +459,7 @@
   "localOnlyYoutubeMessage": "Direct downloads support YouTube only.\nConfigure a MeTube server in Settings to download from other platforms.",
   "localUrlLabel": "Local server URL",
   "localVideos": "Library ({count})",
+  "lockTouch": "Lock touch",
   "logsShareText": "MeTube Super logs (URLs/IPs/credentials redacted)",
   "madeOffline": "Saved for offline",
   "madeWithLove": "Made with ❤️ By Yasir Sagheer",
@@ -451,6 +472,7 @@
   "modeRepeat": "Repeat",
   "modeRepeatAll": "Repeat all",
   "modeRepeatOne": "Repeat one",
+  "modeStopAtEnd": "Stop at end",
   "navLibrary": "Library",
   "navMyDownloads": "My downloads",
   "navPlaylists": "Playlists",
@@ -464,6 +486,7 @@
   "noDownloadsMessage": "Downloaded videos will appear here.\nShare a video link or use the Add URL button.",
   "noLogsFound": "No logs found",
   "noPasswordTip": "No password? Leave auth fields empty for open servers!",
+  "noPlayableSource": "This item has no playable source",
   "noPlaylists": "No playlists",
   "noPlaylistsMessage": "Create a playlist to organize your videos",
   "noResults": "No results",
@@ -484,7 +507,6 @@
   "openOriginalLink": "Open Original Link",
   "originalUrl": "Original URL",
   "password": "Password",
-  "preferences": "Preferences",
   "passwordRequired": "Password is required",
   "pasteFromClipboard": "Paste",
   "pasteUrlHint": "Paste the link here…",
@@ -495,10 +517,12 @@
   "platformFilter": "Platform",
   "play": "Play",
   "playAllFavorites": "Play all favorites",
+  "playModeLabel": "Mode",
   "playbackError": "Playback Error",
   "playbackSpeed": "Playback speed",
   "playerError": "Couldn't play this file",
   "playerLoading": "Loading video...",
+  "playingFromDevice": "Playing from your device",
   "playlist": "Playlist",
   "playlistDeleted": "Playlist deleted",
   "playlistDetails": "Playlist Details",
@@ -508,6 +532,7 @@
   "playlists": "Playlists",
   "playlistsCount": "{count} playlists",
   "pleaseEnterUrl": "Please enter a URL",
+  "preferences": "Preferences",
   "preparingDownload": "Preparing download...",
   "preparingShare": "Preparing the file for sharing…",
   "previous": "Previous",
@@ -519,13 +544,18 @@
   "qualityAudio": "Audio only",
   "qualityBest": "Best",
   "qualityHelper": "Sent to the server for new downloads",
+  "queueItemsCount": "{count} items",
+  "queueLabel": "Queue",
   "queuePosition": "Queue position: {position}",
+  "queueSavedAsPlaylist": "Saved as a playlist",
   "queued": "Queued",
   "queuedSection": "Waiting",
   "readyToShare": "Ready to share!",
   "reelsEndBack": "Back to library",
+  "reelsEndContinue": "Continue the rest of the list",
   "reelsEndReplay": "Replay from the start",
   "reelsEndTitle": "End of the shorts lane",
+  "reelsSwipeHint": "Swipe up for the next short",
   "refresh": "Refresh",
   "remove": "Remove",
   "removeFromPlaylist": "Remove from playlist",
@@ -561,6 +591,8 @@
   "searchLogs": "Search logs…",
   "searchResults": "Results: {found} of {total}",
   "searchVideos": "Search videos...",
+  "seekBackward10": "Back 10 seconds",
+  "seekForward10": "Forward 10 seconds",
   "selectAll": "Select All",
   "selected": "{count} selected",
   "selectedCount": "{count} selected",
@@ -588,6 +620,7 @@
   "shareRedacted": "Share (redacted)",
   "shareSelected": "Share Selected",
   "shareVia": "Share",
+  "shortsFilter": "Shorts",
   "shuffle": "Shuffle",
   "size": "Size",
   "smartPlaylists": "Smart playlists",
@@ -614,6 +647,7 @@
   "statusStream": "Stream",
   "statusWaiting": "Waiting...",
   "streamUrlUnavailable": "Stream URL not available",
+  "streamingFromServer": "Streaming from the server",
   "supportedPlatforms": "Supported: YouTube, Twitter/X, Instagram, TikTok, Facebook, Vimeo & more",
   "tagActionsHint": "Long-press a tag to rename or delete it.",
   "tagAudio": "Audio",
@@ -632,8 +666,10 @@
   "tracksCount": "{count} tracks",
   "tryAgain": "Try again",
   "undo": "Undo",
+  "unlockTouch": "Unlock",
   "unpinPlaylist": "Unpin",
   "upNext": "Up next",
+  "upNextIn": "Up next in «{name}»",
   "urlMustStartWith": "URL must start with http:// or https://",
   "urlRequiredField": "Enter a URL",
   "useCurrentConnection": "Use current connection",

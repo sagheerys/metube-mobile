@@ -1,5 +1,8 @@
+import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mt_core/mt_core.dart';
+import 'package:mt_media/mt_media.dart';
 import 'package:mt_ui/mt_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -8,7 +11,7 @@ import 'di.dart';
 import 'features/settings/settings_state.dart';
 import 'features/shared/stores.dart';
 
-/// bootstrap فقط: تهيئة التخزين وتحميل لقطة الإعدادات ثم runApp.
+/// bootstrap فقط: التخزين، لقطة الإعدادات، مشغل الصوت الخلفي، runApp.
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   initMTL10n();
@@ -18,12 +21,37 @@ Future<void> main() async {
   const secrets = SecureSecretStore();
   final initialSettings = await SuperSettings.load(store, secrets);
 
+  // قفل واحد لكل التخزين (القاعدة 3) — يُمرَّر للجميع لا يُنشأ مرتين.
+  final mutex = PrefsMutex();
+  final resolver = PlaybackSourceResolver(
+    endpoint: ServerStreamEndpoint.none, // يضبطه playbackWiringProvider
+  );
+  final handler = await AudioService.init(
+    builder: () => MTAudioHandler(
+      player: JustAudioPort(),
+      resolver: resolver,
+      positions: PlaybackPositionStore(store: store, mutex: mutex),
+      prefs: PlaybackPrefs(store: store, mutex: mutex),
+      stateStore: AudioStateStore(store: store, mutex: mutex),
+    ),
+    config: const AudioServiceConfig(
+      androidNotificationChannelId: 'com.metubesuper.audio',
+      androidNotificationChannelName: 'MeTube Super',
+      androidNotificationOngoing: true,
+      androidStopForegroundOnPause: true,
+    ),
+  );
+  await handler.loadPreferences();
+
   runApp(
     ProviderScope(
       overrides: [
         keyValueStoreProvider.overrideWithValue(store),
         secretStoreProvider.overrideWithValue(secrets),
+        prefsMutexProvider.overrideWithValue(mutex),
         initialSettingsProvider.overrideWithValue(initialSettings),
+        playbackResolverProvider.overrideWithValue(resolver),
+        audioHandlerProvider.overrideWithValue(handler),
       ],
       child: const SuperApp(),
     ),

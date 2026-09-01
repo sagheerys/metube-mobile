@@ -1,5 +1,7 @@
-﻿package com.yasir.metubesuper
+package com.yasir.metubesuper
 
-import io.flutter.embedding.android.FlutterActivity
+import com.ryanheise.audioservice.AudioServiceActivity
 
-class MainActivity : FlutterActivity()
+// audio_service يشترط هذه القاعدة بدل FlutterActivity ليصل إشعار
+// الوسائط وأزرار شاشة القفل إلى المشغل (م-21).
+class MainActivity : AudioServiceActivity()

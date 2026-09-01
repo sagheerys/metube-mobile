@@ -494,6 +494,30 @@ abstract class MTLocalizations {
   /// **'Contact Developer'**
   String get contactDeveloper;
 
+  /// No description provided for @continueAsAudio.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue as audio'**
+  String get continueAsAudio;
+
+  /// No description provided for @continueAsAudioBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep playing this as audio from the same second?'**
+  String get continueAsAudioBody;
+
+  /// No description provided for @continueAsAudioNo.
+  ///
+  /// In en, this message translates to:
+  /// **'No, stop'**
+  String get continueAsAudioNo;
+
+  /// No description provided for @continueAsAudioTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue in the background?'**
+  String get continueAsAudioTitle;
+
   /// No description provided for @copiedToClipboard.
   ///
   /// In en, this message translates to:
@@ -830,6 +854,12 @@ abstract class MTLocalizations {
   /// **'Endpoint URL'**
   String get endpointUrl;
 
+  /// No description provided for @enterFullscreen.
+  ///
+  /// In en, this message translates to:
+  /// **'Fullscreen'**
+  String get enterFullscreen;
+
   /// No description provided for @enterUrl.
   ///
   /// In en, this message translates to:
@@ -907,6 +937,12 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'View app logs for diagnostics'**
   String get errorLogsSubtitle;
+
+  /// No description provided for @exitFullscreen.
+  ///
+  /// In en, this message translates to:
+  /// **'Exit fullscreen'**
+  String get exitFullscreen;
 
   /// No description provided for @exportBackupKey.
   ///
@@ -1298,6 +1334,12 @@ abstract class MTLocalizations {
   /// **'Library ({count})'**
   String localVideos(int count);
 
+  /// No description provided for @lockTouch.
+  ///
+  /// In en, this message translates to:
+  /// **'Lock touch'**
+  String get lockTouch;
+
   /// No description provided for @logsShareText.
   ///
   /// In en, this message translates to:
@@ -1369,6 +1411,12 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'Repeat one'**
   String get modeRepeatOne;
+
+  /// No description provided for @modeStopAtEnd.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop at end'**
+  String get modeStopAtEnd;
 
   /// No description provided for @navLibrary.
   ///
@@ -1447,6 +1495,12 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'No password? Leave auth fields empty for open servers!'**
   String get noPasswordTip;
+
+  /// No description provided for @noPlayableSource.
+  ///
+  /// In en, this message translates to:
+  /// **'This item has no playable source'**
+  String get noPlayableSource;
 
   /// No description provided for @noPlaylists.
   ///
@@ -1568,12 +1622,6 @@ abstract class MTLocalizations {
   /// **'Password'**
   String get password;
 
-  /// No description provided for @preferences.
-  ///
-  /// In en, this message translates to:
-  /// **'Preferences'**
-  String get preferences;
-
   /// No description provided for @passwordRequired.
   ///
   /// In en, this message translates to:
@@ -1634,6 +1682,12 @@ abstract class MTLocalizations {
   /// **'Play all favorites'**
   String get playAllFavorites;
 
+  /// No description provided for @playModeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Mode'**
+  String get playModeLabel;
+
   /// No description provided for @playbackError.
   ///
   /// In en, this message translates to:
@@ -1657,6 +1711,12 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'Loading video...'**
   String get playerLoading;
+
+  /// No description provided for @playingFromDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'Playing from your device'**
+  String get playingFromDevice;
 
   /// No description provided for @playlist.
   ///
@@ -1711,6 +1771,12 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'Please enter a URL'**
   String get pleaseEnterUrl;
+
+  /// No description provided for @preferences.
+  ///
+  /// In en, this message translates to:
+  /// **'Preferences'**
+  String get preferences;
 
   /// No description provided for @preparingDownload.
   ///
@@ -1778,11 +1844,29 @@ abstract class MTLocalizations {
   /// **'Sent to the server for new downloads'**
   String get qualityHelper;
 
+  /// No description provided for @queueItemsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} items'**
+  String queueItemsCount(int count);
+
+  /// No description provided for @queueLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Queue'**
+  String get queueLabel;
+
   /// No description provided for @queuePosition.
   ///
   /// In en, this message translates to:
   /// **'Queue position: {position}'**
   String queuePosition(int position);
+
+  /// No description provided for @queueSavedAsPlaylist.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved as a playlist'**
+  String get queueSavedAsPlaylist;
 
   /// No description provided for @queued.
   ///
@@ -1808,6 +1892,12 @@ abstract class MTLocalizations {
   /// **'Back to library'**
   String get reelsEndBack;
 
+  /// No description provided for @reelsEndContinue.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue the rest of the list'**
+  String get reelsEndContinue;
+
   /// No description provided for @reelsEndReplay.
   ///
   /// In en, this message translates to:
@@ -1819,6 +1909,12 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'End of the shorts lane'**
   String get reelsEndTitle;
+
+  /// No description provided for @reelsSwipeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Swipe up for the next short'**
+  String get reelsSwipeHint;
 
   /// No description provided for @refresh.
   ///
@@ -2030,6 +2126,18 @@ abstract class MTLocalizations {
   /// **'Search videos...'**
   String get searchVideos;
 
+  /// No description provided for @seekBackward10.
+  ///
+  /// In en, this message translates to:
+  /// **'Back 10 seconds'**
+  String get seekBackward10;
+
+  /// No description provided for @seekForward10.
+  ///
+  /// In en, this message translates to:
+  /// **'Forward 10 seconds'**
+  String get seekForward10;
+
   /// No description provided for @selectAll.
   ///
   /// In en, this message translates to:
@@ -2192,6 +2300,12 @@ abstract class MTLocalizations {
   /// **'Share'**
   String get shareVia;
 
+  /// No description provided for @shortsFilter.
+  ///
+  /// In en, this message translates to:
+  /// **'Shorts'**
+  String get shortsFilter;
+
   /// No description provided for @shuffle.
   ///
   /// In en, this message translates to:
@@ -2348,6 +2462,12 @@ abstract class MTLocalizations {
   /// **'Stream URL not available'**
   String get streamUrlUnavailable;
 
+  /// No description provided for @streamingFromServer.
+  ///
+  /// In en, this message translates to:
+  /// **'Streaming from the server'**
+  String get streamingFromServer;
+
   /// No description provided for @supportedPlatforms.
   ///
   /// In en, this message translates to:
@@ -2456,6 +2576,12 @@ abstract class MTLocalizations {
   /// **'Undo'**
   String get undo;
 
+  /// No description provided for @unlockTouch.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock'**
+  String get unlockTouch;
+
   /// No description provided for @unpinPlaylist.
   ///
   /// In en, this message translates to:
@@ -2467,6 +2593,12 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'Up next'**
   String get upNext;
+
+  /// No description provided for @upNextIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Up next in «{name}»'**
+  String upNextIn(String name);
 
   /// No description provided for @urlMustStartWith.
   ///
