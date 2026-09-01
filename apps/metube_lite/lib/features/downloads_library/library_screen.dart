@@ -1,4 +1,3 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -9,6 +8,7 @@ import '../../di.dart';
 import '../home/add_flow.dart';
 import '../player/playback_providers.dart';
 import '../playlists/add_to_playlist_sheet.dart';
+import 'artwork_view.dart';
 import 'library_actions.dart';
 import 'library_providers.dart';
 import 'local_item.dart';
@@ -269,13 +269,8 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
         mtTimeAgo(context, item.modified),
         '${(item.sizeBytes / (1024 * 1024)).toStringAsFixed(1)} MB',
       ].join(' · '),
-      thumbnail: item.thumbnail == null
-          ? null
-          : CachedNetworkImage(
-              imageUrl: item.thumbnail!,
-              fit: BoxFit.cover,
-              errorWidget: (_, _, _) => const SizedBox.shrink(),
-            ),
+      thumbnail:
+          item.thumbnail == null ? null : artworkFor(item.thumbnail),
       platform: platformKindOf(item.platform),
       location: MTMediaLocation.offline,
       locationLabel: l10n.availabilityOffline,

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mt_ui/mt_ui.dart';
 
 import 'di.dart';
+import 'features/settings/auto_switch.dart';
 import 'router.dart';
 
 /// جذر MeTube Super: ثيم «وهج» بهوية Super + الترجمة + الراوتر.
@@ -15,6 +16,9 @@ class SuperApp extends ConsumerWidget {
         ref.watch(settingsProvider.select((s) => s.themeMode));
     final localeCode =
         ref.watch(settingsProvider.select((s) => s.localeCode));
+    // م-28: يعيش بعمر التطبيق لا بعمر شاشة — تغيّر الشبكة يجب أن
+    // يُلتقط والمستخدم في أي مكان (وحتى والتطبيق بالخلفية ثم يعود).
+    ref.watch(autoSwitchProvider);
 
     return MaterialApp.router(
       title: 'MeTube Super',

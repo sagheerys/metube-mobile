@@ -36,6 +36,16 @@ class MainActivity : AudioServiceActivity() {
                         ) { _, uri -> runOnUiThread { result.success(uri?.toString()) } }
                     }
                 }
+                // م-18/م-35: سبر ملفات محلية (مدة + أبعاد + غلاف) على
+                // خيط جانبي — 194 ملفاً على جهاز المالك تعني ثوانيَ من
+                // فكّ الترميز، وتجميدُ خيط الواجهة لها غير مقبول.
+                "probeMedia" -> {
+                    val paths = call.argument<List<String>>("paths") ?: emptyList()
+                    Thread {
+                        val data = MediaProbe.scan(applicationContext, paths)
+                        runOnUiThread { result.success(data) }
+                    }.start()
+                }
                 else -> result.notImplemented()
             }
         }

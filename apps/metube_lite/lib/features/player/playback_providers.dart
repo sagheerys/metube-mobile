@@ -1,10 +1,9 @@
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mt_core/mt_core.dart';
 import 'package:mt_media/mt_media.dart';
 
 import '../../di.dart';
+import '../downloads_library/artwork_view.dart';
 import '../downloads_library/library_providers.dart';
 import '../downloads_library/local_item.dart';
 import '../playlists/playlists_providers.dart';
@@ -40,6 +39,9 @@ final videoSessionProvider = Provider.autoDispose<MTVideoSession>((ref) {
     await shapes.remember(key, duration, aspectRatio);
     ref.invalidate(localMediaProvider);
   };
+  // **مخرج صوت واحد.** فتح فيديو والصوت الخلفي يعمل كان يشغّل الاثنين
+  // معاً (خلل مصطاد على جهاز المالك).
+  session.onTakeAudioFocus = ref.read(audioHandlerProvider).pause;
   ref.onDispose(session.dispose);
   return session;
 });
@@ -83,15 +85,8 @@ Future<bool> saveQueueAsPlaylist(
 
 /// باني المصغرات للمشغلات (م-18): أغلفة المنصات المحفوظة في فهرس
 /// الأغلفة — بلا ترويسات مصادقة (لا شيء منها من سيرفر العائلة).
-MTArtworkBuilder artworkBuilderFor(WidgetRef ref) => (context, item) {
-      final url = item.artworkUrl;
-      if (url == null || url.isEmpty) return const SizedBox.shrink();
-      return CachedNetworkImage(
-        imageUrl: url,
-        fit: BoxFit.cover,
-        errorWidget: (_, _, _) => const SizedBox.shrink(),
-      );
-    };
+MTArtworkBuilder artworkBuilderFor(WidgetRef ref) =>
+    (context, item) => artworkFor(item.artworkUrl);
 
 /// المنصة المعروضة لعنصر تشغيل — مفتاحه قد يكون مساراً لا رابطاً.
 MediaPlatform platformOfKey(String key) =>

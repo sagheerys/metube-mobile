@@ -25,6 +25,9 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+  # منصة `video_player` مزيّفة في الاختبارات — انحدار سباق التحميل الذي
+  # كان يترك مشغلات يتيمة تعمل صوتاً بالخلفية (اختبار وحده، لا الإنتاج).
+  video_player_platform_interface: ^6.9.0
 
 flutter:
   uses-material-design: true

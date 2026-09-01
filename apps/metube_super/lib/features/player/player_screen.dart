@@ -150,6 +150,9 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
     final handler = ref.read(audioHandlerProvider);
     final ordered = session.orderedItems;
     final index = ordered.indexWhere((i) => i.canonicalUrl == item.canonicalUrl);
+    // **قبل** بدء الصوت: الفيديو كان يستمر طوال تحميل المصدر الصوتي
+    // فيُسمع المقطع مرتين (خلل مصطاد — يطول على شبكة بطيئة).
+    await session.pause();
     await ref
         .read(playbackPositionsProvider)
         .save(item.canonicalUrl, position, duration: session.duration);

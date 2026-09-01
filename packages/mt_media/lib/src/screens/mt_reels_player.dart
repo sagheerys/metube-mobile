@@ -28,6 +28,7 @@ class MTReelsPlayer extends StatefulWidget {
     this.actionsBuilder,
     this.subtitleBuilder,
     this.onContinueRest,
+    this.onTakeAudioFocus,
   });
 
   final ShortsLane lane;
@@ -42,6 +43,9 @@ class MTReelsPlayer extends StatefulWidget {
   /// «متابعة بقية القائمة» — يفتح أول عنصر غير قصير في مشغله الصحيح.
   final VoidCallback? onContinueRest;
 
+  /// يوقف مشغل الصوت الخلفي قبل أول تشغيل — وإلا اشتغل الصوت والريل معاً.
+  final Future<void> Function()? onTakeAudioFocus;
+
   @override
   State<MTReelsPlayer> createState() => _MTReelsPlayerState();
 }
@@ -53,6 +57,12 @@ class _MTReelsPlayerState extends State<MTReelsPlayer> {
   late int _index = widget.startIndex;
   bool _endReached = false;
   bool _failed = false;
+
+  /// **حارس السباق (خلل مصطاد على جهاز المالك 2026-09-01).** السحب أسرع
+  /// من `initialize()` — سحبتان متتاليتان تبدآن تحميلين متوازيين، ويفوز
+  /// آخر من ينتهي بـ `_controller` بينما **يبقى الأول حياً يشتغل صوتاً
+  /// خلف الصورة الجديدة**. كل سحبة إضافية تضيف صوتاً ثالثاً ورابعاً.
+  int _generation = 0;
 
   @override
   void initState() {
@@ -73,16 +83,21 @@ class _MTReelsPlayerState extends State<MTReelsPlayer> {
       _index >= 0 && _index < widget.lane.length ? widget.lane.items[_index] : null;
 
   Future<void> _load(int index) async {
+    final generation = ++_generation;
     final item = index < widget.lane.length ? widget.lane.items[index] : null;
     final old = _controller;
     _controller = null;
     if (mounted) setState(() => _failed = false);
+    // إسكاته أولاً: `dispose()` قد ينتظر، والصوت يستمر طوال الانتظار.
+    await old?.pause();
     await old?.dispose();
     if (item == null) return;
 
     final source = widget.resolver.resolve(item);
     if (source == null) {
-      if (mounted) setState(() => _failed = true);
+      if (mounted && generation == _generation) {
+        setState(() => _failed = true);
+      }
       return;
     }
     final controller = source.origin == PlaybackOrigin.local
@@ -93,11 +108,16 @@ class _MTReelsPlayerState extends State<MTReelsPlayer> {
       await controller.initialize();
     } on Object {
       await controller.dispose();
-      if (mounted) setState(() => _failed = true);
+      if (mounted && generation == _generation) {
+        setState(() => _failed = true);
+      }
       return;
     }
-    if (!mounted) return controller.dispose();
+    // سحبة أحدث سبقتنا ⇒ نتخلص من هذا المتحكم بدل أن نتركه يعمل.
+    if (!mounted || generation != _generation) return controller.dispose();
     await controller.setLooping(true); // يتكرر حتى السحب (م-35)
+    await widget.onTakeAudioFocus?.call();
+    if (!mounted || generation != _generation) return controller.dispose();
     await controller.play();
     setState(() => _controller = controller);
   }
@@ -115,12 +135,16 @@ class _MTReelsPlayerState extends State<MTReelsPlayer> {
     _load(page);
   }
 
-  void _togglePlay() {
+  Future<void> _togglePlay() async {
     final controller = _controller;
     if (controller == null) return;
-    setState(() => controller.value.isPlaying
-        ? controller.pause()
-        : controller.play());
+    if (controller.value.isPlaying) {
+      await controller.pause();
+    } else {
+      await widget.onTakeAudioFocus?.call();
+      await controller.play();
+    }
+    if (mounted) setState(() {});
   }
 
   @override

@@ -6,6 +6,7 @@ import 'package:mt_media/mt_media.dart';
 import 'package:mt_ui/mt_ui.dart';
 
 import '../../di.dart';
+import '../downloads_library/library_enricher.dart';
 import '../downloads_library/library_providers.dart';
 import '../home/add_flow.dart';
 import '../home/download_watcher.dart';
@@ -27,6 +28,10 @@ class ShellScreen extends ConsumerStatefulWidget {
 class _ShellScreenState extends ConsumerState<ShellScreen>
     with WidgetsBindingObserver {
   ShareReceiver? _shareReceiver;
+
+  /// م-18/م-35: سبر الملفات المهاجَرة (غلاف + أبعاد) بعمر التطبيق —
+  /// يُراقَب هنا لا في شاشة المكتبة كي لا يتوقف عند مغادرتها.
+  void _watchEnrichment() => ref.watch(libraryEnrichmentProvider);
 
   @override
   void initState() {
@@ -107,6 +112,7 @@ class _ShellScreenState extends ConsumerState<ShellScreen>
 
     // يبقى محقونًا حياً ليقود الإشعارات ووضع الخلفية (م-9/م-10).
     ref.watch(downloadWatcherProvider);
+    _watchEnrichment();
 
     return Scaffold(
       body: widget.navigationShell,

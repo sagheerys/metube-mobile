@@ -50,6 +50,16 @@ android {
                 signingConfigs.getByName("release")
             else
                 signingConfigs.getByName("debug")
+            // **فخ مصطاد على جهاز المالك (2026-09-01):** مُنقّي الموارد
+            // يحذف كل `drawable/audio_service_*` لأن لا شيء يشير إليها
+            // ستاتيكياً — و`audio_service` يبحث عنها **بالاسم وقت
+            // التشغيل** (`getIdentifier`). النتيجة في نسخة release فقط:
+            // `IllegalArgumentException: You must specify an icon resource
+            // id to build a CustomAction` عند كل تشغيل ⇒ **لا إشعار وسائط
+            // ولا أزرار شاشة قفل إطلاقاً**، بلا أي عطل ظاهر في الواجهة.
+            // أُثبت بـ `aapt2 dump resources`: صفر مورد audio_service.
+            // التنقية توفّر أقل من ميجابايت من 41 — لا تساوي عطلاً صامتاً.
+            isShrinkResources = false
         }
     }
 }

@@ -48,6 +48,9 @@ android {
                 signingConfigs.getByName("release")
             else
                 signingConfigs.getByName("debug")
+            // انظر شرح Lite: تنقية الموارد تحذف `drawable/audio_service_*`
+            // التي تُطلب بالاسم وقت التشغيل ⇒ لا إشعار وسائط في release.
+            isShrinkResources = false
         }
     }
 }

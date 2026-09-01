@@ -40,6 +40,16 @@ class MTVideoSession extends ChangeNotifier {
   int _consecutiveErrors = 0;
   Timer? _saveTimer;
 
+  /// **حارس السباق (خلل مصطاد على جهاز المالك 2026-09-01).** `_load`
+  /// ينتظر `initialize()` — ثوانٍ على شبكة بطيئة. تخطٍّ ثانٍ أثناء
+  /// الانتظار يبدأ تحميلاً موازياً، ويفوز آخر من ينتهي بـ `_controller`
+  /// بينما **يبقى الأول حياً يشتغل صوتاً بلا صورة**: مقطعان معاً.
+  int _generation = 0;
+
+  /// يُستدعى قبل أي بدء تشغيل: يوقف مشغل الصوت الخلفي فلا يشتغل
+  /// المصدران معاً (م-19 — مخرج صوت واحد في كل لحظة).
+  Future<void> Function()? onTakeAudioFocus;
+
   VideoPlayerController? get controller => _controller;
   PlaylistItem? get current => _queue.current;
   List<PlaylistItem> get items => _queue.items;
@@ -75,6 +85,7 @@ class MTVideoSession extends ChangeNotifier {
   Future<void> _load() async {
     final item = _queue.current;
     if (item == null) return;
+    final generation = ++_generation;
     _loading = true;
     _error = null;
     notifyListeners();
@@ -91,9 +102,11 @@ class MTVideoSession extends ChangeNotifier {
       await controller.initialize();
     } on Object {
       await controller.dispose();
+      // تحميل أحدث سبقنا ⇒ هذا الفشل لم يعد يخصّ الشاشة.
+      if (generation != _generation) return;
       return _failCurrent();
     }
-    if (_disposed) return controller.dispose();
+    if (_disposed || generation != _generation) return controller.dispose();
 
     _consecutiveErrors = 0;
     _controller = controller;
@@ -103,6 +116,8 @@ class MTVideoSession extends ChangeNotifier {
     }
     await controller.setPlaybackSpeed(await prefs.speed());
     controller.addListener(_onTick);
+    await onTakeAudioFocus?.call();
+    if (_disposed || generation != _generation) return;
     await controller.play();
     _loading = false;
     notifyListeners();
@@ -167,8 +182,20 @@ class MTVideoSession extends ChangeNotifier {
       await controller.pause();
       await savePosition();
     } else {
+      await onTakeAudioFocus?.call();
       await controller.play();
     }
+    notifyListeners();
+  }
+
+  /// إيقاف مؤقت صريح من الأعلى — م-23 «متابعة صوتاً» كان يشغّل الصوت
+  /// **والفيديو ما زال يعمل**، فيُسمع المقطع مرتين حتى يُغلق المشغل
+  /// (وعلى شبكة بطيئة يدوم التداخل ثوانيَ طويلة).
+  Future<void> pause() async {
+    final controller = _controller;
+    if (controller == null || !controller.value.isPlaying) return;
+    await controller.pause();
+    await savePosition();
     notifyListeners();
   }
 

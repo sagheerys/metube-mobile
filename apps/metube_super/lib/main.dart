@@ -9,6 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app.dart';
 import 'di.dart';
+import 'features/settings/auto_switch.dart';
 import 'features/settings/settings_state.dart';
 import 'features/shared/stores.dart';
 
@@ -20,14 +21,19 @@ Future<void> main() async {
   final prefs = await SharedPreferences.getInstance();
   final store = SharedPrefsKeyValueStore(prefs);
   const secrets = SecureSecretStore();
-  final initialSettings = await SuperSettings.load(store, secrets);
+  final mutex = PrefsMutex();
+  var initialSettings = await SuperSettings.load(store, secrets);
+  // م-28: التثبيت الذي هُيّئ برابط واحد يبقى بلا مرشحين للتبديل — نبذر
+  // القائمة من الرابط المعتمد مرة واحدة قبل أول بناء.
+  await seedEndpointsFromActive(store, mutex, initialSettings);
+  initialSettings = await SuperSettings.load(store, secrets);
 
   // السجل الحلقي (م-32) في مساحة التطبيق الخاصة (§5.3).
   final logsDir = await getApplicationSupportDirectory();
   final logger = MTLogger(filePath: '${logsDir.path}/logs/metube_super.log');
 
-  // قفل واحد لكل التخزين (القاعدة 3) — يُمرَّر للجميع لا يُنشأ مرتين.
-  final mutex = PrefsMutex();
+  // قفل واحد لكل التخزين (القاعدة 3) — يُمرَّر للجميع لا يُنشأ مرتين
+  // (أُنشئ أعلاه قبل البذر).
   final resolver = PlaybackSourceResolver(
     endpoint: ServerStreamEndpoint.none, // يضبطه playbackWiringProvider
   );

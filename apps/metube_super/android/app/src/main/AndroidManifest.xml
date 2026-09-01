@@ -5,6 +5,11 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"/>
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    <!-- **خلل مصطاد على جهاز المالك (2026-09-01):** كان هذا التصريح
+         ناقصاً كلياً في Super، فأندرويد 13+ يمنع إشعار الوسائط بصمت —
+         الصوت يعمل بالخلفية ولا شيء يظهر في ستارة الإشعارات ولا على
+         شاشة القفل. (فحص `dumpsys package`: Lite يملكه وSuper لا.) -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <!-- فخ §6.2: Dio يتجاوز قيد cleartext وExoPlayer لا — سيرفر المالك
          محلي بـ http، لذلك Super يسمح cleartext عاماً (Lite يقيّده
          بالنطاقات الخاصة في المرحلة 7). بدونه: التحميل يعمل والبث يفشل. -->

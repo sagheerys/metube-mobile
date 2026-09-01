@@ -9,6 +9,7 @@ import '../../di.dart';
 import '../home/add_flow.dart';
 import '../home/reception.dart';
 import '../player/playback_providers.dart';
+import '../shared/notification_permission.dart';
 
 /// غلاف النموذج أ: 3 وجهات سفلية + الطبقة العائمة (زر الإضافة الذكي) —
 /// الزر يظهر في المكتبة والقوائم ويختفي في الإعدادات.
@@ -37,6 +38,8 @@ class _ShellScreenState extends ConsumerState<ShellScreen>
       // playbackWiringProvider رابط السيرفر الحالي.
       ref.read(playbackWiringProvider);
       ref.read(audioHandlerProvider).restoreSession();
+      // 33+: بلا هذا الطلب لا يظهر إشعار الوسائط إطلاقاً (خلل مصطاد).
+      const NotificationPermission().request();
     });
   }
 

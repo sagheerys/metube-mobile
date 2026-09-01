@@ -42,6 +42,9 @@ final videoSessionProvider = Provider.autoDispose<MTVideoSession>((ref) {
     await shapes.remember(url, duration, aspectRatio);
     ref.invalidate(libraryItemsProvider);
   };
+  // **مخرج صوت واحد.** فتح فيديو والصوت الخلفي يعمل كان يشغّل الاثنين
+  // معاً (خلل مصطاد على جهاز المالك).
+  session.onTakeAudioFocus = ref.read(audioHandlerProvider).pause;
   ref.onDispose(session.dispose);
   return session;
 });

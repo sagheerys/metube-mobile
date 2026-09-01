@@ -54,6 +54,7 @@ class _ReelsScreenState extends ConsumerState<ReelsScreen> {
       lane: lane,
       resolver: ref.watch(playbackResolverProvider),
       startIndex: laneIndex,
+      onTakeAudioFocus: ref.read(audioHandlerProvider).pause,
       subtitleBuilder: (context, item) => [
         MediaPlatform.detect(item.canonicalUrl).label,
         if (item.uploader != null) item.uploader!,
@@ -109,10 +110,11 @@ class _ReelsScreenState extends ConsumerState<ReelsScreen> {
     if (index == null) return context.pop();
     final next = request.items[index];
     if (next.isAudio) {
-      await ref
-          .read(audioHandlerProvider)
-          .playItems(request.items, startIndex: index);
-      if (mounted) context.pop();
+      // نغلق الريلز **أولاً** فيُصرَّف متحكمه: تشغيل الصوت قبل الإغلاق
+      // يترك الريل يعمل طوال تحميل المصدر — صوتان معاً.
+      final handler = ref.read(audioHandlerProvider);
+      context.pop();
+      await handler.playItems(request.items, startIndex: index);
       return;
     }
     ref.read(playbackRequestProvider.notifier).state = PlaybackRequest(
