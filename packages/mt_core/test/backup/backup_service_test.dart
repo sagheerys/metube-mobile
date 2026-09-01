@@ -183,6 +183,101 @@ void main() {
       final tags = TagsIndex(store: store, mutex: PrefsMutex());
       expect(await tags.tagsOf('https://youtu.be/dQw4w9WgXcQ'), ['أناشيد']);
     });
+
+    /// أشكال مصطادة على **نسخة المالك الحقيقية** (2026-09-01) — كلها
+    /// كانت تُستورد بصمت ناقصة قبل الإصلاح.
+    group('هجرة الأشكال القديمة', () {
+      Future<void> importLegacySuper(Map<String, dynamic> prefs) async {
+        final key = BackupCrypto.generateKeyBase64();
+        await service.importKeyFile('MTSKEY1\n$key\n');
+        await service.importFromString(BackupCrypto.encrypt(
+          plaintext: json.encode({'app': 'MeTube Super', 'prefs': prefs}),
+          keyBase64: key,
+          header: BackupCrypto.headerLegacySuper,
+        ));
+      }
+
+      test('قائمة بمصفوفة `entries` تُستورد بعناصرها لا فارغة', () async {
+        await importLegacySuper({
+          'saved_playlists': {
+            't': 's',
+            'v': json.encode([
+              {
+                'name': 'Music',
+                'createdAt': '2025-05-01T10:00:00.000',
+                'entries': [
+                  {
+                    'canonicalUrl': 'https://youtu.be/abc',
+                    'serverFilename': 'a.mp3',
+                    'cachedTitle': 'أول',
+                    'cachedThumb': 'https://img/1.jpg',
+                  },
+                  {'canonicalUrl': 'https://youtu.be/def'},
+                ],
+              }
+            ]),
+          },
+        });
+        final playlists =
+            await PlaylistsStore(store: store, mutex: PrefsMutex()).readAll();
+        expect(playlists.single.name, 'Music');
+        expect(playlists.single.items.length, 2);
+        expect(playlists.single.items.first.cachedTitle, 'أول');
+        expect(playlists.single.items.first.serverFilename, 'a.mp3');
+      });
+
+      test('مواضع الاستئناف تتحول من خريطة ثوانٍ إلى مفاتيح §5.1', () async {
+        await importLegacySuper({
+          'video_playback_positions': {
+            't': 's',
+            'v': json.encode({
+              'https://youtu.be/abc': '30',
+              'https://youtu.be/def': '125',
+              'https://youtu.be/zero': '0',
+            }),
+          },
+        });
+        expect(
+            await store.getInt('playback_pos_https://youtu.be/abc'), 30000);
+        expect(
+            await store.getInt('playback_pos_https://youtu.be/def'), 125000);
+        expect(await store.get('playback_pos_https://youtu.be/zero'), isNull,
+            reason: 'الصفر لا يستحق مفتاحاً');
+        expect(await store.getString('video_playback_positions'), isNull,
+            reason: 'المفتاح القديم يُزال فلا يتكرر في كل تصدير لاحق');
+      });
+
+      test('قيمة كبيرة تُقرأ ميلي لا ثوانٍ', () async {
+        await importLegacySuper({
+          'video_playback_positions': {
+            't': 's',
+            'v': json.encode({'https://youtu.be/ms': '900000'}),
+          },
+        });
+        expect(await store.getInt('playback_pos_https://youtu.be/ms'),
+            900000);
+      });
+
+      test('وضع التشغيل الرقمي القديم يُزال ليعود للافتراضي', () async {
+        await importLegacySuper({
+          'player_play_mode': {'t': 'i', 'v': 0},
+          'player_play_mode_Music': {'t': 'i', 'v': 2},
+          'video_quality': {'t': 's', 'v': 'audio'},
+        });
+        expect(await store.get('player_play_mode'), isNull);
+        expect(await store.get('player_play_mode_Music'), isNull);
+        expect(await store.getString('video_quality'), 'audio',
+            reason: 'بقية المفاتيح لا تُمس');
+      });
+
+      test('نسخة v2 لا تمر بالهجرة (أشكالها حديثة أصلاً)', () async {
+        await store.setString('video_playback_positions', '{"u":"30"}');
+        await service.importFromString(await service.exportToString());
+        expect(await store.getString('video_playback_positions'),
+            '{"u":"30"}');
+        expect(await store.get('playback_pos_u'), isNull);
+      });
+    });
   });
 
   test('ملف بلا ترويسة ⇒ BackupFormatException', () {

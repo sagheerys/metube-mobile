@@ -93,6 +93,7 @@ class BackupService {
       for (final entry in prefs.entries) {
         if (await _applyCell(entry.key.toString(), entry.value)) restored++;
       }
+      if (format != BackupFormat.v2) await _migrateLegacyShapes();
     });
     await _restoreUsername(
         ((payload['secure'] as Map?) ?? const {})['username']?.toString() ??
@@ -140,6 +141,46 @@ class BackupService {
     return ImportResult(
         format: BackupFormat.legacyLite, keysRestored: restored);
   }
+
+  /// **هجرة أشكال قديمة داخل نفس المفاتيح** (مُثبتة على نسخة المالك
+  /// الحقيقية 2026-09-01) — تُنفَّذ **داخل القفل** بعد تطبيق الخلايا:
+  /// - `video_playback_positions`: خريطة رابط→ثوانٍ نصاً ⇒ مفاتيح
+  ///   `playback_pos_<url>` بالميلي (§5.1)، وإلا ضاعت مواضع الاستئناف.
+  /// - `player_play_mode`: كان رقماً (فهرس enum قديم) والقارئ الجديد
+  ///   ينتظر نصاً ⇒ يُزال ليعود للافتراضي بدل قيمة ميتة.
+  Future<void> _migrateLegacyShapes() async {
+    await _migratePlaybackPositions();
+    for (final key in await store.keys()) {
+      if (key == 'player_play_mode' || key.startsWith('player_play_mode_')) {
+        if (await store.get(key) is int) await store.remove(key);
+      }
+    }
+  }
+
+  Future<void> _migratePlaybackPositions() async {
+    const legacyKey = 'video_playback_positions';
+    final raw = await store.getString(legacyKey);
+    if (raw == null || raw.isEmpty) return;
+    final Object? decoded;
+    try {
+      decoded = json.decode(raw);
+    } on FormatException {
+      return;
+    }
+    if (decoded is! Map) return;
+    for (final entry in decoded.entries) {
+      final url = entry.key.toString();
+      final value = num.tryParse(entry.value.toString());
+      if (url.isEmpty || value == null || value <= 0) continue;
+      // القديم يخزّن **ثوانٍ**؛ أي قيمة تتجاوز يوماً بالثواني هي ميلي أصلاً.
+      final ms = value > _secondsInDay ? value.toInt() : (value * 1000).toInt();
+      await store.setInt('$_positionPrefix$url', ms);
+    }
+    await store.remove(legacyKey);
+  }
+
+  static const int _secondsInDay = 86400;
+  static const String _positionPrefix = 'playback_pos_';
 
   Future<void> _restoreUsername(String? username) async {
     if (username != null && username.isNotEmpty) {

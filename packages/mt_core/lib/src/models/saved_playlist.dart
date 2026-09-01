@@ -75,6 +75,10 @@ class SavedPlaylist {
     if (json.containsKey('videoPaths')) {
       return SavedPlaylist.fromLegacyLite(json);
     }
+    // **هجرة مُثبتة على نسخة المالك الحقيقية (2026-09-01):** Super
+    // القديم يسمي مصفوفة العناصر `entries` بنفس حقولها — بلا هذا
+    // البديل تُستورد القوائم فارغة بصمت.
+    final rawItems = json['items'] as List? ?? json['entries'] as List?;
     return SavedPlaylist(
       id: json['id']?.toString(),
       name: json['name']?.toString() ?? '',
@@ -82,7 +86,7 @@ class SavedPlaylist {
       createdAt: DateTime.tryParse(json['createdAt']?.toString() ?? ''),
       lastPlayedAt: DateTime.tryParse(json['lastPlayedAt']?.toString() ?? ''),
       items: [
-        for (final item in (json['items'] as List? ?? const []))
+        for (final item in rawItems ?? const [])
           if (item is Map)
             PlaylistEntry.fromJson(Map<String, dynamic>.from(item)),
       ],

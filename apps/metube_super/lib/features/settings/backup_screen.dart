@@ -1,5 +1,8 @@
+import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mt_core/mt_core.dart';
@@ -37,6 +40,8 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
       if (mounted) {
         showMTSnack(context, message, type: MTSnackType.success);
       }
+    } on BackupCancelledException {
+      // إلغاء المستخدم ليس خطأ.
     } catch (e) {
       if (mounted) {
         showMTSnack(context, errorText(l10n, e), type: MTSnackType.error);
@@ -67,11 +72,22 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
     return l10n.keyExported(file.path);
   }
 
-  /// الاستيراد يقرأ الملف من مجلد Super — لا منتقي ملفات في النطاق.
+  /// **يُقرأ عبر منتقي النظام (SAF):** أندرويد 11+ يرفض قراءة ملف لم
+  /// ينشئه التطبيق ولو كان في نفس المجلد (`errno 13`) — ونسخة الهجرة
+  /// تأتي من جهاز آخر بطبيعتها (م-31).
+  Future<String?> _pickFileContents() async {
+    final picked = await FilePicker.platform.pickFiles(withData: true);
+    final file = picked?.files.singleOrNull;
+    if (file == null) return null;
+    if (file.bytes case final Uint8List bytes) return utf8.decode(bytes);
+    final path = file.path;
+    return path == null ? null : File(path).readAsString();
+  }
+
   Future<String> _import(MTLocalizations l10n) async {
-    final file = File('$superMediaDir/$_backupFileName');
-    if (!await file.exists()) throw const BackupNotFoundException();
-    final result = await _service.importFromString(await file.readAsString());
+    final contents = await _pickFileContents();
+    if (contents == null) throw const BackupCancelledException();
+    final result = await _service.importFromString(contents);
     await _refreshEverything();
     final formatName = switch (result.format) {
       BackupFormat.v2 => 'MTF1',
@@ -82,9 +98,9 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
   }
 
   Future<String> _importKey(MTLocalizations l10n) async {
-    final file = File('$superMediaDir/$_keyFileName');
-    if (!await file.exists()) throw const BackupNotFoundException();
-    final ok = await _service.importKeyFile(await file.readAsString());
+    final contents = await _pickFileContents();
+    if (contents == null) throw const BackupCancelledException();
+    final ok = await _service.importKeyFile(contents);
     if (!ok) throw const BackupFormatException('bad key file');
     return l10n.keyImported;
   }
@@ -152,7 +168,7 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
   }
 }
 
-/// ملف نسخة مفقود — يُعرض كرسالة مصنفة لا كاستثناء خام.
-class BackupNotFoundException implements Exception {
-  const BackupNotFoundException();
+/// ألغى المستخدم منتقي الملفات — رسالة هادئة لا خطأ صارخ.
+class BackupCancelledException implements Exception {
+  const BackupCancelledException();
 }

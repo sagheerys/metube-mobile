@@ -154,41 +154,58 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     ];
   }
 
+  /// **بناء كسول إلزامي:** مكتبة المالك الحقيقية 251 عنصراً — بناء
+  /// الكل دفعة واحدة داخل `Column` كان يجمّد التطبيق حتى ANR. الرأس
+  /// والبطاقات الحية شريحة، والعناصر `SliverList.builder` لا تبني إلا
+  /// المرئي (متطلب «قوائم كبيرة سلسة» في `01-PRD.md` §2.7).
   Widget _body(MTLocalizations l10n, LibraryViewOptions options,
       List<DownloadTask> active) {
     final itemsAsync = ref.watch(visibleLibraryProvider);
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(
-          MTSpace.pagePad, 0, MTSpace.pagePad, 140),
-      children: [
-        MTSearchField(
-          hint: l10n.searchVideos,
-          onChanged:
-              ref.read(libraryViewProvider.notifier).setQuery,
+    return CustomScrollView(
+      slivers: [
+        SliverPadding(
+          padding: const EdgeInsets.symmetric(horizontal: MTSpace.pagePad),
+          sliver: SliverList.list(
+            children: [
+              MTSearchField(
+                hint: l10n.searchVideos,
+                onChanged: ref.read(libraryViewProvider.notifier).setQuery,
+              ),
+              const SizedBox(height: MTSpace.sm),
+              _filterChips(l10n, options),
+              const SizedBox(height: MTSpace.md),
+              // بطاقات حية أعلى المكتبة أثناء النشاط فقط (النموذج أ).
+              for (final task in active) ...[
+                _taskCard(l10n, task),
+                const SizedBox(height: MTSpace.xs),
+              ],
+              if (active.isNotEmpty) const SizedBox(height: MTSpace.sm),
+            ],
+          ),
         ),
-        const SizedBox(height: MTSpace.sm),
-        _filterChips(l10n, options),
-        const SizedBox(height: MTSpace.md),
-        // بطاقات حية أعلى المكتبة أثناء النشاط فقط (النموذج أ).
-        for (final task in active) ...[
-          _taskCard(l10n, task),
-          const SizedBox(height: MTSpace.xs),
-        ],
-        if (active.isNotEmpty) const SizedBox(height: MTSpace.sm),
-        itemsAsync.when(
-          loading: () => const Padding(
-            padding: EdgeInsets.only(top: 80),
-            child: Center(child: CircularProgressIndicator()),
-          ),
-          error: (e, _) => MTEmptyState(
-            icon: Icons.error_outline_rounded,
-            title: l10n.connectionFailed,
-            message: l10n.errNetwork,
-            actionLabel: l10n.retry,
-            onAction: () => ref.invalidate(historyProvider),
-          ),
-          data: (items) => items.isEmpty
-              ? MTEmptyState(
+        ...switch (itemsAsync) {
+          AsyncLoading() => [
+              const SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.only(top: 80),
+                  child: Center(child: CircularProgressIndicator()),
+                ),
+              ),
+            ],
+          AsyncError() => [
+              SliverToBoxAdapter(
+                child: MTEmptyState(
+                  icon: Icons.error_outline_rounded,
+                  title: l10n.connectionFailed,
+                  message: l10n.errNetwork,
+                  actionLabel: l10n.retry,
+                  onAction: () => ref.invalidate(historyProvider),
+                ),
+              ),
+            ],
+          AsyncValue(:final value?) when value.isEmpty => [
+              SliverToBoxAdapter(
+                child: MTEmptyState(
                   icon: options.query.isEmpty
                       ? Icons.video_library_outlined
                       : Icons.search_off_rounded,
@@ -198,13 +215,23 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                   message: options.query.isEmpty
                       ? l10n.emptyLibraryMessage
                       : l10n.noResultsMessage,
-                )
-              : Column(
-                  children: [
-                    for (final item in items) _itemCard(l10n, options, item),
-                  ],
                 ),
-        ),
+              ),
+            ],
+          AsyncValue(:final value?) => [
+              SliverPadding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: MTSpace.pagePad),
+                sliver: SliverList.builder(
+                  itemCount: value.length,
+                  itemBuilder: (context, index) =>
+                      _itemCard(l10n, options, value[index]),
+                ),
+              ),
+            ],
+          _ => const <Widget>[],
+        },
+        const SliverToBoxAdapter(child: SizedBox(height: 140)),
       ],
     );
   }

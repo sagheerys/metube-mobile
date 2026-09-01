@@ -19,6 +19,9 @@ dependencies:
   audio_service: ^0.18.15
   cached_network_image: ^3.4.1
   connectivity_plus: ^6.1.0
+  # منتقي ملفات النظام (SAF): أندرويد 11+ يمنع قراءة ملف لم ينشئه
+  # التطبيق، فاستيراد نسخة من جهاز آخر (م-31) لا يعمل بمسار ثابت.
+  file_picker: ^10.0.0
   flutter_riverpod: ^2.6.1
   flutter_secure_storage: ^9.2.2
   go_router: ^16.2.0
