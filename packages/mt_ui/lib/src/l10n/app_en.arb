@@ -14,10 +14,27 @@
       }
     }
   },
+  "@addedToPlaylistCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "@backupSuccess": {
     "placeholders": {
       "path": {
         "type": "Object"
+      }
+    }
+  },
+  "@batchSelectedOf": {
+    "placeholders": {
+      "selected": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
       }
     }
   },
@@ -266,6 +283,7 @@
   "addUrl": "Add URL",
   "addedNToServer": "Added {count} to server",
   "addedToFavorites": "Added to favorites",
+  "addedToPlaylistCount": "{count} added to the playlist",
   "addedToQueue": "Added to download queue",
   "allDownloadsFinished": "All downloads finished!",
   "allPlatforms": "All platforms",
@@ -279,6 +297,7 @@
   "authentication": "Authentication (Optional)",
   "autoBackgroundAudio": "Auto Background Audio",
   "autoBackgroundAudioSubtitle": "Play audio in background when pressing back button",
+  "autoBuilt": "Automatic",
   "autoPlayNext": "Auto-play next: ON",
   "autoPlayOff": "Auto-play next: OFF",
   "autoRestoreSuccess": "Data restored from backup successfully!",
@@ -291,6 +310,7 @@
   "backgroundDownload": "Downloading files in background...",
   "backgroundPlay": "Background play",
   "backupFailed": "Backup failed",
+  "backupFileSaved": "Encrypted backup saved",
   "backupKeyMismatch": "This backup is encrypted with a different key. Import the matching backup key first.",
   "backupNote": "Includes playlists, tags, offline index, artwork & settings (plus username). The password is never backed up. Keep your backup key safe — it's required to restore on another device.",
   "backupNow": "Back up now",
@@ -302,8 +322,14 @@
   "backupSettings": "Backup All Data",
   "backupSettingsSubtitle": "Export settings & video data to Downloads folder",
   "backupSuccess": "Backup saved to: {path}",
+  "batchDownloadSelected": "Download selected",
+  "batchLoading": "Reading the playlist…",
+  "batchNothingSelected": "Select at least one item",
+  "batchSelectedOf": "{selected} of {total} selected",
+  "batchTitle": "Batch download",
   "cancel": "Cancel",
   "cardView": "Card view",
+  "chooseBackupFile": "Choose the backup file",
   "clear": "Clear",
   "clearAllConfirm": "This will remove all saved settings including credentials. Continue?",
   "clearAllSettings": "Clear All Settings",
@@ -429,8 +455,9 @@
   "format": "Format",
   "helpAboutField": "About this field",
   "howItWorks": "How it works",
+  "importBackup": "Import a backup",
   "importBackupKey": "Import Backup Key",
-  "importBackupKeySubtitle": "Read key from Downloads/MeTube_Lite/metube_backup_key.txt",
+  "importBackupKeySubtitle": "Read the key file from the app's Downloads folder",
   "importKeySubtitle": "Load a previously exported key before restoring",
   "importKeyTitle": "Import backup key",
   "invalidUrl": "Enter a valid link",
@@ -452,6 +479,7 @@
   "languageEnglish": "English",
   "latestAdditions": "Latest additions",
   "licenses": "Open-source licenses",
+  "listenInBackground": "Listen in the background",
   "loadingVideo": "Loading video...",
   "localCopyRemoved": "Local copy removed",
   "localNetworkDesc": "The app connects to the server through this URL when it can be reached.",
@@ -460,6 +488,8 @@
   "localUrlLabel": "Local server URL",
   "localVideos": "Library ({count})",
   "lockTouch": "Lock touch",
+  "logsEmpty": "The log is empty",
+  "logsSanitizedNote": "Links, addresses and credentials are stripped before sharing",
   "logsShareText": "MeTube Super logs (URLs/IPs/credentials redacted)",
   "madeOffline": "Saved for offline",
   "madeWithLove": "Made with ❤️ By Yasir Sagheer",
@@ -480,6 +510,7 @@
   "needsAttention": "Needs your attention",
   "networkSettings": "Networks",
   "networkSettingsSubtitle": "Auto-switch between local and external server URLs",
+  "newPlaylistAction": "New playlist",
   "newTagHint": "New tag",
   "next": "Next",
   "noDownloads": "No Downloads",
@@ -516,6 +547,7 @@
   "platformCount": "{name} · {count}",
   "platformFilter": "Platform",
   "play": "Play",
+  "playAll": "Play all",
   "playAllFavorites": "Play all favorites",
   "playModeLabel": "Mode",
   "playbackError": "Playback Error",
@@ -524,6 +556,7 @@
   "playerLoading": "Loading video...",
   "playingFromDevice": "Playing from your device",
   "playlist": "Playlist",
+  "playlistCreated": "Playlist created",
   "playlistDeleted": "Playlist deleted",
   "playlistDetails": "Playlist Details",
   "playlistName": "Playlist name",
@@ -544,7 +577,7 @@
   "qualityAudio": "Audio only",
   "qualityBest": "Best",
   "qualityHelper": "Sent to the server for new downloads",
-  "queueItemsCount": "{count} items",
+  "queueItemsCount": "{count, plural, =0{No items} =1{1 item} other{{count} items}}",
   "queueLabel": "Queue",
   "queuePosition": "Queue position: {position}",
   "queueSavedAsPlaylist": "Saved as a playlist",
@@ -564,6 +597,7 @@
   "removeOfflineCopy": "Remove offline copy",
   "removeOfflineTitle": "Remove Offline Copy",
   "removedFromFavorites": "Removed from favorites",
+  "removedFromPlaylist": "Removed from the playlist",
   "rename": "Rename",
   "renameTag": "Rename tag",
   "reorderHint": "Drag to reorder",
@@ -572,7 +606,7 @@
   "restoreCancelled": "Backup file not found in Downloads folder",
   "restoreConfirm": "Restore data from the backup file? This overwrites current playlists, tags and settings.",
   "restoreData": "Restore",
-  "restoreDataSubtitle": "Import from Downloads/MeTube_Super/metube_super_backup.json",
+  "restoreDataSubtitle": "Import the encrypted backup from the app's Downloads folder",
   "restoreFailed": "Restore failed — invalid backup file",
   "restoreNotFound": "No backup file found in Downloads/MeTube_Super",
   "restoreSettings": "Restore All Data",
@@ -631,6 +665,7 @@
   "sortNewest": "Newest",
   "sortOldest": "Oldest",
   "sortSmallest": "Smallest",
+  "sortedByLastPlayed": "By last played",
   "source": "Source",
   "sourceCode": "Source code",
   "speedNormal": "Normal",
@@ -653,6 +688,7 @@
   "tagAudio": "Audio",
   "tagVideo": "Video",
   "tags": "Tags",
+  "tagsOpenFiltered": "Opens the library filtered",
   "tapToCopy": "Tap to copy",
   "testingConnection": "Testing connection…",
   "theme": "Theme",

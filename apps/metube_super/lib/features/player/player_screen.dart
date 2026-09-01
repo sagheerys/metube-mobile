@@ -10,6 +10,7 @@ import '../../di.dart';
 import '../library/library_actions.dart';
 import '../library/library_models.dart';
 import '../library/library_providers.dart';
+import '../playlists/playlist_dialogs.dart';
 import 'playback_providers.dart';
 
 /// مشغل الفيديو في Super (ر-4): يغذّي `MTVideoScreen` بأفعال التطبيق —
@@ -65,6 +66,11 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
       subtitleBuilder: _subtitle,
       actions: _actions(session),
       onContinueAsAudio: (item, position) => _continueAsAudio(item, position),
+      // م-38: حفظ جلسة التشغيل الحالية كقائمة دائمة.
+      onSaveQueueAsPlaylist: () => _saveQueue(session.orderedItems),
+      onShowPlaylist: request.playlistId == null
+          ? null
+          : () => context.push('/playlists/${request.playlistId}'),
     );
   }
 
@@ -117,6 +123,15 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
     if (match == null) return;
     await ref.read(libraryActionsProvider).makeOffline(match);
     if (mounted) showMTSnack(context, context.mtl.madeOffline);
+  }
+
+  Future<void> _saveQueue(List<PlaylistItem> items) async {
+    final name = await promptPlaylistName(context);
+    if (name == null || !mounted) return;
+    if (await saveQueueAsPlaylist(ref, name, items) && mounted) {
+      showMTSnack(context, context.mtl.queueSavedAsPlaylist,
+          type: MTSnackType.success);
+    }
   }
 
   Future<void> _share(PlaylistItem item) async {

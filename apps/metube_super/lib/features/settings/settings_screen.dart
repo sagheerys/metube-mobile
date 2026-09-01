@@ -64,6 +64,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     }
   }
 
+  ListTile _navTile(
+          IconData icon, String title, String subtitle, String route) =>
+      ListTile(
+        contentPadding: EdgeInsets.zero,
+        leading: Icon(icon),
+        title: Text(title),
+        subtitle: Text(subtitle,
+            style: Theme.of(context).textTheme.bodySmall),
+        trailing: const Icon(Icons.chevron_left_rounded),
+        onTap: () => context.go(route),
+      );
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.mtl;
@@ -196,6 +208,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 .read(settingsProvider.notifier)
                 .setLocale(selection.first),
           ),
+          const SizedBox(height: MTSpace.xl),
+
+          // البيانات والتشخيص (م-31/م-32) ثم «حول» آخراً (النموذج أ).
+          MTSectionHeader(title: l10n.backupSettings),
+          _navTile(Icons.shield_outlined, l10n.backupSettings,
+              l10n.backupSettingsSubtitle, '/settings/backup'),
+          _navTile(Icons.article_outlined, l10n.diagnosticLogs,
+              l10n.diagnosticLogsSubtitle, '/settings/logs'),
+          const SizedBox(height: MTSpace.xl),
+          MTSectionHeader(title: l10n.about),
+          _navTile(Icons.info_outline_rounded, l10n.aboutApp,
+              l10n.aboutDescription, '/settings/about'),
         ],
       ),
     );

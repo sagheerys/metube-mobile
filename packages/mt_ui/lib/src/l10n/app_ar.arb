@@ -1,5 +1,22 @@
 {
   "@@locale": "ar",
+  "@addedToPlaylistCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@batchSelectedOf": {
+    "placeholders": {
+      "selected": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
   "@queueItemsCount": {
     "placeholders": {
       "count": {
@@ -27,6 +44,7 @@
   "addUrl": "إضافة رابط",
   "addedNToServer": "أُضيف {count} إلى الخادم",
   "addedToFavorites": "أُضيف إلى المفضلة",
+  "addedToPlaylistCount": "أُضيف {count} إلى القائمة",
   "addedToQueue": "أُضيف إلى قائمة التنزيل",
   "allDownloadsFinished": "اكتملت جميع التحميلات!",
   "allPlatforms": "كل المنصات",
@@ -40,6 +58,7 @@
   "authentication": "المصادقة (اختياري)",
   "autoBackgroundAudio": "تشغيل تلقائي في الخلفية",
   "autoBackgroundAudioSubtitle": "تشغيل المقطع الصوتي في الخلفية عند النقر على زر الرجوع",
+  "autoBuilt": "تلقائية",
   "autoPlayNext": "التشغيل التلقائي: مفعل",
   "autoPlayOff": "التشغيل التلقائي: متوقف",
   "autoRestoreSuccess": "تمت استعادة البيانات من النسخة الاحتياطية بنجاح!",
@@ -52,6 +71,7 @@
   "backgroundDownload": "جاري تحميل الملفات في الخلفية...",
   "backgroundPlay": "تشغيل بالخلفية",
   "backupFailed": "فشل النسخ الاحتياطي",
+  "backupFileSaved": "حُفظت النسخة المشفّرة",
   "backupKeyMismatch": "هذه النسخة مشفّرة بمفتاح مختلف. استورد مفتاح النسخ المطابق أولاً.",
   "backupNote": "يشمل القوائم والوسوم وفهرس عدم الاتصال والأغلفة والإعدادات (واسم المستخدم). لا تُنسخ كلمة المرور أبداً. احفظ مفتاح النسخ بأمان — فهو لازم للاستعادة على جهاز آخر.",
   "backupNow": "انسخ الآن",
@@ -63,8 +83,14 @@
   "backupSettings": "نسخ جميع البيانات احتياطيا",
   "backupSettingsSubtitle": "تصدير الاعدادات وبيانات الفيديوهات الى مجلد التحميلات",
   "backupSuccess": "حُفظت النسخة في: {path}",
+  "batchDownloadSelected": "تحميل المحدد",
+  "batchLoading": "قراءة القائمة…",
+  "batchNothingSelected": "اختر عنصراً واحداً على الأقل",
+  "batchSelectedOf": "محدد {selected} من {total}",
+  "batchTitle": "التحميل الدفعي",
   "cancel": "إلغاء",
   "cardView": "عرض البطاقات",
+  "chooseBackupFile": "اختر ملف النسخة",
   "clear": "مسح",
   "clearAllConfirm": "سيؤدي هذا إلى إزالة جميع الإعدادات المحفوظة بما فيها بيانات الدخول. متابعة؟",
   "clearAllSettings": "مسح كل الإعدادات",
@@ -190,8 +216,9 @@
   "format": "الصيغة",
   "helpAboutField": "حول هذا الحقل",
   "howItWorks": "كيف يعمل",
+  "importBackup": "استيراد نسخة",
   "importBackupKey": "استيراد مفتاح النسخ الاحتياطي",
-  "importBackupKeySubtitle": "قراءة المفتاح من Downloads/MeTube_Lite/metube_backup_key.txt",
+  "importBackupKeySubtitle": "قراءة ملف المفتاح من مجلد تنزيلات التطبيق",
   "importKeySubtitle": "حمّل مفتاحاً صُدِّر سابقاً قبل الاستعادة",
   "importKeyTitle": "استيراد مفتاح النسخ",
   "invalidUrl": "أدخل رابطاً صالحاً",
@@ -213,6 +240,7 @@
   "languageEnglish": "English",
   "latestAdditions": "أحدث الإضافات",
   "licenses": "تراخيص المصادر المفتوحة",
+  "listenInBackground": "استماع بالخلفية",
   "loadingVideo": "جارٍ تحميل الفيديو...",
   "localCopyRemoved": "أُزيلت النسخة المحلية",
   "localNetworkDesc": "سيتصل التطبيق بالخادم عبر هذا العنوان عند إمكانية الوصول إليه.",
@@ -221,6 +249,8 @@
   "localUrlLabel": "عنوان الخادم المحلي",
   "localVideos": "المكتبة ({count})",
   "lockTouch": "قفل اللمس",
+  "logsEmpty": "السجل فارغ",
+  "logsSanitizedNote": "تُحذف الروابط والعناوين والاعتمادات قبل المشاركة",
   "logsShareText": "سجلّات MeTube Super (مع تنقيح الروابط/العناوين/بيانات الدخول)",
   "madeOffline": "أُتيح دون اتصال",
   "madeWithLove": "صنع بـ ❤️ بواسطة ياسر صغير",
@@ -241,6 +271,7 @@
   "needsAttention": "تحتاج انتباهك",
   "networkSettings": "الشبكات",
   "networkSettingsSubtitle": "التبديل التلقائي بين عناوين الخادم المحلية والخارجية",
+  "newPlaylistAction": "قائمة جديدة",
   "newTagHint": "وسم جديد",
   "next": "التالي",
   "noDownloads": "لا توجد تحميلات",
@@ -277,6 +308,7 @@
   "platformCount": "{name} · {count}",
   "platformFilter": "المنصة",
   "play": "تشغيل",
+  "playAll": "تشغيل الكل",
   "playAllFavorites": "شغّل المفضلة كلها",
   "playModeLabel": "الوضع",
   "playbackError": "خطأ في التشغيل",
@@ -285,6 +317,7 @@
   "playerLoading": "جارٍ تحميل الفيديو...",
   "playingFromDevice": "تشغيل من جهازك",
   "playlist": "قائمة التشغيل",
+  "playlistCreated": "أُنشئت القائمة",
   "playlistDeleted": "حُذفت القائمة",
   "playlistDetails": "تفاصيل القائمة",
   "playlistName": "اسم القائمة",
@@ -305,7 +338,7 @@
   "qualityAudio": "صوت فقط",
   "qualityBest": "الأفضل",
   "qualityHelper": "تُرسَل إلى الخادم لعمليات التنزيل الجديدة",
-  "queueItemsCount": "{count} عنصراً",
+  "queueItemsCount": "{count, plural, =0{لا عناصر} =1{عنصر واحد} =2{عنصران} few{{count} عناصر} other{{count} عنصراً}}",
   "queueLabel": "قائمة الانتظار",
   "queuePosition": "الموقع في الطابور: {position}",
   "queueSavedAsPlaylist": "حُفظت كقائمة تشغيل",
@@ -325,6 +358,7 @@
   "removeOfflineCopy": "إزالة النسخة المحلية",
   "removeOfflineTitle": "إزالة النسخة المحلية",
   "removedFromFavorites": "أُزيل من المفضلة",
+  "removedFromPlaylist": "أُزيل من القائمة",
   "rename": "إعادة تسمية",
   "renameTag": "إعادة تسمية الوسم",
   "reorderHint": "اسحب لإعادة الترتيب",
@@ -333,7 +367,7 @@
   "restoreCancelled": "لم يُعثر على ملف النسخة في مجلد التنزيلات",
   "restoreConfirm": "استعادة البيانات من ملف النسخة الاحتياطية؟ سيُستبدل ما لديك من قوائم ووسوم وإعدادات.",
   "restoreData": "استعادة",
-  "restoreDataSubtitle": "استيراد من Downloads/MeTube_Super/metube_super_backup.json",
+  "restoreDataSubtitle": "استيراد النسخة المشفّرة من مجلد تنزيلات التطبيق",
   "restoreFailed": "فشلت الاستعادة — ملف نسخة غير صالح",
   "restoreNotFound": "لا يوجد ملف نسخة في Downloads/MeTube_Super",
   "restoreSettings": "استعادة جميع البيانات",
@@ -392,6 +426,7 @@
   "sortNewest": "الأحدث",
   "sortOldest": "الأقدم",
   "sortSmallest": "الأصغر حجماً",
+  "sortedByLastPlayed": "بآخر تشغيل",
   "source": "المصدر",
   "sourceCode": "الكود المصدري",
   "speedNormal": "عادي",
@@ -414,6 +449,7 @@
   "tagAudio": "صوت",
   "tagVideo": "فيديو",
   "tags": "الوسوم",
+  "tagsOpenFiltered": "تفتح المكتبة مصفّاة",
   "tapToCopy": "اضغط للنسخ",
   "testingConnection": "جارٍ اختبار الاتصال…",
   "theme": "السمة",

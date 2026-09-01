@@ -100,6 +100,10 @@ class SettingsNotifier extends Notifier<SuperSettings> {
   SecretStore get _secrets => ref.read(secretStoreProvider);
   PrefsMutex get _mutex => ref.read(prefsMutexProvider);
 
+  /// إعادة قراءة كل الإعدادات من التخزين — بعد استيراد نسخة (ر-8).
+  Future<void> reloadFromStore() async =>
+      state = await SuperSettings.load(_store, _secrets);
+
   /// ر-1: اختبار الاتصال ثم الحفظ — **لا حفظ صامت لإعداد فاسد**.
   /// يرمي [MTApiException] مصنفاً ليعرضه UI.
   Future<void> saveServer({

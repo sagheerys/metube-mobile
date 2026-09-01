@@ -10,6 +10,8 @@ import 'package:mt_ui/mt_ui.dart';
 import '../../di.dart';
 import '../home/add_flow.dart';
 import '../player/playback_providers.dart';
+import '../playlists/add_to_playlist_sheet.dart';
+import '../tags/item_tags_sheet.dart';
 import 'library_actions.dart';
 import 'library_models.dart';
 import 'library_providers.dart';
@@ -122,6 +124,18 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
           icon: const Icon(Icons.select_all_rounded),
         ),
         IconButton(
+          tooltip: l10n.addToPlaylist,
+          onPressed: () => showAddToPlaylistSheet(
+              context, ref, _selectedItems(selection)),
+          icon: const Icon(Icons.playlist_add_rounded),
+        ),
+        IconButton(
+          tooltip: l10n.tags,
+          onPressed: () =>
+              showItemTagsSheet(context, ref, selection.toList()),
+          icon: const Icon(Icons.sell_outlined),
+        ),
+        IconButton(
           tooltip: l10n.deleteSelected,
           onPressed: () => confirmBulkDelete(context, ref, selection),
           icon: Icon(Icons.delete_outline_rounded,
@@ -129,6 +143,15 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
         ),
       ],
     );
+  }
+
+  /// عناصر المكتبة المقابلة للتحديد الحالي (ر-6).
+  List<LibraryItem> _selectedItems(Set<String> selection) {
+    final visible = ref.read(visibleLibraryProvider).value ?? const [];
+    return [
+      for (final item in visible)
+        if (selection.contains(item.canonicalUrl)) item,
+    ];
   }
 
   Widget _body(MTLocalizations l10n, LibraryViewOptions options,
@@ -205,6 +228,18 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       scrollDirection: Axis.horizontal,
       child: Row(
         children: [
+          // وسم نشط قادم من تبويب «وسومك» — نقرته تلغيه (م-37/ج).
+          if (options.tag != null) ...[
+            InputChip(
+              label: Text('# ${options.tag}'),
+              selected: true,
+              showCheckmark: false,
+              selectedColor: x.palette.offlineSoft,
+              onDeleted: () => controller.setTag(null),
+              onSelected: (_) => controller.setTag(null),
+            ),
+            const SizedBox(width: MTSpace.xs),
+          ],
           chip(l10n.filterAll, options.scope == LibraryScope.all,
               () => controller.setScope(LibraryScope.all)),
           const SizedBox(width: MTSpace.xs),

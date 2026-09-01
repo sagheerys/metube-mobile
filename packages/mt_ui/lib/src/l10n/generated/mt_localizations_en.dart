@@ -54,6 +54,11 @@ class MTLocalizationsEn extends MTLocalizations {
   String get addedToFavorites => 'Added to favorites';
 
   @override
+  String addedToPlaylistCount(int count) {
+    return '$count added to the playlist';
+  }
+
+  @override
   String get addedToQueue => 'Added to download queue';
 
   @override
@@ -94,6 +99,9 @@ class MTLocalizationsEn extends MTLocalizations {
       'Play audio in background when pressing back button';
 
   @override
+  String get autoBuilt => 'Automatic';
+
+  @override
   String get autoPlayNext => 'Auto-play next: ON';
 
   @override
@@ -130,6 +138,9 @@ class MTLocalizationsEn extends MTLocalizations {
 
   @override
   String get backupFailed => 'Backup failed';
+
+  @override
+  String get backupFileSaved => 'Encrypted backup saved';
 
   @override
   String get backupKeyMismatch =>
@@ -172,10 +183,30 @@ class MTLocalizationsEn extends MTLocalizations {
   }
 
   @override
+  String get batchDownloadSelected => 'Download selected';
+
+  @override
+  String get batchLoading => 'Reading the playlist…';
+
+  @override
+  String get batchNothingSelected => 'Select at least one item';
+
+  @override
+  String batchSelectedOf(int selected, int total) {
+    return '$selected of $total selected';
+  }
+
+  @override
+  String get batchTitle => 'Batch download';
+
+  @override
   String get cancel => 'Cancel';
 
   @override
   String get cardView => 'Card view';
+
+  @override
+  String get chooseBackupFile => 'Choose the backup file';
 
   @override
   String get clear => 'Clear';
@@ -591,11 +622,14 @@ class MTLocalizationsEn extends MTLocalizations {
   String get howItWorks => 'How it works';
 
   @override
+  String get importBackup => 'Import a backup';
+
+  @override
   String get importBackupKey => 'Import Backup Key';
 
   @override
   String get importBackupKeySubtitle =>
-      'Read key from Downloads/MeTube_Lite/metube_backup_key.txt';
+      'Read the key file from the app\'s Downloads folder';
 
   @override
   String get importKeySubtitle =>
@@ -670,6 +704,9 @@ class MTLocalizationsEn extends MTLocalizations {
   String get licenses => 'Open-source licenses';
 
   @override
+  String get listenInBackground => 'Listen in the background';
+
+  @override
   String get loadingVideo => 'Loading video...';
 
   @override
@@ -696,6 +733,13 @@ class MTLocalizationsEn extends MTLocalizations {
 
   @override
   String get lockTouch => 'Lock touch';
+
+  @override
+  String get logsEmpty => 'The log is empty';
+
+  @override
+  String get logsSanitizedNote =>
+      'Links, addresses and credentials are stripped before sharing';
 
   @override
   String get logsShareText =>
@@ -758,6 +802,9 @@ class MTLocalizationsEn extends MTLocalizations {
   @override
   String get networkSettingsSubtitle =>
       'Auto-switch between local and external server URLs';
+
+  @override
+  String get newPlaylistAction => 'New playlist';
 
   @override
   String get newTagHint => 'New tag';
@@ -877,6 +924,9 @@ class MTLocalizationsEn extends MTLocalizations {
   String get play => 'Play';
 
   @override
+  String get playAll => 'Play all';
+
+  @override
   String get playAllFavorites => 'Play all favorites';
 
   @override
@@ -899,6 +949,9 @@ class MTLocalizationsEn extends MTLocalizations {
 
   @override
   String get playlist => 'Playlist';
+
+  @override
+  String get playlistCreated => 'Playlist created';
 
   @override
   String get playlistDeleted => 'Playlist deleted';
@@ -966,7 +1019,14 @@ class MTLocalizationsEn extends MTLocalizations {
 
   @override
   String queueItemsCount(int count) {
-    return '$count items';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count items',
+      one: '1 item',
+      zero: 'No items',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -1030,6 +1090,9 @@ class MTLocalizationsEn extends MTLocalizations {
   String get removedFromFavorites => 'Removed from favorites';
 
   @override
+  String get removedFromPlaylist => 'Removed from the playlist';
+
+  @override
   String get rename => 'Rename';
 
   @override
@@ -1056,7 +1119,7 @@ class MTLocalizationsEn extends MTLocalizations {
 
   @override
   String get restoreDataSubtitle =>
-      'Import from Downloads/MeTube_Super/metube_super_backup.json';
+      'Import the encrypted backup from the app\'s Downloads folder';
 
   @override
   String get restoreFailed => 'Restore failed — invalid backup file';
@@ -1247,6 +1310,9 @@ class MTLocalizationsEn extends MTLocalizations {
   String get sortSmallest => 'Smallest';
 
   @override
+  String get sortedByLastPlayed => 'By last played';
+
+  @override
   String get source => 'Source';
 
   @override
@@ -1312,6 +1378,9 @@ class MTLocalizationsEn extends MTLocalizations {
 
   @override
   String get tags => 'Tags';
+
+  @override
+  String get tagsOpenFiltered => 'Opens the library filtered';
 
   @override
   String get tapToCopy => 'Tap to copy';

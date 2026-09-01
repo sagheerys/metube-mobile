@@ -3,25 +3,32 @@ import 'package:flutter/services.dart' show Clipboard, ClipboardData;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mt_ui/mt_ui.dart';
 
+import '../../playlists/add_to_playlist_sheet.dart';
 import '../../shared/error_text.dart';
+import '../../tags/item_tags_sheet.dart';
 import '../library_models.dart';
 import '../library_actions.dart';
 import '../library_providers.dart';
 
 /// ورقة إجراءات العنصر حسب حالته (ر-5) — الحذف أخيراً معزولاً بفاصل
-/// وبلون الخطأ (قاعدة تنقل عامة). الوسوم والقوائم تُضاف في المرحلة 6.
+/// وبلون الخطأ (قاعدة تنقل عامة).
 void showItemActionsSheet(
     BuildContext context, WidgetRef ref, LibraryItem item) {
   showModalBottomSheet<void>(
     context: context,
-    builder: (_) => _ItemActionsSheet(item: item),
+    // سياق الشاشة (لا سياق الورقة) يُمرَّر لفتح الأوراق التالية بعده:
+    // استعمال سياق ورقة مُغلقة يفجّر تأكيد `_dependents.isEmpty`.
+    builder: (_) => _ItemActionsSheet(item: item, host: context),
   );
 }
 
 class _ItemActionsSheet extends ConsumerWidget {
-  const _ItemActionsSheet({required this.item});
+  const _ItemActionsSheet({required this.item, required this.host});
 
   final LibraryItem item;
+
+  /// سياق الشاشة المستضيفة — يبقى حياً بعد إغلاق هذه الورقة.
+  final BuildContext host;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -84,10 +91,18 @@ class _ItemActionsSheet extends ConsumerWidget {
                     successText: l10n.madeOffline)),
           tile(Icons.info_outline_rounded, l10n.details, () {
             Navigator.pop(context);
-            _showDetails(context, l10n, item);
+            _showDetails(host, l10n, item);
           }),
           tile(Icons.share_rounded, l10n.share,
               () => run(() => actions.smartShare(item))),
+          tile(Icons.playlist_add_rounded, l10n.addToPlaylist, () {
+            Navigator.pop(context);
+            showAddToPlaylistSheet(host, ref, [item]);
+          }),
+          tile(Icons.sell_outlined, l10n.tags, () {
+            Navigator.pop(context);
+            showItemTagsSheet(host, ref, [item.canonicalUrl]);
+          }),
           if (item.isOffline && item.onServer)
             tile(Icons.phonelink_erase_rounded, l10n.removeLocalCopy,
                 () => run(() => actions.removeLocalCopy(item),

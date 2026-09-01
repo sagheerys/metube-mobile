@@ -1,11 +1,13 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mt_core/mt_core.dart';
 import 'package:mt_media/mt_media.dart';
 
 import '../../di.dart';
 import '../library/library_models.dart';
 import '../library/library_providers.dart';
+import '../playlists/playlists_providers.dart';
 
 /// طلب تشغيل معلّق: القائمة المعروضة وقت النقر بترتيبها وتصفيتها (ر-4).
 class PlaybackRequest {
@@ -56,6 +58,29 @@ PlaylistItem toPlaylistItem(LibraryItem item) => PlaylistItem(
       duration: item.duration,
       aspectRatio: item.aspectRatio,
     );
+
+/// م-38: تحويل جلسة التشغيل الحالية لقائمة دائمة.
+Future<bool> saveQueueAsPlaylist(
+  WidgetRef ref,
+  String name,
+  List<PlaylistItem> items,
+) async {
+  if (name.isEmpty || items.isEmpty) return false;
+  await ref.read(playlistsStoreProvider).create(
+        name,
+        items: [
+          for (final item in items)
+            PlaylistEntry(
+              canonicalUrl: item.canonicalUrl,
+              serverFilename: item.serverFilename,
+              cachedTitle: item.title,
+              cachedThumb: item.artworkUrl,
+            ),
+        ],
+      );
+  ref.invalidate(playlistsProvider);
+  return true;
+}
 
 /// باني المصغرات للمشغلات — الصور البعيدة بترويسات المصادقة (م-18).
 MTArtworkBuilder artworkBuilderFor(WidgetRef ref) {

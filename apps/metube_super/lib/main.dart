@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mt_core/mt_core.dart';
 import 'package:mt_media/mt_media.dart';
 import 'package:mt_ui/mt_ui.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app.dart';
@@ -20,6 +21,10 @@ Future<void> main() async {
   final store = SharedPrefsKeyValueStore(prefs);
   const secrets = SecureSecretStore();
   final initialSettings = await SuperSettings.load(store, secrets);
+
+  // السجل الحلقي (م-32) في مساحة التطبيق الخاصة (§5.3).
+  final logsDir = await getApplicationSupportDirectory();
+  final logger = MTLogger(filePath: '${logsDir.path}/logs/metube_super.log');
 
   // قفل واحد لكل التخزين (القاعدة 3) — يُمرَّر للجميع لا يُنشأ مرتين.
   final mutex = PrefsMutex();
@@ -52,6 +57,7 @@ Future<void> main() async {
         initialSettingsProvider.overrideWithValue(initialSettings),
         playbackResolverProvider.overrideWithValue(resolver),
         audioHandlerProvider.overrideWithValue(handler),
+        loggerProvider.overrideWithValue(logger),
       ],
       child: const SuperApp(),
     ),

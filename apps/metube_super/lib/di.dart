@@ -96,6 +96,18 @@ final historyProvider = FutureProvider<HistoryResponse?>((ref) async {
   return api.fetchHistory();
 });
 
+/// النسخ الاحتياطي (م-31) — يكتب v2 ويقرأ التنسيقات الثلاثة.
+final backupServiceProvider = Provider((ref) => BackupService(
+      store: ref.watch(keyValueStoreProvider),
+      secrets: ref.watch(secretStoreProvider),
+      mutex: ref.watch(prefsMutexProvider),
+      variant: 'super',
+    ));
+
+/// السجل التشخيصي (م-32) — يُتجاوز في main بمسار من path_provider.
+final loggerProvider = Provider<MTLogger>(
+    (ref) => throw UnimplementedError('overridden in main'));
+
 // ── التشغيل (المرحلة 5) ──
 
 final playbackPrefsProvider = Provider((ref) => PlaybackPrefs(

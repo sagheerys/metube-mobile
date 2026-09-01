@@ -182,6 +182,23 @@ ThemeData mtTheme(MTVariant variant, Brightness brightness) {
             horizontal: MTSpace.xl, vertical: MTSpace.md),
       ),
     ),
+    // M3 يلوّن المحدد بـ secondaryContainer وهو الزيتوني = «دون اتصال»
+    // في لغة المعنى (سجل §4) — يُصحَّح للون الفعل.
+    segmentedButtonTheme: SegmentedButtonThemeData(
+      style: ButtonStyle(
+        backgroundColor: WidgetStateProperty.resolveWith(
+          (states) => states.contains(WidgetState.selected)
+              ? p.accentSoft
+              : Colors.transparent,
+        ),
+        foregroundColor: WidgetStateProperty.resolveWith(
+          (states) =>
+              states.contains(WidgetState.selected) ? p.accentInk : p.ink2,
+        ),
+        side: WidgetStatePropertyAll(BorderSide(color: p.line2)),
+        textStyle: WidgetStatePropertyAll(body(13, FontWeight.w500)),
+      ),
+    ),
     navigationBarTheme: NavigationBarThemeData(
       backgroundColor: p.bg,
       indicatorColor: Colors.transparent,

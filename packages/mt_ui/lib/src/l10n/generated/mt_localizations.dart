@@ -176,6 +176,12 @@ abstract class MTLocalizations {
   /// **'Added to favorites'**
   String get addedToFavorites;
 
+  /// No description provided for @addedToPlaylistCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} added to the playlist'**
+  String addedToPlaylistCount(int count);
+
   /// No description provided for @addedToQueue.
   ///
   /// In en, this message translates to:
@@ -254,6 +260,12 @@ abstract class MTLocalizations {
   /// **'Play audio in background when pressing back button'**
   String get autoBackgroundAudioSubtitle;
 
+  /// No description provided for @autoBuilt.
+  ///
+  /// In en, this message translates to:
+  /// **'Automatic'**
+  String get autoBuilt;
+
   /// No description provided for @autoPlayNext.
   ///
   /// In en, this message translates to:
@@ -326,6 +338,12 @@ abstract class MTLocalizations {
   /// **'Backup failed'**
   String get backupFailed;
 
+  /// No description provided for @backupFileSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Encrypted backup saved'**
+  String get backupFileSaved;
+
   /// No description provided for @backupKeyMismatch.
   ///
   /// In en, this message translates to:
@@ -392,6 +410,36 @@ abstract class MTLocalizations {
   /// **'Backup saved to: {path}'**
   String backupSuccess(Object path);
 
+  /// No description provided for @batchDownloadSelected.
+  ///
+  /// In en, this message translates to:
+  /// **'Download selected'**
+  String get batchDownloadSelected;
+
+  /// No description provided for @batchLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading the playlist…'**
+  String get batchLoading;
+
+  /// No description provided for @batchNothingSelected.
+  ///
+  /// In en, this message translates to:
+  /// **'Select at least one item'**
+  String get batchNothingSelected;
+
+  /// No description provided for @batchSelectedOf.
+  ///
+  /// In en, this message translates to:
+  /// **'{selected} of {total} selected'**
+  String batchSelectedOf(int selected, int total);
+
+  /// No description provided for @batchTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Batch download'**
+  String get batchTitle;
+
   /// No description provided for @cancel.
   ///
   /// In en, this message translates to:
@@ -403,6 +451,12 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'Card view'**
   String get cardView;
+
+  /// No description provided for @chooseBackupFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose the backup file'**
+  String get chooseBackupFile;
 
   /// No description provided for @clear.
   ///
@@ -1154,6 +1208,12 @@ abstract class MTLocalizations {
   /// **'How it works'**
   String get howItWorks;
 
+  /// No description provided for @importBackup.
+  ///
+  /// In en, this message translates to:
+  /// **'Import a backup'**
+  String get importBackup;
+
   /// No description provided for @importBackupKey.
   ///
   /// In en, this message translates to:
@@ -1163,7 +1223,7 @@ abstract class MTLocalizations {
   /// No description provided for @importBackupKeySubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Read key from Downloads/MeTube_Lite/metube_backup_key.txt'**
+  /// **'Read the key file from the app\'s Downloads folder'**
   String get importBackupKeySubtitle;
 
   /// No description provided for @importKeySubtitle.
@@ -1292,6 +1352,12 @@ abstract class MTLocalizations {
   /// **'Open-source licenses'**
   String get licenses;
 
+  /// No description provided for @listenInBackground.
+  ///
+  /// In en, this message translates to:
+  /// **'Listen in the background'**
+  String get listenInBackground;
+
   /// No description provided for @loadingVideo.
   ///
   /// In en, this message translates to:
@@ -1339,6 +1405,18 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'Lock touch'**
   String get lockTouch;
+
+  /// No description provided for @logsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'The log is empty'**
+  String get logsEmpty;
+
+  /// No description provided for @logsSanitizedNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Links, addresses and credentials are stripped before sharing'**
+  String get logsSanitizedNote;
 
   /// No description provided for @logsShareText.
   ///
@@ -1459,6 +1537,12 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'Auto-switch between local and external server URLs'**
   String get networkSettingsSubtitle;
+
+  /// No description provided for @newPlaylistAction.
+  ///
+  /// In en, this message translates to:
+  /// **'New playlist'**
+  String get newPlaylistAction;
 
   /// No description provided for @newTagHint.
   ///
@@ -1676,6 +1760,12 @@ abstract class MTLocalizations {
   /// **'Play'**
   String get play;
 
+  /// No description provided for @playAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Play all'**
+  String get playAll;
+
   /// No description provided for @playAllFavorites.
   ///
   /// In en, this message translates to:
@@ -1723,6 +1813,12 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'Playlist'**
   String get playlist;
+
+  /// No description provided for @playlistCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'Playlist created'**
+  String get playlistCreated;
 
   /// No description provided for @playlistDeleted.
   ///
@@ -1847,7 +1943,7 @@ abstract class MTLocalizations {
   /// No description provided for @queueItemsCount.
   ///
   /// In en, this message translates to:
-  /// **'{count} items'**
+  /// **'{count, plural, =0{No items} =1{1 item} other{{count} items}}'**
   String queueItemsCount(int count);
 
   /// No description provided for @queueLabel.
@@ -1964,6 +2060,12 @@ abstract class MTLocalizations {
   /// **'Removed from favorites'**
   String get removedFromFavorites;
 
+  /// No description provided for @removedFromPlaylist.
+  ///
+  /// In en, this message translates to:
+  /// **'Removed from the playlist'**
+  String get removedFromPlaylist;
+
   /// No description provided for @rename.
   ///
   /// In en, this message translates to:
@@ -2015,7 +2117,7 @@ abstract class MTLocalizations {
   /// No description provided for @restoreDataSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Import from Downloads/MeTube_Super/metube_super_backup.json'**
+  /// **'Import the encrypted backup from the app\'s Downloads folder'**
   String get restoreDataSubtitle;
 
   /// No description provided for @restoreFailed.
@@ -2366,6 +2468,12 @@ abstract class MTLocalizations {
   /// **'Smallest'**
   String get sortSmallest;
 
+  /// No description provided for @sortedByLastPlayed.
+  ///
+  /// In en, this message translates to:
+  /// **'By last played'**
+  String get sortedByLastPlayed;
+
   /// No description provided for @source.
   ///
   /// In en, this message translates to:
@@ -2497,6 +2605,12 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'Tags'**
   String get tags;
+
+  /// No description provided for @tagsOpenFiltered.
+  ///
+  /// In en, this message translates to:
+  /// **'Opens the library filtered'**
+  String get tagsOpenFiltered;
 
   /// No description provided for @tapToCopy.
   ///

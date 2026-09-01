@@ -1,11 +1,15 @@
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mt_ui/mt_ui.dart';
 
 import 'features/audio/audio_screen.dart';
+import 'features/batch/batch_screen.dart';
 import 'features/library/library_screen.dart';
 import 'features/player/player_screen.dart';
 import 'features/player/reels_screen.dart';
+import 'features/playlists/playlist_details_screen.dart';
+import 'features/playlists/playlists_screen.dart';
+import 'features/settings/about_screen.dart';
+import 'features/settings/backup_screen.dart';
+import 'features/settings/logs_screen.dart';
 import 'features/settings/network_screen.dart';
 import 'features/settings/settings_screen.dart';
 import 'features/shell/shell_screen.dart';
@@ -22,9 +26,16 @@ final router = GoRouter(
         ]),
         StatefulShellBranch(routes: [
           GoRoute(
-              path: '/playlists',
-              builder: (_, _) => const _PhasePlaceholder(
-                  icon: Icons.queue_music_rounded)),
+            path: '/playlists',
+            builder: (_, _) => const PlaylistsScreen(),
+            routes: [
+              GoRoute(
+                path: ':id',
+                builder: (_, state) => PlaylistDetailsScreen(
+                    playlistId: state.pathParameters['id']!),
+              ),
+            ],
+          ),
         ]),
         StatefulShellBranch(routes: [
           GoRoute(
@@ -34,42 +45,23 @@ final router = GoRouter(
               GoRoute(
                   path: 'network',
                   builder: (_, _) => const NetworkScreen()),
+              GoRoute(path: 'logs', builder: (_, _) => const LogsScreen()),
               GoRoute(
-                  path: 'logs',
-                  builder: (_, _) => const _PhasePlaceholder(
-                      icon: Icons.article_rounded)),
+                  path: 'backup', builder: (_, _) => const BackupScreen()),
+              GoRoute(path: 'about', builder: (_, _) => const AboutScreen()),
             ],
           ),
         ]),
       ],
     ),
-    // شاشة الدفعي (6.3) — غلاف مؤقت؛ المشغلات صارت حقيقية (المرحلة 5).
+    // الدفعي (م-11): الرابط يُمرَّر عبر `extra` من التوجيه التلقائي (م-5).
     GoRoute(
-        path: '/batch',
-        builder: (_, _) =>
-            const _PhasePlaceholder(icon: Icons.playlist_add_rounded)),
+      path: '/batch',
+      builder: (_, state) =>
+          BatchScreen(playlistUrl: (state.extra ?? '').toString()),
+    ),
     GoRoute(path: '/player', builder: (_, _) => const PlayerScreen()),
     GoRoute(path: '/reels', builder: (_, _) => const ReelsScreen()),
     GoRoute(path: '/audio', builder: (_, _) => const AudioScreen()),
   ],
 );
-
-/// غلاف مؤقت لمسار تُبنى شاشته في مرحلة لاحقة من الخطة.
-class _PhasePlaceholder extends StatelessWidget {
-  const _PhasePlaceholder({required this.icon});
-
-  final IconData icon;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.mtl;
-    return Scaffold(
-      appBar: AppBar(),
-      body: MTEmptyState(
-        icon: icon,
-        title: l10n.appTitle,
-        message: l10n.comingSoonPhase,
-      ),
-    );
-  }
-}

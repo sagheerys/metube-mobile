@@ -54,6 +54,11 @@ class MTLocalizationsAr extends MTLocalizations {
   String get addedToFavorites => 'أُضيف إلى المفضلة';
 
   @override
+  String addedToPlaylistCount(int count) {
+    return 'أُضيف $count إلى القائمة';
+  }
+
+  @override
   String get addedToQueue => 'أُضيف إلى قائمة التنزيل';
 
   @override
@@ -92,6 +97,9 @@ class MTLocalizationsAr extends MTLocalizations {
   @override
   String get autoBackgroundAudioSubtitle =>
       'تشغيل المقطع الصوتي في الخلفية عند النقر على زر الرجوع';
+
+  @override
+  String get autoBuilt => 'تلقائية';
 
   @override
   String get autoPlayNext => 'التشغيل التلقائي: مفعل';
@@ -133,6 +141,9 @@ class MTLocalizationsAr extends MTLocalizations {
   String get backupFailed => 'فشل النسخ الاحتياطي';
 
   @override
+  String get backupFileSaved => 'حُفظت النسخة المشفّرة';
+
+  @override
   String get backupKeyMismatch =>
       'هذه النسخة مشفّرة بمفتاح مختلف. استورد مفتاح النسخ المطابق أولاً.';
 
@@ -172,10 +183,30 @@ class MTLocalizationsAr extends MTLocalizations {
   }
 
   @override
+  String get batchDownloadSelected => 'تحميل المحدد';
+
+  @override
+  String get batchLoading => 'قراءة القائمة…';
+
+  @override
+  String get batchNothingSelected => 'اختر عنصراً واحداً على الأقل';
+
+  @override
+  String batchSelectedOf(int selected, int total) {
+    return 'محدد $selected من $total';
+  }
+
+  @override
+  String get batchTitle => 'التحميل الدفعي';
+
+  @override
   String get cancel => 'إلغاء';
 
   @override
   String get cardView => 'عرض البطاقات';
+
+  @override
+  String get chooseBackupFile => 'اختر ملف النسخة';
 
   @override
   String get clear => 'مسح';
@@ -588,11 +619,14 @@ class MTLocalizationsAr extends MTLocalizations {
   String get howItWorks => 'كيف يعمل';
 
   @override
+  String get importBackup => 'استيراد نسخة';
+
+  @override
   String get importBackupKey => 'استيراد مفتاح النسخ الاحتياطي';
 
   @override
   String get importBackupKeySubtitle =>
-      'قراءة المفتاح من Downloads/MeTube_Lite/metube_backup_key.txt';
+      'قراءة ملف المفتاح من مجلد تنزيلات التطبيق';
 
   @override
   String get importKeySubtitle => 'حمّل مفتاحاً صُدِّر سابقاً قبل الاستعادة';
@@ -666,6 +700,9 @@ class MTLocalizationsAr extends MTLocalizations {
   String get licenses => 'تراخيص المصادر المفتوحة';
 
   @override
+  String get listenInBackground => 'استماع بالخلفية';
+
+  @override
   String get loadingVideo => 'جارٍ تحميل الفيديو...';
 
   @override
@@ -692,6 +729,13 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get lockTouch => 'قفل اللمس';
+
+  @override
+  String get logsEmpty => 'السجل فارغ';
+
+  @override
+  String get logsSanitizedNote =>
+      'تُحذف الروابط والعناوين والاعتمادات قبل المشاركة';
 
   @override
   String get logsShareText =>
@@ -754,6 +798,9 @@ class MTLocalizationsAr extends MTLocalizations {
   @override
   String get networkSettingsSubtitle =>
       'التبديل التلقائي بين عناوين الخادم المحلية والخارجية';
+
+  @override
+  String get newPlaylistAction => 'قائمة جديدة';
 
   @override
   String get newTagHint => 'وسم جديد';
@@ -873,6 +920,9 @@ class MTLocalizationsAr extends MTLocalizations {
   String get play => 'تشغيل';
 
   @override
+  String get playAll => 'تشغيل الكل';
+
+  @override
   String get playAllFavorites => 'شغّل المفضلة كلها';
 
   @override
@@ -895,6 +945,9 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get playlist => 'قائمة التشغيل';
+
+  @override
+  String get playlistCreated => 'أُنشئت القائمة';
 
   @override
   String get playlistDeleted => 'حُذفت القائمة';
@@ -962,7 +1015,16 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String queueItemsCount(int count) {
-    return '$count عنصراً';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count عنصراً',
+      few: '$count عناصر',
+      two: 'عنصران',
+      one: 'عنصر واحد',
+      zero: 'لا عناصر',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -1026,6 +1088,9 @@ class MTLocalizationsAr extends MTLocalizations {
   String get removedFromFavorites => 'أُزيل من المفضلة';
 
   @override
+  String get removedFromPlaylist => 'أُزيل من القائمة';
+
+  @override
   String get rename => 'إعادة تسمية';
 
   @override
@@ -1052,7 +1117,7 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get restoreDataSubtitle =>
-      'استيراد من Downloads/MeTube_Super/metube_super_backup.json';
+      'استيراد النسخة المشفّرة من مجلد تنزيلات التطبيق';
 
   @override
   String get restoreFailed => 'فشلت الاستعادة — ملف نسخة غير صالح';
@@ -1242,6 +1307,9 @@ class MTLocalizationsAr extends MTLocalizations {
   String get sortSmallest => 'الأصغر حجماً';
 
   @override
+  String get sortedByLastPlayed => 'بآخر تشغيل';
+
+  @override
   String get source => 'المصدر';
 
   @override
@@ -1307,6 +1375,9 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get tags => 'الوسوم';
+
+  @override
+  String get tagsOpenFiltered => 'تفتح المكتبة مصفّاة';
 
   @override
   String get tapToCopy => 'اضغط للنسخ';
