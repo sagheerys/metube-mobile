@@ -1,0 +1,22 @@
+name: mt_media
+description: "تشغيل MTF المشترك: audio_service handler، مصادر التشغيل، مخازن الموضع والحالة، MiniPlayer."
+version: 0.1.0
+publish_to: none
+resolution: workspace
+
+environment:
+  sdk: ^3.13.0
+  flutter: ">=3.35.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  mt_core:
+    path: ../mt_core
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:

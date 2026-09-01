@@ -1,0 +1,27 @@
+﻿name: metube_lite
+description: "MeTube Lite — نسخة العائلة: حمّل واحتفظ، والسيرفر يتنظف تلقائياً."
+publish_to: none
+resolution: workspace
+version: 2.0.0+1
+
+environment:
+  sdk: ^3.13.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  mt_core:
+    path: ../../packages/mt_core
+  mt_media:
+    path: ../../packages/mt_media
+  mt_ui:
+    path: ../../packages/mt_ui
+  cupertino_icons: ^1.0.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true

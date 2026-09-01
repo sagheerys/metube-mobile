@@ -42,3 +42,6 @@ desktop.ini
 *.log
 logs/
 tmp/
+
+# مفاتيح التوقيع — لا تدخل git أبداً (نسخها في Y:\MTF-Keys و Z:\MTF-Keys)
+keys/

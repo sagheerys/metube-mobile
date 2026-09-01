@@ -1,0 +1,20 @@
+name: mt_ui
+description: "نظام تصميم «وهج»: tokens، الثيمات، الودجات المشتركة، l10n (AR/EN) — لا يعرف السيرفر."
+version: 0.1.0
+publish_to: none
+resolution: workspace
+
+environment:
+  sdk: ^3.13.0
+  flutter: ">=3.35.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
