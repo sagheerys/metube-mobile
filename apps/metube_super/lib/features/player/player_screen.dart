@@ -44,6 +44,9 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.mtl;
+    // مراقبة قبل أي خروج مبكر: `videoSessionProvider` تلقائي التصريف،
+    // فقراءته بلا مراقبة تصرّفه فوراً ولا يشتغل شيء.
+    final session = ref.watch(videoSessionProvider);
     final request = _request;
     if (request == null) {
       return Scaffold(
@@ -55,7 +58,6 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
         ),
       );
     }
-    final session = ref.watch(videoSessionProvider);
     return MTVideoScreen(
       session: session,
       artwork: artworkBuilderFor(ref),

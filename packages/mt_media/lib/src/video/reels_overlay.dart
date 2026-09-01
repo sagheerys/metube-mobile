@@ -138,12 +138,18 @@ class _RailButton extends StatelessWidget {
           ),
         ),
         const SizedBox(height: MTSpace.xxs),
-        Text(
-          label,
-          style: Theme.of(context)
-              .textTheme
-              .labelSmall!
-              .copyWith(color: ink, fontSize: 9.5),
+        SizedBox(
+          width: 62,
+          child: Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
+            style: Theme.of(context)
+                .textTheme
+                .labelSmall!
+                .copyWith(color: ink, fontSize: 9.5),
+          ),
         ),
       ],
     );

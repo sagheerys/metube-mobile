@@ -127,7 +127,8 @@ class _MTVideoControlsState extends State<MTVideoControls> {
             ),
           ),
           PositionedDirectional(
-            bottom: MTSpace.xs,
+            // فوق الحافة المدورة للورقة الكريمية التي تعلو الفيديو 14px.
+            bottom: widget.fullscreen ? MTSpace.xs : MTSpace.xl,
             start: MTSpace.md,
             end: MTSpace.md,
             child: MTVideoBottomBar(

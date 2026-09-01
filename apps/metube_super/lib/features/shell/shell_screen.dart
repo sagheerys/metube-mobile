@@ -105,14 +105,6 @@ class _ShellScreenState extends ConsumerState<ShellScreen>
 
     return Scaffold(
       body: widget.navigationShell,
-      // م-22: المشغل المصغر فوق الشريط السفلي في المكتبة والقوائم.
-      bottomSheet: branch == 2
-          ? null
-          : MTMiniPlayer(
-              handler: ref.watch(audioHandlerProvider),
-              artwork: artworkBuilderFor(ref),
-              onOpen: () => GoRouter.of(context).push('/audio'),
-            ),
       floatingActionButton: branch == 2
           ? null
           : MTFab(
@@ -122,7 +114,25 @@ class _ShellScreenState extends ConsumerState<ShellScreen>
               highlighted: clipboardUrl != null,
               onPressed: _onFabPressed,
             ),
-      bottomNavigationBar: NavigationBar(
+      // م-22: المشغل المصغر شريط دائم **فوق** الشريط السفلي — داخل نفس
+      // الفتحة ليحسب Scaffold مساحته ويرفع زر الإضافة فوقه (سجل §4).
+      bottomNavigationBar: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (branch != 2)
+            MTMiniPlayer(
+              handler: ref.watch(audioHandlerProvider),
+              artwork: artworkBuilderFor(ref),
+              onOpen: () => GoRouter.of(context).push('/audio'),
+            ),
+          _navigationBar(l10n, branch),
+        ],
+      ),
+    );
+  }
+
+  NavigationBar _navigationBar(MTLocalizations l10n, int branch) =>
+      NavigationBar(
         selectedIndex: branch,
         onDestinationSelected: widget.navigationShell.goBranch,
         destinations: [
@@ -142,9 +152,7 @@ class _ShellScreenState extends ConsumerState<ShellScreen>
             label: l10n.navSettings,
           ),
         ],
-      ),
-    );
-  }
+      );
 }
 
 /// دالة فحص الحافظة قابلة للاستدعاء من الغلاف.

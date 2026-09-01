@@ -240,11 +240,20 @@ class MTAudioHandler extends BaseAudioHandler with SeekHandler {
     _broadcast();
   }
 
-  /// تخطي تلقائي للعنصر المعطوب (م-21) — وإن عطبت القائمة كلها نتوقف
-  /// بدل الدوران بلا نهاية.
+  /// أقصى تخطٍّ متتالٍ قبل الاستسلام — العطب المنهجي (شبكة مقطوعة أو
+  /// cleartext محظور) يُفشل كل العناصر، فالمرور على مئة عنصر بصمت أسوأ
+  /// من التوقف الصريح.
+  static const int maxConsecutiveSkips = 5;
+
+  /// تخطي تلقائي للعنصر المعطوب (م-21) — وإن تكرر العطب نتوقف بدل
+  /// الدوران بلا نهاية.
   Future<void> _onError() async {
     _consecutiveErrors++;
-    if (_queue.isEmpty || _consecutiveErrors >= _queue.length) return stop();
+    if (_queue.isEmpty ||
+        _consecutiveErrors >= _queue.length ||
+        _consecutiveErrors >= maxConsecutiveSkips) {
+      return stop();
+    }
     if (_queue.moveNext(PlayMode.repeatAll)) {
       await _loadCurrent(autoPlay: true);
     } else {

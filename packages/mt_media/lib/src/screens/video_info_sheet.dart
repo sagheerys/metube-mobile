@@ -134,11 +134,13 @@ class _ActionTile extends StatelessWidget {
               const SizedBox(height: MTSpace.xxs + 2),
               Text(
                 action.label,
-                maxLines: 1,
+                maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.labelSmall!.copyWith(
                       color: fg,
+                      fontSize: 9.5,
+                      height: 1.35,
                       fontWeight:
                           action.highlighted ? FontWeight.w700 : null,
                     ),

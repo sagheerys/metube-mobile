@@ -64,9 +64,10 @@ class _ReelsScreenState extends ConsumerState<ReelsScreen> {
           ref.read(libraryActionsProvider).toggleFavorite(item.canonicalUrl),
       actionsBuilder: (item) => [
         if (!item.hasLocal)
+          // عمود الأفعال ضيّق ⇒ عناوين قصيرة (مرجع الريلز).
           MTPlayerAction(
             icon: Icons.download_rounded,
-            label: l10n.makeOffline,
+            label: l10n.download,
             onTap: () => _makeOffline(item),
           ),
         MTPlayerAction(
@@ -75,7 +76,10 @@ class _ReelsScreenState extends ConsumerState<ReelsScreen> {
           onTap: () => _share(item),
         ),
       ],
-      onContinueRest: () => _continueRest(request, lane),
+      // لا يُعرض الزر أصلاً إن كانت القائمة المعروضة كلها قِصار.
+      onContinueRest: lane.nextNonShortIndex(request.items) == null
+          ? null
+          : () => _continueRest(request, lane),
     );
   }
 

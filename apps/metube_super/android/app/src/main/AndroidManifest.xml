@@ -5,9 +5,13 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"/>
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    <!-- فخ §6.2: Dio يتجاوز قيد cleartext وExoPlayer لا — سيرفر المالك
+         محلي بـ http، لذلك Super يسمح cleartext عاماً (Lite يقيّده
+         بالنطاقات الخاصة في المرحلة 7). بدونه: التحميل يعمل والبث يفشل. -->
     <application
         android:label="MeTube Super"
         android:name="${applicationName}"
+        android:usesCleartextTraffic="true"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"
