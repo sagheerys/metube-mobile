@@ -16,6 +16,10 @@ class MTLocalizationsEn extends MTLocalizations {
   String get aboutApp => 'About App';
 
   @override
+  String get aboutDescription =>
+      'A lightweight and fast app for downloading videos from various platforms via MeTube server, with a built-in video player and playlist management.';
+
+  @override
   String get activeDownloads => 'Active Downloads';
 
   @override
@@ -86,6 +90,10 @@ class MTLocalizationsEn extends MTLocalizations {
   String get autoBackgroundAudio => 'Auto Background Audio';
 
   @override
+  String get autoBackgroundAudioSubtitle =>
+      'Play audio in background when pressing back button';
+
+  @override
   String get autoPlayNext => 'Auto-play next: ON';
 
   @override
@@ -95,7 +103,15 @@ class MTLocalizationsEn extends MTLocalizations {
   String get autoRestoreSuccess => 'Data restored from backup successfully!';
 
   @override
+  String get autoSwitchDisabledHint =>
+      'Auto-switching is off — the app uses the single Server URL from Settings.';
+
+  @override
   String get autoUrlSwitching => 'Automatic URL switching';
+
+  @override
+  String get autoUrlSwitchingDesc =>
+      'Connect through the local URL when it is reachable, and use external connections elsewhere';
 
   @override
   String get availability => 'Availability';
@@ -116,6 +132,14 @@ class MTLocalizationsEn extends MTLocalizations {
   String get backupFailed => 'Backup failed';
 
   @override
+  String get backupKeyMismatch =>
+      'This backup is encrypted with a different key. Import the matching backup key first.';
+
+  @override
+  String get backupNote =>
+      'Includes playlists, tags, offline index, artwork & settings (plus username). The password is never backed up. Keep your backup key safe — it\'s required to restore on another device.';
+
+  @override
   String get backupNow => 'Back up now';
 
   @override
@@ -126,6 +150,10 @@ class MTLocalizationsEn extends MTLocalizations {
   String get backupOrphaned => 'Backup file unreadable';
 
   @override
+  String get backupOrphanedMessage =>
+      'This backup was created with a different installation key. After Clear Data or reinstall, the encryption key is gone and this file can\'t be recovered.\n\nDelete it and start fresh?';
+
+  @override
   String get backupReset => 'Old backup deleted';
 
   @override
@@ -133,6 +161,10 @@ class MTLocalizationsEn extends MTLocalizations {
 
   @override
   String get backupSettings => 'Backup All Data';
+
+  @override
+  String get backupSettingsSubtitle =>
+      'Export settings & video data to Downloads folder';
 
   @override
   String backupSuccess(Object path) {
@@ -147,6 +179,10 @@ class MTLocalizationsEn extends MTLocalizations {
 
   @override
   String get clear => 'Clear';
+
+  @override
+  String get clearAllConfirm =>
+      'This will remove all saved settings including credentials. Continue?';
 
   @override
   String get clearAllSettings => 'Clear All Settings';
@@ -167,6 +203,10 @@ class MTLocalizationsEn extends MTLocalizations {
   String get closePlayer => 'Close player';
 
   @override
+  String get comingSoonPhase =>
+      'This screen is built in a later phase of the plan';
+
+  @override
   String get compactView => 'Compact view';
 
   @override
@@ -179,10 +219,17 @@ class MTLocalizationsEn extends MTLocalizations {
   String get connectionFailed => 'Connection failed';
 
   @override
+  String get connectionSuccessful => 'Connected successfully — settings saved';
+
+  @override
   String get contactDeveloper => 'Contact Developer';
 
   @override
   String get copiedToClipboard => 'Copied to clipboard';
+
+  @override
+  String get couldNotLoadPlaylist =>
+      'Couldn\'t load this playlist. Check the URL and your connection.';
 
   @override
   String get create => 'Create';
@@ -192,6 +239,10 @@ class MTLocalizationsEn extends MTLocalizations {
 
   @override
   String get creator => 'Creator';
+
+  @override
+  String get credentialsRequired =>
+      'Username and password are required to connect to the server.';
 
   @override
   String get currentServerAddress => 'Current server address';
@@ -241,6 +292,9 @@ class MTLocalizationsEn extends MTLocalizations {
   }
 
   @override
+  String get deletedFromServer => 'Deleted from the server';
+
+  @override
   String deletedTitle(Object title) {
     return 'Deleted: $title';
   }
@@ -264,10 +318,18 @@ class MTLocalizationsEn extends MTLocalizations {
   String get diagnosticLogs => 'Diagnostic Logs';
 
   @override
+  String get diagnosticLogsSubtitle =>
+      'View, search, and share app logs (redacted)';
+
+  @override
   String get diagnostics => 'Diagnostics';
 
   @override
   String get disclaimer => 'Disclaimer';
+
+  @override
+  String get disclaimerText =>
+      'This app is a client for MeTube server. The developer is not responsible for how users utilize this tool. Please respect copyright laws and terms of service of content platforms.';
 
   @override
   String get dismiss => 'Dismiss';
@@ -358,6 +420,30 @@ class MTLocalizationsEn extends MTLocalizations {
   String get enterUrlPrompt => 'Enter a video URL to download:';
 
   @override
+  String get errAuth => 'Wrong username or password';
+
+  @override
+  String get errNetwork => 'Cannot reach the server';
+
+  @override
+  String get errNoApi => 'The address responds but has no MeTube API';
+
+  @override
+  String get errNotMeTube => 'This address is not a MeTube server';
+
+  @override
+  String get errPlatformBlocked =>
+      'The platform requires login — the server admin should refresh the cookies';
+
+  @override
+  String get errPollTimeout => 'The server took too long — try again';
+
+  @override
+  String errServer(Object message) {
+    return 'Server error: $message';
+  }
+
+  @override
   String errorGeneric(Object message) {
     return 'Error: $message';
   }
@@ -372,7 +458,19 @@ class MTLocalizationsEn extends MTLocalizations {
   String get exportBackupKey => 'Export Backup Key';
 
   @override
+  String get exportBackupKeySubtitle =>
+      'Required to restore backup on a new phone or after Clear Data';
+
+  @override
+  String get exportKeySubtitle =>
+      'Required to restore on a new phone or after reinstall';
+
+  @override
   String get exportKeyTitle => 'Export backup key';
+
+  @override
+  String get externalNetworkDesc =>
+      'When the local URL can\'t be reached, the app connects through the first reachable URL below, from top to bottom.';
 
   @override
   String get externalNetworkSection => 'External network';
@@ -477,11 +575,18 @@ class MTLocalizationsEn extends MTLocalizations {
   String get importBackupKey => 'Import Backup Key';
 
   @override
+  String get importBackupKeySubtitle =>
+      'Read key from Downloads/MeTube_Lite/metube_backup_key.txt';
+
+  @override
   String get importKeySubtitle =>
       'Load a previously exported key before restoring';
 
   @override
   String get importKeyTitle => 'Import backup key';
+
+  @override
+  String get invalidUrl => 'Enter a valid link';
 
   @override
   String get keyExportFailed => 'Failed to export backup key';
@@ -503,16 +608,32 @@ class MTLocalizationsEn extends MTLocalizations {
   String get keyImportConfirm => 'Replace key';
 
   @override
+  String get keyImportConfirmMessage =>
+      'This will replace the device\'s current encryption key.\n\nAny backup file already on disk that was encrypted with the previous key will become unreadable.\n\nContinue only if this key matches your backup file.';
+
+  @override
   String get keyImportConfirmTitle => 'Replace current key?';
 
   @override
   String get keyImportInvalid => 'Invalid key file';
 
   @override
+  String get keyImportNotFound =>
+      'Key file not found at Downloads/MeTube_Super/metube_super_backup_key.txt';
+
+  @override
   String get keyImported => 'Key imported. You can now use Restore.';
 
   @override
+  String get keyImportedMessage =>
+      'Encryption key restored. You can now use Restore All Data to recover your backup.';
+
+  @override
   String get keyImportedTitle => 'Key imported';
+
+  @override
+  String get keySecurityWarning =>
+      'Treat this file like a password — anyone with it AND your backup can read your data.';
 
   @override
   String get language => 'Language';
@@ -533,7 +654,18 @@ class MTLocalizationsEn extends MTLocalizations {
   String get loadingVideo => 'Loading video...';
 
   @override
+  String get localCopyRemoved => 'Local copy removed';
+
+  @override
+  String get localNetworkDesc =>
+      'The app connects to the server through this URL when it can be reached.';
+
+  @override
   String get localNetworkSection => 'Local network';
+
+  @override
+  String get localOnlyYoutubeMessage =>
+      'Direct downloads support YouTube only.\nConfigure a MeTube server in Settings to download from other platforms.';
 
   @override
   String get localUrlLabel => 'Local server URL';
@@ -544,10 +676,20 @@ class MTLocalizationsEn extends MTLocalizations {
   }
 
   @override
+  String get logsShareText =>
+      'MeTube Super logs (URLs/IPs/credentials redacted)';
+
+  @override
+  String get madeOffline => 'Saved for offline';
+
+  @override
   String get madeWithLove => 'Made with ❤️ By Yasir Sagheer';
 
   @override
   String get makeAvailableOffline => 'Make available offline';
+
+  @override
+  String get makeOffline => 'Make available offline';
 
   @override
   String get manageTags => 'Manage tags';
@@ -583,7 +725,14 @@ class MTLocalizationsEn extends MTLocalizations {
   String get navSettings => 'Settings';
 
   @override
+  String get needsAttention => 'Needs your attention';
+
+  @override
   String get networkSettings => 'Networks';
+
+  @override
+  String get networkSettingsSubtitle =>
+      'Auto-switch between local and external server URLs';
 
   @override
   String get newTagHint => 'New tag';
@@ -595,7 +744,15 @@ class MTLocalizationsEn extends MTLocalizations {
   String get noDownloads => 'No Downloads';
 
   @override
+  String get noDownloadsMessage =>
+      'Downloaded videos will appear here.\nShare a video link or use the Add URL button.';
+
+  @override
   String get noLogsFound => 'No logs found';
+
+  @override
+  String get noPasswordTip =>
+      'No password? Leave auth fields empty for open servers!';
 
   @override
   String get noPlaylists => 'No playlists';
@@ -610,6 +767,13 @@ class MTLocalizationsEn extends MTLocalizations {
   String get noResultsMessage => 'No items match your search.';
 
   @override
+  String get noServerMessage =>
+      'Enter your MeTube server address in Settings to start downloading';
+
+  @override
+  String get noServerTitle => 'No server yet';
+
+  @override
   String get noTagsYet => 'No tags yet. Create one below.';
 
   @override
@@ -617,6 +781,14 @@ class MTLocalizationsEn extends MTLocalizations {
 
   @override
   String get noVideosFound => 'Your library is empty';
+
+  @override
+  String get noVideosHint =>
+      'Share a video URL from any app, or tap the + button to add one';
+
+  @override
+  String get nonYoutubeQualityNote =>
+      'Non-YouTube platforms only support best quality or audio';
 
   @override
   String get nothingHereYet => 'Nothing here yet';
@@ -631,6 +803,11 @@ class MTLocalizationsEn extends MTLocalizations {
   String get ok => 'OK';
 
   @override
+  String onServerProgress(Object percent) {
+    return 'On the server · $percent%';
+  }
+
+  @override
   String get openGithub => 'Open MeTube on GitHub';
 
   @override
@@ -643,10 +820,16 @@ class MTLocalizationsEn extends MTLocalizations {
   String get password => 'Password';
 
   @override
+  String get preferences => 'Preferences';
+
+  @override
   String get passwordRequired => 'Password is required';
 
   @override
   String get pasteFromClipboard => 'Paste';
+
+  @override
+  String get pasteUrlHint => 'Paste the link here…';
 
   @override
   String get pause => 'Pause';
@@ -718,7 +901,13 @@ class MTLocalizationsEn extends MTLocalizations {
   String get preparingDownload => 'Preparing download...';
 
   @override
+  String get preparingShare => 'Preparing the file for sharing…';
+
+  @override
   String get previous => 'Previous';
+
+  @override
+  String get pullingToDevice => 'Saving to device…';
 
   @override
   String get quality => 'Quality';
@@ -736,7 +925,7 @@ class MTLocalizationsEn extends MTLocalizations {
   String get qualityAudio => 'Audio only';
 
   @override
-  String get qualityBest => 'Best available';
+  String get qualityBest => 'Best';
 
   @override
   String get qualityHelper => 'Sent to the server for new downloads';
@@ -748,6 +937,9 @@ class MTLocalizationsEn extends MTLocalizations {
 
   @override
   String get queued => 'Queued';
+
+  @override
+  String get queuedSection => 'Waiting';
 
   @override
   String get readyToShare => 'Ready to share!';
@@ -769,6 +961,13 @@ class MTLocalizationsEn extends MTLocalizations {
 
   @override
   String get removeFromPlaylist => 'Remove from playlist';
+
+  @override
+  String get removeLocalCopy => 'Remove local copy';
+
+  @override
+  String get removeOfflineConfirm =>
+      'Delete the local copy from this device?\nThe video stays on the server and can be streamed again.';
 
   @override
   String get removeOfflineCopy => 'Remove offline copy';
@@ -798,7 +997,15 @@ class MTLocalizationsEn extends MTLocalizations {
   String get restoreCancelled => 'Backup file not found in Downloads folder';
 
   @override
+  String get restoreConfirm =>
+      'Restore data from the backup file? This overwrites current playlists, tags and settings.';
+
+  @override
   String get restoreData => 'Restore';
+
+  @override
+  String get restoreDataSubtitle =>
+      'Import from Downloads/MeTube_Super/metube_super_backup.json';
 
   @override
   String get restoreFailed => 'Restore failed — invalid backup file';
@@ -809,6 +1016,10 @@ class MTLocalizationsEn extends MTLocalizations {
 
   @override
   String get restoreSettings => 'Restore All Data';
+
+  @override
+  String get restoreSettingsSubtitle =>
+      'Import from Downloads/metube_lite_backup.json';
 
   @override
   String get restoreSuccess => 'Data restored successfully';
@@ -876,6 +1087,10 @@ class MTLocalizationsEn extends MTLocalizations {
   String get serverDownload => 'Server Download';
 
   @override
+  String get serverDownloadDesc =>
+      'Videos will be sent to your MeTube Super/TrueNAS server';
+
+  @override
   String get serverStatusChecking => 'Checking connection…';
 
   @override
@@ -889,6 +1104,10 @@ class MTLocalizationsEn extends MTLocalizations {
 
   @override
   String get serverUrl => 'Server URL (MeTube)';
+
+  @override
+  String get serverUrlHelpBody =>
+      'The address of your MeTube server, e.g. http://192.168.1.10:8081. Use the LAN IP for plain HTTP at home, or an HTTPS address (e.g. a Cloudflare Tunnel) for access from outside.';
 
   @override
   String get serverUrlHelpTitle => 'About the Server URL';
@@ -910,6 +1129,9 @@ class MTLocalizationsEn extends MTLocalizations {
 
   @override
   String get settingsSaved => 'Settings saved successfully';
+
+  @override
+  String get setupServer => 'Set up the server';
 
   @override
   String get share => 'Share';
@@ -974,6 +1196,9 @@ class MTLocalizationsEn extends MTLocalizations {
   String get speedNormal => 'Normal';
 
   @override
+  String get startDownload => 'Start download';
+
+  @override
   String get startingDownload => 'Starting download via server...';
 
   @override
@@ -1010,6 +1235,10 @@ class MTLocalizationsEn extends MTLocalizations {
   String get streamUrlUnavailable => 'Stream URL not available';
 
   @override
+  String get supportedPlatforms =>
+      'Supported: YouTube, Twitter/X, Instagram, TikTok, Facebook, Vimeo & more';
+
+  @override
   String get tagActionsHint => 'Long-press a tag to rename or delete it.';
 
   @override
@@ -1023,6 +1252,9 @@ class MTLocalizationsEn extends MTLocalizations {
 
   @override
   String get tapToCopy => 'Tap to copy';
+
+  @override
+  String get testingConnection => 'Testing connection…';
 
   @override
   String get theme => 'Theme';

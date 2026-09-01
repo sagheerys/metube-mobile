@@ -72,6 +72,29 @@ void main() {
       expect(completed.single.id, task.id);
     });
 
+    test('وضع Super (pullToDevice=false): يكتمل بلا سحب ولا حذف — ر-2',
+        () async {
+      final api = FakeApi(historyScript: [
+        historyWith(done: [doneItem()]),
+      ]);
+      final engine = DownloadEngine(
+        api: api,
+        policy: DeletePolicy.keepOnServer,
+        pullToDevice: false,
+        pollInterval: Duration.zero,
+        savePathBuilder: (t, f) => throw StateError('لا مسار في وضع السيرفر'),
+        shortLinkResolver: ShortLinkResolver(redirectStep: (_) async => null),
+      );
+      final task = engine.submit(inputUrl, Quality.best);
+      final result = await awaitFinished(engine, task.id);
+      expect(result.phase, TaskPhase.completed);
+      expect(result.canonicalUrl, canonical);
+      expect(result.serverFilename, isNotNull);
+      expect(result.localPath, isNull);
+      expect(api.downloadCalls, 0);
+      expect(api.deletes, isEmpty);
+    });
+
     test('سياسة Super (keepOnServer): لا حذف بعد السحب', () async {
       final api = FakeApi(historyScript: [
         historyWith(done: [doneItem()]),

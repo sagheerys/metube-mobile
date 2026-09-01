@@ -56,4 +56,8 @@ abstract final class MTConstants {
 
   // ── الروابط القصيرة (§4) ──
   static const int maxRedirectHops = 8;
+
+  /// م-36: المفضلة وسم نظامي مخفي في TagsIndex — يدخل النسخ الاحتياطي
+  /// تلقائياً ولا يظهر بين وسوم المستخدم.
+  static const String favoritesSystemTag = '__favorites__';
 }

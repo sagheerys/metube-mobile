@@ -28,6 +28,7 @@ class HistoryItem {
     this.timestamp,
     this.quality,
     this.format,
+    this.sizeBytes,
   });
 
   final String id;
@@ -47,6 +48,9 @@ class HistoryItem {
   final DateTime? timestamp;
   final String? quality;
   final String? format;
+
+  /// حجم الملف على السيرفر بالبايت إن أعاده (`size`) — للفرز والعرض.
+  final int? sizeBytes;
 
   bool get isDownloading => status == ItemStatus.inProgress;
   bool get isCompleted => status == ItemStatus.completed;
@@ -77,6 +81,7 @@ class HistoryItem {
       timestamp: _parseTimestamp(json),
       quality: _str(json['quality']),
       format: _str(json['format']),
+      sizeBytes: json['size'] is num ? (json['size'] as num).toInt() : null,
     );
   }
 

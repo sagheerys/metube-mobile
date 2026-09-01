@@ -16,7 +16,8 @@ if (keystorePropertiesFile.exists()) {
 
 android {
     namespace = "com.yasir.metubesuper"
-    compileSdk = flutter.compileSdkVersion
+    // مثبت صراحة (TRD §4): receive_sharing_intent يتطلب 37.
+    compileSdk = 37
     ndkVersion = flutter.ndkVersion
 
     compileOptions {

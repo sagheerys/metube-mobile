@@ -16,6 +16,10 @@ class MTLocalizationsAr extends MTLocalizations {
   String get aboutApp => 'حول التطبيق';
 
   @override
+  String get aboutDescription =>
+      'تطبيق خفيف وسريع لتحميل الفيديوهات من مختلف المنصات عبر سيرفر MeTube مع مشغل فيديو مدمج وادارة قوائم التشغيل.';
+
+  @override
   String get activeDownloads => 'التحميلات النشطة';
 
   @override
@@ -86,6 +90,10 @@ class MTLocalizationsAr extends MTLocalizations {
   String get autoBackgroundAudio => 'تشغيل تلقائي في الخلفية';
 
   @override
+  String get autoBackgroundAudioSubtitle =>
+      'تشغيل المقطع الصوتي في الخلفية عند النقر على زر الرجوع';
+
+  @override
   String get autoPlayNext => 'التشغيل التلقائي: مفعل';
 
   @override
@@ -96,7 +104,15 @@ class MTLocalizationsAr extends MTLocalizations {
       'تمت استعادة البيانات من النسخة الاحتياطية بنجاح!';
 
   @override
+  String get autoSwitchDisabledHint =>
+      'التبديل التلقائي مُعطّل — يستخدم التطبيق عنوان الخادم الوحيد من الإعدادات.';
+
+  @override
   String get autoUrlSwitching => 'تبديل URL تلقائي';
+
+  @override
+  String get autoUrlSwitchingDesc =>
+      'اتصل عبر العنوان المحلي عند إمكانية الوصول إليه، واستخدم الاتصالات الخارجية في الأماكن الأخرى';
 
   @override
   String get availability => 'التوفّر';
@@ -117,6 +133,14 @@ class MTLocalizationsAr extends MTLocalizations {
   String get backupFailed => 'فشل النسخ الاحتياطي';
 
   @override
+  String get backupKeyMismatch =>
+      'هذه النسخة مشفّرة بمفتاح مختلف. استورد مفتاح النسخ المطابق أولاً.';
+
+  @override
+  String get backupNote =>
+      'يشمل القوائم والوسوم وفهرس عدم الاتصال والأغلفة والإعدادات (واسم المستخدم). لا تُنسخ كلمة المرور أبداً. احفظ مفتاح النسخ بأمان — فهو لازم للاستعادة على جهاز آخر.';
+
+  @override
   String get backupNow => 'انسخ الآن';
 
   @override
@@ -126,6 +150,10 @@ class MTLocalizationsAr extends MTLocalizations {
   String get backupOrphaned => 'ملف النسخة الاحتياطية غير قابل للقراءة';
 
   @override
+  String get backupOrphanedMessage =>
+      'هذا الـ backup أُنشئ بمفتاح تثبيت مختلف. بعد مسح البيانات أو إعادة التثبيت، اختفى مفتاح التشفير ولا يمكن استرجاع هذا الملف.\n\nهل تريد حذفه والبدء من جديد؟';
+
+  @override
   String get backupReset => 'تم حذف الـ backup القديم';
 
   @override
@@ -133,6 +161,10 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get backupSettings => 'نسخ جميع البيانات احتياطيا';
+
+  @override
+  String get backupSettingsSubtitle =>
+      'تصدير الاعدادات وبيانات الفيديوهات الى مجلد التحميلات';
 
   @override
   String backupSuccess(Object path) {
@@ -147,6 +179,10 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get clear => 'مسح';
+
+  @override
+  String get clearAllConfirm =>
+      'سيؤدي هذا إلى إزالة جميع الإعدادات المحفوظة بما فيها بيانات الدخول. متابعة؟';
 
   @override
   String get clearAllSettings => 'مسح كل الإعدادات';
@@ -167,6 +203,9 @@ class MTLocalizationsAr extends MTLocalizations {
   String get closePlayer => 'إغلاق المشغل';
 
   @override
+  String get comingSoonPhase => 'هذه الشاشة تُبنى في مرحلة لاحقة من الخطة';
+
+  @override
   String get compactView => 'عرض مدمج';
 
   @override
@@ -179,10 +218,17 @@ class MTLocalizationsAr extends MTLocalizations {
   String get connectionFailed => 'فشل الاتصال';
 
   @override
+  String get connectionSuccessful => 'تم الاتصال بنجاح — حُفظت الإعدادات';
+
+  @override
   String get contactDeveloper => 'تواصل مع المطور';
 
   @override
   String get copiedToClipboard => 'نُسِخ إلى الحافظة';
+
+  @override
+  String get couldNotLoadPlaylist =>
+      'تعذّر تحميل هذه القائمة. تحقّق من الرابط واتصالك.';
 
   @override
   String get create => 'إنشاء';
@@ -192,6 +238,10 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get creator => 'المنشئ';
+
+  @override
+  String get credentialsRequired =>
+      'اسم المستخدم وكلمة المرور مطلوبان للاتصال بالسيرفر.';
 
   @override
   String get currentServerAddress => 'عنوان الخادم الحالي';
@@ -241,6 +291,9 @@ class MTLocalizationsAr extends MTLocalizations {
   }
 
   @override
+  String get deletedFromServer => 'حُذف من السيرفر';
+
+  @override
   String deletedTitle(Object title) {
     return 'تم الحذف: $title';
   }
@@ -264,10 +317,18 @@ class MTLocalizationsAr extends MTLocalizations {
   String get diagnosticLogs => 'سجلّات التشخيص';
 
   @override
+  String get diagnosticLogsSubtitle =>
+      'عرض السجلّات والبحث فيها ومشاركتها (مُنقّحة)';
+
+  @override
   String get diagnostics => 'التشخيص';
 
   @override
   String get disclaimer => 'اخلاء مسؤولية';
+
+  @override
+  String get disclaimerText =>
+      'هذا التطبيق هو عميل لسيرفر MeTube. المطور غير مسؤول عن طريقة استخدام هذه الاداة. يرجى احترام حقوق الملكية الفكرية وشروط خدمة منصات المحتوى.';
 
   @override
   String get dismiss => 'تجاهل';
@@ -358,6 +419,30 @@ class MTLocalizationsAr extends MTLocalizations {
   String get enterUrlPrompt => 'أدخل رابط فيديو لتنزيله:';
 
   @override
+  String get errAuth => 'اسم المستخدم أو كلمة المرور خاطئة';
+
+  @override
+  String get errNetwork => 'تعذر الوصول للسيرفر';
+
+  @override
+  String get errNoApi => 'العنوان يستجيب لكن لا يوجد MeTube API عليه';
+
+  @override
+  String get errNotMeTube => 'هذا العنوان ليس سيرفر MeTube';
+
+  @override
+  String get errPlatformBlocked =>
+      'المنصة تطلب تسجيل الدخول — على مدير السيرفر تحديث الكوكيز';
+
+  @override
+  String get errPollTimeout => 'طال انتظار السيرفر — أعد المحاولة';
+
+  @override
+  String errServer(Object message) {
+    return 'خطأ من السيرفر: $message';
+  }
+
+  @override
   String errorGeneric(Object message) {
     return 'خطأ: $message';
   }
@@ -372,7 +457,19 @@ class MTLocalizationsAr extends MTLocalizations {
   String get exportBackupKey => 'تصدير مفتاح النسخ الاحتياطي';
 
   @override
+  String get exportBackupKeySubtitle =>
+      'مطلوب لاستعادة النسخة الاحتياطية على هاتف جديد أو بعد مسح البيانات';
+
+  @override
+  String get exportKeySubtitle =>
+      'لازم للاستعادة على هاتف جديد أو بعد إعادة التثبيت';
+
+  @override
   String get exportKeyTitle => 'تصدير مفتاح النسخ';
+
+  @override
+  String get externalNetworkDesc =>
+      'عندما يتعذّر الوصول للعنوان المحلي، يتصل التطبيق بأول عنوان يمكن الوصول إليه أدناه، من الأعلى إلى الأسفل.';
 
   @override
   String get externalNetworkSection => 'شبكة خارجية';
@@ -476,10 +573,17 @@ class MTLocalizationsAr extends MTLocalizations {
   String get importBackupKey => 'استيراد مفتاح النسخ الاحتياطي';
 
   @override
+  String get importBackupKeySubtitle =>
+      'قراءة المفتاح من Downloads/MeTube_Lite/metube_backup_key.txt';
+
+  @override
   String get importKeySubtitle => 'حمّل مفتاحاً صُدِّر سابقاً قبل الاستعادة';
 
   @override
   String get importKeyTitle => 'استيراد مفتاح النسخ';
+
+  @override
+  String get invalidUrl => 'أدخل رابطاً صالحاً';
 
   @override
   String get keyExportFailed => 'فشل تصدير مفتاح النسخ الاحتياطي';
@@ -501,16 +605,32 @@ class MTLocalizationsAr extends MTLocalizations {
   String get keyImportConfirm => 'استبدال المفتاح';
 
   @override
+  String get keyImportConfirmMessage =>
+      'سيتم استبدال مفتاح التشفير الحالي للجهاز.\n\nأي نسخة احتياطية موجودة وتم تشفيرها بالمفتاح السابق ستصبح غير قابلة للقراءة.\n\nاستمر فقط إذا كان هذا المفتاح يطابق ملف نسختك الاحتياطية.';
+
+  @override
   String get keyImportConfirmTitle => 'استبدال المفتاح الحالي؟';
 
   @override
   String get keyImportInvalid => 'ملف مفتاح غير صالح';
 
   @override
+  String get keyImportNotFound =>
+      'ملف المفتاح غير موجود في Downloads/MeTube_Super/metube_super_backup_key.txt';
+
+  @override
   String get keyImported => 'تم استيراد المفتاح. يمكنك الآن استخدام الاستعادة.';
 
   @override
+  String get keyImportedMessage =>
+      'تم استعادة مفتاح التشفير. يمكنك الآن استخدام \\\"استعادة جميع البيانات\\\" لاسترداد نسختك الاحتياطية.';
+
+  @override
   String get keyImportedTitle => 'تم استيراد المفتاح';
+
+  @override
+  String get keySecurityWarning =>
+      'تعامل مع هذا الملف ككلمة مرور — من يملكه مع نسختك الاحتياطية يستطيع قراءة بياناتك.';
 
   @override
   String get language => 'اللغة';
@@ -531,7 +651,18 @@ class MTLocalizationsAr extends MTLocalizations {
   String get loadingVideo => 'جارٍ تحميل الفيديو...';
 
   @override
+  String get localCopyRemoved => 'أُزيلت النسخة المحلية';
+
+  @override
+  String get localNetworkDesc =>
+      'سيتصل التطبيق بالخادم عبر هذا العنوان عند إمكانية الوصول إليه.';
+
+  @override
   String get localNetworkSection => 'شبكة محلية';
+
+  @override
+  String get localOnlyYoutubeMessage =>
+      'التحميل المباشر يدعم يوتيوب فقط.\nاضبط رابط سيرفر MeTube في الإعدادات لتحميل من منصات أخرى.';
 
   @override
   String get localUrlLabel => 'عنوان الخادم المحلي';
@@ -542,10 +673,20 @@ class MTLocalizationsAr extends MTLocalizations {
   }
 
   @override
+  String get logsShareText =>
+      'سجلّات MeTube Super (مع تنقيح الروابط/العناوين/بيانات الدخول)';
+
+  @override
+  String get madeOffline => 'أُتيح دون اتصال';
+
+  @override
   String get madeWithLove => 'صنع بـ ❤️ بواسطة ياسر صغير';
 
   @override
   String get makeAvailableOffline => 'إتاحة بلا اتصال';
+
+  @override
+  String get makeOffline => 'إتاحة دون اتصال';
 
   @override
   String get manageTags => 'إدارة الوسوم';
@@ -581,7 +722,14 @@ class MTLocalizationsAr extends MTLocalizations {
   String get navSettings => 'الإعدادات';
 
   @override
+  String get needsAttention => 'تحتاج انتباهك';
+
+  @override
   String get networkSettings => 'الشبكات';
+
+  @override
+  String get networkSettingsSubtitle =>
+      'التبديل التلقائي بين عناوين الخادم المحلية والخارجية';
 
   @override
   String get newTagHint => 'وسم جديد';
@@ -593,7 +741,15 @@ class MTLocalizationsAr extends MTLocalizations {
   String get noDownloads => 'لا توجد تحميلات';
 
   @override
+  String get noDownloadsMessage =>
+      'ستظهر الفيديوهات المحملة هنا.\nشارك رابط فيديو او استخدم زر اضافة رابط.';
+
+  @override
   String get noLogsFound => 'لا توجد سجلّات';
+
+  @override
+  String get noPasswordTip =>
+      'بلا كلمة مرور؟ اترك حقول المصادقة فارغة للخوادم المفتوحة!';
 
   @override
   String get noPlaylists => 'لا توجد قوائم';
@@ -608,6 +764,13 @@ class MTLocalizationsAr extends MTLocalizations {
   String get noResultsMessage => 'لا توجد عناصر مطابقة لبحثك.';
 
   @override
+  String get noServerMessage =>
+      'أدخل رابط سيرفر MeTube من الإعدادات لبدء التحميل';
+
+  @override
+  String get noServerTitle => 'لا سيرفر بعد';
+
+  @override
   String get noTagsYet => 'لا وسوم بعد. أنشئ واحداً بالأسفل.';
 
   @override
@@ -615,6 +778,14 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get noVideosFound => 'مكتبتك فارغة';
+
+  @override
+  String get noVideosHint =>
+      'شارك رابط فيديو من أي تطبيق، أو اضغط زر + لإضافة رابط';
+
+  @override
+  String get nonYoutubeQualityNote =>
+      'المنصّات غير اليوتيوب تدعم أفضل جودة أو الصوت فقط';
 
   @override
   String get nothingHereYet => 'لا يوجد شيء بعد';
@@ -629,6 +800,11 @@ class MTLocalizationsAr extends MTLocalizations {
   String get ok => 'حسناً';
 
   @override
+  String onServerProgress(Object percent) {
+    return 'على السيرفر · $percent٪';
+  }
+
+  @override
   String get openGithub => 'فتح MeTube على GitHub';
 
   @override
@@ -641,10 +817,16 @@ class MTLocalizationsAr extends MTLocalizations {
   String get password => 'كلمة المرور';
 
   @override
+  String get preferences => 'التفضيلات';
+
+  @override
   String get passwordRequired => 'كلمة المرور مطلوبة';
 
   @override
   String get pasteFromClipboard => 'لصق';
+
+  @override
+  String get pasteUrlHint => 'الصق الرابط هنا…';
 
   @override
   String get pause => 'إيقاف مؤقت';
@@ -716,7 +898,13 @@ class MTLocalizationsAr extends MTLocalizations {
   String get preparingDownload => 'جارٍ تجهيز التنزيل...';
 
   @override
+  String get preparingShare => 'يُجهَّز الملف للمشاركة…';
+
+  @override
   String get previous => 'السابق';
+
+  @override
+  String get pullingToDevice => 'يُسحب للجهاز…';
 
   @override
   String get quality => 'الجودة';
@@ -734,7 +922,7 @@ class MTLocalizationsAr extends MTLocalizations {
   String get qualityAudio => 'صوت فقط';
 
   @override
-  String get qualityBest => 'أفضل جودة متاحة';
+  String get qualityBest => 'الأفضل';
 
   @override
   String get qualityHelper => 'تُرسَل إلى الخادم لعمليات التنزيل الجديدة';
@@ -746,6 +934,9 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get queued => 'في الانتظار';
+
+  @override
+  String get queuedSection => 'بالانتظار';
 
   @override
   String get readyToShare => 'جاهز للمشاركة!';
@@ -767,6 +958,13 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get removeFromPlaylist => 'إزالة من القائمة';
+
+  @override
+  String get removeLocalCopy => 'إزالة النسخة المحلية';
+
+  @override
+  String get removeOfflineConfirm =>
+      'حذف النسخة المحلية من هذا الجهاز؟\nيبقى الفيديو على الخادم ويمكن بثّه مجدداً.';
 
   @override
   String get removeOfflineCopy => 'إزالة النسخة المحلية';
@@ -796,7 +994,15 @@ class MTLocalizationsAr extends MTLocalizations {
   String get restoreCancelled => 'لم يُعثر على ملف النسخة في مجلد التنزيلات';
 
   @override
+  String get restoreConfirm =>
+      'استعادة البيانات من ملف النسخة الاحتياطية؟ سيُستبدل ما لديك من قوائم ووسوم وإعدادات.';
+
+  @override
   String get restoreData => 'استعادة';
+
+  @override
+  String get restoreDataSubtitle =>
+      'استيراد من Downloads/MeTube_Super/metube_super_backup.json';
 
   @override
   String get restoreFailed => 'فشلت الاستعادة — ملف نسخة غير صالح';
@@ -806,6 +1012,10 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get restoreSettings => 'استعادة جميع البيانات';
+
+  @override
+  String get restoreSettingsSubtitle =>
+      'استيراد من Downloads/metube_lite_backup.json';
 
   @override
   String get restoreSuccess => 'تمت استعادة البيانات بنجاح';
@@ -873,6 +1083,10 @@ class MTLocalizationsAr extends MTLocalizations {
   String get serverDownload => 'تنزيل عبر الخادم';
 
   @override
+  String get serverDownloadDesc =>
+      'ستُرسَل الفيديوهات إلى خادم MeTube Super/TrueNAS الخاص بك';
+
+  @override
   String get serverStatusChecking => 'جارٍ فحص الاتصال…';
 
   @override
@@ -886,6 +1100,10 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get serverUrl => 'رابط السيرفر (MeTube)';
+
+  @override
+  String get serverUrlHelpBody =>
+      'عنوان خادم MeTube، مثل http://192.168.1.10:8081. استخدم عنوان IP المحلي لـ HTTP العادي في المنزل، أو عنوان HTTPS (مثل Cloudflare Tunnel) للوصول من الخارج.';
 
   @override
   String get serverUrlHelpTitle => 'حول رابط السيرفر';
@@ -907,6 +1125,9 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get settingsSaved => 'تم حفظ الإعدادات بنجاح';
+
+  @override
+  String get setupServer => 'إعداد السيرفر';
 
   @override
   String get share => 'مشاركة';
@@ -971,6 +1192,9 @@ class MTLocalizationsAr extends MTLocalizations {
   String get speedNormal => 'عادي';
 
   @override
+  String get startDownload => 'ابدأ التحميل';
+
+  @override
   String get startingDownload => 'جاري بدء التحميل عبر السيرفر...';
 
   @override
@@ -1007,6 +1231,10 @@ class MTLocalizationsAr extends MTLocalizations {
   String get streamUrlUnavailable => 'رابط البث غير متاح';
 
   @override
+  String get supportedPlatforms =>
+      'المدعومة: يوتيوب، تويتر/X، إنستغرام، تيك توك، فيسبوك، فيميو والمزيد';
+
+  @override
   String get tagActionsHint => 'اضغط مطوّلاً على وسم لإعادة تسميته أو حذفه.';
 
   @override
@@ -1020,6 +1248,9 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get tapToCopy => 'اضغط للنسخ';
+
+  @override
+  String get testingConnection => 'جارٍ اختبار الاتصال…';
 
   @override
   String get theme => 'السمة';

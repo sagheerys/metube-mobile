@@ -31,6 +31,7 @@ class DownloadEngine {
     Transfer? transfer,
     this.pollInterval = MTConstants.pollInterval,
     this.maxPollAttempts = MTConstants.maxPollAttempts,
+    this.pullToDevice = true,
     this.onCompleted,
   })  : _resolver = shortLinkResolver ?? ShortLinkResolver(),
         _transfer = transfer ?? Transfer(api: api);
@@ -40,6 +41,10 @@ class DownloadEngine {
   final SavePathBuilder savePathBuilder;
   final Duration pollInterval;
   final int maxPollAttempts;
+
+  /// ر-2: Lite يسحب للجهاز بعد الاكتمال؛ Super لا — العنصر يبقى على
+  /// السيرفر ويظهر في المكتبة (السحب هناك عبر «إتاحة دون اتصال» فقط).
+  final bool pullToDevice;
 
   /// للفهرسة بعد الاكتمال (OfflineIndex / MediaStore) في طبقة التطبيق.
   final void Function(DownloadTask task)? onCompleted;
@@ -130,6 +135,13 @@ class DownloadEngine {
         canonicalUrl: done.canonicalUrl,
         serverFilename: done.filename,
       ));
+
+      // Super: يكتفي ببقاء العنصر على السيرفر — لا سحب ولا حذف.
+      if (!pullToDevice) {
+        task = _emit(task.copyWith(phase: TaskPhase.completed, progress: 1));
+        onCompleted?.call(task);
+        return;
+      }
 
       // 3) السحب
       task = _emit(task.copyWith(phase: TaskPhase.pulling, progress: 0));

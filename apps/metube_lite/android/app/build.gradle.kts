@@ -16,7 +16,8 @@ if (keystorePropertiesFile.exists()) {
 
 android {
     namespace = "com.yasir.metubelite"
-    compileSdk = flutter.compileSdkVersion
+    // مثبت صراحة (TRD §4) — بموازاة Super.
+    compileSdk = 37
     ndkVersion = flutter.ndkVersion
 
     compileOptions {

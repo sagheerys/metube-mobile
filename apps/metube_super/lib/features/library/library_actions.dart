@@ -1,0 +1,132 @@
+import 'dart:io';
+
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mt_core/mt_core.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
+
+import '../../di.dart';
+import 'library_models.dart';
+import 'library_providers.dart';
+
+/// مجلد وسائط Super «دون اتصال» (§5.3).
+const superMediaDir = '/storage/emulated/0/Download/MeTube_Super';
+
+/// تقدم سحب «إتاحة دون اتصال» الجاري: canonicalUrl → 0..1.
+final offlinePullProgressProvider =
+    StateProvider<Map<String, double>>((ref) => {});
+
+final libraryActionsProvider = Provider((ref) => LibraryActions(ref));
+
+/// إجراءات عنصر المكتبة (ر-5 / م-17) — كل شبكة عبر عميل النواة حصراً.
+class LibraryActions {
+  LibraryActions(this._ref);
+
+  final Ref _ref;
+
+  MeTubeApiClient get _api {
+    final api = _ref.read(apiClientProvider);
+    if (api == null) throw const NetworkException('no server configured');
+    return api;
+  }
+
+  void _refreshLibrary() {
+    _ref.invalidate(historyProvider);
+    _ref.invalidate(libraryItemsProvider);
+  }
+
+  /// م-36: المفضلة وسم نظامي — تدخل النسخ الاحتياطي تلقائياً.
+  Future<bool> toggleFavorite(String canonicalUrl) async {
+    final tags = _ref.read(tagsIndexProvider);
+    await tags.toggleTag(canonicalUrl, MTConstants.favoritesSystemTag);
+    _ref.invalidate(libraryItemsProvider);
+    return (await tags.tagsOf(canonicalUrl))
+        .contains(MTConstants.favoritesSystemTag);
+  }
+
+  /// «إتاحة دون اتصال» (م-17): سحب بتقدم مع بقاء الأصل على السيرفر.
+  Future<String> makeOffline(LibraryItem item) async {
+    final filename = item.serverFilename;
+    if (filename == null) throw const UnsafeFilenameException();
+    final dir = Directory(superMediaDir);
+    await dir.create(recursive: true);
+    final savePath =
+        '$superMediaDir/${buildLocalFilename(item.title, serverFilename: filename)}';
+
+    _setProgress(item.canonicalUrl, 0);
+    try {
+      await Transfer(api: _api).pull(
+        serverFilename: filename,
+        savePath: savePath,
+        onProgress: (p) => _setProgress(item.canonicalUrl, p),
+      );
+    } finally {
+      _clearProgress(item.canonicalUrl);
+    }
+    await _ref.read(offlineIndexProvider).put(item.canonicalUrl, savePath);
+    if (item.thumbnail != null) {
+      await _ref
+          .read(artworkIndexProvider)
+          .put(item.canonicalUrl, item.thumbnail!);
+    }
+    _refreshLibrary();
+    return savePath;
+  }
+
+  /// حذف من السيرفر — **بالـ canonicalUrl من /history حصراً** (القاعدة 2).
+  Future<void> deleteFromServer(List<String> canonicalUrls) async {
+    await _api.delete(canonicalUrls);
+    _refreshLibrary();
+  }
+
+  /// إزالة النسخة المحلية فقط (يبقى على السيرفر).
+  Future<void> removeLocalCopy(LibraryItem item) async {
+    final path = item.localPath;
+    if (path != null) {
+      final file = File(path);
+      if (await file.exists()) await file.delete();
+    }
+    await _ref.read(offlineIndexProvider).removeKey(item.canonicalUrl);
+    _refreshLibrary();
+  }
+
+  /// حذف عنصر محلي-فقط نهائياً.
+  Future<void> deleteLocalOnly(LibraryItem item) => removeLocalCopy(item);
+
+  /// مشاركة ذكية (م-17): الملف المحلي إن وُجد وإلا تحميل-ثم-مشاركة.
+  Future<void> smartShare(LibraryItem item) async {
+    var path = item.localPath;
+    if (path == null) {
+      final filename = item.serverFilename;
+      if (filename == null) throw const UnsafeFilenameException();
+      final tmp = await getTemporaryDirectory();
+      path =
+          '${tmp.path}/${buildLocalFilename(item.title, serverFilename: filename)}';
+      _setProgress(item.canonicalUrl, 0);
+      try {
+        await Transfer(api: _api).pull(
+          serverFilename: filename,
+          savePath: path,
+          onProgress: (p) => _setProgress(item.canonicalUrl, p),
+        );
+      } finally {
+        _clearProgress(item.canonicalUrl);
+      }
+    }
+    await Share.shareXFiles([XFile(path)]);
+  }
+
+  void _setProgress(String url, double value) {
+    final map =
+        Map<String, double>.from(_ref.read(offlinePullProgressProvider));
+    map[url] = value;
+    _ref.read(offlinePullProgressProvider.notifier).state = map;
+  }
+
+  void _clearProgress(String url) {
+    final map =
+        Map<String, double>.from(_ref.read(offlinePullProgressProvider));
+    map.remove(url);
+    _ref.read(offlinePullProgressProvider.notifier).state = map;
+  }
+}
