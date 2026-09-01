@@ -1,0 +1,577 @@
+{
+  "@@locale": "en",
+  "@addNToServer": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@addedNToServer": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@backupSuccess": {
+    "placeholders": {
+      "path": {
+        "type": "Object"
+      }
+    }
+  },
+  "@deleteMultipleConfirm": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@deletePlaylistConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "Object"
+      }
+    }
+  },
+  "@deleteTagConfirm": {
+    "placeholders": {
+      "tag": {
+        "type": "Object"
+      }
+    }
+  },
+  "@deleteVideoConfirm": {
+    "placeholders": {
+      "title": {
+        "type": "Object"
+      }
+    }
+  },
+  "@deletedTitle": {
+    "placeholders": {
+      "title": {
+        "type": "Object"
+      }
+    }
+  },
+  "@downloadTracks": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@downloadingSize": {
+    "placeholders": {
+      "received": {
+        "type": "Object"
+      },
+      "total": {
+        "type": "Object"
+      }
+    }
+  },
+  "@errorGeneric": {
+    "placeholders": {
+      "message": {
+        "type": "Object"
+      }
+    }
+  },
+  "@fileSizeBytes": {
+    "placeholders": {
+      "value": {
+        "type": "Object"
+      }
+    }
+  },
+  "@fileSizeGB": {
+    "placeholders": {
+      "value": {
+        "type": "Object"
+      }
+    }
+  },
+  "@fileSizeKB": {
+    "placeholders": {
+      "value": {
+        "type": "Object"
+      }
+    }
+  },
+  "@fileSizeMB": {
+    "placeholders": {
+      "value": {
+        "type": "Object"
+      }
+    }
+  },
+  "@keyExported": {
+    "placeholders": {
+      "path": {
+        "type": "Object"
+      }
+    }
+  },
+  "@keyExportedMessage": {
+    "placeholders": {
+      "path": {
+        "type": "Object"
+      }
+    }
+  },
+  "@localVideos": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@platformCount": {
+    "placeholders": {
+      "name": {
+        "type": "Object"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@playlistOf": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "@playlistsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@queuePosition": {
+    "placeholders": {
+      "position": {
+        "type": "int"
+      }
+    }
+  },
+  "@retryingAttempt": {
+    "placeholders": {
+      "attempt": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "@searchResults": {
+    "placeholders": {
+      "found": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "@selected": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@selectedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@shareFailed": {
+    "placeholders": {
+      "message": {
+        "type": "Object"
+      }
+    }
+  },
+  "@totalDuration": {
+    "placeholders": {
+      "duration": {
+        "type": "Object"
+      }
+    }
+  },
+  "@tracksCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@videosCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "about": "About",
+  "aboutApp": "About App",
+  "activeDownloads": "Active Downloads",
+  "activeDownloadsSheet": "Active downloads",
+  "activeNow": "Active now",
+  "addEndpoint": "Add endpoint",
+  "addLinkFab": "Add link",
+  "addNToServer": "Add {count} to server",
+  "addToPlaylist": "Add to Playlist",
+  "addUrl": "Add URL",
+  "addedNToServer": "Added {count} to server",
+  "addedToFavorites": "Added to favorites",
+  "addedToQueue": "Added to download queue",
+  "allDownloadsFinished": "All downloads finished!",
+  "allPlatforms": "All platforms",
+  "allRightsReserved": "All rights reserved",
+  "allTagsFilter": "All",
+  "appFeatures": "App Features",
+  "appTitle": "MeTube Super",
+  "appearance": "Appearance",
+  "audioOnly": "Audio Only",
+  "authHelper": "Leave empty for open servers (no password)",
+  "authentication": "Authentication (Optional)",
+  "autoBackgroundAudio": "Auto Background Audio",
+  "autoPlayNext": "Auto-play next: ON",
+  "autoPlayOff": "Auto-play next: OFF",
+  "autoRestoreSuccess": "Data restored from backup successfully!",
+  "autoUrlSwitching": "Automatic URL switching",
+  "availability": "Availability",
+  "availabilityOffline": "Offline (local copy)",
+  "availabilityServer": "Server (stream)",
+  "backgroundDownload": "Downloading files in background...",
+  "backgroundPlay": "Background play",
+  "backupFailed": "Backup failed",
+  "backupNow": "Back up now",
+  "backupNowSubtitle": "Save an encrypted backup to the Downloads folder",
+  "backupOrphaned": "Backup file unreadable",
+  "backupReset": "Old backup deleted",
+  "backupRestore": "Backup & Restore",
+  "backupSettings": "Backup All Data",
+  "backupSuccess": "Backup saved to: {path}",
+  "cancel": "Cancel",
+  "cardView": "Card view",
+  "clear": "Clear",
+  "clearAllSettings": "Clear All Settings",
+  "clearLogs": "Clear Logs",
+  "clearLogsConfirm": "Delete all diagnostic logs?",
+  "clipboardEmpty": "Clipboard is empty",
+  "clipboardLinkReady": "Paste link",
+  "closePlayer": "Close player",
+  "compactView": "Compact view",
+  "completed": "Completed",
+  "connecting": "Connecting...",
+  "connectionFailed": "Connection failed",
+  "contactDeveloper": "Contact Developer",
+  "copiedToClipboard": "Copied to clipboard",
+  "create": "Create",
+  "createPlaylist": "Create Playlist",
+  "creator": "Creator",
+  "currentServerAddress": "Current server address",
+  "date": "Date",
+  "defaultQuality": "Default Video Quality",
+  "delete": "Delete",
+  "deleteFromServer": "Delete From Server",
+  "deleteFromServerConfirm": "Remove this item from the server?",
+  "deleteMultipleConfirm": "Delete {count} video(s)?\n\nThis will remove the files from your device.",
+  "deletePlaylistConfirm": "Delete \\\"{name}\\\"?",
+  "deleteSelected": "Delete Selected",
+  "deleteTag": "Delete tag",
+  "deleteTagConfirm": "Delete the tag \\\"{tag}\\\" from all items? The videos themselves are not deleted.",
+  "deleteVideo": "Delete Video",
+  "deleteVideoConfirm": "Delete \\\"{title}\\\"?\n\nThis will remove the file from your device.",
+  "deletedTitle": "Deleted: {title}",
+  "deselectAll": "Deselect All",
+  "detailTitle": "Title",
+  "details": "Details",
+  "developer": "Developer",
+  "developerName": "Yasir Sagheer",
+  "diagnosticLogs": "Diagnostic Logs",
+  "diagnostics": "Diagnostics",
+  "disclaimer": "Disclaimer",
+  "dismiss": "Dismiss",
+  "done": "Done",
+  "download": "Download",
+  "downloadAndShare": "Download & Share",
+  "downloadComplete": "Download Complete",
+  "downloadCompleteTitle": "Complete!",
+  "downloadDate": "Download Date",
+  "downloadFailed": "Download Failed",
+  "downloadFailedStatus": "Download failed",
+  "downloadFailedTitle": "Download Failed",
+  "downloadQuality": "Download Quality",
+  "downloadStarted": "Download started...",
+  "downloadTracks": "Download {count} Tracks",
+  "downloadUrlUnavailable": "Download URL not available",
+  "downloading": "Downloading...",
+  "downloadingSize": "Downloading… {received} / {total} MB",
+  "downloadingTitle": "Downloading",
+  "downloadsTab": "Downloads",
+  "email": "Email",
+  "emptyLibraryMessage": "Add a video link, or pull to refresh.",
+  "emptyPlaylist": "Empty playlist",
+  "emptyPlaylistMessage": "Add videos from the library",
+  "endpointReachable": "Reachable",
+  "endpointUnreachable": "Unreachable",
+  "endpointUrl": "Endpoint URL",
+  "enterUrl": "Enter URL",
+  "enterUrlHint": "Paste video URL here...",
+  "enterUrlPrompt": "Enter a video URL to download:",
+  "errorGeneric": "Error: {message}",
+  "errorLogs": "Error Logs",
+  "errorLogsSubtitle": "View app logs for diagnostics",
+  "exportBackupKey": "Export Backup Key",
+  "exportKeyTitle": "Export backup key",
+  "externalNetworkSection": "External network",
+  "failed": "Failed",
+  "failedToLoadPlaylist": "Failed to load playlist",
+  "failedToLoadVideo": "Failed to load video",
+  "failedToQueue": "Failed to add to queue",
+  "favorites": "Favorites",
+  "featureBackup": "Automatic backup and restore",
+  "featureBilingual": "Arabic and English language support",
+  "featureDownload": "Download videos from YouTube and other platforms",
+  "featurePlayer": "Direct download by sharing links from any app",
+  "featurePlaylists": "Create and manage playlists",
+  "featureThemes": "Dark and light themes",
+  "fieldHelp": "Help",
+  "file": "File",
+  "fileName": "File Name",
+  "fileNotFound": "File not found",
+  "fileSize": "File Size",
+  "fileSizeBytes": "{value} B",
+  "fileSizeGB": "{value} GB",
+  "fileSizeKB": "{value} KB",
+  "fileSizeMB": "{value} MB",
+  "filterAll": "All",
+  "filterAudio": "Audio",
+  "filterOffline": "Offline",
+  "filterPlaylists": "Playlists",
+  "filterServer": "Server",
+  "filterVideo": "Video",
+  "format": "Format",
+  "helpAboutField": "About this field",
+  "howItWorks": "How it works",
+  "importBackupKey": "Import Backup Key",
+  "importKeySubtitle": "Load a previously exported key before restoring",
+  "importKeyTitle": "Import backup key",
+  "keyExportFailed": "Failed to export backup key",
+  "keyExported": "Key saved to:\n{path}\n\nStore it somewhere safe (e.g. Google Drive).",
+  "keyExportedMessage": "Saved to:\n{path}\n\nUpload this file to Google Drive (or another safe place). You'll need it to restore your backup after Clear Data or on a new phone.",
+  "keyExportedTitle": "Backup key saved",
+  "keyImportConfirm": "Replace key",
+  "keyImportConfirmTitle": "Replace current key?",
+  "keyImportInvalid": "Invalid key file",
+  "keyImported": "Key imported. You can now use Restore.",
+  "keyImportedTitle": "Key imported",
+  "language": "Language",
+  "languageArabic": "العربية",
+  "languageEnglish": "English",
+  "latestAdditions": "Latest additions",
+  "licenses": "Open-source licenses",
+  "loadingVideo": "Loading video...",
+  "localNetworkSection": "Local network",
+  "localUrlLabel": "Local server URL",
+  "localVideos": "Library ({count})",
+  "madeWithLove": "Made with ❤️ By Yasir Sagheer",
+  "makeAvailableOffline": "Make available offline",
+  "manageTags": "Manage tags",
+  "modeAuto": "Auto",
+  "modeAutoNext": "Auto",
+  "modeOff": "Off",
+  "modeRepeat": "Repeat",
+  "modeRepeatAll": "Repeat all",
+  "modeRepeatOne": "Repeat one",
+  "navLibrary": "Library",
+  "navMyDownloads": "My downloads",
+  "navPlaylists": "Playlists",
+  "navSettings": "Settings",
+  "networkSettings": "Networks",
+  "newTagHint": "New tag",
+  "next": "Next",
+  "noDownloads": "No Downloads",
+  "noLogsFound": "No logs found",
+  "noPlaylists": "No playlists",
+  "noPlaylistsMessage": "Create a playlist to organize your videos",
+  "noResults": "No results",
+  "noResultsMessage": "No items match your search.",
+  "noTagsYet": "No tags yet. Create one below.",
+  "noValidUrl": "No valid video URL found",
+  "noVideosFound": "Your library is empty",
+  "nothingHereYet": "Nothing here yet",
+  "nowPlaying": "Now playing",
+  "offlineSmartList": "Offline",
+  "ok": "OK",
+  "openGithub": "Open MeTube on GitHub",
+  "openOriginalLink": "Open Original Link",
+  "originalUrl": "Original URL",
+  "password": "Password",
+  "passwordRequired": "Password is required",
+  "pasteFromClipboard": "Paste",
+  "pause": "Pause",
+  "pinPlaylist": "Pin to top",
+  "platform": "Platform",
+  "platformCount": "{name} · {count}",
+  "platformFilter": "Platform",
+  "play": "Play",
+  "playAllFavorites": "Play all favorites",
+  "playbackError": "Playback Error",
+  "playbackSpeed": "Playback speed",
+  "playerError": "Couldn't play this file",
+  "playerLoading": "Loading video...",
+  "playlist": "Playlist",
+  "playlistDeleted": "Playlist deleted",
+  "playlistDetails": "Playlist Details",
+  "playlistName": "Playlist name",
+  "playlistNameHint": "My Playlist",
+  "playlistOf": "{current} / {total}",
+  "playlists": "Playlists",
+  "playlistsCount": "{count} playlists",
+  "pleaseEnterUrl": "Please enter a URL",
+  "preparingDownload": "Preparing download...",
+  "previous": "Previous",
+  "quality": "Quality",
+  "quality1080": "1080p",
+  "quality480": "480p",
+  "quality720": "720p",
+  "qualityAudio": "Audio only",
+  "qualityBest": "Best available",
+  "qualityHelper": "Sent to the server for new downloads",
+  "queuePosition": "Queue position: {position}",
+  "queued": "Queued",
+  "readyToShare": "Ready to share!",
+  "reelsEndBack": "Back to library",
+  "reelsEndReplay": "Replay from the start",
+  "reelsEndTitle": "End of the shorts lane",
+  "refresh": "Refresh",
+  "remove": "Remove",
+  "removeFromPlaylist": "Remove from playlist",
+  "removeOfflineCopy": "Remove offline copy",
+  "removeOfflineTitle": "Remove Offline Copy",
+  "removedFromFavorites": "Removed from favorites",
+  "rename": "Rename",
+  "renameTag": "Rename tag",
+  "reorderHint": "Drag to reorder",
+  "reportBug": "Report a Bug",
+  "resetBackup": "Reset backup",
+  "restoreCancelled": "Backup file not found in Downloads folder",
+  "restoreData": "Restore",
+  "restoreFailed": "Restore failed — invalid backup file",
+  "restoreNotFound": "No backup file found in Downloads/MeTube_Super",
+  "restoreSettings": "Restore All Data",
+  "restoreSuccess": "Data restored successfully",
+  "retry": "Retry",
+  "retryingAttempt": "Retry {attempt}/{max}…",
+  "saveQueueAsPlaylist": "Save this queue as a playlist",
+  "saveSettings": "Save Settings",
+  "savedPartial": "Saved (Server delete failed)",
+  "savedSuccess": "Settings saved",
+  "savedTo": "Saved to Downloads/MeTube_Lite",
+  "savedToDownloads": "Saved to Downloads/MeTube_Super",
+  "scanningVideos": "Scanning videos...",
+  "searchHint": "Search…",
+  "searchLogs": "Search logs…",
+  "searchResults": "Results: {found} of {total}",
+  "searchVideos": "Search videos...",
+  "selectAll": "Select All",
+  "selected": "{count} selected",
+  "selectedCount": "{count} selected",
+  "serverConfiguration": "Server Configuration",
+  "serverDownload": "Server Download",
+  "serverStatusChecking": "Checking connection…",
+  "serverStatusConnected": "Connected to server",
+  "serverStatusOffline": "Server unreachable",
+  "serverStatusUnconfigured": "No server configured",
+  "serverUrl": "Server URL (MeTube)",
+  "serverUrlHelpTitle": "About the Server URL",
+  "serverUrlHint": "http://192.168.1.5:8086 or https://domain.com",
+  "serverUrlLabel": "Server URL (MeTube Super)",
+  "serverUrlRequired": "Server URL is required",
+  "settings": "Settings",
+  "settingsCleared": "Settings cleared",
+  "settingsSaved": "Settings saved successfully",
+  "share": "Share",
+  "shareFailed": "Failed to share: {message}",
+  "shareKeyFile": "Share key file",
+  "shareLogs": "Share Logs",
+  "shareRedacted": "Share (redacted)",
+  "shareSelected": "Share Selected",
+  "shareVia": "Share",
+  "shuffle": "Shuffle",
+  "size": "Size",
+  "smartPlaylists": "Smart playlists",
+  "sortBy": "Sort by",
+  "sortLargest": "Largest",
+  "sortNameAZ": "Name A–Z",
+  "sortNameZA": "Name Z–A",
+  "sortNewest": "Newest",
+  "sortOldest": "Oldest",
+  "sortSmallest": "Smallest",
+  "source": "Source",
+  "sourceCode": "Source code",
+  "speedNormal": "Normal",
+  "startingDownload": "Starting download via server...",
+  "status": "Status",
+  "statusCompleted": "Completed",
+  "statusDownloading": "Downloading...",
+  "statusError": "Error",
+  "statusOffline": "Offline",
+  "statusQueued": "Queued",
+  "statusQueuing": "Adding to queue...",
+  "statusServerDownloading": "Server downloading...",
+  "statusStream": "Stream",
+  "statusWaiting": "Waiting...",
+  "streamUrlUnavailable": "Stream URL not available",
+  "tagActionsHint": "Long-press a tag to rename or delete it.",
+  "tagAudio": "Audio",
+  "tagVideo": "Video",
+  "tags": "Tags",
+  "tapToCopy": "Tap to copy",
+  "theme": "Theme",
+  "themeDark": "Dark",
+  "themeDarkMode": "Dark theme",
+  "themeFollowSystem": "Follow system settings",
+  "themeLight": "Light",
+  "themeLightMode": "Light theme",
+  "themeSystem": "System",
+  "totalDuration": "Total: {duration}",
+  "tracksCount": "{count} tracks",
+  "tryAgain": "Try again",
+  "undo": "Undo",
+  "unpinPlaylist": "Unpin",
+  "upNext": "Up next",
+  "urlMustStartWith": "URL must start with http:// or https://",
+  "urlRequiredField": "Enter a URL",
+  "useCurrentConnection": "Use current connection",
+  "username": "Username",
+  "usernameRequired": "Username is required",
+  "version": "Version",
+  "videoAdded": "Added to playlist",
+  "videoDetails": "Video details",
+  "videoLabel": "Video",
+  "videoPlayer": "Video Player",
+  "videoRemoved": "Removed from playlist",
+  "videosCount": "{count} videos",
+  "viewAllInPlaylists": "View all",
+  "waiting": "Waiting for server...",
+  "yourPlaylists": "Your playlists",
+  "yourTags": "Your tags",
+  "youtubeDownloadStarting": "Starting YouTube download..."
+}
