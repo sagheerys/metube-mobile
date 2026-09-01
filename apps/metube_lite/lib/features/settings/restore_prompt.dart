@@ -16,6 +16,9 @@ import 'auto_backup.dart';
 Future<void> maybeOfferAutoRestore(BuildContext context, WidgetRef ref) async {
   final store = ref.read(keyValueStoreProvider);
   if (await store.getBool('auto_restore_offered') ?? false) return;
+  // تثبيت جديد فقط: وجود سيرفر مهيأ يعني أن هذه ليست بداية نظيفة —
+  // عرض استعادة نسخةٍ كتبها التطبيق نفسه للتو ضجيج لا فائدة فيه.
+  if (ref.read(settingsProvider).isConfigured) return;
 
   final backup = ref.read(autoBackupProvider);
   final state = await backup.inspect();

@@ -42,6 +42,9 @@ final downloadWatcherProvider = Provider<void>((ref) {
             notificationIcon:
                 const AndroidResource(name: 'ic_launcher', defType: 'mipmap'),
             enableWifiLock: true,
+            // **لا** نطلب استثناء تحسين البطارية: حوار نظام مزعج لضيف
+            // العائلة، والخدمة الأمامية وحدها تكفي لجلسة تحميل قصيرة.
+            shouldRequestBatteryOptimizationsOff: false,
           ),
         );
         if (ready) await FlutterBackground.enableBackgroundExecution();

@@ -36,16 +36,33 @@ Future<void> openAddSheet(
   await showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
-    builder: (sheetContext) => _AddSheet(controller: controller, l10n: l10n),
+    // الراوتر والمُراسِل يُلتقطان **قبل** فتح الورقة: البحث عنهما بسياق
+    // الورقة بعد `Navigator.pop` يفجّر تأكيد `_dependents.isEmpty`
+    // (نفس درس المرحلة 6 — عنصر مُبطَّل لا يُستعلم عنه).
+    builder: (sheetContext) => _AddSheet(
+      controller: controller,
+      l10n: l10n,
+      router: GoRouter.of(context),
+      messenger: ScaffoldMessenger.of(context),
+    ),
   );
   controller.dispose();
 }
 
 class _AddSheet extends ConsumerStatefulWidget {
-  const _AddSheet({required this.controller, required this.l10n});
+  const _AddSheet({
+    required this.controller,
+    required this.l10n,
+    required this.router,
+    required this.messenger,
+  });
 
   final TextEditingController controller;
   final MTLocalizations l10n;
+
+  /// ملتقطان من سياق الشاشة المستضيفة — يبقيان صالحين بعد إغلاق الورقة.
+  final GoRouter router;
+  final ScaffoldMessengerState messenger;
 
   @override
   ConsumerState<_AddSheet> createState() => _AddSheetState();
@@ -94,22 +111,20 @@ class _AddSheetState extends ConsumerState<_AddSheet> {
       return;
     }
     Navigator.pop(context);
-    final router = GoRouter.of(context);
-    final messengerContext = context;
 
     // م-5: رابط قائمة ⇒ شاشة الدفعي.
     if (PlaylistDetector.isPlaylist(url)) {
-      router.push('/batch', extra: url);
+      widget.router.push('/batch', extra: url);
       return;
     }
     final engine = ref.read(downloadEngineProvider);
     if (engine == null) {
-      showMTSnack(messengerContext, l10n.noServerTitle,
+      showMTSnackOn(widget.messenger, l10n.noServerTitle,
           type: MTSnackType.error);
       return;
     }
     engine.submit(url, Quality.fromWire(_quality));
-    showMTSnack(messengerContext, l10n.downloadStarted,
+    showMTSnackOn(widget.messenger, l10n.downloadStarted,
         type: MTSnackType.success);
   }
 }
