@@ -1,5 +1,6 @@
 import 'package:uuid/uuid.dart';
 
+import '../api/api_exceptions.dart';
 import 'quality.dart';
 
 const _uuid = Uuid();
@@ -30,7 +31,7 @@ class DownloadTask {
     this.localPath,
     this.phase = TaskPhase.queued,
     this.progress = 0,
-    this.errorMessage,
+    this.error,
     this.isBatchMember = false,
     DateTime? createdAt,
   })  : id = id ?? _uuid.v4(),
@@ -53,7 +54,9 @@ class DownloadTask {
 
   /// 0..1: تقدم السيرفر أثناء polling ثم تقدم السحب أثناء pulling.
   final double progress;
-  final String? errorMessage;
+
+  /// الخطأ المصنف عند الفشل — التطبيق يحوّل نوعه لنص مترجم (TRD §3.3).
+  final MTApiException? error;
 
   /// المفرد يتقدم على أعضاء الدفعات في الطابور.
   final bool isBatchMember;
@@ -73,7 +76,7 @@ class DownloadTask {
     String? localPath,
     TaskPhase? phase,
     double? progress,
-    String? errorMessage,
+    MTApiException? error,
   }) =>
       DownloadTask(
         id: id,
@@ -85,7 +88,7 @@ class DownloadTask {
         localPath: localPath ?? this.localPath,
         phase: phase ?? this.phase,
         progress: progress ?? this.progress,
-        errorMessage: errorMessage ?? this.errorMessage,
+        error: error ?? this.error,
         isBatchMember: isBatchMember,
         createdAt: createdAt,
       );

@@ -46,3 +46,13 @@ final class PlatformBlockedException extends ServerErrorException {
 final class UnsafeFilenameException extends MTApiException {
   const UnsafeFilenameException([super.detail]);
 }
+
+/// أُلغيت المهمة بطلب المستخدم — ليست خطأً يُعرض.
+final class CancelledException extends MTApiException {
+  const CancelledException([super.detail]);
+}
+
+/// انقضت مهلة استطلاع `/history` (120×5s) دون اكتمال العنصر.
+final class PollTimeoutException extends MTApiException {
+  const PollTimeoutException([super.detail]);
+}

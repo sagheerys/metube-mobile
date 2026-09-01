@@ -7,6 +7,7 @@ import '../models/history_response.dart';
 import '../models/quality.dart';
 import '../urls/url_kit.dart';
 import 'api_exceptions.dart';
+import 'metube_api.dart';
 
 /// إعدادات الاتصال بسيرفر MeTube — الرابط يُطبَّع بإزالة الشرطات الأخيرة.
 class ServerConfig {
@@ -41,7 +42,7 @@ class ServerConfig {
 
 /// عميل MeTube الوحيد — **كل** الشبكة نحو السيرفر من هنا (القاعدة 1).
 /// النقاط الأربع + testConnection حسب `05-DATA-SCHEMA.md` §2 حرفياً.
-class MeTubeApiClient {
+class MeTubeApiClient implements MeTubeApi {
   MeTubeApiClient({required this.config, Dio? dio})
       : _dio = dio ?? Dio() {
     _dio.options = BaseOptions(
@@ -61,6 +62,7 @@ class MeTubeApiClient {
   final Dio _dio;
 
   /// ترويسات البث للمشغلات (just_audio / video_player).
+  @override
   Map<String, String> get streamingHeaders => {
         if (config.basicAuthHeader != null)
           'Authorization': config.basicAuthHeader!,
@@ -68,6 +70,7 @@ class MeTubeApiClient {
       };
 
   /// §2.1 — صالح ⇔ 200 + JSON Map يحوي `done` و`queue` معاً.
+  @override
   Future<void> testConnection({Duration? timeout}) async {
     final response = await _request(
       () => _dio.get<String>(
@@ -85,6 +88,7 @@ class MeTubeApiClient {
   }
 
   /// §2.3 — السجل الكامل للاستطلاع.
+  @override
   Future<HistoryResponse> fetchHistory() async {
     final response = await _request(() => _dio.get<String>(
           '${config.baseUrl}/history',
@@ -98,6 +102,7 @@ class MeTubeApiClient {
 
   /// §2.2 — إضافة رابط. **قاعدة الجودة تُطبَّق هنا** فلا تفلت رقمية لغير
   /// YouTube مهما كان المنادي.
+  @override
   Future<void> add(String url, Quality quality) async {
     final response = await _request(
       () => _dio.post<String>(
@@ -113,6 +118,7 @@ class MeTubeApiClient {
   }
 
   /// §2.5 — الحذف بالـ canonicalUrl القادم من `/history` حصراً.
+  @override
   Future<void> delete(
     List<String> canonicalUrls, {
     String where = 'done',
@@ -128,11 +134,41 @@ class MeTubeApiClient {
   }
 
   /// §2.4 — رابط السحب/البث مع **حارس اسم الملف الإلزامي** داخل العميل.
+  @override
   String downloadUrl(String serverFilename) {
     if (!UrlKit.isSafeServerFilename(serverFilename)) {
       throw const UnsafeFilenameException();
     }
     return '${config.baseUrl}/download/${Uri.encodeComponent(serverFilename)}';
+  }
+
+  /// §2.4 — السحب الفعلي إلى ملف. ⚠️ لا `responseType: bytes` مع
+  /// `dio.download` (فخ §1). محاولة واحدة — الإعادة في `Transfer`.
+  @override
+  Future<void> downloadTo(
+    String serverFilename,
+    String savePath, {
+    void Function(int received, int total)? onProgress,
+    CancelToken? cancelToken,
+  }) async {
+    final url = downloadUrl(serverFilename);
+    try {
+      await _dio.download(
+        url,
+        savePath,
+        cancelToken: cancelToken,
+        onReceiveProgress: onProgress,
+        options: Options(
+          receiveTimeout: MTConstants.downloadReceiveTimeout,
+          headers: {'Connection': 'keep-alive'},
+        ),
+      );
+    } on DioException catch (e) {
+      if (e.type == DioExceptionType.cancel) {
+        throw const CancelledException();
+      }
+      throw NetworkException(e.message);
+    }
   }
 
   void close() => _dio.close(force: true);
