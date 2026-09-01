@@ -219,6 +219,7 @@ class MTGalleryScreen extends StatelessWidget {
         text: 'https://youtu.be/dQw4w9WgXcQ');
     showModalBottomSheet<void>(
       context: context,
+      useRootNavigator: true,
       isScrollControlled: true,
       builder: (sheetContext) => MTUrlInputSheet(
         title: 'إضافة رابط',
@@ -238,7 +239,12 @@ class MTGalleryScreen extends StatelessWidget {
         startLabel: 'ابدأ التحميل',
         onStart: () => Navigator.pop(sheetContext),
       ),
-    );
+      // معرض تطوير، لكن التسريب تسريب: المتحكم يُصرَّف بعد أن تخرج
+      // الورقة من الشجرة فعلاً — لا فور اكتمال المستقبل.
+    ).whenComplete(() {
+      WidgetsBinding.instance
+          .addPostFrameCallback((_) => controller.dispose());
+    });
   }
 }
 

@@ -1526,4 +1526,7 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get savedOnDevice => 'محفوظ للجهاز';
+
+  @override
+  String get titleLabel => 'العنوان';
 }

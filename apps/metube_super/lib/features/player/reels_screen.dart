@@ -64,7 +64,9 @@ class _ReelsScreenState extends ConsumerState<ReelsScreen> {
       subtitleBuilder: (context, item) => [
         MediaPlatform.detect(item.canonicalUrl).label,
         if (item.uploader != null) item.uploader!,
-        if (item.hasLocal) l10n.availabilityOffline,
+        // من المكتبة الحيّة: `item.hasLocal` لقطة قديمة لا تتحدث.
+        if (byUrl[item.canonicalUrl]?.isOffline ?? item.hasLocal)
+          l10n.availabilityOffline,
       ].join(' · '),
       isFavorite: (item) => byUrl[item.canonicalUrl]?.favorite ?? false,
       onToggleFavorite: (item) =>

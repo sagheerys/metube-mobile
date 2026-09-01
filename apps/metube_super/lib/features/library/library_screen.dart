@@ -16,6 +16,7 @@ import 'library_actions.dart';
 import 'library_models.dart';
 import 'library_providers.dart';
 import 'widgets/downloads_sheet.dart';
+import 'widgets/library_chips.dart';
 import 'widgets/item_actions_sheet.dart';
 import 'widgets/sort_sheet.dart';
 
@@ -75,7 +76,9 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                 ref.invalidate(historyProvider);
                 await ref.read(libraryItemsProvider.future);
               },
-              child: _body(l10n, options, active),
+              // ظهور واحد هادئ للمحتوى عند أول بناء — لا حركة لكل
+              // بطاقة (كانت تُنطّ القائمة طوال التمرير).
+              child: MTRevealOnce(child: _body(l10n, options, active)),
             ),
     );
   }
@@ -174,7 +177,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                 onChanged: ref.read(libraryViewProvider.notifier).setQuery,
               ),
               const SizedBox(height: MTSpace.sm),
-              _filterChips(l10n, options),
+              const LibraryFilterChips(),
               const SizedBox(height: MTSpace.md),
               // بطاقات حية أعلى المكتبة أثناء النشاط فقط (النموذج أ).
               for (final task in active) ...[
@@ -196,13 +199,8 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                     const EdgeInsets.symmetric(horizontal: MTSpace.pagePad),
                 sliver: SliverList.builder(
                   itemCount: value.length,
-                  // ظهور متتابع للعناصر الأولى فقط — يشرح أن القائمة
-                  // تُبنى، ولا يؤخر شيئاً عند التمرير السريع.
-                  itemBuilder: (context, index) => MTFadeSlideIn(
-                    key: ValueKey(value[index].canonicalUrl),
-                    index: index,
-                    child: _itemCard(l10n, options, value[index]),
-                  ),
+                  itemBuilder: (context, index) =>
+                      _itemCard(l10n, options, value[index]),
                 ),
               ),
             ],
@@ -247,75 +245,6 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     );
   }
 
-  Widget _filterChips(MTLocalizations l10n, LibraryViewOptions options) {
-    final controller = ref.read(libraryViewProvider.notifier);
-    final x = MTThemeX.of(context);
-    ChoiceChip chip(String label, bool selected, VoidCallback onTap,
-            {Color? selectedColor}) =>
-        ChoiceChip(
-          label: Text(label),
-          selected: selected,
-          showCheckmark: false,
-          selectedColor: selectedColor,
-          labelStyle: Theme.of(context).textTheme.labelMedium!.copyWith(
-              color: selected ? x.palette.bg : x.palette.ink2),
-          onSelected: (_) => onTap(),
-        );
-
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: [
-          // وسم نشط قادم من تبويب «وسومك» — نقرته تلغيه (م-37/ج).
-          if (options.tag != null) ...[
-            InputChip(
-              label: Text('# ${options.tag}'),
-              selected: true,
-              showCheckmark: false,
-              selectedColor: x.palette.offlineSoft,
-              onDeleted: () => controller.setTag(null),
-              onSelected: (_) => controller.setTag(null),
-            ),
-            const SizedBox(width: MTSpace.xs),
-          ],
-          chip(l10n.filterAll, options.scope == LibraryScope.all,
-              () => controller.setScope(LibraryScope.all)),
-          const SizedBox(width: MTSpace.xs),
-          // م-36: رقاقة المفضلة أول المرشحات بعد «الكل».
-          chip('♥ ${l10n.favorites}',
-              options.scope == LibraryScope.favorites,
-              () => controller.setScope(LibraryScope.favorites),
-              selectedColor: x.palette.favorite),
-          const SizedBox(width: MTSpace.xs),
-          chip(l10n.filterOffline, options.scope == LibraryScope.offline,
-              () => controller.setScope(LibraryScope.offline)),
-          const SizedBox(width: MTSpace.xs),
-          chip(l10n.filterServer, options.scope == LibraryScope.onServer,
-              () => controller.setScope(LibraryScope.onServer)),
-          const SizedBox(width: MTSpace.md),
-          chip(l10n.filterVideo, options.type == MediaTypeFilter.video,
-              () => controller.setType(
-                  options.type == MediaTypeFilter.video
-                      ? MediaTypeFilter.all
-                      : MediaTypeFilter.video)),
-          const SizedBox(width: MTSpace.xs),
-          chip(l10n.filterAudio, options.type == MediaTypeFilter.audio,
-              () => controller.setType(
-                  options.type == MediaTypeFilter.audio
-                      ? MediaTypeFilter.all
-                      : MediaTypeFilter.audio)),
-          const SizedBox(width: MTSpace.xs),
-          // م-35: رقاقة «⚡ قِصار» تجمع العمودية القصيرة.
-          chip('⚡ ${l10n.shortsFilter}',
-              options.type == MediaTypeFilter.shorts,
-              () => controller.setType(
-                  options.type == MediaTypeFilter.shorts
-                      ? MediaTypeFilter.all
-                      : MediaTypeFilter.shorts)),
-        ],
-      ),
-    );
-  }
 
   Widget _taskCard(MTLocalizations l10n, DownloadTask task) {
     final engine = ref.read(downloadEngineProvider);

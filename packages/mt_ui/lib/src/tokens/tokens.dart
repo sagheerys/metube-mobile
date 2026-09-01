@@ -40,10 +40,14 @@ abstract final class MTMotion {
   static const Duration medium = Duration(milliseconds: 320);
   static const Duration slow = Duration(milliseconds: 640);
 
-  // ── الحركة (سجل §4 · أُضيفت 2026-09-02 بطلب المالك) ───────────────
+  // ── الحركة (سجل §4 · 2026-09-02 · **خُففت بطلب المالك: «غير متزنة،
+  // خففها واجعلها أكثر سلاسة»**) ─────────────────────────────────────
   // المبدأ: **سريع عند الخروج، هادئ عند الدخول**، والحركة تُلمَح ولا
-  // تُشاهَد — «وهج» هوية تحريرية دافئة لا واجهة ألعاب: لا ارتداد مرح
-  // ولا انزلاق طويل. كل مدة هنا ≤ نصف ثانية.
+  // تُشاهَد — «وهج» هوية تحريرية دافئة لا واجهة ألعاب.
+  //
+  // الدرس من المحاولة الأولى: **المسافة هي ما يُتعب العين لا المدة.**
+  // انزلاق 14 نقطة للبطاقة و0.22 من عرض الشاشة للصفحة كانا يُقرآن
+  // «قفزة». القيم الآن نصف ذلك تقريباً، والاعتماد الأكبر على التلاشي.
 
   /// دخول مؤكَّد: يتسارع ثم يستقر بلا تجاوز.
   static const Curve entrance = Cubic(0.2, 0, 0, 1);
@@ -52,17 +56,19 @@ abstract final class MTMotion {
   static const Curve exit = Cubic(0.3, 0, 1, 1);
 
   /// نبضة عنصر صغير (شارة، زر، رقاقة).
-  static const Duration tap = Duration(milliseconds: 180);
+  static const Duration tap = Duration(milliseconds: 160);
 
   /// انتقال شاشة كاملة.
-  static const Duration page = Duration(milliseconds: 300);
+  static const Duration page = Duration(milliseconds: 240);
 
-  /// تأخير كل عنصر تالٍ في ظهور قائمة متتابع.
-  static const Duration stagger = Duration(milliseconds: 28);
+  /// ظهور محتوى داخل الشاشة.
+  static const Duration reveal = Duration(milliseconds: 220);
 
-  /// أقصى عدد عناصر تتلقى تأخيراً متتابعاً — بعدها الظهور فوري، وإلا
-  /// انتظر العنصر الخمسون ثانية ونصفاً قبل أن يظهر.
-  static const int staggerLimit = 8;
+  /// إزاحة انزلاق عنصر داخلي (نقاط) — صغيرة عمداً.
+  static const double slideNudge = 7;
+
+  /// نسبة انزلاق الصفحة من عرضها.
+  static const double pageSlide = 0.06;
 }
 
 /// الطباعة المعتمدة: عناوين Noto Kufi Arabic (700/500) · نصوص Tajawal.

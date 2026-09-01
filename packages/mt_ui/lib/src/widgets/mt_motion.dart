@@ -2,60 +2,61 @@ import 'package:flutter/material.dart';
 
 import '../tokens/tokens.dart';
 
-/// **حركة «وهج»** (طلب المالك 2026-09-02) — كل الأزمنة والمنحنيات من
-/// [MTMotion] في `tokens.dart`، صفر قيمة مثبتة هنا.
+/// **حركة «وهج»** — كل الأزمنة والمسافات من [MTMotion] في `tokens.dart`،
+/// صفر قيمة مثبتة هنا.
 ///
-/// الهوية تحريرية دافئة لا واجهة ألعاب، فالقاعدة: **الحركة تشرح ولا
-/// تستعرض**. ثلاث حركات فقط، ولكلٍّ سبب:
+/// **المراجعة الثانية (بلاغ المالك 2026-09-02: «الحركات غير متزنة،
+/// خففها واجعلها أكثر سلاسة»).** المحاولة الأولى كانت تحرّك **كل بطاقة
+/// عند إنشائها**، و`SliverList.builder` ينشئ البطاقات وأنت تمرّر — فكل
+/// صف يدخل الشاشة كان يبدأ تلاشياً وانزلاقاً من جديد. النتيجة قائمة
+/// «تنطّ» طوال التمرير، وهي بالضبط ما وصفه المالك.
 ///
-/// 1. [MTFadeSlideIn] — ظهور متتابع لعناصر القائمة: يقول «هذه قائمة
-///    تُبنى» بدل ظهور كتلة صمّاء، ويخفي الفارق بين إطار المكتبة الأول
-///    وما يليه.
-/// 2. [MTPageTransitions] — انتقال الشاشات: انزلاق خفيف يحترم اتجاه
-///    اللغة، فيُفهم «دخلتُ» و«رجعتُ» بلا قراءة.
-/// 3. [MTAnimatedSwap] — تبدّل محتوى في مكانه (حالة فارغة ⇄ قائمة،
-///    شارة ⇄ شارة): تلاشٍ متقاطع قصير بدل قفزة.
+/// العلاج مبدئي لا تجميلي: **الشاشة تدخل مرة واحدة، لا عناصرها.**
+/// [MTRevealOnce] يحرّك الكتلة كلها عند أول ظهور ثم يزيح نفسه من
+/// الشجرة، فلا يبقى أي `AnimationController` ولا أي عمل أثناء التمرير.
 ///
-/// **حدّ أقصى مقصود:** لا حركة تتجاوز [MTMotion.medium]، ولا ارتداد
-/// (`elasticOut`/`bounceOut`) في أي مكان.
+/// الحركات الثلاث الباقية:
+/// 1. [MTRevealOnce] — دخول محتوى الشاشة مرة واحدة.
+/// 2. [MTSlidePageTransition] — انتقال الشاشات باتجاه اللغة.
+/// 3. [MTAnimatedSwap] — تبدّل محتوى في مكانه.
 
-/// ظهور عنصر: تلاشٍ + انزلاق قصير لأعلى. [index] يُنتج تأخيراً متتابعاً
-/// محدوداً بـ [MTMotion.staggerLimit] كي لا ينتظر العنصر الخمسون دهراً.
-class MTFadeSlideIn extends StatefulWidget {
-  const MTFadeSlideIn({
-    super.key,
-    required this.child,
-    this.index = 0,
-    this.offset = 14,
-  });
+/// ظهور **لمرة واحدة** لكتلة محتوى: تلاشٍ + إزاحة قصيرة جداً.
+///
+/// بعد انتهاء الحركة يعيد [child] عارياً — لا `Transform` ولا
+/// `FadeTransition` باقيان في الشجرة، فلا كلفة على التمرير بعدها.
+class MTRevealOnce extends StatefulWidget {
+  const MTRevealOnce({super.key, required this.child, this.delay});
 
   final Widget child;
-  final int index;
 
-  /// مسافة الانزلاق بالنقاط — صغيرة عمداً: الحركة تُلمَح لا تُشاهَد.
-  final double offset;
+  /// تأخير اختياري لتتابع خفيف بين كتلتين (لا بين عشرات العناصر).
+  final Duration? delay;
 
   @override
-  State<MTFadeSlideIn> createState() => _MTFadeSlideInState();
+  State<MTRevealOnce> createState() => _MTRevealOnceState();
 }
 
-class _MTFadeSlideInState extends State<MTFadeSlideIn>
+class _MTRevealOnceState extends State<MTRevealOnce>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller = AnimationController(
     vsync: this,
-    duration: MTMotion.medium,
+    duration: MTMotion.reveal,
   );
+  bool _done = false;
 
   @override
   void initState() {
     super.initState();
-    final delay = MTMotion.stagger *
-        widget.index.clamp(0, MTMotion.staggerLimit);
-    if (delay == Duration.zero) {
+    _controller.addStatusListener((status) {
+      if (status == AnimationStatus.completed && mounted) {
+        setState(() => _done = true);
+      }
+    });
+    final delay = widget.delay;
+    if (delay == null || delay == Duration.zero) {
       _controller.forward();
     } else {
       Future<void>.delayed(delay, () {
-        // العنصر قد يخرج من الشاشة قبل دوره (تمرير سريع).
         if (mounted) _controller.forward();
       });
     }
@@ -69,20 +70,20 @@ class _MTFadeSlideInState extends State<MTFadeSlideIn>
 
   @override
   Widget build(BuildContext context) {
-    // احترام إعداد النظام «تقليل الحركة» — شرط وصول لا تحسين.
-    if (MediaQuery.disableAnimationsOf(context)) return widget.child;
+    // احترام «تقليل الحركة» في إعدادات النظام — شرط وصول لا تحسين.
+    if (_done || MediaQuery.disableAnimationsOf(context)) return widget.child;
     final curved =
         CurvedAnimation(parent: _controller, curve: MTMotion.entrance);
-    return FadeTransition(
-      opacity: curved,
-      child: AnimatedBuilder(
-        animation: curved,
-        builder: (context, child) => Transform.translate(
-          offset: Offset(0, widget.offset * (1 - curved.value)),
+    return AnimatedBuilder(
+      animation: curved,
+      builder: (context, child) => Opacity(
+        opacity: curved.value,
+        child: Transform.translate(
+          offset: Offset(0, MTMotion.slideNudge * (1 - curved.value)),
           child: child,
         ),
-        child: widget.child,
       ),
+      child: widget.child,
     );
   }
 }
@@ -103,11 +104,11 @@ class MTAnimatedSwap extends StatelessWidget {
       );
 }
 
-/// انتقال الشاشات: انزلاق **باتجاه اللغة** + تلاشٍ.
+/// انتقال الشاشات: تلاشٍ + إزاحة **قصيرة** باتجاه اللغة.
 ///
-/// الافتراضي في أندرويد صعودٌ رأسي لا يقول شيئاً عن العلاقة بين
-/// الشاشتين؛ الانزلاق الأفقي يقول «دخلتُ أعمق» و«رجعتُ» — وينعكس في
-/// العربية تلقائياً لأنه يقرأ [Directionality].
+/// الافتراضي في أندرويد صعودٌ رأسي لا يقول شيئاً عن علاقة الشاشتين؛
+/// الإزاحة الأفقية تقول «دخلتُ أعمق» و«رجعتُ». والمسافة صغيرة عمداً
+/// (`pageSlide`): الانزلاق الطويل هو ما يُقرأ «قفزة».
 class MTSlidePageTransition extends PageTransitionsBuilder {
   const MTSlidePageTransition();
 
@@ -123,22 +124,17 @@ class MTSlidePageTransition extends PageTransitionsBuilder {
     final rtl = Directionality.of(context) == TextDirection.rtl;
     final sign = rtl ? -1.0 : 1.0;
     final enter = Tween<Offset>(
-      begin: Offset(0.22 * sign, 0),
+      begin: Offset(MTMotion.pageSlide * sign, 0),
       end: Offset.zero,
     ).animate(
         CurvedAnimation(parent: animation, curve: MTMotion.entrance));
-    // الشاشة المغادرة تنزاح قليلاً فقط: تبقى حاضرة ذهنياً تحت الجديدة.
-    final leave = Tween<Offset>(
-      begin: Offset.zero,
-      end: Offset(-0.08 * sign, 0),
-    ).animate(
-        CurvedAnimation(parent: secondaryAnimation, curve: MTMotion.exit));
 
     return SlideTransition(
-      position: leave,
-      child: SlideTransition(
-        position: enter,
-        child: FadeTransition(opacity: animation, child: child),
+      position: enter,
+      // التلاشي هو الحامل الأساسي للانتقال، والإزاحة تلميح اتجاه فقط.
+      child: FadeTransition(
+        opacity: CurvedAnimation(parent: animation, curve: MTMotion.entrance),
+        child: child,
       ),
     );
   }

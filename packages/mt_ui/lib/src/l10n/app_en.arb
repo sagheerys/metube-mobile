@@ -740,5 +740,6 @@
     }
   },
   "saveToDevice": "Save to device",
-  "savedOnDevice": "Saved on device"
+  "savedOnDevice": "Saved on device",
+  "titleLabel": "Title"
 }

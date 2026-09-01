@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart' show Color;
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:mt_ui/mt_ui.dart' show MTPalette;
 
 /// م-9: إشعارات التحميل — تقدم أثناء السحب، اكتمال (نقرته تفتح التطبيق
 /// وتُبرز العنصر)، وخطأ. قناة صامتة للتقدم وأخرى للنتيجة كي لا يرن
@@ -84,7 +84,7 @@ class DownloadNotifications {
             channelName,
             importance: Importance.defaultImportance,
             priority: Priority.defaultPriority,
-            color: isError ? const Color(0xFFB3261E) : null,
+            color: isError ? MTPalette.notificationError : null,
           ),
         ),
         payload: payload,

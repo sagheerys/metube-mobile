@@ -2881,6 +2881,12 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'Saved on device'**
   String get savedOnDevice;
+
+  /// No description provided for @titleLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get titleLabel;
 }
 
 class _MTLocalizationsDelegate extends LocalizationsDelegate<MTLocalizations> {

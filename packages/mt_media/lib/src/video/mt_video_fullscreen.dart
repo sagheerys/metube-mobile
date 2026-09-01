@@ -190,7 +190,7 @@ class _PanelBody extends StatelessWidget {
   Widget build(BuildContext context) {
     final p = MTThemeX.of(context).palette;
     return Container(
-      color: const Color(0xEB140F0C),
+      color: MTPalette.fullscreenScrim,
       padding: const EdgeInsets.fromLTRB(
           MTSpace.lg, MTSpace.lg, MTSpace.lg, MTSpace.md),
       child: SafeArea(

@@ -148,7 +148,18 @@ ThemeData mtTheme(MTVariant variant, Brightness brightness) {
       backgroundColor: Colors.transparent,
       selectedColor: p.ink,
       side: BorderSide(color: p.line2),
-      labelStyle: body(12.5, FontWeight.w500, color: p.ink2),
+      // **لون النص يتبع الحالة** (فحص شامل 2026-09-02): الرقاقة المحددة
+      // خلفيتها `p.ink` وكان نصها `p.ink2` — حبر داكن على حبر داكن، أي
+      // **وسم محدد لا يُقرأ**. الشاشات التي مرّرت `labelStyle` بنفسها
+      // كانت تُخفي العطل، وورقة الوسوم التي تستعمل `FilterChip` عارية
+      // كشفته (وهو جزء من «الوسوم تسبب ربكة»).
+      labelStyle: body(12.5, FontWeight.w500).copyWith(
+        color: WidgetStateColor.resolveWith(
+          (states) =>
+              states.contains(WidgetState.selected) ? p.bg : p.ink2,
+        ),
+      ),
+      checkmarkColor: p.bg,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(MTRadius.chip),
       ),

@@ -79,6 +79,19 @@ class MTPalette {
   static const Color serverCardBg = Color(0xFF241B15);
   static const Color serverCardInk = Color(0xFFF4EBDF);
 
+  // ── ثوابت داكنة دائمة (فحص شامل 2026-09-02: كانت مثبتة في الشاشات
+  // مخالفةً للقاعدة 5 — «كل لون من tokens، صفر قيمة مثبتة») ──────────
+
+  /// طرف تدرّج بطاقة القائمة الإسبريسو — أفتح من [serverCardBg].
+  static const Color serverCardBgLift = Color(0xFF443327);
+
+  /// حجاب المشغل العرضي الغامر: إسبريسو شبه معتم فوق الفيديو.
+  static const Color fullscreenScrim = Color(0xEB140F0C);
+
+  /// أحمر إشعارات النظام — يُستعمل خارج شجرة الودجت (لا `context`
+  /// ولا `MTThemeX`)، فيلزم أن يكون ثابتاً صريحاً.
+  static const Color notificationError = Color(0xFFB3261E);
+
   static MTPalette of(MTVariant variant, Brightness brightness) =>
       switch ((variant, brightness)) {
         (MTVariant.superApp, Brightness.light) => superDay,

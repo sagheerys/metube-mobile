@@ -154,37 +154,19 @@ class NetworkScreen extends ConsumerWidget {
     );
   }
 
-  void _addExternalDialog(BuildContext context, WidgetRef ref) {
+  Future<void> _addExternalDialog(BuildContext context, WidgetRef ref) async {
     final l10n = context.mtl;
-    final controller = TextEditingController();
-    showDialog<void>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(l10n.addEndpoint),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          textDirection: TextDirection.ltr,
-          decoration: InputDecoration(
-              labelText: l10n.endpointUrl, hintText: l10n.serverUrlHint),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: Text(l10n.cancel),
-          ),
-          FilledButton(
-            onPressed: () async {
-              Navigator.pop(dialogContext);
-              await ref
-                  .read(settingsProvider.notifier)
-                  .addExternalUrl(controller.text);
-              ref.invalidate(endpointsStatusProvider);
-            },
-            child: Text(l10n.addEndpoint),
-          ),
-        ],
-      ),
+    // المتحكم يملكه الحوار ويصرّفه — راجع `mt_text_prompt.dart`.
+    final url = await promptMTText(
+      context,
+      title: l10n.addEndpoint,
+      confirmLabel: l10n.addEndpoint,
+      labelText: l10n.endpointUrl,
+      hintText: l10n.serverUrlHint,
+      fieldDirection: TextDirection.ltr,
     );
+    if (url == null || url.isEmpty) return;
+    await ref.read(settingsProvider.notifier).addExternalUrl(url);
+    ref.invalidate(endpointsStatusProvider);
   }
 }

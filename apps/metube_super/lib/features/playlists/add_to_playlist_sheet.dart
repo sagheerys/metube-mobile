@@ -17,6 +17,7 @@ void showAddToPlaylistSheet(
   if (items.isEmpty) return;
   showModalBottomSheet<void>(
     context: context,
+    useRootNavigator: true,
     isScrollControlled: true,
     builder: (_) => _AddToPlaylistSheet(items: items),
   );

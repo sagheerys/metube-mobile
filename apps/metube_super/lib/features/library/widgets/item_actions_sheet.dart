@@ -16,6 +16,7 @@ void showItemActionsSheet(
     BuildContext context, WidgetRef ref, LibraryItem item) {
   showModalBottomSheet<void>(
     context: context,
+    useRootNavigator: true,
     // سياق الشاشة (لا سياق الورقة) يُمرَّر لفتح الأوراق التالية بعده:
     // استعمال سياق ورقة مُغلقة يفجّر تأكيد `_dependents.isEmpty`.
     builder: (_) => _ItemActionsSheet(item: item, host: context),
@@ -159,6 +160,12 @@ class _ItemActionsSheet extends ConsumerWidget {
       BuildContext context, MTLocalizations l10n, LibraryItem item) {
     showModalBottomSheet<void>(
       context: context,
+      // **على ملّاح الجذر** (بلاغ المالك 2026-09-02: «زر إضافة رابط
+      // لا يزال يحجب الرابط في معلومات الفيديو»). الافتراضي
+      // `useRootNavigator: false` يفتح الورقة على ملّاح **فرع الغلاف**،
+      // فلا يراها مراقب المسارات المسجَّل على الجذر ويبقى الزر العائم
+      // مرسوماً فوقها. مطبَّق على كل أوراق التطبيقين (18 موضعاً).
+      useRootNavigator: true,
       builder: (_) => _DetailsSheet(item: item),
     );
   }
@@ -204,8 +211,11 @@ class _DetailsSheet extends StatelessWidget {
           children: [
             MTSectionHeader(title: l10n.details),
             const SizedBox(height: MTSpace.sm),
-            row(l10n.details, item.title),
-            if (sizeMb != null) row('MB', sizeMb),
+            // **تسميات الصفوف** (فحص شامل 2026-09-02): كانت «التفاصيل»
+            // عنواناً لصف العنوان و«MB» عنواناً لصف الحجم — نصّ
+            // مثبت ومعنى خاطئ معاً (القاعدة 5).
+            row(l10n.titleLabel, item.title),
+            if (sizeMb != null) row(l10n.fileSize, '$sizeMb MB'),
             if (item.timestamp != null)
               row(l10n.downloadDate, mtTimeAgo(context, item.timestamp!)),
             row(l10n.availability, [

@@ -91,7 +91,14 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
     // نفسه اسمه «تنزيل» في الريلز و«إتاحة دون اتصال» هنا. والتسمية
     // الجديدة قصيرة عمداً — عمود أفعال الريلز يقصّ الطويلة.
     final pulling = ref.watch(offlinePullProgressProvider)[item.canonicalUrl];
-    final offline = item.hasLocal;
+    // **الحالة من المكتبة الحيّة لا من عنصر التشغيل** — `PlaylistItem`
+    // لقطة وقت فتح المشغل، فكانت الأيقونة تبقى «حفظ للجهاز» بعد اكتمال
+    // الحفظ. (أُصلح في الريلز أولاً، وبقي هنا — فحص شامل 2026-09-02.)
+    final live = ref.watch(visibleLibraryProvider).value?.where(
+        (candidate) => candidate.canonicalUrl == item.canonicalUrl);
+    final offline = (live?.isNotEmpty ?? false)
+        ? live!.first.isOffline
+        : item.hasLocal;
     return [
       MTPlayerAction(
         icon: pulling != null

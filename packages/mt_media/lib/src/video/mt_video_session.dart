@@ -12,6 +12,8 @@ import '../playback/playback_queue.dart';
 import '../stores/playback_position_store.dart';
 import '../stores/playback_prefs.dart';
 
+part 'mt_video_session_commands.dart';
+
 /// جلسة مشغل الفيديو (م-20): تملك المتحكم والطابور والأوضاع، وتطبق
 /// **القاعدة الذهبية** (م-19) في اختيار المصدر مثل مشغل الصوت تماماً،
 /// وتتشارك معه مفتاح الموضع فيستأنف كلٌّ من حيث وقف الآخر (م-23).
@@ -81,6 +83,10 @@ class MTVideoSession extends ChangeNotifier {
     );
     await _load();
   }
+
+  /// `notifyListeners` محمية ولا تُنادى من امتداد ولو في نفس المكتبة —
+  /// هذه نافذتها الوحيدة لملف الأوامر (`part`).
+  void notifyFromCommands() => notifyListeners();
 
   Future<void> _load() async {
     final item = _queue.current;
@@ -196,58 +202,6 @@ class MTVideoSession extends ChangeNotifier {
     if (controller == null || !controller.value.isPlaying) return;
     await controller.pause();
     await savePosition();
-    notifyListeners();
-  }
-
-  Future<void> seek(Duration to) async => _controller?.seekTo(to);
-
-  /// نقرة مزدوجة يمين/يسار = ±١٠ ثوانٍ (مرجع المشغل العرضي).
-  Future<void> seekBy(Duration delta) async {
-    final controller = _controller;
-    if (controller == null) return;
-    final target = controller.value.position + delta;
-    final max = controller.value.duration;
-    await controller.seekTo(
-      target < Duration.zero
-          ? Duration.zero
-          : (target > max ? max : target),
-    );
-  }
-
-  Future<void> skipNext() => _move(forward: true);
-
-  Future<void> skipPrevious() => _move(forward: false);
-
-  Future<void> jumpTo(int itemIndex) async {
-    await savePosition();
-    if (!_queue.jumpTo(itemIndex)) return;
-    await _load();
-  }
-
-  Future<void> _move({required bool forward}) async {
-    await savePosition();
-    final moved = forward
-        ? _queue.moveNext(_playMode, userInitiated: true)
-        : _queue.movePrevious(_playMode);
-    if (moved) await _load();
-  }
-
-  Future<void> setPlayMode(PlayMode mode) async {
-    _playMode = mode;
-    await prefs.setPlayMode(mode, playlistId: _playlistId);
-    notifyListeners();
-  }
-
-  Future<void> setShuffle(bool value) async {
-    _queue.setShuffle(value);
-    await prefs.setShuffle(value);
-    notifyListeners();
-  }
-
-  Future<void> setSpeed(double speed) async {
-    final value = PlaybackSpeeds.clamp(speed);
-    await _controller?.setPlaybackSpeed(value);
-    await prefs.setSpeed(value);
     notifyListeners();
   }
 

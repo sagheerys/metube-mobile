@@ -11,6 +11,7 @@ import '../playlists/playlists_providers.dart';
 void showManageTagsSheet(BuildContext context, WidgetRef ref) {
   showModalBottomSheet<void>(
     context: context,
+    useRootNavigator: true,
     isScrollControlled: true,
     builder: (_) => const _ManageTagsSheet(),
   );
@@ -113,29 +114,13 @@ class _TagRow extends ConsumerWidget {
 
   Future<void> _rename(BuildContext context, WidgetRef ref) async {
     final l10n = context.mtl;
-    final controller = TextEditingController(text: tag);
-    final name = await showDialog<String>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(l10n.renameTag),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          decoration: InputDecoration(hintText: l10n.newTagHint),
-          onSubmitted: (v) => Navigator.pop(dialogContext, v.trim()),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: Text(l10n.cancel),
-          ),
-          FilledButton(
-            onPressed: () =>
-                Navigator.pop(dialogContext, controller.text.trim()),
-            child: Text(l10n.rename),
-          ),
-        ],
-      ),
+    // المتحكم يملكه الحوار ويصرّفه — راجع `mt_text_prompt.dart`.
+    final name = await promptMTText(
+      context,
+      title: l10n.renameTag,
+      confirmLabel: l10n.rename,
+      initialValue: tag,
+      hintText: l10n.newTagHint,
     );
     if (name == null || name.isEmpty || name == tag) return;
     await ref.read(tagsIndexProvider).renameTag(tag, name);

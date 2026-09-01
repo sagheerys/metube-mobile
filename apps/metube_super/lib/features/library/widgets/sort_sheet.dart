@@ -9,6 +9,7 @@ import '../library_providers.dart';
 void showSortSheet(BuildContext context, WidgetRef ref) {
   showModalBottomSheet<void>(
     context: context,
+    useRootNavigator: true,
     builder: (_) => const _SortSheet(),
   );
 }

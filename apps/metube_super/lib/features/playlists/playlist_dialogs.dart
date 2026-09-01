@@ -13,34 +13,14 @@ Future<String?> promptPlaylistName(
   String? title,
 }) {
   final l10n = context.mtl;
-  final controller = TextEditingController(text: initialName);
-  return showDialog<String>(
-    context: context,
-    builder: (dialogContext) => AlertDialog(
-      title: Text(title ?? l10n.createPlaylist),
-      content: TextField(
-        controller: controller,
-        autofocus: true,
-        textInputAction: TextInputAction.done,
-        decoration: InputDecoration(
-          labelText: l10n.playlistName,
-          hintText: l10n.playlistNameHint,
-        ),
-        onSubmitted: (value) =>
-            Navigator.pop(dialogContext, value.trim()),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(dialogContext),
-          child: Text(l10n.cancel),
-        ),
-        FilledButton(
-          onPressed: () =>
-              Navigator.pop(dialogContext, controller.text.trim()),
-          child: Text(initialName == null ? l10n.create : l10n.rename),
-        ),
-      ],
-    ),
+  // المتحكم يملكه الحوار ويصرّفه — راجع `mt_text_prompt.dart`.
+  return promptMTText(
+    context,
+    title: title ?? l10n.createPlaylist,
+    confirmLabel: initialName == null ? l10n.create : l10n.rename,
+    initialValue: initialName,
+    labelText: l10n.playlistName,
+    hintText: l10n.playlistNameHint,
   );
 }
 
@@ -65,6 +45,7 @@ void showPlaylistActionsSheet(
 
   showModalBottomSheet<void>(
     context: context,
+    useRootNavigator: true,
     builder: (sheetContext) => SafeArea(
       child: Column(
         mainAxisSize: MainAxisSize.min,

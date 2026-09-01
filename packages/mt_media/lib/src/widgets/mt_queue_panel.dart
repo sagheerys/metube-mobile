@@ -159,6 +159,7 @@ Future<void> showMTQueueSheet(
 }) =>
     showModalBottomSheet<void>(
       context: context,
+      useRootNavigator: true,
       isScrollControlled: true,
       builder: (sheetContext) => SafeArea(
         child: Padding(

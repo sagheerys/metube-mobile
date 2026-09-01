@@ -47,7 +47,7 @@ class SmartPlaylistCard extends StatelessWidget {
             gradient: const LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [MTPalette.serverCardBg, Color(0xFF443327)],
+              colors: [MTPalette.serverCardBg, MTPalette.serverCardBgLift],
             ),
           ),
           child: Stack(

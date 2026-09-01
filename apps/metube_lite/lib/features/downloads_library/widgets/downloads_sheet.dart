@@ -11,6 +11,7 @@ import '../../home/add_flow.dart';
 void showDownloadsSheet(BuildContext context) {
   showModalBottomSheet<void>(
     context: context,
+    useRootNavigator: true,
     isScrollControlled: true,
     builder: (_) => const _DownloadsSheet(),
   );

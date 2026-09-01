@@ -494,5 +494,6 @@
   "availableOfflineNow": "صار متاحاً دون اتصال",
   "preparingToShare": "يُجهَّز للمشاركة… {percent}٪",
   "saveToDevice": "حفظ للجهاز",
-  "savedOnDevice": "محفوظ للجهاز"
+  "savedOnDevice": "محفوظ للجهاز",
+  "titleLabel": "العنوان"
 }

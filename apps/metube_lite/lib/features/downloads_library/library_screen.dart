@@ -84,7 +84,9 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                 ref.invalidate(localMediaProvider);
                 await ref.read(localMediaProvider.future);
               },
-              child: _body(l10n, options, active),
+              // ظهور واحد هادئ للمحتوى عند أول بناء — لا حركة لكل
+              // بطاقة (كانت تُنطّ القائمة طوال التمرير).
+              child: MTRevealOnce(child: _body(l10n, options, active)),
             ),
     );
   }
@@ -205,13 +207,8 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                     const EdgeInsets.symmetric(horizontal: MTSpace.pagePad),
                 sliver: SliverList.builder(
                   itemCount: value.length,
-                  // ظهور متتابع للعناصر الأولى فقط — يشرح أن القائمة
-                  // تُبنى، ولا يؤخر شيئاً عند التمرير السريع.
-                  itemBuilder: (context, index) => MTFadeSlideIn(
-                    key: ValueKey(value[index].key),
-                    index: index,
-                    child: _itemCard(l10n, options, value[index]),
-                  ),
+                  itemBuilder: (context, index) =>
+                      _itemCard(l10n, options, value[index]),
                 ),
               ),
             ],

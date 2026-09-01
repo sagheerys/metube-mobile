@@ -11,6 +11,9 @@ import '../stores/playback_prefs.dart';
 import 'media_item_mapper.dart';
 import 'media_player_port.dart';
 import 'playback_queue.dart';
+import 'playback_state_mapping.dart';
+
+part 'audio_handler_recovery.dart';
 
 /// مشغل الصوت الخلفي (م-21): إشعار وسائط وأزرار شاشة قفل، أوضاع تشغيل
 /// وعشوائي، تخطي تلقائي للعنصر المعطوب، حفظ دوري للموضع، واستعادة
@@ -106,6 +109,10 @@ class MTAudioHandler extends BaseAudioHandler with SeekHandler {
   }
 
   // ── الأوامر (الإشعار وشاشة القفل والواجهة) ──
+  //
+  // **تبقى في الصنف** ولا تُنقل لملف `part`: الامتداد لا يتجاوز دالة
+  // الأصل، فكان `audio_service` سينادي نسخة `BaseAudioHandler` بدلاً
+  // منها — خطأ صحّة اكتُشف في الفحص الشامل 2026-09-02.
 
   @override
   Future<void> play() => player.play();
@@ -240,83 +247,20 @@ class MTAudioHandler extends BaseAudioHandler with SeekHandler {
     _broadcast();
   }
 
-  /// أقصى تخطٍّ متتالٍ قبل الاستسلام — العطب المنهجي (شبكة مقطوعة أو
-  /// cleartext محظور) يُفشل كل العناصر، فالمرور على مئة عنصر بصمت أسوأ
-  /// من التوقف الصريح.
-  static const int maxConsecutiveSkips = 5;
-
-  /// تخطي تلقائي للعنصر المعطوب (م-21) — وإن تكرر العطب نتوقف بدل
-  /// الدوران بلا نهاية.
-  Future<void> _onError() async {
-    _consecutiveErrors++;
-    if (_queue.isEmpty ||
-        _consecutiveErrors >= _queue.length ||
-        _consecutiveErrors >= maxConsecutiveSkips) {
-      return stop();
-    }
-    if (_queue.moveNext(PlayMode.repeatAll)) {
-      await _loadCurrent(autoPlay: true);
-    } else {
-      await stop();
-    }
-  }
-
-  void _publishQueue() =>
-      queue.add([for (final item in _queue.ordered) item.toMediaItem()]);
-
-  Future<void> savePosition() async {
-    final item = _queue.current;
-    if (item == null) return;
-    await positions.save(
-      item.canonicalUrl,
-      player.position,
-      duration: player.duration,
-    );
-  }
-
-  /// حفظ دوري: الموضع + لقطة الجلسة (م-21).
-  Future<void> persist() async {
-    if (_queue.isEmpty) return;
-    await savePosition();
-    await stateStore.write(AudioSessionSnapshot(
-      items: _queue.items,
-      index: _queue.index,
-      position: player.position,
-      playlistId: _playlistId,
-    ));
-  }
-
   void _broadcast() {
     final playing = player.playing;
     playbackState.add(playbackState.value.copyWith(
-      controls: [
-        MediaControl.skipToPrevious,
-        if (playing) MediaControl.pause else MediaControl.play,
-        MediaControl.skipToNext,
-        MediaControl.stop,
-      ],
+      controls: mtMediaControls(playing: playing),
       systemActions: const {MediaAction.seek},
       androidCompactActionIndices: const [0, 1, 2],
-      processingState: switch (player.state) {
-        MediaPlaybackState.idle => AudioProcessingState.idle,
-        MediaPlaybackState.loading => AudioProcessingState.loading,
-        MediaPlaybackState.buffering => AudioProcessingState.buffering,
-        MediaPlaybackState.ready => AudioProcessingState.ready,
-        MediaPlaybackState.completed => AudioProcessingState.completed,
-      },
+      processingState: mtProcessingState(player.state),
       playing: playing,
       updatePosition: player.position,
       bufferedPosition: player.bufferedPosition,
       speed: player.speed,
       queueIndex: _queue.index < 0 ? null : _queue.index,
-      repeatMode: switch (_playMode) {
-        PlayMode.repeatOne => AudioServiceRepeatMode.one,
-        PlayMode.repeatAll => AudioServiceRepeatMode.all,
-        _ => AudioServiceRepeatMode.none,
-      },
-      shuffleMode: _queue.shuffle
-          ? AudioServiceShuffleMode.all
-          : AudioServiceShuffleMode.none,
+      repeatMode: mtRepeatMode(_playMode),
+      shuffleMode: mtShuffleMode(shuffle: _queue.shuffle),
     ));
   }
 }

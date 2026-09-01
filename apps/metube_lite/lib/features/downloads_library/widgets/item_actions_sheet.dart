@@ -16,6 +16,7 @@ void showItemActionsSheet(
     BuildContext context, WidgetRef ref, LocalItem item) {
   showModalBottomSheet<void>(
     context: context,
+    useRootNavigator: true,
     // سياق الشاشة (لا سياق الورقة) يُمرَّر لفتح الأوراق التالية بعده:
     // استعمال سياق ورقة مُغلقة يفجّر تأكيد `_dependents.isEmpty`.
     builder: (_) => _ItemActionsSheet(item: item, host: context),
@@ -82,6 +83,7 @@ class _ItemActionsSheet extends ConsumerWidget {
             Navigator.pop(context);
             showModalBottomSheet<void>(
               context: host,
+              useRootNavigator: true,
               builder: (_) => _DetailsSheet(item: item),
             );
           }),
@@ -175,8 +177,10 @@ class _DetailsSheet extends StatelessWidget {
           children: [
             MTSectionHeader(title: l10n.details),
             const SizedBox(height: MTSpace.sm),
-            row(l10n.details, item.title),
-            row('MB', (item.sizeBytes / (1024 * 1024)).toStringAsFixed(1)),
+            // نفس تصحيح Super: تسميتان خاطئتان إحداهما نص مثبت.
+            row(l10n.titleLabel, item.title),
+            row(l10n.fileSize,
+                '${(item.sizeBytes / (1024 * 1024)).toStringAsFixed(1)} MB'),
             row(l10n.downloadDate, mtTimeAgo(context, item.modified)),
             row(l10n.platform, item.platform.label),
             const SizedBox(height: MTSpace.sm),

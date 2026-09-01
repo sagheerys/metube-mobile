@@ -1529,4 +1529,7 @@ class MTLocalizationsEn extends MTLocalizations {
 
   @override
   String get savedOnDevice => 'Saved on device';
+
+  @override
+  String get titleLabel => 'Title';
 }

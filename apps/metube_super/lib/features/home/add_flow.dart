@@ -32,6 +32,7 @@ Future<void> openAddSheet(
   final l10n = context.mtl;
   await showModalBottomSheet<void>(
     context: context,
+    useRootNavigator: true,
     isScrollControlled: true,
     // الراوتر والمُراسِل يُلتقطان **قبل** فتح الورقة: استعمالهما بسياق
     // الورقة بعد `Navigator.pop` يستعلم عن عنصر مُبطَّل.
