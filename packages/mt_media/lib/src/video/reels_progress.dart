@@ -11,9 +11,20 @@ import '../widgets/media_time.dart';
 /// مع كل تحديث من المشغل فبدا الشريط «يقاوم» الإصبع. ومنطقة اللمس
 /// **٢٤ نقطة** حول خيط سمكه ٣ — الشريط النحيل جميل ولا يُمسك.
 class ReelsProgressBar extends StatefulWidget {
-  const ReelsProgressBar({super.key, this.controller});
+  const ReelsProgressBar({
+    super.key,
+    this.controller,
+    this.onScrubStart,
+    this.onScrubEnd,
+  });
 
   final VideoPlayerController? controller;
+
+  /// **الشريط لا يشغّل ولا يوقف بنفسه (العطل ط-3):** مالك الحالة وحده
+  /// يعرف تركيز الصوت وقفل الشاشة. [onScrubEnd] يُستدعى عند نهاية
+  /// السحب **وعند إلغائه** فلا يبقى المقطع موقوفاً بلا مؤشر.
+  final VoidCallback? onScrubStart;
+  final VoidCallback? onScrubEnd;
 
   @override
   State<ReelsProgressBar> createState() => _ReelsProgressBarState();
@@ -39,6 +50,16 @@ class _ReelsProgressBarState extends State<ReelsProgressBar> {
     return Directionality.of(context) == TextDirection.rtl ? 1 - raw : raw;
   }
 
+  /// تبديل الصفحة أثناء السحب كان يترك [_dragFraction] عالقاً، فيتجمد
+  /// شريط المقطع التالي على كسر قديم.
+  @override
+  void didUpdateWidget(ReelsProgressBar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.controller != widget.controller && _dragFraction != null) {
+      setState(() => _dragFraction = null);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final p = MTThemeX.of(context).palette;
@@ -56,17 +77,19 @@ class _ReelsProgressBarState extends State<ReelsProgressBar> {
           behavior: HitTestBehavior.opaque,
           onHorizontalDragStart: (d) {
             update(d.localPosition);
-            controller.pause();
+            widget.onScrubStart?.call();
           },
           onHorizontalDragUpdate: (d) => update(d.localPosition),
           onHorizontalDragEnd: (_) {
             final fraction = _dragFraction;
             if (fraction != null) _seekToFraction(fraction);
             setState(() => _dragFraction = null);
-            controller.play();
+            widget.onScrubEnd?.call();
           },
-          onHorizontalDragCancel: () =>
-              setState(() => _dragFraction = null),
+          onHorizontalDragCancel: () {
+            setState(() => _dragFraction = null);
+            widget.onScrubEnd?.call();
+          },
           // نقرة على الشريط = قفزة مباشرة (بلا سحب).
           onTapDown: (d) {
             final fraction = _fractionFrom(d.localPosition, width);

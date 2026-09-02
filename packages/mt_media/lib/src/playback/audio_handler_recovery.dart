@@ -18,7 +18,13 @@ extension MTAudioHandlerRecovery on MTAudioHandler {
 
   /// تخطي تلقائي للعنصر المعطوب (م-21) — وإن تكرر العطب نتوقف بدل
   /// الدوران بلا نهاية.
-  Future<void> _onError() async {
+  ///
+  /// **[autoPlay] يُورَّث من المسار الذي استدعانا (إصلاح ع-5):** كان
+  /// مثبّتاً على `true`، فإن تعذّر أول عناصر الجلسة المستعادة عند
+  /// الإقلاع (ملف حُذف، سيرفر غير متاح لحظتها) **بدأ العنصر التالي
+  /// يعزف بصوت مسموع بلا أي نقرة** — خرقاً لقاعدة م-21 «الاستعادة بلا
+  /// تشغيل تلقائي».
+  Future<void> _onError({bool autoPlay = true}) async {
     _consecutiveErrors++;
     if (_queue.isEmpty ||
         _consecutiveErrors >= _queue.length ||
@@ -26,7 +32,7 @@ extension MTAudioHandlerRecovery on MTAudioHandler {
       return stop();
     }
     if (_queue.moveNext(PlayMode.repeatAll)) {
-      await _loadCurrent(autoPlay: true);
+      await _loadCurrent(autoPlay: autoPlay);
     } else {
       await stop();
     }
@@ -57,4 +63,41 @@ extension MTAudioHandlerRecovery on MTAudioHandler {
     ));
   }
 
+  Future<void> _loadCurrent({
+    required bool autoPlay,
+    Duration? startAt,
+  }) async {
+    final generation = ++_generation;
+    final item = _queue.current;
+    if (item == null) return stop();
+    final source = resolver.resolve(item);
+    if (source == null) return _onError(autoPlay: autoPlay);
+
+    mediaItem.add(item.toMediaItem());
+    final resume = startAt ??
+        await positions.positionOf(item.canonicalUrl) ??
+        Duration.zero;
+    if (_isStale(generation)) return;
+    try {
+      if (autoPlay) await onTakeVideoFocus?.call();
+      if (_isStale(generation)) return;
+      await player.setSource(source, initialPosition: resume);
+      if (_isStale(generation)) return;
+      _consecutiveErrors = 0;
+      final duration = player.duration;
+      if (duration != null) {
+        mediaItem.add(item.toMediaItem().copyWith(duration: duration));
+      }
+      if (autoPlay) await player.play();
+      if (_isStale(generation)) return;
+      _broadcast();
+      await persist();
+    } on Object {
+      if (_isStale(generation)) return;
+      await _onError(autoPlay: autoPlay);
+    }
+  }
+
+  /// هل سبقنا تحميلٌ أحدث (أو إيقاف)؟ ⇒ لا نلمس حالة مشتركة بعدها.
+  bool _isStale(int generation) => generation != _generation;
 }

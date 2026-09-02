@@ -54,7 +54,13 @@ class MTVideoScreen extends StatelessWidget {
   final VoidCallback? onShowPlaylist;
 
   /// م-23: المزامنة الذكية — متابعة نفس العنصر صوتاً من نفس الثانية.
-  final void Function(PlaylistItem item, Duration position)? onContinueAsAudio;
+  /// **يُنتظر قبل إغلاق الشاشة (العطل ط-5):** كان يُستدعى بلا انتظار ثم
+  /// يُغلق المشغل فوراً، فيُصرَّف مزوّد الجلسة (autoDispose) بينما النقل
+  /// واقف على `await` — فإما `StateError` فلا يبدأ الصوت أصلاً، وإما
+  /// تصير `duration` عدماً فيُحفظ موضع قرب النهاية **بدل مسحه** ويظل
+  /// المقطع «يستأنف» عند الاعتمادات للأبد.
+  final Future<void> Function(PlaylistItem item, Duration position)?
+      onContinueAsAudio;
 
   /// **متى يُسأل السؤال** (بلاغ المالك 2026-09-02: «بعد المتابعة في
   /// الخلفية والضغط رجوع تظهر الرسالة، المفترض لا تظهر»). كان الشرط
@@ -160,7 +166,7 @@ class MTVideoScreen extends StatelessWidget {
         ],
       ),
     );
-    if (choice == true) onContinueAsAudio?.call(item, position);
+    if (choice == true) await onContinueAsAudio?.call(item, position);
     navigator.pop();
   }
 }

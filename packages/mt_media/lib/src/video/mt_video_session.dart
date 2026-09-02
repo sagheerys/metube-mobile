@@ -42,6 +42,11 @@ class MTVideoSession extends ChangeNotifier {
   int _consecutiveErrors = 0;
   Timer? _saveTimer;
 
+  /// **مزلاج الاكتمال (العطل ط-2/4):** شرط النهاية يظل صحيحاً في كل
+  /// إشعار لاحق من المتحكم، فكان `onCompleted` يُستدعى مرتين: تخطي
+  /// عنصرين دفعة، **ومسح موضع استئناف عنصر لم يُشاهد قط**.
+  String? _completedUrl;
+
   /// **حارس السباق (خلل مصطاد على جهاز المالك 2026-09-01).** `_load`
   /// ينتظر `initialize()` — ثوانٍ على شبكة بطيئة. تخطٍّ ثانٍ أثناء
   /// الانتظار يبدأ تحميلاً موازياً، ويفوز آخر من ينتهي بـ `_controller`
@@ -114,13 +119,21 @@ class MTVideoSession extends ChangeNotifier {
     }
     if (_disposed || generation != _generation) return controller.dispose();
 
+    // **النشر بعد اكتمال التهيئة لا قبلها (العطل ط-2/1).** كان
+    // `_controller` يُنشر ثم تأتي ثلاث `await` (موضع، seek، سرعة) بلا
+    // حارس بينها: تخطٍّ ثانٍ سريع يصرّف هذا المتحكم نفسه أثناءها فترمي
+    // `seekTo` بـ«controller was used after being disposed».
     _consecutiveErrors = 0;
-    _controller = controller;
+    _completedUrl = null;
     final resume = await positions.positionOf(item.canonicalUrl);
+    if (_disposed || generation != _generation) return controller.dispose();
     if (resume != null && resume < (controller.value.duration)) {
       await controller.seekTo(resume);
     }
     await controller.setPlaybackSpeed(await prefs.speed());
+    if (_disposed || generation != _generation) return controller.dispose();
+
+    _controller = controller;
     controller.addListener(_onTick);
     await onTakeAudioFocus?.call();
     if (_disposed || generation != _generation) return;
@@ -171,9 +184,13 @@ class MTVideoSession extends ChangeNotifier {
       return;
     }
     unawaited(_setWakelock(value.isPlaying));
+    final url = _queue.current?.canonicalUrl;
     if (value.duration > Duration.zero &&
         value.position >= value.duration &&
-        !value.isPlaying) {
+        !value.isPlaying &&
+        url != null &&
+        _completedUrl != url) {
+      _completedUrl = url;
       unawaited(onCompleted());
     }
     notifyListeners();
@@ -219,43 +236,25 @@ class MTVideoSession extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> savePosition() async {
-    final item = _queue.current;
-    final controller = _controller;
-    if (item == null || controller == null || !controller.value.isInitialized) {
-      return;
-    }
-    await positions.save(
-      item.canonicalUrl,
-      controller.value.position,
-      duration: controller.value.duration,
-    );
-  }
-
-  Future<void> _disposePlayers() async {
-    _controller?.removeListener(_onTick);
-    await _controller?.dispose();
-    _controller = null;
-    await _setWakelock(false);
-  }
-
-  /// إبقاء الشاشة مضاءة أثناء التشغيل فقط (م-20) — لا تُترك مفعّلة أبداً.
-  Future<void> _setWakelock(bool enabled) async {
-    if (_wakelockOn == enabled) return;
-    _wakelockOn = enabled;
-    try {
-      await WakelockPlus.toggle(enable: enabled);
-    } on Object {
-      // منصة بلا دعم ⇒ التشغيل يستمر بلا إبقاء الشاشة.
-    }
-  }
-
   @override
   Future<void> dispose() async {
     _disposed = true;
+    _generation++; // يبطل أي تحميل معلّق فلا ينشر متحكماً بعد الموت
     _saveTimer?.cancel();
     _saveTimer = null;
-    await savePosition();
+    // **الإسكات قبل الحفظ (ط-2/2):** بين إغلاق الشاشة واكتمال الحفظ كان
+    // الفيديو يبقى **مسموعاً فوق المكتبة**؛ وفشل الحفظ كان يمنع التصريف
+    // نهائياً فيبقى المتحكم حياً.
+    try {
+      await _controller?.pause();
+    } on Object {
+      // لا شيء — التصريف تالياً على أي حال.
+    }
+    try {
+      await savePosition();
+    } on Object {
+      // الحفظ ليس سبباً لترك متحكم حي خلفنا.
+    }
     await _disposePlayers();
     super.dispose();
   }

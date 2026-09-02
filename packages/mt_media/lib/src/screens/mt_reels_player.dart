@@ -33,6 +33,7 @@ class MTReelsPlayer extends StatefulWidget {
     this.subtitleBuilder,
     this.onContinueRest,
     this.onTakeAudioFocus,
+    this.onLive,
   });
 
   final ShortsLane lane;
@@ -49,6 +50,12 @@ class MTReelsPlayer extends StatefulWidget {
 
   /// يوقف مشغل الصوت الخلفي قبل أول تشغيل — وإلا اشتغل الصوت والريل معاً.
   final Future<void> Function()? onTakeAudioFocus;
+
+  /// **الاتجاه المعاكس للقاعدة الذهبية (العطل ع-4).** يُسلَّم للأعلى
+  /// «موقفَ هذا المشغل» عند الحياة و`null` عند الموت، فيستطيع مشغل الصوت
+  /// إسكات الريل قبل أن يعزف. بلا هذا كانت ضغطة تشغيل واحدة في إشعار
+  /// الوسائط تُسمع **مصدرين معاً**.
+  final void Function(Future<void> Function()? pauser)? onLive;
 
   @override
   State<MTReelsPlayer> createState() => _MTReelsPlayerState();
@@ -92,7 +99,21 @@ class _MTReelsPlayerState extends State<MTReelsPlayer> {
     // لون أيقوناته يُضبط بـ `AnnotatedRegion` في `build` لا هنا — انظر
     // التعليق هناك، فالسبب مثبت بـ `dumpsys` لا مستنتج.
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    widget.onLive?.call(_pauseForAudioFocus);
     WidgetsBinding.instance.addPostFrameCallback((_) => _load(_index));
+  }
+
+  /// إسكات الريل حين يطلب مشغل الصوت التركيز (ع-4) — مع إطفاء قفل
+  /// الشاشة، فالمقطع لم يعد يُشاهَد.
+  Future<void> _pauseForAudioFocus() async {
+    final controller = _controller;
+    if (controller == null || !controller.value.isPlaying) return;
+    await controller.pause();
+    await _setWakelock(false);
+    if (mounted) {
+      setState(() {});
+      _showChrome();
+    }
   }
 
   @override
@@ -100,6 +121,7 @@ class _MTReelsPlayerState extends State<MTReelsPlayer> {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     // إعادة أيقونات النظام لما يقرره الثيم — الريلز وحده داكن دائماً.
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light);
+    widget.onLive?.call(null);
     _hideTimer?.cancel();
     unawaited(_setWakelock(false));
     _controller?.dispose();
@@ -169,6 +191,12 @@ class _MTReelsPlayerState extends State<MTReelsPlayer> {
     await widget.onTakeAudioFocus?.call();
     if (!mounted || generation != _generation) return controller.dispose();
     await controller.play();
+    // **الحارس بعد آخر `await` أيضاً (العطل ط-1):** كان الفحص يقف سطراً
+    // واحداً قبل النهاية. رجوعٌ أثناء `play()` على شبكة بطيئة يعني:
+    // `setState` على شاشة ميتة، **ومتحكم مُفعّل عليه التكرار لا يصرّفه
+    // أحد فيعزف في حلقة لبقية عمر العملية**، وقفل شاشة يُعاد إشعاله بعد
+    // أن أطفأه الخروج.
+    if (!mounted || generation != _generation) return controller.dispose();
     setState(() => _controller = controller);
     await _setWakelock(true);
     // المقطع الجديد يعرّف بنفسه ثم ينسحب: العنوان والناشر يُقرآن أولاً.
@@ -191,6 +219,33 @@ class _MTReelsPlayerState extends State<MTReelsPlayer> {
       _endReached = false;
     });
     _load(page);
+  }
+
+  /// **السحب على الشريط يمرّ بمالك الحالة (العطل ط-3).** كان الشريط
+  /// ينادي `controller.play()` مباشرة — الاستدعاء الوحيد في الحزمة بلا
+  /// تركيز صوت ولا محاسبة قفل شاشة: تستأنف بعد سحبة فتنام الشاشة أثناء
+  /// التشغيل (بلاغك نفسه من باب خلفي)، ويعود الصوت الخلفي فيُسمع اثنان.
+  bool _resumeAfterScrub = false;
+
+  void _onScrubStart() {
+    final controller = _controller;
+    if (controller == null) return;
+    _resumeAfterScrub = controller.value.isPlaying;
+    unawaited(controller.pause());
+    unawaited(_setWakelock(false));
+    _showChrome();
+  }
+
+  Future<void> _onScrubEnd() async {
+    final controller = _controller;
+    // الإلغاء (غلبة `PageView` العمودي على السحب) يمرّ من هنا أيضاً،
+    // وإلا بقي المقطع موقوفاً بلا أي مؤشر إيقاف ظاهر.
+    if (controller == null || !_resumeAfterScrub) return;
+    _resumeAfterScrub = false;
+    await widget.onTakeAudioFocus?.call();
+    await controller.play();
+    await _setWakelock(true);
+    if (mounted) _showChrome();
   }
 
   Future<void> _togglePlay() async {
@@ -292,7 +347,11 @@ class _MTReelsPlayerState extends State<MTReelsPlayer> {
               bottom: MTSpace.sm,
               child: SafeArea(
                 top: false,
-                child: ReelsProgressBar(controller: _controller),
+                child: ReelsProgressBar(
+                  controller: _controller,
+                  onScrubStart: _onScrubStart,
+                  onScrubEnd: () => unawaited(_onScrubEnd()),
+                ),
               ),
             ),
           ],

@@ -54,6 +54,9 @@ class _ReelsScreenState extends ConsumerState<ReelsScreen> {
       resolver: ref.watch(playbackResolverProvider),
       startIndex: laneIndex,
       onTakeAudioFocus: ref.read(audioHandlerProvider).pause,
+      // ع-4: ما دام الريل حياً، تشغيل الصوت من الإشعار يُسكته أولاً.
+      onLive: (pauser) =>
+          ref.read(audioHandlerProvider).onTakeVideoFocus = pauser,
       subtitleBuilder: (context, item) =>
           platformOfKey(item.canonicalUrl).label,
       isFavorite: (item) => _libraryItemOf(item)?.favorite ?? false,

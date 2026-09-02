@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/widgets.dart' show SizedBox;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mt_core/mt_core.dart';
@@ -40,10 +42,18 @@ final videoSessionProvider = Provider.autoDispose<MTVideoSession>((ref) {
     await shapes.remember(key, duration, aspectRatio);
     ref.invalidate(localMediaProvider);
   };
-  // **مخرج صوت واحد.** فتح فيديو والصوت الخلفي يعمل كان يشغّل الاثنين
-  // معاً (خلل مصطاد على جهاز المالك).
-  session.onTakeAudioFocus = ref.read(audioHandlerProvider).pause;
-  ref.onDispose(session.dispose);
+  // **مخرج صوت واحد — بالاتجاهين.** فتح فيديو والصوت الخلفي يعمل كان
+  // يشغّل الاثنين معاً (خلل مصطاد على جهاز المالك)، وبقي الاتجاه
+  // المعاكس مفتوحاً حتى العطل ع-4: زر التشغيل في إشعار الوسائط — أو
+  // تشغيل صوتيات من شاشة القوائم المفتوحة فوق المشغل — كان يعزف فوق
+  // الفيديو العامل.
+  final handler = ref.read(audioHandlerProvider);
+  session.onTakeAudioFocus = handler.pause;
+  handler.onTakeVideoFocus = session.pause;
+  ref.onDispose(() {
+    handler.onTakeVideoFocus = null;
+    unawaited(session.dispose());
+  });
   return session;
 });
 

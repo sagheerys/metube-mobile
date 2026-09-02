@@ -53,9 +53,33 @@ class MTAudioHandler extends BaseAudioHandler with SeekHandler {
   int _consecutiveErrors = 0;
   Timer? _saveTimer;
 
+  /// **حارس السباق (العطل ع-3).** جلسة الفيديو والريلز تحملان حارساً
+  /// مماثلاً، وهذا المشغل كان بلا حارس رغم أنه أكثرها مداخل: نقرتان
+  /// سريعتان على أغنيتين قد تُبقيان A يعزف بينما الإشعار يعرض B،
+  /// و`persist()` يكتب موضع B تحت مفتاح A. والأخطر: سحب المشغل المصغر
+  /// (stop) أثناء تحميل معلّق كان **يعيده حياً يعزف**.
+  int _generation = 0;
+
+  /// يُستدعى قبل أي بدء تشغيل صوتي: يوقف جلسة الفيديو الحية.
+  ///
+  /// **الاتجاه المعاكس للقاعدة الذهبية (العطل ع-4):** «مخرج واحد» كانت
+  /// منفّذة باتجاه واحد فقط (فتح فيديو ⇒ يوقف الصوت). فكان زر التشغيل
+  /// في إشعار الوسائط أثناء الفيديو — أو تشغيل صوتيات من شاشة القوائم
+  /// المفتوحة فوق المشغل — يُسمع **مصدرين معاً**.
+  Future<void> Function()? onTakeVideoFocus;
+
   PlayMode get playMode => _playMode;
   bool get shuffleEnabled => _queue.shuffle;
   PlaylistItem? get currentItem => _queue.current;
+
+  /// **مفتاح ما يُعزف الآن كتيار** (canonicalUrl) — لمؤشر «يشغَّل الآن».
+  ///
+  /// [currentItem] لقطة لحظية: مراقبتها عبر `ref.watch` على مزوّد مثبّت
+  /// بـ override **لا يتحدث أبداً**، فكان المؤشر يعلق على المقطع الأول
+  /// مهما تقدمت القائمة (لقطة المالك 2026-09-02 — العطل ط-8). الواجهات
+  /// تستهلك هذا التيار، ولا تحتاج معه معرفة `audio_service` أصلاً.
+  Stream<String?> get currentKey =>
+      mediaItem.map((item) => item?.id).distinct();
 
   /// العناصر بترتيب الإدراج (فهارسها هي التي يقبلها [skipToQueueItem]).
   List<PlaylistItem> get items => _queue.items;
@@ -79,13 +103,20 @@ class MTAudioHandler extends BaseAudioHandler with SeekHandler {
     bool autoPlay = true,
   }) async {
     if (items.isEmpty) return;
+    // **الحارس يبدأ من هنا لا من `_loadCurrent`** (كشفه اختبار ع-3):
+    // بين هذا السطر و`_loadCurrent` قراءتان من التفضيلات. إيقافٌ يقع
+    // خلالهما (سحب المشغل المصغر) كان يكتمل ثم **يواصل هذا المسار
+    // فيبني الطابور ويعزف** — فيعود الشريط الذي أغلقته حياً.
+    final generation = ++_generation;
     _playlistId = playlistId;
     _playMode = await prefs.playMode(playlistId: playlistId);
+    final shuffle = await prefs.shuffle();
+    if (_isStale(generation)) return;
     _consecutiveErrors = 0;
     _queue = PlaybackQueue(
       items: items,
       index: startIndex,
-      shuffle: await prefs.shuffle(),
+      shuffle: shuffle,
     );
     _publishQueue();
     await _loadCurrent(autoPlay: autoPlay);
@@ -94,14 +125,18 @@ class MTAudioHandler extends BaseAudioHandler with SeekHandler {
   /// إحياء الجلسة المحفوظة بعد إعادة تشغيل التطبيق — **بلا تشغيل
   /// تلقائي**؛ يظهر المشغل المصغر ليكمل المستخدم بنقرة.
   Future<bool> restoreSession() async {
+    final generation = ++_generation;
     final snapshot = await stateStore.read();
     if (snapshot == null || snapshot.isEmpty) return false;
     _playlistId = snapshot.playlistId;
     _playMode = await prefs.playMode(playlistId: _playlistId);
+    final shuffle = await prefs.shuffle();
+    // نقرة المستخدم على أغنية أثناء الاستعادة تفوز — لا تُداس بلقطة قديمة.
+    if (_isStale(generation)) return false;
     _queue = PlaybackQueue(
       items: snapshot.items,
       index: snapshot.index,
-      shuffle: await prefs.shuffle(),
+      shuffle: shuffle,
     );
     _publishQueue();
     await _loadCurrent(autoPlay: false, startAt: snapshot.position);
@@ -115,7 +150,10 @@ class MTAudioHandler extends BaseAudioHandler with SeekHandler {
   // منها — خطأ صحّة اكتُشف في الفحص الشامل 2026-09-02.
 
   @override
-  Future<void> play() => player.play();
+  Future<void> play() async {
+    await onTakeVideoFocus?.call();
+    await player.play();
+  }
 
   @override
   Future<void> pause() async {
@@ -164,6 +202,7 @@ class MTAudioHandler extends BaseAudioHandler with SeekHandler {
   /// **فخ §6.5** — الإيقاف ينظف كل ما يُظهر المشغل المصغر.
   @override
   Future<void> stop() async {
+    _generation++; // تحميل معلّق لا يعيد إحياء المشغل المصغر بعد الإغلاق
     await savePosition();
     await player.stop();
     _queue = PlaybackQueue(items: const []);
@@ -189,34 +228,6 @@ class MTAudioHandler extends BaseAudioHandler with SeekHandler {
   }
 
   // ── الداخلية ──
-
-  Future<void> _loadCurrent({
-    required bool autoPlay,
-    Duration? startAt,
-  }) async {
-    final item = _queue.current;
-    if (item == null) return stop();
-    final source = resolver.resolve(item);
-    if (source == null) return _onError();
-
-    mediaItem.add(item.toMediaItem());
-    final resume = startAt ??
-        await positions.positionOf(item.canonicalUrl) ??
-        Duration.zero;
-    try {
-      await player.setSource(source, initialPosition: resume);
-      _consecutiveErrors = 0;
-      final duration = player.duration;
-      if (duration != null) {
-        mediaItem.add(item.toMediaItem().copyWith(duration: duration));
-      }
-      if (autoPlay) await player.play();
-      _broadcast();
-      await persist();
-    } on Object {
-      await _onError();
-    }
-  }
 
   Future<void> _skip({required bool forward}) async {
     await savePosition();

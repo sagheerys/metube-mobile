@@ -140,9 +140,21 @@ class _ReorderableItems extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final headers = ref.read(apiClientProvider)?.streamingHeaders;
-    final playingUrl =
-        ref.watch(audioHandlerProvider).currentItem?.canonicalUrl;
+    // **المؤشر كان يعلق على المقطع الأول** (لقطة المالك 2026-09-02،
+    // العطل ط-8): `ref.watch(audioHandlerProvider)` يراقب مزوداً مثبتاً
+    // بـ override **لا يبثّ أبداً**، و`currentItem` getter فوق حالة
+    // متغيرة — أي قراءة لمرة واحدة متنكرة في هيئة مراقبة. الصواب
+    // الموجود في الحزمة نفسها: بثّ `handler.mediaItem` (ومعرفه هو
+    // canonicalUrl).
+    return StreamBuilder<String?>(
+      stream: ref.read(audioHandlerProvider).currentKey,
+      builder: (context, snapshot) =>
+          _list(context, ref, headers, snapshot.data),
+    );
+  }
 
+  Widget _list(BuildContext context, WidgetRef ref,
+      Map<String, String>? headers, String? playingUrl) {
     return ReorderableListView.builder(
       padding: const EdgeInsets.fromLTRB(
           MTSpace.pagePad, 0, MTSpace.pagePad, 140),

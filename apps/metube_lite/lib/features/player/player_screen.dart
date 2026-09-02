@@ -64,7 +64,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
       playlistName: request.playlistName,
       subtitleBuilder: _subtitle,
       actions: _actions(session),
-      onContinueAsAudio: (item, position) => _continueAsAudio(item, position),
+      onContinueAsAudio: _continueAsAudio,
       // **لا يُسأل مرتين** (بلاغ المالك 2026-09-02): من نقل المقطع
       // للصوت فعلاً ثم ضغط رجوع كان يُسأل عن مقطع يسمعه بالفعل.
       shouldOfferContinueAsAudio: _shouldOfferAudio,

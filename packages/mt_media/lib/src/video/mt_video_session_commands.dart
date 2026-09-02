@@ -58,4 +58,50 @@ extension MTVideoSessionCommands on MTVideoSession {
     notifyFromCommands();
   }
 
+  /// **القِصار بلا استئناف (م-35 — العطل ط-4):** لا فحص `isShortForm`
+  /// كان هنا إطلاقاً، فقائمة مختلطة تتقدم تلقائياً إلى مقطع قصير (أو
+  /// قائمة تُفتح في `/player`) تكتب `playback_pos_<url>` لقصير —
+  /// والريلز لا يمسحه أبداً لأنه لا يلمس مخزن المواضع: قيد ميت للأبد.
+  Future<void> savePosition() async {
+    final item = _queue.current;
+    final controller = _controller;
+    if (item == null || controller == null || !controller.value.isInitialized) {
+      return;
+    }
+    if (item.isShortForm) return;
+    await positions.save(
+      item.canonicalUrl,
+      controller.value.position,
+      duration: controller.value.duration,
+    );
+  }
+
+  /// **الإسكات أولاً ثم التصريف (العطل ط-2/3):** التصريف ليس فورياً،
+  /// فكان صوت المقطعين يتداخل عند كل تخطٍّ — نفس الفخ الذي أُصلح في
+  /// الريلز ولم ينل الجلسة.
+  Future<void> _disposePlayers() async {
+    final controller = _controller;
+    _controller = null;
+    if (controller != null) {
+      controller.removeListener(_onTick);
+      try {
+        await controller.pause();
+      } on Object {
+        // متحكم مات قبلنا — التصريف تالياً يكفي.
+      }
+      await controller.dispose();
+    }
+    await _setWakelock(false);
+  }
+
+  /// إبقاء الشاشة مضاءة أثناء التشغيل فقط (م-20) — لا تُترك مفعّلة أبداً.
+  Future<void> _setWakelock(bool enabled) async {
+    if (_wakelockOn == enabled) return;
+    _wakelockOn = enabled;
+    try {
+      await WakelockPlus.toggle(enable: enabled);
+    } on Object {
+      // منصة بلا دعم ⇒ التشغيل يستمر بلا إبقاء الشاشة.
+    }
+  }
 }
