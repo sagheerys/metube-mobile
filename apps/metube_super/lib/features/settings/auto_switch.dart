@@ -48,19 +48,46 @@ class AutoSwitchService {
     schedule(immediate: true);
   }
 
+  /// **التهدئة هنا لا في التنفيذ (إصلاح عاصفة ط-6):** استطلاع المكتبة
+  /// كل ثانيتين يُبطل `historyProvider`، ومستمع الخطأ كان يجدول فحصاً عند
+  /// **كل** إخفاق — وتهدئة 700ms أقصر من الثانيتين فلا تجمع شيئاً:
+  /// سيرفر معطّل + شاشة مكتبة مفتوحة = فحص لكل الروابط كل ثانيتين بلا
+  /// توقف، بعملاء جدد ومهلة 4s. الآن الفحوص المجدولة تتباعد بـ
+  /// [minInterval] على الأقل، والمحفّز الفوري (الإقلاع) وحده يستثنى.
   void schedule({bool immediate = false}) {
     _timer?.cancel();
-    _timer = Timer(
-      immediate ? Duration.zero : debounce,
-      () => unawaited(resolveNow()),
-    );
+    if (immediate) {
+      _timer = Timer(Duration.zero, () => unawaited(resolveNow()));
+      return;
+    }
+    final since =
+        _lastRun == null ? null : DateTime.now().difference(_lastRun!);
+    final wait = since == null || since >= minInterval
+        ? debounce
+        : minInterval - since;
+    _timer = Timer(wait, () => unawaited(resolveNow()));
   }
 
   /// فحص متوازٍ لكل المرشحين واعتماد أولهم استجابةً (المحلي أولاً).
   /// لا يفعل شيئاً إن أُطفئ التبديل أو لم تُسجَّل روابط.
+  /// أقل فاصل بين فحصين **مجدولين** — انظر [schedule].
+  static const minInterval = Duration(seconds: 20);
+  DateTime? _lastRun;
+
   Future<void> resolveNow() async {
     final settings = _ref.read(settingsProvider);
     if (!settings.autoSwitch) return;
+    // **لا تبديل والعمل جارٍ (العطل ع-1):** تبديل الرابط يعيد بناء
+    // المحرك فيبيد كل مهامه بصمت. التأجيل حتى يهدأ الطابور أرحم من
+    // تحميل ضائع بلا رسالة.
+    final engine = _ref.read(downloadEngineProvider);
+    if (engine != null && engine.hasActiveWork) {
+      // إعادة المحاولة بنفسها — لا مستمع آخر سيوقظنا حين يهدأ الطابور.
+      _timer?.cancel();
+      _timer = Timer(minInterval, () => unawaited(resolveNow()));
+      return;
+    }
+    _lastRun = DateTime.now();
     final candidates = settings.candidateUrls;
     if (candidates.isEmpty) return;
     // مرشح واحد وهو المعتمد أصلاً ⇒ لا شيء يُبدَّل، ولا داعي لـ probe.

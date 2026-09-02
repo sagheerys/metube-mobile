@@ -218,7 +218,10 @@ class _Cover extends StatelessWidget {
                       tooltip: favorite
                           ? l10n.removeFromFavorites
                           : l10n.addToFavorites,
-                      color: favorite ? p.favorite : p.bg,
+                      // **أبيض ثابت لا `p.bg` (العطل م-3):** الرقاقة فوق
+                      // غلاف داكن دائماً، فكان لون خلفية الثيم يجعلها
+                      // ليلاً داكنة على داكن — شبه مخفية.
+                      color: favorite ? p.favorite : Colors.white,
                       onTap: () {
                         HapticFeedback.selectionClick();
                         onFavoriteToggle!();
@@ -228,7 +231,7 @@ class _Cover extends StatelessWidget {
                     _CoverButton(
                       icon: Icons.more_vert_rounded,
                       tooltip: l10n.itemOptions,
-                      color: p.bg,
+                      color: Colors.white,
                       onTap: onMore!,
                     ),
                 ],

@@ -42,6 +42,12 @@ class LibraryActions {
       if (url != null) await _ref.read(offlineIndexProvider).removeKey(url);
       await _ref.read(titleIndexProvider).removeKey(item.key);
       await _ref.read(artworkIndexProvider).removeKey(item.key);
+      // **تشذيب البقية (إصلاح خ-4):** الوسوم والمواضع والأبعاد كانت
+      // تبقى للأبد في نفس ملف XML الذي يُعاد تسلسله مع كل كتابة،
+      // وينسخه `exportToString` كاملاً — نسخ احتياطية تتضخم بجثث.
+      await _ref.read(tagsIndexProvider).removeKey(item.key);
+      await _ref.read(mediaShapeIndexProvider).removeKey(item.key);
+      await _ref.read(playbackPositionsProvider).clear(item.key);
       await _ref.read(mediaStoreProvider).scanFile(item.path);
     }
     _ref.invalidate(localMediaProvider);

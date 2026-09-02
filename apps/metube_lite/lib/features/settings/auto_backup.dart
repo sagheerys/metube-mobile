@@ -39,6 +39,7 @@ class AutoBackup {
 
   Timer? _pending;
   bool _writing = false;
+  bool _pendingRewrite = false;
 
   String get filePath => '$directory/$liteBackupFileName';
 
@@ -50,7 +51,12 @@ class AutoBackup {
 
   /// كتابة فورية (تُستعمل أيضاً في الإغلاق والاختبار).
   Future<bool> writeNow() async {
-    if (_writing) return false;
+    // **الطلب أثناء كتابة جارية يُعاد لا يُسقط (إصلاح م-5):** التغيير
+    // الأحدث كان يضيع حتى يقع تغيير تالٍ — وربما لا يقع أبداً.
+    if (_writing) {
+      _pendingRewrite = true;
+      return false;
+    }
     _writing = true;
     try {
       final contents = await service.exportToString();
@@ -64,6 +70,10 @@ class AutoBackup {
       return false;
     } finally {
       _writing = false;
+      if (_pendingRewrite) {
+        _pendingRewrite = false;
+        unawaited(requestBackup());
+      }
     }
   }
 

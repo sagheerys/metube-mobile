@@ -40,9 +40,14 @@ final videoSessionProvider = Provider.autoDispose<MTVideoSession>((ref) {
     prefs: ref.watch(playbackPrefsProvider),
   );
   final shapes = ref.watch(mediaShapeIndexProvider);
+  // **علم الحياة قبل الإبطال (إصلاح م-6):** `remember` تنتظر القرص، وقد
+  // يُغلق المشغل خلالها فيُصرَّف هذا المزوّد (autoDispose) ⇒ `StateError`
+  // في السجل عند كل إغلاق سريع.
+  var alive = true;
+  ref.onDispose(() => alive = false);
   session.onShapeKnown = (url, duration, aspectRatio) async {
     await shapes.remember(url, duration, aspectRatio);
-    ref.invalidate(libraryItemsProvider);
+    if (alive) ref.invalidate(libraryItemsProvider);
   };
   // **مخرج صوت واحد — بالاتجاهين.** فتح فيديو والصوت الخلفي يعمل كان
   // يشغّل الاثنين معاً (خلل مصطاد على جهاز المالك)، وبقي الاتجاه
@@ -96,8 +101,10 @@ Future<bool> saveQueueAsPlaylist(
 }
 
 /// باني المصغرات للمشغلات — الصور البعيدة بترويسات المصادقة (م-18).
-MTArtworkBuilder artworkBuilderFor(WidgetRef ref) {
-  final headers = ref.read(apiClientProvider)?.streamingHeaders;
-  return (context, item) =>
-      artworkFor(item.artworkUrl, headers: headers) ?? const SizedBox.shrink();
-}
+/// **الترويسات تُقرأ عند كل بناء صورة لا مرة واحدة (إصلاح م-9):**
+/// التقاطها في الإغلاق كان يُبقي اعتمادات السيرفر القديم بعد التبديل
+/// التلقائي، فتفشل الأغلفة بـ401 حتى إعادة بناء الشاشة.
+MTArtworkBuilder artworkBuilderFor(WidgetRef ref) => (context, item) =>
+    artworkFor(item.artworkUrl,
+        headers: ref.read(apiClientProvider)?.streamingHeaders) ??
+    const SizedBox.shrink();

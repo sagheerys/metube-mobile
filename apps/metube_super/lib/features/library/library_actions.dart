@@ -69,8 +69,11 @@ class LibraryActions {
         '$superMediaDir/${buildLocalFilename(item.title, serverFilename: filename)}';
 
     _setProgress(item.canonicalUrl, 0);
+    final String finalPath;
     try {
-      await Transfer(api: _api).pull(
+      // المسار النهائي من `pull` — التصادم يزيحه (خ-3)، وفهرسة المسار
+      // المطلوب بدله كانت ستشير إلى ملف غيره.
+      finalPath = await Transfer(api: _api).pull(
         serverFilename: filename,
         savePath: savePath,
         onProgress: (p) => _setProgress(item.canonicalUrl, p),
@@ -78,20 +81,40 @@ class LibraryActions {
     } finally {
       _clearProgress(item.canonicalUrl);
     }
-    await _ref.read(offlineIndexProvider).put(item.canonicalUrl, savePath);
+    await _ref.read(offlineIndexProvider).put(item.canonicalUrl, finalPath);
     if (item.thumbnail != null) {
       await _ref
           .read(artworkIndexProvider)
           .put(item.canonicalUrl, item.thumbnail!);
     }
     _refreshLibrary();
-    return savePath;
+    return finalPath;
   }
 
   /// حذف من السيرفر — **بالـ canonicalUrl من /history حصراً** (القاعدة 2).
   Future<void> deleteFromServer(List<String> canonicalUrls) async {
     await _api.delete(canonicalUrls);
+    await pruneItemData(canonicalUrls);
     _refreshLibrary();
+  }
+
+  /// **تشذيب بيانات عنصر مُزال (إصلاح خ-4).** الحذف كان يشذّب فهرس
+  /// دون-الاتصال وحده، بينما تبقى الوسوم والمواضع والأبعاد والعنوان
+  /// والغلاف **للأبد** في نفس ملف XML الذي يُعاد تسلسله مع كل كتابة —
+  /// وينسخه `exportToString` كاملاً، فتتضخم النسخ الاحتياطية بجثث.
+  Future<void> pruneItemData(List<String> canonicalUrls) async {
+    final tags = _ref.read(tagsIndexProvider);
+    final artwork = _ref.read(artworkIndexProvider);
+    final shapes = _ref.read(mediaShapeIndexProvider);
+    final positions = _ref.read(playbackPositionsProvider);
+    final offline = _ref.read(offlineIndexProvider);
+    for (final url in canonicalUrls) {
+      await tags.removeKey(url);
+      await artwork.removeKey(url);
+      await shapes.removeKey(url);
+      await positions.clear(url);
+      await offline.removeKey(url);
+    }
   }
 
   /// إزالة النسخة المحلية فقط (يبقى على السيرفر).

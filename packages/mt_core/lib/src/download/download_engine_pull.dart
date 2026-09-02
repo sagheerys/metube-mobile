@@ -14,13 +14,14 @@ extension DownloadEnginePull on DownloadEngine {
     final token = CancelToken();
     _cancelTokens[taskId] = token;
     if (_cancelRequested.contains(taskId)) token.cancel();
-    await _transfer.pull(
+    // المسار النهائي من `pull` لا المطلوب — قد يُزاح عند التصادم (خ-3).
+    final finalPath = await _transfer.pull(
       serverFilename: done.filename!,
       savePath: savePath,
       cancelToken: token,
       onProgress: (p) => _emit(_tasks[taskId]!.copyWith(progress: p)),
     );
-    _emit(_tasks[taskId]!.copyWith(localPath: savePath));
+    _emit(_tasks[taskId]!.copyWith(localPath: finalPath));
 
     // 4) الحذف حسب السياسة — بالـ canonicalUrl من /history حصراً.
     // **التنظيف لا يُلغي نقلاً تمّ (ع-6):** فشل الحذف كان يعلّم المهمة

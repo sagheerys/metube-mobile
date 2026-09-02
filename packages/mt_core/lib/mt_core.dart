@@ -13,6 +13,7 @@ export 'src/constants/mt_constants.dart';
 export 'src/download/delete_policy.dart';
 export 'src/download/download_engine.dart';
 export 'src/download/download_queue.dart';
+export 'src/download/partial_sweeper.dart';
 export 'src/download/local_filename.dart';
 export 'src/download/transfer.dart';
 export 'src/logging/mt_logger.dart';

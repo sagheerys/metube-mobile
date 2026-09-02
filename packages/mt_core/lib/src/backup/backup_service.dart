@@ -5,6 +5,8 @@ import '../storage/key_value_store.dart';
 import '../storage/secret_store.dart';
 import 'backup_crypto.dart';
 
+part 'backup_legacy.dart';
+
 enum BackupFormat { v2, legacyLite, legacySuper }
 
 class ImportResult {
@@ -31,6 +33,34 @@ class BackupService {
   /// `lite` أو `super` — للتوثيق داخل الملف فقط؛ الاستيراد يقبل الكل.
   final String variant;
 
+  /// مفاتيح تحمل روابط سيرفر قد تُلصق بصيغة `https://user:pass@host`.
+  static const _urlKeys = {
+    'server_url',
+    'local_url',
+    'active_url',
+    'external_urls',
+  };
+
+  /// **حذف الاعتمادات المضمّنة في الرابط قبل النسخ (إصلاح خ-2).**
+  /// استثناء كلمة السر من النسخة صحيح، لكن من يلصق
+  /// `https://user:pass@host` كرابط سيرفر يضعها في مفتاح نصي عادي —
+  /// فتدخل النسخة الاحتياطية رغم القاعدة.
+  static Object? _sanitize(String key, Object? value) {
+    if (!_urlKeys.contains(key)) return value;
+    if (value is String) return stripUrlCredentials(value);
+    if (value is List) {
+      return [for (final v in value) stripUrlCredentials(v.toString())];
+    }
+    return value;
+  }
+
+  /// يعيد الرابط بلا `user:pass@` — وغير الروابط كما هي.
+  static String stripUrlCredentials(String raw) {
+    final uri = Uri.tryParse(raw.trim());
+    if (uri == null || uri.userInfo.isEmpty) return raw;
+    return uri.replace(userInfo: '').toString();
+  }
+
   Future<String> _getOrCreateKey() async {
     final stored = await secrets.read(SecretKeys.backupAesKey);
     if (stored != null && stored.isNotEmpty) return stored;
@@ -43,7 +73,7 @@ class BackupService {
   Future<String> exportToString() => mutex.run(() async {
         final prefsMap = <String, dynamic>{};
         for (final key in await store.keys()) {
-          final cell = _encodeCell(await store.get(key));
+          final cell = _encodeCell(_sanitize(key, await store.get(key)));
           if (cell != null) prefsMap[key] = cell;
         }
         final username = await secrets.read(SecretKeys.username);
@@ -90,97 +120,31 @@ class BackupService {
     final prefs = (payload['prefs'] as Map?) ?? const {};
     var restored = 0;
     await mutex.run(() async {
-      for (final entry in prefs.entries) {
-        if (await _applyCell(entry.key.toString(), entry.value)) restored++;
+      // **استعادة كل-أو-لا-شيء (إصلاح خ-2).** فشلٌ في المفتاح 40 من 200
+      // كان يترك **جهازاً هجيناً**: فهرس دون-اتصال من جهاز آخر بعناوين
+      // مفقودة، بلا أي تراجع ولا رسالة تقول أين توقف.
+      final rollback = <String, Object?>{};
+      for (final key in prefs.keys) {
+        rollback[key.toString()] = await store.get(key.toString());
       }
-      if (format != BackupFormat.v2) await _migrateLegacyShapes();
+      try {
+        for (final entry in prefs.entries) {
+          if (await _applyCell(entry.key.toString(), entry.value)) restored++;
+        }
+        if (format != BackupFormat.v2) await _migrateLegacyShapes();
+      } on Object {
+        for (final entry in rollback.entries) {
+          entry.value == null
+              ? await store.remove(entry.key)
+              : await _restoreRaw(entry.key, entry.value!);
+        }
+        rethrow;
+      }
     });
     await _restoreUsername(
         ((payload['secure'] as Map?) ?? const {})['username']?.toString() ??
             (payload['settings'] as Map?)?['username']?.toString());
     return ImportResult(format: format, keysRestored: restored);
-  }
-
-  /// حمولة Lite القديمة: settings مسطحة + كتل JSON — تُعاد للمفاتيح
-  /// القديمة نفسها (§5.1: الأسماء القديمة أُبقيت لهذا الغرض).
-  Future<ImportResult> _applyLegacyLite(Map<String, dynamic> payload) async {
-    var restored = 0;
-    final settings = (payload['settings'] as Map?) ?? const {};
-    await mutex.run(() async {
-      Future<void> putString(String key, String? value) async {
-        if (value == null || value.isEmpty) return;
-        await store.setString(key, value);
-        restored++;
-      }
-
-      await putString('server_url', settings['serverUrl']?.toString());
-      final quality = settings['videoQuality']?.toString();
-      await putString(
-        'video_quality',
-        MTConstants.qualityWireValues.contains(quality) ? quality : 'best',
-      );
-      await putString('theme_mode', settings['themeMode']?.toString());
-      await putString('app_locale', settings['locale']?.toString());
-      if (settings['playMode'] is num) {
-        await store.setInt(
-            'player_play_mode', (settings['playMode'] as num).toInt());
-        restored++;
-      }
-      for (final MapEntry(:key, :value) in {
-        'video_title_metadata': payload['videoMetadata'],
-        'video_playback_positions': payload['playbackPositions'],
-        'saved_playlists': payload['savedPlaylists'],
-      }.entries) {
-        if (value != null) {
-          await store.setString(key, json.encode(value));
-          restored++;
-        }
-      }
-      // نفس هجرة الأشكال المطبقة على `MTSBACKUP1` — Lite القديم يخزّن
-      // المواضع **ثوانٍ نصاً** و`playMode` رقماً (مُثبت على نسخة المالك
-      // الحقيقية 2026-09-01: 32 موضعاً كانت تُستورد ميتة بلا هذا السطر).
-      await _migrateLegacyShapes();
-    });
-    await _restoreUsername(settings['username']?.toString());
-    return ImportResult(
-        format: BackupFormat.legacyLite, keysRestored: restored);
-  }
-
-  /// **هجرة أشكال قديمة داخل نفس المفاتيح** (مُثبتة على نسخة المالك
-  /// الحقيقية 2026-09-01) — تُنفَّذ **داخل القفل** بعد تطبيق الخلايا:
-  /// - `video_playback_positions`: خريطة رابط→ثوانٍ نصاً ⇒ مفاتيح
-  ///   `playback_pos_<url>` بالميلي (§5.1)، وإلا ضاعت مواضع الاستئناف.
-  /// - `player_play_mode`: كان رقماً (فهرس enum قديم) والقارئ الجديد
-  ///   ينتظر نصاً ⇒ يُزال ليعود للافتراضي بدل قيمة ميتة.
-  Future<void> _migrateLegacyShapes() async {
-    await _migratePlaybackPositions();
-    for (final key in await store.keys()) {
-      if (key == 'player_play_mode' || key.startsWith('player_play_mode_')) {
-        if (await store.get(key) is int) await store.remove(key);
-      }
-    }
-  }
-
-  Future<void> _migratePlaybackPositions() async {
-    const legacyKey = 'video_playback_positions';
-    final raw = await store.getString(legacyKey);
-    if (raw == null || raw.isEmpty) return;
-    final Object? decoded;
-    try {
-      decoded = json.decode(raw);
-    } on FormatException {
-      return;
-    }
-    if (decoded is! Map) return;
-    for (final entry in decoded.entries) {
-      final url = entry.key.toString();
-      final value = num.tryParse(entry.value.toString());
-      if (url.isEmpty || value == null || value <= 0) continue;
-      // القديم يخزّن **ثوانٍ**؛ أي قيمة تتجاوز يوماً بالثواني هي ميلي أصلاً.
-      final ms = value > _secondsInDay ? value.toInt() : (value * 1000).toInt();
-      await store.setInt('$_positionPrefix$url', ms);
-    }
-    await store.remove(legacyKey);
   }
 
   static const int _secondsInDay = 86400;
@@ -200,6 +164,24 @@ class BackupService {
         List v => {'t': 'l', 'v': v.map((e) => e.toString()).toList()},
         _ => null,
       };
+
+  /// إعادة قيمة كما كانت — للتراجع عن استعادة فشلت في منتصفها.
+  Future<void> _restoreRaw(String key, Object value) async {
+    switch (value) {
+      case String v:
+        await store.setString(key, v);
+      case bool v:
+        await store.setBool(key, v);
+      case int v:
+        await store.setInt(key, v);
+      case double v:
+        await store.setDouble(key, v);
+      case List v:
+        await store.setStringList(key, [for (final e in v) e.toString()]);
+      default:
+        await store.remove(key);
+    }
+  }
 
   Future<bool> _applyCell(String key, dynamic cell) async {
     if (cell is! Map) return false;

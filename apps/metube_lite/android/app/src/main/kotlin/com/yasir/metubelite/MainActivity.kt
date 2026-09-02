@@ -40,12 +40,15 @@ class MainActivity : AudioServiceActivity() {
                 // م-18/م-35: سبر ملفات محلية (مدة + أبعاد + غلاف) على
                 // خيط جانبي — 194 ملفاً على جهاز المالك تعني ثوانيَ من
                 // فكّ الترميز، وتجميدُ خيط الواجهة لها غير مقبول.
+                // **خيط واحد مشترك لا خيط لكل دفعة (إصلاح م-12):** كل
+                // نداء كان يفتح خيطاً جديداً، ودفعات متتابعة (تحديث
+                // المكتبة أثناء التمرير) تفتح خيوطاً بعدد النداءات.
                 "probeMedia" -> {
                     val paths = call.argument<List<String>>("paths") ?: emptyList()
-                    Thread {
+                    probeExecutor.execute {
                         val data = MediaProbe.scan(applicationContext, paths)
                         runOnUiThread { result.success(data) }
-                    }.start()
+                    }
                 }
                 // م-41: وجهة اختصار الأيقونة — **تُستهلك مرة واحدة**.
                 // إبقاؤها يعيد تنفيذ الاختصار عند كل عودة للتطبيق.
@@ -60,6 +63,15 @@ class MainActivity : AudioServiceActivity() {
 
     /** اسم الاختصار المنتظر — من فعل النية `<pkg>.SHORTCUT_<NAME>`. */
     private var pendingShortcut: String? = null
+
+    /** منفّذ سبر الوسائط — خيط واحد يخدم كل الدفعات بالترتيب. */
+    private val probeExecutor: java.util.concurrent.ExecutorService =
+        java.util.concurrent.Executors.newSingleThreadExecutor()
+
+    override fun onDestroy() {
+        probeExecutor.shutdown()
+        super.onDestroy()
+    }
 
     override fun onCreate(savedInstanceState: android.os.Bundle?) {
         super.onCreate(savedInstanceState)

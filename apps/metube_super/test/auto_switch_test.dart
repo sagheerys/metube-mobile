@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart' show ThemeMode;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -37,6 +38,11 @@ void main() {
       )),
       endpointResolverProvider.overrideWithValue(
         EndpointResolver(probe: (url) async => reachable.contains(url)),
+      ),
+      // الفحص صار يسأل المحرك «هل من عمل جارٍ؟» قبل التبديل (ع-1)،
+      // والمحرك يحتاج السجل — يُتجاوز في main، فيُتجاوز هنا كذلك.
+      loggerProvider.overrideWithValue(
+        MTLogger(filePath: '${Directory.systemTemp.path}/mtf_test.log'),
       ),
     ]);
     addTearDown(container.dispose);

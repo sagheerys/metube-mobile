@@ -112,6 +112,10 @@ class _ItemTagsSheetState extends ConsumerState<_ItemTagsSheet> {
       // `toggleTag` يقلب الحالة، فلا يُستدعى إلا حين تختلف عن المطلوب.
       if (has != adding) await _tags.toggleTag(url, tag);
     }
+    // **حارس مفقود (العطل ط-7):** وسم 30 عنصراً ثم إغلاق الورقة قبل
+    // اكتمال الحلقة كان يستدعي `ref.invalidate` على ودجت ميت ⇒
+    // `StateError` غير ملتقط. (`_load` المجاور محروس — هذه نُسيت.)
+    if (!mounted) return;
     _refreshHost();
   }
 

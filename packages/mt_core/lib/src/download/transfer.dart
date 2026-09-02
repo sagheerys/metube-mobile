@@ -30,7 +30,9 @@ class Transfer {
   /// فترات الانتظار بين المحاولات — تُصفَّر في الاختبارات.
   final List<Duration> backoff;
 
-  Future<void> pull({
+  /// يعيد **المسار النهائي فعلاً** — قد يختلف عن [savePath] إن كان
+  /// مشغولاً (خ-3)، والمنادي يفهرس بما يعود لا بما طلب.
+  Future<String> pull({
     required String serverFilename,
     required String savePath,
     void Function(double progress)? onProgress,
@@ -51,8 +53,9 @@ class Transfer {
           },
         );
         // النقلة الذرية: من هنا فقط يراه مسح المجلد.
-        await File(partPath).rename(savePath);
-        return;
+        final target = await _freeTarget(savePath);
+        await File(partPath).rename(target);
+        return target;
       } on CancelledException {
         await _deletePartial(partPath);
         rethrow;
@@ -68,6 +71,24 @@ class Transfer {
         }
       }
     }
+    throw const NetworkException('pull exhausted');
+  }
+
+  /// **هدف غير مشغول (إصلاح خ-3).** اسم الملف المحلي يحمل طابع
+  /// `HHmmss` بلا تاريخ (§2.4)، فعنوانان متطابقان في الثانية نفسها —
+  /// وارد في الدفعات الصوتية — أو في نفس الوقت من يومين، كانا يجعلان
+  /// `rename` **يدهس الملف الأقدم بصمت**. الصيغة تبقى كما وثّقها العقد،
+  /// والتصادم النادر يُحلّ بلاحقة رقمية.
+  static Future<String> _freeTarget(String savePath) async {
+    if (!await File(savePath).exists()) return savePath;
+    final dot = savePath.lastIndexOf('.');
+    final stem = dot > 0 ? savePath.substring(0, dot) : savePath;
+    final ext = dot > 0 ? savePath.substring(dot) : '';
+    for (var i = 2; i < 100; i++) {
+      final candidate = '$stem($i)$ext';
+      if (!await File(candidate).exists()) return candidate;
+    }
+    return savePath;
   }
 
   Future<void> _deletePartial(String savePath) async {

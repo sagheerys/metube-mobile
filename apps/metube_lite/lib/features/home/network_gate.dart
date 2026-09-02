@@ -19,11 +19,18 @@ class NetworkGate {
   StreamSubscription<List<ConnectivityResult>>? _sub;
   final _restored = StreamController<void>.broadcast();
 
+  // **متشائمة قبل أول قراءة (إصلاح م-11):** البدء بـ«واي-فاي» متفائلاً
+  // كان يسمح لسحبة أن تنطلق على **بيانات الجوال** في أول لحظات الإقلاع
+  // قبل وصول أول لقطة — وهو بالضبط ما جاء إعداد «Wi‑Fi فقط» ليمنعه.
   bool _online = true;
-  bool _onWifi = true;
+  bool _onWifi = false;
+  bool _known = false;
 
   bool get online => _online;
   bool get onWifi => _onWifi;
+
+  /// هل وصلت لقطة حقيقية من النظام بعد؟
+  bool get isKnown => _known;
 
   /// يُبثّ عند **الانتقال** من انقطاع إلى اتصال — لا مع كل حدث شبكة.
   Stream<void> get onRestored => _restored.stream;
@@ -35,6 +42,7 @@ class NetworkGate {
 
   void _apply(List<ConnectivityResult> results) {
     final wasOnline = _online;
+    _known = true;
     _onWifi = results.contains(ConnectivityResult.wifi) ||
         results.contains(ConnectivityResult.ethernet);
     _online = results.any((r) => r != ConnectivityResult.none);
@@ -71,8 +79,13 @@ final autoRetryProvider = Provider<void>((ref) {
     for (final task in engine.tasks) {
       if (task.phase != TaskPhase.failed) continue;
       if (!(task.error?.isRetryable ?? false)) continue;
-      if (!retried.add(task.id)) continue;
+      // **المفتاح هو الرابط لا معرّف المهمة (إصلاح م-4).** المهمة
+      // الجديدة تحمل معرفاً جديداً، فكان الرابط نفسه يُعاد عند كل
+      // تقلب شبكة، وتتراكم خلفه بطاقات فشل قديمة لا تختفي.
+      if (!retried.add(task.inputUrl)) continue;
       engine.submit(task.inputUrl, task.quality);
+      // البطاقة القديمة أُعيدت ⇒ لا تبقى معروضة فشلاً ثانياً.
+      engine.forget(task.id);
     }
   });
   ref.onDispose(sub.cancel);

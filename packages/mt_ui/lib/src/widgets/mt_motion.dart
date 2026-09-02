@@ -42,16 +42,15 @@ class _MTRevealOnceState extends State<MTRevealOnce>
     vsync: this,
     duration: MTMotion.reveal,
   );
-  bool _done = false;
+
+  /// **يُنشأ مرة واحدة لا كل إطار (إصلاح م-2/ب):** `CurvedAnimation` في
+  /// `build` كان يُخلق ويُهمل ٦٠ مرة بالثانية بلا تصريف.
+  late final CurvedAnimation _curved =
+      CurvedAnimation(parent: _controller, curve: MTMotion.entrance);
 
   @override
   void initState() {
     super.initState();
-    _controller.addStatusListener((status) {
-      if (status == AnimationStatus.completed && mounted) {
-        setState(() => _done = true);
-      }
-    });
     final delay = widget.delay;
     if (delay == null || delay == Duration.zero) {
       _controller.forward();
@@ -63,29 +62,36 @@ class _MTRevealOnceState extends State<MTRevealOnce>
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // احترام «تقليل الحركة» في إعدادات النظام — شرط وصول لا تحسين.
+    if (MediaQuery.disableAnimationsOf(context)) _controller.value = 1;
+  }
+
+  @override
   void dispose() {
+    _curved.dispose();
     _controller.dispose();
     super.dispose();
   }
 
+  /// **شكل الشجرة ثابت من أول إطار لآخره (إصلاح م-2/أ).** كان الودجت
+  /// يستبدل الغلاف كله بـ`widget.child` عند انتهاء الحركة، فيتغير عمق
+  /// العناصر ويُعاد بناء الشجرة تحته: تمرير أو كتابة بدآ خلال أول
+  /// 220ms كانا يُفقدان. الآن ينتهي المتحكم عند 1 فيتوقف إعادة البناء
+  /// وحده بلا لمس الشكل.
   @override
-  Widget build(BuildContext context) {
-    // احترام «تقليل الحركة» في إعدادات النظام — شرط وصول لا تحسين.
-    if (_done || MediaQuery.disableAnimationsOf(context)) return widget.child;
-    final curved =
-        CurvedAnimation(parent: _controller, curve: MTMotion.entrance);
-    return AnimatedBuilder(
-      animation: curved,
-      builder: (context, child) => Opacity(
-        opacity: curved.value,
-        child: Transform.translate(
-          offset: Offset(0, MTMotion.slideNudge * (1 - curved.value)),
-          child: child,
+  Widget build(BuildContext context) => AnimatedBuilder(
+        animation: _curved,
+        builder: (context, child) => Opacity(
+          opacity: _curved.value,
+          child: Transform.translate(
+            offset: Offset(0, MTMotion.slideNudge * (1 - _curved.value)),
+            child: child,
+          ),
         ),
-      ),
-      child: widget.child,
-    );
-  }
+        child: widget.child,
+      );
 }
 
 /// تبدّل محتوى في مكانه بتلاشٍ متقاطع — لا انزلاق: العنصر لم ينتقل،

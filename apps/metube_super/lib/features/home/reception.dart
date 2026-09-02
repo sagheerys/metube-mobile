@@ -29,10 +29,17 @@ class ShareReceiver {
   final void Function(List<String> urls) onUrls;
   StreamSubscription<List<SharedMediaFile>>? _subscription;
 
+  bool _disposed = false;
+
   Future<void> start() async {
     final initial = await ReceiveSharingIntent.instance.getInitialMedia();
+    // **تفكيك مبكر أثناء الانتظارين (إصلاح م-1):** hot restart أو إغلاق
+    // سريع كان يترك مستمعاً حياً يمسك غلافاً ميتاً — والاشتراك يُسجَّل
+    // بعد `dispose()` فلا يلغيه أحد.
+    if (_disposed) return;
     _handle(initial);
     await ReceiveSharingIntent.instance.reset();
+    if (_disposed) return;
     _subscription =
         ReceiveSharingIntent.instance.getMediaStream().listen(_handle);
   }
@@ -45,8 +52,11 @@ class ShareReceiver {
         urls.addAll(UrlKit.extractAllUrls(media.path));
       }
     }
-    if (urls.isNotEmpty) onUrls(urls);
+    if (urls.isNotEmpty && !_disposed) onUrls(urls);
   }
 
-  void dispose() => _subscription?.cancel();
+  void dispose() {
+    _disposed = true;
+    _subscription?.cancel();
+  }
 }

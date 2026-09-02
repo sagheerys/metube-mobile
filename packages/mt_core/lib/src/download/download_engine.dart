@@ -131,6 +131,16 @@ class DownloadEngine {
     _cancelTokens[taskId]?.cancel();
   }
 
+  /// إزالة مهمة **منتهية** من اللقطة — لبطاقة فشل أُعيد إرسالها (م-4)،
+  /// فلا تبقى معروضة إلى جانب المحاولة الجديدة. لا تمسّ الجارية.
+  void forget(String taskId) {
+    final task = _tasks[taskId];
+    if (task == null || !task.isFinished) return;
+    _tasks.remove(taskId);
+    _snapshots.remove(taskId);
+    if (!_updates.isClosed) _updates.add(task);
+  }
+
   Future<void> dispose() async {
     _disposed = true;
     _parked.clear();

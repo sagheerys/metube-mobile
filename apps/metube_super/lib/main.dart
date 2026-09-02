@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,6 +10,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app.dart';
 import 'di.dart';
+import 'features/library/library_actions.dart';
 import 'features/settings/auto_switch.dart';
 import 'features/settings/settings_state.dart';
 import 'features/shared/stores.dart';
@@ -53,6 +55,13 @@ Future<void> main() async {
     ),
   );
   await handler.loadPreferences();
+
+  // **كنس الجزئيات اليتيمة (خ-3):** قتل التطبيق منتصف سحب كبير يترك
+  // `.part` لا ينظفه أحد — مسح المكتبة يتجاهله عمداً، فالمساحة تضيع
+  // بلا أن تُرى. لا ننتظره: الإقلاع لا يعلّق على تنظيف.
+  unawaited(sweepPartialFiles(superMediaDir).then(
+    (count) => count == 0 ? null : logger.log('swept $count partials'),
+  ));
 
   runApp(
     ProviderScope(

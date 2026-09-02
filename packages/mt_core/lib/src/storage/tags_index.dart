@@ -48,10 +48,16 @@ final class TagsIndex extends UrlKeyedIndex<List<String>> {
       ];
 
   /// إعادة تسمية وسم عبر كل العناصر.
+  /// إعادة تسمية وسم — **بلا تكرار (إصلاح م-7):** عنصر يحمل الاسمين
+  /// معاً (القديم والجديد) كان يصير يحمل الجديد مرتين، فينتفخ عدّاد
+  /// الرقاقة ويظهر العنصر مكرراً في التصفية.
   Future<void> renameTag(String oldName, String newName) => mutate((map) {
         for (final entry in map.entries) {
           final idx = entry.value.indexOf(oldName);
-          if (idx >= 0) {
+          if (idx < 0) continue;
+          if (entry.value.contains(newName)) {
+            entry.value.removeAt(idx);
+          } else {
             entry.value[idx] = newName;
           }
         }
