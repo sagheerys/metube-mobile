@@ -59,9 +59,12 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
     return file;
   }
 
+  MTLogger get _logger => ref.read(loggerProvider);
+
   Future<String> _export(MTLocalizations l10n) async {
     final file = await _writeToDownloads(
         _backupFileName, await _service.exportToString());
+    await _logger.log('backup exported', tag: 'backup');
     return l10n.backupSuccess(file.path);
   }
 
@@ -88,6 +91,8 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
     final contents = await _pickFileContents();
     if (contents == null) throw const BackupCancelledException();
     final result = await _service.importFromString(contents);
+    await _logger.log(
+        'backup restored (${result.keysRestored} keys)', tag: 'backup');
     await _refreshEverything();
     final formatName = switch (result.format) {
       BackupFormat.v2 => 'MTF1',

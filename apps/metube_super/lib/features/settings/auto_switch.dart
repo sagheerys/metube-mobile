@@ -113,6 +113,10 @@ class AutoSwitchService {
       if (best == null) return;
       if (best == settings.activeUrl && !activeIsStale) return;
       lastAdopted = best;
+      // م-32: تبديل السيرفر أهم حدث تشخيصي في Super — وكان لا يُسجَّل.
+      unawaited(_ref
+          .read(loggerProvider)
+          .log('server switched to $best', tag: 'network'));
       await _ref.read(settingsProvider.notifier).adoptActiveUrl(best);
     } finally {
       _running = false;
