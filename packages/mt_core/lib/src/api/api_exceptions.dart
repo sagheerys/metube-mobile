@@ -65,3 +65,13 @@ final class CancelledException extends MTApiException {
 final class PollTimeoutException extends MTApiException {
   const PollTimeoutException([super.detail]);
 }
+
+/// عطل محلي غير متوقع أثناء تنفيذ المهمة (نظام ملفات، صلاحيات، مساحة).
+///
+/// **سببه عطل ع-2:** عامل التحميل كان يلتقط `MTApiException` وحدها، فأي
+/// `FileSystemException` من إعادة تسمية الملف الجزئي تهرب من المضخّة
+/// فتتجمد المهمة في «يسحب» **ويتوقف الطابور كله بلا رسالة**. الآن يُغلَّف
+/// كل ما لم يُصنَّف هنا فتفشل مهمة واحدة ويكمل ما بعدها.
+final class LocalFailureException extends MTApiException {
+  const LocalFailureException([super.detail]);
+}

@@ -13,7 +13,6 @@ dependencies:
   encrypt: ^5.0.3
   synchronized: ^3.3.0
   uuid: ^4.5.1
-  youtube_explode_dart: ^2.3.6
 
 dev_dependencies:
   lints: ^6.0.0

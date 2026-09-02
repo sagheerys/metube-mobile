@@ -51,6 +51,7 @@ void main() {
     test('نجاح كامل بسياسة Lite: add ← poll ← pull ← delete بالمُقنون',
         () async {
       final api = FakeApi(historyScript: [
+        historyWith(), // لقطة ما قبل الإضافة (ح-3)
         historyWith(queue: [
           {'url': canonical, 'status': 'downloading', 'percent': 40}
         ]),
@@ -75,6 +76,7 @@ void main() {
     test('وضع Super (pullToDevice=false): يكتمل بلا سحب ولا حذف — ر-2',
         () async {
       final api = FakeApi(historyScript: [
+        historyWith(),
         historyWith(done: [doneItem()]),
       ]);
       final engine = DownloadEngine(
@@ -97,6 +99,7 @@ void main() {
 
     test('سياسة Super (keepOnServer): لا حذف بعد السحب', () async {
       final api = FakeApi(historyScript: [
+        historyWith(),
         historyWith(done: [doneItem()]),
       ]);
       final engine = makeEngine(api, policy: DeletePolicy.keepOnServer);
@@ -108,6 +111,7 @@ void main() {
 
     test('خطأ سيرفر أثناء الاستطلاع ⇒ فشل فوري مصنف (فخ §6.4)', () async {
       final api = FakeApi(historyScript: [
+        historyWith(),
         historyWith(queue: [
           {
             'url': canonical,
@@ -121,11 +125,13 @@ void main() {
       final result = await awaitFinished(engine, task.id);
       expect(result.phase, TaskPhase.failed);
       expect(result.error, isA<PlatformBlockedException>());
-      expect(api.historyCalls, 1, reason: 'لا انتظار الـ10 دقائق');
+      expect(api.historyCalls, 2,
+          reason: 'لقطة + استطلاع واحد — لا انتظار الـ10 دقائق');
     });
 
     test('filename غائب في done ⇒ ينتظر ولا يختلق (فخ §6.3)', () async {
       final api = FakeApi(historyScript: [
+        historyWith(),
         historyWith(done: [doneItem(filename: null)]),
         historyWith(done: [doneItem(filename: null)]),
         historyWith(done: [doneItem()]),
@@ -134,7 +140,7 @@ void main() {
       final task = engine.submit(inputUrl, Quality.best);
       final result = await awaitFinished(engine, task.id);
       expect(result.phase, TaskPhase.completed);
-      expect(api.historyCalls, 3);
+      expect(api.historyCalls, 4);
     });
 
     test('انقضاء محاولات الاستطلاع ⇒ PollTimeoutException', () async {
@@ -144,11 +150,12 @@ void main() {
       final result = await awaitFinished(engine, task.id);
       expect(result.phase, TaskPhase.failed);
       expect(result.error, isA<PollTimeoutException>());
-      expect(api.historyCalls, 3);
+      expect(api.historyCalls, 4, reason: 'لقطة + 3 محاولات');
     });
 
     test('إلغاء مهمة منتظرة قبل بدئها ⇒ cancelled بلا أي طلب', () async {
       final api = FakeApi(historyScript: [
+        historyWith(),
         historyWith(done: [doneItem()]),
       ]);
       final gate = Completer<void>();
@@ -171,7 +178,7 @@ void main() {
       final engine = makeEngine(api, maxPollAttempts: 1000);
       final task = engine.submit(inputUrl, Quality.best);
       api.onHistoryFetch = (call) {
-        if (call == 2) engine.cancel(task.id);
+        if (call == 3) engine.cancel(task.id);
       };
       final result = await awaitFinished(engine, task.id);
       expect(result.phase, TaskPhase.cancelled);
@@ -179,6 +186,7 @@ void main() {
 
     test('تقدم السيرفر أثناء polling يصل للبث', () async {
       final api = FakeApi(historyScript: [
+        historyWith(),
         historyWith(queue: [
           {'url': canonical, 'status': 'downloading', 'percent': 45.3}
         ]),

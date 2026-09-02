@@ -17,6 +17,7 @@ void main() {
   const inputUrl = 'https://youtu.be/jNQXAC9IVRw';
 
   FakeApi apiWithDone() => FakeApi(historyScript: [
+        historyWith(), // لقطة ما قبل الإضافة (ح-3)
         historyWith(done: [
           {
             'id': 'jNQXAC9IVRw',
@@ -84,11 +85,12 @@ void main() {
       await _tick(30);
       expect(phases.last, TaskPhase.waitingForNetwork);
 
+      // الإلغاء أثناء الركن يُعلن **فوراً** (لا انتظار دورة عامل) — لذا
+      // نقرأ من المستمع القائم لا من `firstWhere` بعد الحدث.
       engine.cancel(task.id);
-      final result = await engine.updates
-          .firstWhere((t) => t.id == task.id && t.isFinished)
-          .timeout(const Duration(seconds: 5));
-      expect(result.phase, TaskPhase.cancelled);
+      await _tick(3);
+      expect(engine.taskById(task.id)!.phase, TaskPhase.cancelled);
+      expect(phases.last, TaskPhase.cancelled);
     });
   });
 

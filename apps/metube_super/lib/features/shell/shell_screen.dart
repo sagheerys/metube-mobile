@@ -163,6 +163,7 @@ class _ShellScreenState extends ConsumerState<ShellScreen>
     ref.watch(completionGlowProvider);
     // م-43: يستمع لعودة الشبكة فيعيد ما فشل بسببها.
     ref.watch(autoRetryProvider);
+    ref.watch(batchDropWatcherProvider);
 
     return Scaffold(
       body: widget.navigationShell,

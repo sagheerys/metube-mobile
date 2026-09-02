@@ -18,6 +18,9 @@ class FakeApi implements MeTubeApi {
 
   final List<(List<String> ids, String where)> deletes = [];
 
+  /// يُرمى بدل تنفيذ الحذف — لاختبار ع-6 (تنظيف فاشل بعد سحب ناجح).
+  MTApiException? deleteError;
+
   int downloadCalls = 0;
   int failDownloadsBeforeSuccess = 0;
   bool hangDownloadUntilCancel = false;
@@ -45,6 +48,7 @@ class FakeApi implements MeTubeApi {
   Future<void> delete(List<String> canonicalUrls,
       {String where = 'done'}) async {
     deletes.add((canonicalUrls, where));
+    if (deleteError != null) throw deleteError!;
   }
 
   @override

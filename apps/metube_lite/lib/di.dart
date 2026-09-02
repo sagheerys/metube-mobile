@@ -70,17 +70,28 @@ final playlistsStoreProvider = Provider((ref) => PlaylistsStore(
       mutex: ref.watch(prefsMutexProvider),
     ));
 
+/// تجميع تحميل القائمة في قائمة محفوظة واحدة (بلاغ المالك 2026-09-02).
+final batchCollectorProvider = Provider((ref) => BatchPlaylistCollector(
+      playlists: ref.watch(playlistsStoreProvider),
+    ));
+
 /// محرك Lite: الخط الرباعي كاملاً — يسحب للجهاز ثم **يحذف من السيرفر
 /// تلقائياً** (م-6/4) فيبقى سيرفر العائلة نظيفاً.
 final downloadEngineProvider = Provider<DownloadEngine?>((ref) {
   final api = ref.watch(apiClientProvider);
   if (api == null) return null;
+  final logger = ref.watch(loggerProvider);
+  final collector = ref.watch(batchCollectorProvider);
   final engine = DownloadEngine(
     api: api,
     policy: DeletePolicy.autoDelete,
     savePathBuilder: (task, filename) =>
         '$liteMediaDir/${buildLocalFilename(task.title, serverFilename: filename)}',
-    onCompleted: (task) => unawaited(onDownloadCompleted(ref, task)),
+    onCompleted: (task) {
+      unawaited(collector.onFinished(task));
+      unawaited(onDownloadCompleted(ref, task));
+    },
+    onLog: (message) => unawaited(logger.log(message, tag: 'download')),
     // م-42: الملف لا يُسحب على بيانات الجوّال إن اختار المستخدم ذلك.
     // `ref.read` داخل الإغلاق بقصد: قراءة **لحظة السؤال**، فتغيير
     // الإعداد أثناء انتظار مهمة يُطلقها فوراً بلا إعادة بناء المحرك.
@@ -94,10 +105,34 @@ final downloadEngineProvider = Provider<DownloadEngine?>((ref) {
 });
 
 /// لقطة مهام المحرك الحية — تتجدد مع كل تحديث حالة.
-final engineTasksProvider = StreamProvider<List<DownloadTask>>((ref) {
+///
+/// **`yield engine.tasks` الأولى هي إصلاح أشباح ع-1:** StreamProvider
+/// يحتفظ بقيمته السابقة أثناء إعادة البناء، والمحرك الجديد لا يبثّ حتى
+/// أول `submit` — فتبقى مهام المحرك الميت معروضة، وفي Lite **لا تنطفئ
+/// الخدمة الأمامية** لأنها تتبع عدّاد المهام الحية.
+final engineTasksProvider = StreamProvider<List<DownloadTask>>((ref) async* {
   final engine = ref.watch(downloadEngineProvider);
-  if (engine == null) return const Stream.empty();
-  return engine.updates.map((_) => engine.tasks);
+  if (engine == null) {
+    yield const [];
+    return;
+  }
+  yield engine.tasks;
+  yield* engine.updates.map((_) => engine.tasks);
+});
+
+/// **يبلّغ المُجمِّع بأعضاء الدفعة التي سقطت** (فشل/إلغاء) كي لا تبقى
+/// قائمة القائمة المُجمَّعة معلّقة، وتُحذف إن سقط كل عناصرها.
+final batchDropWatcherProvider = Provider<void>((ref) {
+  final collector = ref.watch(batchCollectorProvider);
+  ref.listen<AsyncValue<List<DownloadTask>>>(engineTasksProvider, (_, next) {
+    for (final task in next.value ?? const <DownloadTask>[]) {
+      if (!task.isBatchMember) continue;
+      if (task.phase == TaskPhase.failed ||
+          task.phase == TaskPhase.cancelled) {
+        unawaited(collector.onDropped(task.id));
+      }
+    }
+  });
 });
 
 /// المهام غير المنتهية (بطاقات المكتبة الحية + شارة الرأس — النموذج أ).

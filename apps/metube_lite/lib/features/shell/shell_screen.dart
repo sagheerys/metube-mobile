@@ -160,6 +160,7 @@ class _ShellScreenState extends ConsumerState<ShellScreen>
     // م-43: يستمع لعودة الشبكة فيعيد ما فشل بسببها — بعمر التطبيق كي
     // لا تفوته عودة وقعت والمستخدم في شاشة أخرى.
     ref.watch(autoRetryProvider);
+    ref.watch(batchDropWatcherProvider);
     _watchEnrichment();
 
     return Scaffold(

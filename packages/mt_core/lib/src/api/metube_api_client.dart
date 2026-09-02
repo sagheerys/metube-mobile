@@ -152,8 +152,9 @@ class MeTubeApiClient implements MeTubeApi {
     CancelToken? cancelToken,
   }) async {
     final url = downloadUrl(serverFilename);
+    final Response<dynamic> response;
     try {
-      await _dio.download(
+      response = await _dio.download(
         url,
         savePath,
         cancelToken: cancelToken,
@@ -169,6 +170,24 @@ class MeTubeApiClient implements MeTubeApi {
       }
       throw NetworkException(e.message);
     }
+    _throwIfDownloadRejected(response.statusCode ?? 0);
+  }
+
+  /// **حارس حالة التنزيل — العطل الحرج ح-1 (2026-09-02).**
+  ///
+  /// `validateStatus` في [BaseOptions] ينطبق على `dio.download` أيضاً،
+  /// ومسار التنزيل في dio **لا يفحص الحالة بعده**: فكانت صفحة خطأ
+  /// (401 بعد تغيير كلمة السر، 502 عابر من الوكيل العكسي) تُبثّ إلى
+  /// `.part` ثم تُرقّى ملفَ وسائط «ناجحاً» — وفي Lite يُحذف بعدها الأصل
+  /// من السيرفر، فيضيع الملف من الطرفين. الفحص هنا يجعلها فشلاً مصنفاً:
+  /// `Transfer` يمسح الجزئي، والحذف من السيرفر لا يقع أصلاً.
+  static void _throwIfDownloadRejected(int status) {
+    if (status == 200 || status == 206) return;
+    if (status == 401 || status == 403) {
+      throw AuthFailureException('HTTP $status');
+    }
+    if (status == 404) throw const NoApiException();
+    throw ServerErrorException('HTTP $status');
   }
 
   void close() => _dio.close(force: true);

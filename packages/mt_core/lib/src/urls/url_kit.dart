@@ -21,7 +21,7 @@ abstract final class UrlKit {
   /// تجريد الرابط من نص المشاركة الملفوف حوله (مشاركة SoundCloud مثلاً
   /// جملة كاملة + الرابط). يعيد المدخل نفسه إن لم يوجد رابط ليكشفه التحقق.
   static String extractUrl(String input) {
-    final trimmed = input.trim();
+    final trimmed = _stripBidiMarks(input).trim();
     if (trimmed.isEmpty) return trimmed;
     final lower = trimmed.toLowerCase();
     if (lower.startsWith('http://') || lower.startsWith('https://')) {
@@ -35,10 +35,21 @@ abstract final class UrlKit {
   }
 
   /// كل الروابط في نص (مشاركة عدة روابط دفعة واحدة — م-3).
-  static List<String> extractAllUrls(String input) => _urlPattern
-      .allMatches(input)
-      .map((m) => _stripTrailingPunctuation(m.group(0)!))
-      .toList();
+  static List<String> extractAllUrls(String input) =>
+      _urlPattern.allMatches(_stripBidiMarks(input))
+          .map((m) => _stripTrailingPunctuation(m.group(0)!))
+          .toList();
+
+  /// علامات الاتجاه والمسافات الصفرية التي **تغلّف بها واتساب وتيليجرام
+  /// الروابط داخل الرسائل العربية** (العطل خ-5). بلا حذفها يصل الرابط
+  /// إلى yt-dlp بذيل خفي فيفشل بخطأ سيرفر غامض، بينما يعمل الرابط نفسه
+  /// عند لصقه يدوياً — وهذا تطبيق عربي أولاً.
+  static final RegExp _bidiMarks = RegExp(
+    '[\u200B-\u200F\u202A-\u202E\u2066-\u2069\uFEFF]',
+  );
+
+  static String _stripBidiMarks(String input) =>
+      input.replaceAll(_bidiMarks, '');
 
   /// تنظيف الترقيم الزائد الذي تلصقه تطبيقات المراسلة بنهاية الرابط.
   static String _stripTrailingPunctuation(String url) =>
@@ -74,12 +85,20 @@ abstract final class UrlKit {
   }
 
   /// المطابقة الضبابية بين الرابط المُدخل ورابط `/history` المُقنون —
-  /// السلّم: حرفي → معرف YouTube → معرف رقمي → تطبيع → احتواء.
+  /// السلّم: حرفي → معرف YouTube → معرف رقمي → تطبيع → بادئة مسار.
   ///
   /// **قاعدة حاسمة (خطأ مُصطاد على السيرفر الحقيقي 2026-09-01):** معرفا
   /// YouTube مرجعان نهائيان — إن وُجدا معاً واختلفا فلا تطابق أبداً، ولا
   /// يُسمح بسقوط روابط watch إلى رتبة التطبيع (التي تمسح الاستعلام فتسوّي
   /// كل `youtube.com/watch` ببعضها — وكاد ذلك يحذف عنصراً بريئاً).
+  ///
+  /// **وقاعدة ثانية بنفس الثقل (العطل ح-2، 2026-09-02):** الاحتواء الخام
+  /// كان يطابق **العنصر الخطأ** لكل ما عدا YouTube:
+  /// `soundcloud.com/x/track` كان يطابق `soundcloud.com/x/track-remix`،
+  /// ومعرف رقمي يطابق رقماً أطول يبدأ به. النتيجة: سحب ملف بريء باسم
+  /// المطلوب، **وحذفه من السيرفر** في Lite. الآن الاحتواء **بحدود**:
+  /// الرقم لا يُقبل ملتصقاً برقم آخر، والمسار لا يُقبل إلا بادئةً كاملة
+  /// عند فاصل `/` (فيبقى الرابط الخاص `…/track/s-abc123` مطابِقاً).
   static bool urlsMatch(String url1, String url2) {
     if (url1.isEmpty || url2.isEmpty) return false;
     if (url1 == url2) return true;
@@ -95,17 +114,41 @@ abstract final class UrlKit {
 
     final numId1 = longestNumericId(url1);
     final numId2 = longestNumericId(url2);
-    if (numId1.isNotEmpty && numId2.isNotEmpty && numId1 == numId2) return true;
-    if (numId1.isNotEmpty && url2.contains(numId1)) return true;
-    if (numId2.isNotEmpty && url1.contains(numId2)) return true;
+    if (numId1.isNotEmpty && numId2.isNotEmpty) return numId1 == numId2;
+    if (numId1.isNotEmpty) return _containsIdAtBoundary(url2, numId1);
+    if (numId2.isNotEmpty) return _containsIdAtBoundary(url1, numId2);
 
     final norm1 = normalize(url1);
     final norm2 = normalize(url2);
     if (norm1 == norm2) return true;
-    if (norm1.contains(norm2) || norm2.contains(norm1)) return true;
-
-    return false;
+    return _isPathPrefix(norm1, norm2) || _isPathPrefix(norm2, norm1);
   }
+
+  /// هل يحوي [url] الرقم [id] **غير ملتصق برقم آخر**؟ (`…/769798712`
+  /// ليس `…/76979871`).
+  static bool _containsIdAtBoundary(String url, String id) {
+    var from = 0;
+    while (true) {
+      final at = url.indexOf(id, from);
+      if (at < 0) return false;
+      final before = at == 0 ? '' : url[at - 1];
+      final afterIdx = at + id.length;
+      final after = afterIdx >= url.length ? '' : url[afterIdx];
+      if (!_isDigit(before) && !_isDigit(after)) return true;
+      from = at + 1;
+    }
+  }
+
+  static bool _isDigit(String ch) {
+    if (ch.length != 1) return false;
+    final code = ch.codeUnitAt(0);
+    return code >= 0x30 && code <= 0x39;
+  }
+
+  /// [shorter] بادئةُ مسارٍ كاملة لـ [longer] عند فاصل `/` — يقبل
+  /// `a/b` مع `a/b/s-token` ويرفض `a/b` مع `a/b-remix`.
+  static bool _isPathPrefix(String longer, String shorter) =>
+      shorter.isNotEmpty && longer.startsWith('$shorter/');
 
   /// حارس اجتياز المسار لأسماء الملفات القادمة من السيرفر قبل بناء رابط
   /// `/download/<filename>` — يرفض الفارغ و`..` و`/` و`\`.

@@ -25,6 +25,9 @@ class _BatchScreenState extends ConsumerState<BatchScreen> {
   bool _initialised = false;
   Quality? _quality;
 
+  /// اسم قائمة المصدر — تُجمَّع تحته العناصر في قائمة محفوظة واحدة.
+  String? _playlistName;
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.mtl;
@@ -81,6 +84,7 @@ class _BatchScreenState extends ConsumerState<BatchScreen> {
     final count = ref.read(batchSubmitterProvider).submit(
           _selected.toList(),
           _quality ?? Quality.best,
+          groupName: _playlistName,
         );
     if (count == 0) {
       showMTSnack(context, l10n.noServerTitle, type: MTSnackType.error);
@@ -94,6 +98,7 @@ class _BatchScreenState extends ConsumerState<BatchScreen> {
   Widget _content(PlaylistPreview preview, PlaylistKind kind) {
     if (!_initialised) {
       _initialised = true;
+      _playlistName = preview.title;
       _selected.addAll(preview.tracks.map((t) => t.url));
       // SoundCloud صوت فقط (§4) — الجودة تُثبَّت ولا تُعرض.
       _quality = kind == PlaylistKind.soundcloud

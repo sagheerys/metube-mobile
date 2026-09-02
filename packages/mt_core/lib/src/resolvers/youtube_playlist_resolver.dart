@@ -1,46 +1,72 @@
-import 'package:youtube_explode_dart/youtube_explode_dart.dart';
+import 'dart:convert';
 
 import '../models/playlist_preview.dart';
 import '../urls/playlist_detector.dart';
+import 'http_fetch.dart';
+import 'innertube_parser.dart';
 
-/// قوائم YouTube عبر youtube_explode_dart — فشل-آمن: null عند أي خطأ
-/// (شاشة الدفعي تعرض رسالة، ولا شيء ينكسر).
+/// قوائم YouTube — فشل-آمن: null عند أي خطأ (شاشة الدفعي تعرض رسالة).
+///
+/// **مكتوب على InnerTube مباشرة لا على `youtube_explode_dart`** (بلاغ
+/// المالك 2026-09-02: «القائمة تظهر صفحة فارغة»). أُثبت بالتشغيل الحقيقي
+/// أن `yt.playlists.getVideos()` يبثّ **صفر عناصر** لقائمة عدّادها 19 —
+/// في 2.5.3 وفي أحدث إصدار 3.1.0 معاً، لأن يوتيوب استبدل
+/// `playlistVideoRenderer` بـ`lockupViewModel`. المشروع القديم في
+/// `Z:\MTD` يستعمل الحزمة نفسها، أي أن العطل موروث لا مستجد.
+///
+/// النقطة `browse` مع `browseId: VL<id>` **بلا مفتاح API** (مُختبر)،
+/// والصفحة الواحدة 100 عنصر ثم رمز استمرار.
 class YoutubePlaylistResolver {
-  /// مصنع قابل للحقن في الاختبارات.
-  YoutubePlaylistResolver({YoutubeExplode Function()? clientFactory})
-      : _clientFactory = clientFactory ?? YoutubeExplode.new;
+  YoutubePlaylistResolver({HttpPostJson? httpPost})
+      : _post = httpPost ?? ioHttpPostJson;
 
-  final YoutubeExplode Function() _clientFactory;
+  final HttpPostJson _post;
+
+  static final Uri _browse =
+      Uri.parse('https://www.youtube.com/youtubei/v1/browse?prettyPrint=false');
+
+  /// حد أعلى للصفحات — قائمة بآلاف العناصر لا تُعرض في شاشة اختيار.
+  static const maxPages = 12;
 
   Future<PlaylistPreview?> resolve(String playlistUrl) async {
-    final YoutubeExplode yt;
+    final id = PlaylistDetector.youtubePlaylistId(playlistUrl);
+    if (id == null) return null;
     try {
-      yt = _clientFactory();
-    } catch (_) {
-      return null;
-    }
-    try {
-      final id = PlaylistId(playlistUrl);
-      final meta = await yt.playlists.get(id);
-      final tracks = <PlaylistTrack>[];
-      await for (final video in yt.playlists.getVideos(id)) {
-        tracks.add(PlaylistTrack(
-          url: video.url,
-          title: video.title,
-          duration: video.duration,
-          thumbnail: video.thumbnails.mediumResUrl,
-        ));
+      final first = await _browsePage({'browseId': 'VL$id'});
+      final preview = InnertubeParser.parseBrowse(first);
+      if (preview == null) return null;
+
+      final tracks = [...preview.tracks];
+      var token = InnertubeParser.continuationToken(first);
+      for (var page = 1; page < maxPages && token != null; page++) {
+        final next = await _browsePage({'continuation': token});
+        final more = InnertubeParser.parseBrowse(next);
+        if (more == null) break;
+        tracks.addAll(more.tracks);
+        token = InnertubeParser.continuationToken(next);
       }
       return PlaylistPreview(
-        kind: PlaylistKind.youtube,
-        title: meta.title,
-        coverUrl: tracks.isEmpty ? null : tracks.first.thumbnail,
+        kind: preview.kind,
+        title: preview.title,
+        coverUrl: preview.coverUrl,
         tracks: tracks,
       );
-    } catch (_) {
+    } on Object {
       return null;
-    } finally {
-      yt.close();
     }
+  }
+
+  Future<Object?> _browsePage(Map<String, Object> payload) async {
+    final body = await _post(_browse, {
+      'context': {
+        'client': {
+          'clientName': 'WEB',
+          'clientVersion': '2.20260902.01.00',
+          'hl': 'en',
+        }
+      },
+      ...payload,
+    });
+    return json.decode(body);
   }
 }

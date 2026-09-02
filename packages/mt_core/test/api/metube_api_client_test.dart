@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
@@ -189,5 +190,56 @@ void main() {
         makeClient((o) => _json('{}'), username: 'u', password: 'p');
     expect(client.streamingHeaders['Authorization'], startsWith('Basic '));
     expect(client.streamingHeaders['Connection'], 'keep-alive');
+  });
+
+  /// **العطل الحرج ح-1** — كان `downloadTo` بلا اختبار واحد، وهو ما
+  /// أخفى أن `validateStatus < 600` يجعل صفحة الخطأ تُحفظ **ملفَ وسائط
+  /// ناجحاً** ثم يُحذف الأصل من السيرفر.
+  group('downloadTo (§2.4) — حالة HTTP لا تمرّ بصمت', () {
+    late Directory tempDir;
+    setUp(() async {
+      tempDir = await Directory.systemTemp.createTemp('mtf_dl_');
+    });
+    tearDown(() => tempDir.delete(recursive: true));
+
+    String path(String name) =>
+        '${tempDir.path}${Platform.pathSeparator}$name';
+
+    Future<void> expectRejected(int status, TypeMatcher<Object> matcher) async {
+      final (client, _) = makeClient((o) => ResponseBody.fromString(
+            '<html>لست ملفاً</html>',
+            status,
+            headers: {
+              Headers.contentTypeHeader: ['text/html']
+            },
+          ));
+      await expectLater(
+        client.downloadTo('clip.mp4', path('out_$status.mp4')),
+        throwsA(matcher),
+      );
+    }
+
+    test('401 ⇒ AuthFailure لا «نجاح»', () => expectRejected(401,
+        isA<AuthFailureException>()));
+    test('403 ⇒ AuthFailure', () => expectRejected(403,
+        isA<AuthFailureException>()));
+    test('404 ⇒ NoApi', () => expectRejected(404, isA<NoApiException>()));
+    test('500 ⇒ ServerError', () => expectRejected(500,
+        isA<ServerErrorException>()));
+    test('502 ⇒ ServerError (وكيل عكسي عابر)', () => expectRejected(502,
+        isA<ServerErrorException>()));
+
+    test('200 ⇒ يُكتب الملف بلا رمي', () async {
+      final (client, _) = makeClient((o) => ResponseBody.fromString(
+            'MEDIA',
+            200,
+            headers: {
+              Headers.contentTypeHeader: ['video/mp4']
+            },
+          ));
+      final out = path('ok.mp4');
+      await client.downloadTo('clip.mp4', out);
+      expect(File(out).readAsStringSync(), 'MEDIA');
+    });
   });
 }

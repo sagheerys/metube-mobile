@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mt_core/mt_core.dart';
 import 'package:mt_media/mt_media.dart';
@@ -54,27 +56,64 @@ final playlistsStoreProvider = Provider((ref) => PlaylistsStore(
       mutex: ref.watch(prefsMutexProvider),
     ));
 
+/// تجميع تحميل القائمة في قائمة محفوظة واحدة (بلاغ المالك 2026-09-02).
+final batchCollectorProvider = Provider((ref) => BatchPlaylistCollector(
+      playlists: ref.watch(playlistsStoreProvider),
+    ));
+
 /// محرك Super: إضافة للسيرفر فقط (ر-2) — لا سحب ولا حذف تلقائي.
 final downloadEngineProvider = Provider<DownloadEngine?>((ref) {
   final api = ref.watch(apiClientProvider);
   if (api == null) return null;
+  final logger = ref.watch(loggerProvider);
+  final collector = ref.watch(batchCollectorProvider);
   final engine = DownloadEngine(
     api: api,
     policy: DeletePolicy.keepOnServer,
     pullToDevice: false,
     savePathBuilder: (task, filename) =>
         throw StateError('Super لا يسحب من خط الإضافة'),
-    onCompleted: (task) => ref.invalidate(historyProvider),
+    onCompleted: (task) {
+      collector.onFinished(task);
+      ref.invalidate(historyProvider);
+    },
+    // م-32: **أول موصل سجل في Super إطلاقاً** — كانت شاشة السجلات تقرأ
+    // ملفاً لا يكتب فيه أحد، فتظهر فارغة دائماً (بلاغ المالك 2026-09-02).
+    onLog: (message) => unawaited(logger.log(message, tag: 'download')),
   );
   ref.onDispose(engine.dispose);
   return engine;
 });
 
 /// لقطة مهام المحرك الحية — تتجدد مع كل تحديث حالة.
-final engineTasksProvider = StreamProvider<List<DownloadTask>>((ref) {
+///
+/// **`yield engine.tasks` الأولى هي إصلاح أشباح ع-1:** StreamProvider
+/// يحتفظ بقيمته السابقة أثناء إعادة البناء، والمحرك الجديد لم يكن يبثّ
+/// شيئاً حتى أول `submit` — فتبقى بطاقات المحرك الميت وشارة عدّاده
+/// معروضة إلى ما لا نهاية بعد تبديل السيرفر.
+final engineTasksProvider = StreamProvider<List<DownloadTask>>((ref) async* {
   final engine = ref.watch(downloadEngineProvider);
-  if (engine == null) return const Stream.empty();
-  return engine.updates.map((_) => engine.tasks);
+  if (engine == null) {
+    yield const [];
+    return;
+  }
+  yield engine.tasks;
+  yield* engine.updates.map((_) => engine.tasks);
+});
+
+/// **يبلّغ المُجمِّع بأعضاء الدفعة التي سقطت** (فشل/إلغاء) كي لا تبقى
+/// قائمة القائمة المُجمَّعة معلّقة، وتُحذف إن سقط كل عناصرها.
+final batchDropWatcherProvider = Provider<void>((ref) {
+  final collector = ref.watch(batchCollectorProvider);
+  ref.listen<AsyncValue<List<DownloadTask>>>(engineTasksProvider, (_, next) {
+    for (final task in next.value ?? const <DownloadTask>[]) {
+      if (!task.isBatchMember) continue;
+      if (task.phase == TaskPhase.failed ||
+          task.phase == TaskPhase.cancelled) {
+        unawaited(collector.onDropped(task.id));
+      }
+    }
+  });
 });
 
 /// المهام غير المنتهية (بطاقات المكتبة الحية + شارة الرأس — النموذج أ).
@@ -150,14 +189,18 @@ final playbackWiringProvider = Provider<void>((ref) {
 });
 
 /// محلّل الروابط (م-28): probe بنفس اعتمادات الحساب.
+/// **يراقب الاعتمادات وحدها لا كائن الإعدادات كله (إصلاح ط-6):** بلا
+/// `select` كان تغيير الثيم أو الجودة يعيد بناء المحلّل، فيُعاد فحص كل
+/// الروابط وأنت في شاشة الشبكة.
 final endpointResolverProvider = Provider((ref) {
-  final settings = ref.watch(settingsProvider);
+  final credentials = ref.watch(
+      settingsProvider.select((s) => (s.username ?? '', s.password ?? '')));
   return EndpointResolver.withClientFactory(
     (baseUrl) => MeTubeApiClient(
       config: ServerConfig(
         baseUrl: baseUrl,
-        username: settings.username,
-        password: settings.password,
+        username: credentials.$1,
+        password: credentials.$2,
       ),
     ),
   );

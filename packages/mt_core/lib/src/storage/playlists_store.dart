@@ -13,20 +13,32 @@ class PlaylistsStore {
   final KeyValueStore store;
   final PrefsMutex mutex;
 
+  /// **قراءة دفاعية عنصراً عنصراً (إصلاح خ-1):** كان الالتقاط مقصوراً
+  /// على `FormatException`، بينما `SavedPlaylist.fromJson` يرمي
+  /// `TypeError` إن وصل `items` خريطةً بدل قائمة (وارد من استعادة نسخة
+  /// legacy — والاستعادة تكتب بلا تحقق). النتيجة كانت **كل** `readAll`
+  /// يرمي ⇒ شاشة القوائم وكتاباتها معطلة نهائياً بلا شفاء ذاتي.
+  /// الآن: قائمة تالفة واحدة تُسقَط، والباقي ينجو.
   Future<List<SavedPlaylist>> readAll() async {
     final raw = await store.getString(prefsKey);
     if (raw == null || raw.isEmpty) return [];
+    final Object? decoded;
     try {
-      final decoded = json.decode(raw);
-      if (decoded is! List) return [];
-      return [
-        for (final item in decoded)
-          if (item is Map)
-            SavedPlaylist.fromJson(Map<String, dynamic>.from(item)),
-      ];
+      decoded = json.decode(raw);
     } on FormatException {
       return [];
     }
+    if (decoded is! List) return [];
+    final out = <SavedPlaylist>[];
+    for (final item in decoded) {
+      if (item is! Map) continue;
+      try {
+        out.add(SavedPlaylist.fromJson(Map<String, dynamic>.from(item)));
+      } on Object {
+        continue; // عنصر مشوّه لا يُسقط المخزن كله
+      }
+    }
+    return out;
   }
 
   Future<SavedPlaylist?> byId(String id) async {
