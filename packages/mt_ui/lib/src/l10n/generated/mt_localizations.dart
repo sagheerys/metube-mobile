@@ -452,6 +452,18 @@ abstract class MTLocalizations {
   /// **'Download selected'**
   String get batchDownloadSelected;
 
+  /// No description provided for @batchFromPlaylistNote.
+  ///
+  /// In en, this message translates to:
+  /// **'This link came from inside a playlist'**
+  String get batchFromPlaylistNote;
+
+  /// No description provided for @batchThisVideoOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Download this video only'**
+  String get batchThisVideoOnly;
+
   /// No description provided for @batchLoading.
   ///
   /// In en, this message translates to:

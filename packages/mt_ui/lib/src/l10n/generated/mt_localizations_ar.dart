@@ -206,6 +206,12 @@ class MTLocalizationsAr extends MTLocalizations {
   String get batchDownloadSelected => 'تحميل المحدد';
 
   @override
+  String get batchFromPlaylistNote => 'هذا الرابط من داخل قائمة';
+
+  @override
+  String get batchThisVideoOnly => 'تحميل هذا المقطع فقط';
+
+  @override
   String get batchLoading => 'قراءة القائمة…';
 
   @override

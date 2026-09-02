@@ -90,6 +90,8 @@
   "backupSettingsSubtitle": "تصدير الإعدادات وبيانات الفيديوهات إلى مجلد التحميلات",
   "backupSuccess": "حُفظت النسخة في: {path}",
   "batchDownloadSelected": "تحميل المحدد",
+  "batchFromPlaylistNote": "هذا الرابط من داخل قائمة",
+  "batchThisVideoOnly": "تحميل هذا المقطع فقط",
   "batchLoading": "قراءة القائمة…",
   "batchNothingSelected": "اختر عنصراً واحداً على الأقل",
   "batchSelectedOf": "محدد {selected} من {total}",

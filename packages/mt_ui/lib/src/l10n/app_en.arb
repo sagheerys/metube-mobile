@@ -350,6 +350,8 @@
   "backupSettingsSubtitle": "Export settings & video data to Downloads folder",
   "backupSuccess": "Backup saved to: {path}",
   "batchDownloadSelected": "Download selected",
+  "batchFromPlaylistNote": "This link came from inside a playlist",
+  "batchThisVideoOnly": "Download this video only",
   "batchLoading": "Reading the playlist…",
   "batchNothingSelected": "Select at least one item",
   "batchSelectedOf": "{selected} of {total} selected",

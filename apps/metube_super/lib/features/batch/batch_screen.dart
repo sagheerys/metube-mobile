@@ -28,6 +28,26 @@ class _BatchScreenState extends ConsumerState<BatchScreen> {
   /// اسم قائمة المصدر — تُجمَّع تحته العناصر في قائمة محفوظة واحدة.
   String? _playlistName;
 
+  /// رابط الفيديو المفرد إن كان المُدخل `watch?v=…&list=…`.
+  String? get _singleVideoUrl {
+    final id = UrlKit.youtubeVideoId(widget.playlistUrl);
+    return id == null ? null : 'https://www.youtube.com/watch?v=$id';
+  }
+
+  void _downloadSingle() {
+    final l10n = context.mtl;
+    final count = ref.read(batchSubmitterProvider).submit(
+          [_singleVideoUrl!],
+          ref.read(settingsProvider).quality,
+        );
+    if (count == 0) {
+      showMTSnack(context, l10n.noServerTitle, type: MTSnackType.error);
+      return;
+    }
+    context.go('/');
+    showMTSnack(context, l10n.addedNToServer(1), type: MTSnackType.success);
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.mtl;
@@ -35,7 +55,20 @@ class _BatchScreenState extends ConsumerState<BatchScreen> {
     final kind = PlaylistDetector.detect(widget.playlistUrl);
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.batchTitle)),
+      appBar: AppBar(
+        title: Text(l10n.batchTitle),
+        // **مخرج للرابط الغامض.** `watch?v=X&list=Y` هو فيديو **داخل**
+        // قائمة: المشاركة من يوتيوب تحمل `list` كثيراً، فبعد أن صارت
+        // القوائم تُقرأ فعلاً صار من السهل أن تجد نفسك أمام 200 عنصر
+        // وأنت تريد واحداً. الزر يظهر فقط حين يكون في الرابط `v=`.
+        actions: [
+          if (_singleVideoUrl != null)
+            TextButton(
+              onPressed: _downloadSingle,
+              child: Text(l10n.batchThisVideoOnly),
+            ),
+        ],
+      ),
       floatingActionButton: preview.value == null
           ? null
           : FloatingActionButton.extended(
