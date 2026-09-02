@@ -11,13 +11,12 @@ import '../home/add_flow.dart';
 import '../player/playback_providers.dart';
 import '../playlists/add_to_playlist_sheet.dart';
 import '../tags/item_tags_sheet.dart';
-import 'artwork_view.dart';
-import 'library_actions.dart';
 import 'library_models.dart';
 import 'library_providers.dart';
 import 'widgets/downloads_sheet.dart';
+import 'widgets/item_actions_sheet.dart' show confirmBulkDelete;
+import 'widgets/library_cards.dart';
 import 'widgets/library_chips.dart';
-import 'widgets/item_actions_sheet.dart';
 import 'widgets/sort_sheet.dart';
 
 /// المكتبة الموحدة (م-13/م-14) — النموذج أ: بطاقات حية أثناء النشاط فقط
@@ -32,9 +31,15 @@ class LibraryScreen extends ConsumerStatefulWidget {
 class _LibraryScreenState extends ConsumerState<LibraryScreen> {
   Timer? _livePoll;
 
+  /// التوهج يتلاشى بصرياً وحده؛ هذا المؤقت يطفئ **الحالة** بعده كي لا
+  /// يعود العنصر متوهجاً كلما مرّ أمام العين في التمرير.
+  static const _highlightLinger = Duration(seconds: 8);
+  Timer? _highlightTimer;
+
   @override
   void dispose() {
     _livePoll?.cancel();
+    _highlightTimer?.cancel();
     super.dispose();
   }
 
@@ -56,6 +61,15 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     final options = ref.watch(libraryViewProvider);
     final active = ref.watch(activeTasksProvider);
     final settings = ref.watch(settingsProvider);
+    ref.listen<String?>(highlightedItemProvider, (_, next) {
+      _highlightTimer?.cancel();
+      if (next == null) return;
+      _highlightTimer = Timer(_highlightLinger, () {
+        if (mounted) {
+          ref.read(highlightedItemProvider.notifier).state = null;
+        }
+      });
+    });
     WidgetsBinding.instance
         .addPostFrameCallback((_) => _syncLivePolling(active));
 
@@ -178,6 +192,16 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
               ),
               const SizedBox(height: MTSpace.sm),
               const LibraryFilterChips(),
+              // «هل التصفية شغّالة؟» — سؤال يطرحه كل مرشح مركّب، وسطر
+              // واحد يجيب عنه بلا أن يفتح المستخدم شيئاً.
+              if (options.query.isNotEmpty || options.activeFilters > 0)
+                Padding(
+                  padding: const EdgeInsets.only(top: MTSpace.xs),
+                  child: Text(
+                    l10n.resultsFound(itemsAsync.value?.length ?? 0),
+                    style: Theme.of(context).textTheme.labelSmall,
+                  ),
+                ),
               const SizedBox(height: MTSpace.md),
               // بطاقات حية أعلى المكتبة أثناء النشاط فقط (النموذج أ).
               for (final task in active) ...[
@@ -197,11 +221,30 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
               SliverPadding(
                 padding:
                     const EdgeInsets.symmetric(horizontal: MTSpace.pagePad),
-                sliver: SliverList.builder(
-                  itemCount: value.length,
-                  itemBuilder: (context, index) =>
-                      _itemCard(l10n, options, value[index]),
-                ),
+                sliver: options.grid
+                    // الشبكة كسولة أيضاً — `SliverGrid.builder` لا يبني
+                    // إلا المرئي، وهو شرط 251 عنصراً بلا تجميد.
+                    ? SliverGrid.builder(
+                        // **النسبة مقيسة لا مقدَّرة** (تحقق بلقطة على
+                        // المحاكي): 0.82 تركت ~50 نقطة فراغاً ميتاً تحت
+                        // كل بطاقة فبدت الشبكة مفكّكة. المحتوى الفعلي =
+                        // غلاف 16:9 + سطرا عنوان + سطر بيانات.
+                        gridDelegate:
+                            const SliverGridDelegateWithMaxCrossAxisExtent(
+                          maxCrossAxisExtent: 210,
+                          mainAxisSpacing: MTSpace.md,
+                          crossAxisSpacing: MTSpace.md,
+                          childAspectRatio: 1.02,
+                        ),
+                        itemCount: value.length,
+                        itemBuilder: (context, index) =>
+                            _gridCard(l10n, options, value[index]),
+                      )
+                    : SliverList.builder(
+                        itemCount: value.length,
+                        itemBuilder: (context, index) =>
+                            _itemCard(l10n, options, value[index]),
+                      ),
               ),
             ],
           AsyncLoading() => [
@@ -252,6 +295,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       TaskPhase.queued => l10n.queuedSection,
       TaskPhase.adding || TaskPhase.polling => l10n.onServerProgress(
           (task.progress * 100).toStringAsFixed(0)),
+      TaskPhase.waitingForNetwork => l10n.waitingForWifi,
       TaskPhase.pulling => l10n.pullingToDevice,
       TaskPhase.deleting => l10n.downloading,
       TaskPhase.failed => taskErrorText(l10n, task),
@@ -288,49 +332,10 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
   }
 
   Widget _itemCard(
-      MTLocalizations l10n, LibraryViewOptions options, LibraryItem item) {
-    final controller = ref.read(libraryViewProvider.notifier);
-    final actions = ref.read(libraryActionsProvider);
-    // **تقدّم السحب كان يُحسب ولا يعرضه أحد** (بلاغ المالك 2026-09-02:
-    // «لا يظهر العداد، يبدو كأنه لا يستجيب») — سواء من «حفظ للجهاز»
-    // أو من المشاركة التي تسحب نسخة مؤقتة أولاً.
-    final pulling =
-        ref.watch(offlinePullProgressProvider)[item.canonicalUrl];
-    return MTMediaCard(
-      title: item.title,
-      subtitle: pulling != null
-          ? '${l10n.pullingToDevice} ${(pulling * 100).round()}٪'
-          : [
-              if (item.uploader != null) item.uploader!,
-              if (item.timestamp != null) mtTimeAgo(context, item.timestamp!),
-            ].join(' · '),
-      thumbnail: artworkFor(item.thumbnail,
-          headers: ref.read(apiClientProvider)?.streamingHeaders),
-      platform: platformKindOf(MediaPlatform.detect(item.canonicalUrl)),
-      location: item.location,
-      locationLabel: switch (item.location) {
-        MTMediaLocation.offline ||
-        MTMediaLocation.both =>
-          l10n.availabilityOffline,
-        MTMediaLocation.onServer => l10n.filterServer,
-        MTMediaLocation.none => null,
-      },
-      compact: options.compact,
-      favorite: item.favorite,
-      selected: options.selection.contains(item.canonicalUrl),
-      onFavoriteToggle: () async {
-        final added = await actions.toggleFavorite(item.canonicalUrl);
-        if (!mounted) return;
-        showMTSnack(
-          context,
-          added ? l10n.addedToFavorites : l10n.removedFromFavorites,
-        );
-      },
-      onTap: options.selecting
-          ? () => controller.toggleSelected(item.canonicalUrl)
-          : () => _play(item),
-      onLongPress: () => controller.toggleSelected(item.canonicalUrl),
-      onMore: () => showItemActionsSheet(context, ref, item),
-    );
-  }
+          MTLocalizations l10n, LibraryViewOptions options, LibraryItem item) =>
+      LibraryItemCard(item: item, onPlay: () => _play(item));
+
+  Widget _gridCard(
+          MTLocalizations l10n, LibraryViewOptions options, LibraryItem item) =>
+      LibraryItemCard(item: item, onPlay: () => _play(item), grid: true);
 }

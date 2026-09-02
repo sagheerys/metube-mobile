@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  نصوص اختصارات الأيقونة. **لا تُقرأ من arb**: أندرويد يرسم القائمة قبل
+  أن يقلع محرك Flutter، فالنص لا بد أن يكون مورداً أصيلاً. العربية في
+  `values-ar/strings.xml` وتتبع لغة النظام لا لغة التطبيق — قيد المنصة.
+-->
+<resources>
+    <string name="shortcut_paste_short">Paste link</string>
+    <string name="shortcut_paste_long">Paste a link and download</string>
+    <string name="shortcut_shorts_short">Shorts</string>
+    <string name="shortcut_shorts_long">Open shorts</string>
+    <string name="shortcut_audio_short">Audio</string>
+    <string name="shortcut_audio_long">Open audio library</string>
+</resources>

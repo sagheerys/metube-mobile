@@ -5,51 +5,7 @@ import '../widgets/media_time.dart';
 import '../widgets/mt_player_controls_row.dart';
 import '../widgets/mt_progress_slider.dart';
 import 'mt_video_session.dart';
-
-/// أزرار الأدوات فوق الفيديو: مربعات داكنة شبه شفافة بحبر كريمي.
-class MTVideoIconButton extends StatelessWidget {
-  const MTVideoIconButton({
-    super.key,
-    required this.icon,
-    required this.onTap,
-    required this.tooltip,
-    this.size = 36,
-    this.active = false,
-  });
-
-  final IconData icon;
-  final VoidCallback onTap;
-  final String tooltip;
-  final double size;
-  final bool active;
-
-  @override
-  Widget build(BuildContext context) {
-    final p = MTThemeX.of(context).palette;
-    return Tooltip(
-      message: tooltip,
-      child: Material(
-        color: active
-            ? p.accent.withValues(alpha: 0.3)
-            : Colors.black.withValues(alpha: 0.4),
-        borderRadius: BorderRadius.circular(MTRadius.field - 1),
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(MTRadius.field - 1),
-          child: SizedBox(
-            width: size,
-            height: size,
-            child: Icon(
-              icon,
-              size: size * 0.42,
-              color: MTPalette.serverCardInk,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
+import 'video_buttons.dart';
 
 /// الشريط العلوي: عودة، عنوان وموضعه في القائمة، السرعة، القفل، ملء الشاشة.
 class MTVideoTopBar extends StatelessWidget {
@@ -117,6 +73,8 @@ class MTVideoTopBar extends StatelessWidget {
             ],
           ),
         ),
+        const SizedBox(width: MTSpace.xs),
+        MTVideoSpeedButton(session: session),
         const SizedBox(width: MTSpace.xs),
         if (onLock != null) ...[
           MTVideoIconButton(
@@ -247,7 +205,9 @@ class MTVideoBottomBar extends StatelessWidget {
               Text(
                 '${mtFormatDuration(session.position)} / '
                 '${mtFormatDuration(session.duration ?? Duration.zero)}',
-                style: text.labelSmall!.copyWith(color: inkMuted),
+                // عدّاد حي كل إطار — بلا أرقام ثابتة العرض يتمدد النص
+                // ويتقلص فيرقص السطر كله (فحص 2026-09-02).
+                style: text.labelSmall!.copyWith(color: inkMuted).tabular,
               ),
               const Spacer(),
               MTVideoIconButton(

@@ -80,6 +80,23 @@ abstract final class MTType {
   static const String package = 'mt_ui';
 }
 
+/// أرقام **ثابتة العرض** للعدّادات الحية.
+///
+/// **فخ موثق (فحص 2026-09-02):** إضافة `FontFeature.tabularFigures()`
+/// وحدها لا تفعل شيئاً هنا — فحص ملفات الخطوط الثنائية أثبت أن
+/// **Tajawal بلا جدول `tnum`** بينما Noto Kufi Arabic يملكه. فالعدّاد
+/// المرسوم بخط النصوص يظل يرقص مع كل ثانية مهما طلبنا الميزة.
+///
+/// لذلك: العدّادات تُرسم بخط **العناوين** الذي يدعم الميزة فعلاً. تُطبَّق
+/// على الأرقام المتغيرة وحدها (الزمن، الحجم، السرعة) — لا على النصوص.
+extension MTTabularFigures on TextStyle {
+  TextStyle get tabular => copyWith(
+        fontFamily: MTType.display,
+        package: MTType.package,
+        fontFeatures: const [FontFeature.tabularFigures()],
+      );
+}
+
 /// الظلال الدافئة — منسوخة من قيم المراجع.
 abstract final class MTShadow {
   /// ظل البطاقة النهاري: 0 3 6 ٥٪ + 0 30 60 -22 ٢٢٪ بلون بُني دافئ.

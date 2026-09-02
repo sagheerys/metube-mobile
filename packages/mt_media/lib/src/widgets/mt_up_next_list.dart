@@ -118,7 +118,7 @@ class _UpNextRow extends StatelessWidget {
             else if (item.duration != null)
               Text(
                 mtFormatDuration(item.duration!),
-                style: text.labelSmall!.copyWith(color: muted),
+                style: text.labelSmall!.copyWith(color: muted).tabular,
               ),
           ],
         ),

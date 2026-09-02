@@ -6,6 +6,15 @@ sealed class MTApiException implements Exception {
   /// تفصيل تقني اختياري (رسالة السيرفر الخام) — للسجلات لا للعرض المباشر.
   final String? detail;
 
+  /// هل تُعاد المحاولة تلقائياً عند عودة الشبكة؟ (م-43)
+  ///
+  /// **نعم لعطل الطريق، لا لرفض الوجهة.** الانقطاع ومهلة الاستطلاع
+  /// عارضان تُصلحهما الشبكة نفسها. أما الاعتماد الخاطئ أو حظر المنصة أو
+  /// خطأ السيرفر الصريح فقرار من الطرف الآخر: إعادته بلا تغيير تفشل
+  /// مرة أخرى، وتُغرق السيرفر بطلبات محكوم عليها.
+  bool get isRetryable =>
+      this is NetworkException || this is PollTimeoutException;
+
   @override
   String toString() =>
       detail == null ? runtimeType.toString() : '$runtimeType: $detail';

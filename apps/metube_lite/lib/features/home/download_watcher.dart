@@ -92,6 +92,16 @@ final downloadWatcherProvider = Provider<void>((ref) {
             channelName: texts.activeDownloads,
             percent: (task.progress * 100).round(),
           );
+        // م-42: الملف جاهز والسحب موقوف بانتظار Wi‑Fi — الإشعار يقول
+        // السبب صراحة، وإلا بدا التطبيق عالقاً بلا تفسير.
+        case TaskPhase.waitingForNetwork:
+          await notifications.showProgress(
+            id,
+            title: task.title ?? texts.downloadingTitle,
+            body: texts.waitingForWifi,
+            channelName: texts.activeDownloads,
+            percent: null,
+          );
         case TaskPhase.pulling:
           await notifications.showProgress(
             id,
@@ -110,6 +120,13 @@ final downloadWatcherProvider = Provider<void>((ref) {
           );
         case TaskPhase.completed:
           if (!notified.add(task.id)) break;
+          // **لحظة الذروة**: العنصر يصل المكتبة بتوهجة واحدة تتلاشى —
+          // الاكتمال أسعد لحظة في التطبيق وكان يمر بلا أي احتفاء.
+          // نفس آلية إبراز نقرة الإشعار: مسار واحد لا اثنان.
+          final arrived = task.canonicalUrl ?? task.localPath;
+          if (arrived != null) {
+            ref.read(highlightedItemProvider.notifier).state = arrived;
+          }
           await notifications.cancel(id);
           await notifications.showResult(
             id,

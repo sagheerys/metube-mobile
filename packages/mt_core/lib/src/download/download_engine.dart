@@ -33,6 +33,7 @@ class DownloadEngine {
     this.maxPollAttempts = MTConstants.maxPollAttempts,
     this.pullToDevice = true,
     this.onCompleted,
+    this.pullGate,
   })  : _resolver = shortLinkResolver ?? ShortLinkResolver(),
         _transfer = transfer ?? Transfer(api: api);
 
@@ -48,6 +49,20 @@ class DownloadEngine {
 
   /// للفهرسة بعد الاكتمال (OfflineIndex / MediaStore) في طبقة التطبيق.
   final void Function(DownloadTask task)? onCompleted;
+
+  /// **بوابة السحب** (م-42 «Wi‑Fi فقط»): تُسأل قبل جلب الملف للجهاز.
+  ///
+  /// `null` أو `true` ⇒ اسحب الآن. `false` ⇒ المهمة تنتظر في
+  /// [TaskPhase.waitingForNetwork] وتُسأل البوابة من جديد كل
+  /// [pollInterval] حتى تأذن أو يُلغى.
+  ///
+  /// **البوابة هنا لا عند الإدخال بقصد**: الإضافة للسيرفر لا تكلّف بيانات
+  /// الجوّال شيئاً يُذكر، والغالي هو الملف. إيقاف الإضافة أيضاً كان
+  /// سيعطّل نصف فائدة التطبيق على بيانات الجوّال بلا سبب.
+  ///
+  /// mt_core **لا يعرف `connectivity_plus`** (Dart خالص — القاعدة 6):
+  /// التطبيق هو من يجيب.
+  final bool Function()? pullGate;
 
   final ShortLinkResolver _resolver;
   final Transfer _transfer;
@@ -145,8 +160,10 @@ class DownloadEngine {
         return;
       }
 
-      // 3) السحب
-      task = _emit(task.copyWith(phase: TaskPhase.pulling, progress: 0));
+      // 3) السحب — بعد أن تأذن البوابة (Wi‑Fi فقط)
+      await _awaitPullGate(taskId);
+      task = _emit(_tasks[taskId]!.copyWith(
+          phase: TaskPhase.pulling, progress: 0));
       final savePath = savePathBuilder(task, done.filename!);
       final token = CancelToken();
       _cancelTokens[taskId] = token;
@@ -205,6 +222,19 @@ class DownloadEngine {
       }
     }
     throw const PollTimeoutException();
+  }
+
+  /// ينتظر إذن [pullGate] بلا حدّ أعلى — الانتظار حالة مشروعة لا فشل،
+  /// والمستخدم يملك الإلغاء متى شاء (والإلغاء يكسر الحلقة فوراً).
+  Future<void> _awaitPullGate(String taskId) async {
+    final gate = pullGate;
+    if (gate == null || gate()) return;
+    _emit(_tasks[taskId]!.copyWith(phase: TaskPhase.waitingForNetwork));
+    while (!gate()) {
+      _throwIfCancelRequested(taskId);
+      await Future<void>.delayed(pollInterval);
+    }
+    _throwIfCancelRequested(taskId);
   }
 
   void _throwIfCancelRequested(String taskId) {

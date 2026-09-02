@@ -104,13 +104,11 @@ class _ReelsProgressBarState extends State<ReelsProgressBar> {
                         const SizedBox(width: MTSpace.sm),
                         Text(
                           mtFormatDuration(state.duration * shown),
-                          style: TextStyle(
-                            fontFamily: MTType.body,
-                            package: MTType.package,
+                          style: const TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w700,
                             color: MTPalette.serverCardInk,
-                          ),
+                          ).tabular,
                         ),
                       ],
                     ],

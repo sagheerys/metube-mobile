@@ -40,6 +40,9 @@ class MTLocalizationsAr extends MTLocalizations {
   }
 
   @override
+  String get addToFavorites => 'أضف للمفضلة';
+
+  @override
   String get addToPlaylist => 'إضافة إلى قائمة';
 
   @override
@@ -51,9 +54,6 @@ class MTLocalizationsAr extends MTLocalizations {
   }
 
   @override
-  String get addToFavorites => 'أضف للمفضلة';
-
-  @override
   String get addedToFavorites => 'أُضيف إلى المفضلة';
 
   @override
@@ -63,6 +63,9 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get addedToQueue => 'أُضيف إلى قائمة التنزيل';
+
+  @override
+  String get addingToServer => 'يُرسَل للسيرفر…';
 
   @override
   String get allDownloadsFinished => 'اكتملت جميع التحميلات!';
@@ -102,6 +105,10 @@ class MTLocalizationsAr extends MTLocalizations {
       'تشغيل المقطع الصوتي في الخلفية عند النقر على زر الرجوع';
 
   @override
+  String get autoBackupNote =>
+      'تُحفظ نسخة تلقائياً بعد كل تغيير في Downloads/MeTube_Lite';
+
+  @override
   String get autoBuilt => 'تلقائية';
 
   @override
@@ -111,12 +118,15 @@ class MTLocalizationsAr extends MTLocalizations {
   String get autoPlayOff => 'التشغيل التلقائي: متوقف';
 
   @override
-  String get autoBackupNote =>
-      'تُحفظ نسخة تلقائياً بعد كل تغيير في Downloads/MeTube_Lite';
-
-  @override
   String get autoRestoreSuccess =>
       'تمت استعادة البيانات من النسخة الاحتياطية بنجاح!';
+
+  @override
+  String get autoRetry => 'إعادة المحاولة عند عودة الشبكة';
+
+  @override
+  String get autoRetryHelp =>
+      'ما فشل بسبب انقطاع الشبكة يُعاد وحده عند عودتها. ما رفضه الخادم لا يُعاد — إعادته بلا تغيير تفشل مرة أخرى.';
 
   @override
   String get autoSwitchDisabledHint =>
@@ -137,6 +147,9 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get availabilityServer => 'الخادم (بث)';
+
+  @override
+  String get availableOfflineNow => 'صار متاحاً دون اتصال';
 
   @override
   String get backgroundDownload => 'جاري تحميل الملفات في الخلفية...';
@@ -213,7 +226,16 @@ class MTLocalizationsAr extends MTLocalizations {
   String get cardView => 'عرض البطاقات';
 
   @override
+  String get changeQuality => 'تغيير الجودة';
+
+  @override
   String get chooseBackupFile => 'اختر ملف النسخة';
+
+  @override
+  String get chooseOptions => 'خيارات';
+
+  @override
+  String get cleaningServer => 'جارٍ تنظيف السيرفر...';
 
   @override
   String get clear => 'مسح';
@@ -226,9 +248,6 @@ class MTLocalizationsAr extends MTLocalizations {
   String get clearAllSettings => 'مسح كل الإعدادات';
 
   @override
-  String get cleaningServer => 'جارٍ تنظيف السيرفر...';
-
-  @override
   String get clearLogs => 'مسح السجلّات';
 
   @override
@@ -236,6 +255,9 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get clipboardEmpty => 'الحافظة فارغة';
+
+  @override
+  String get clipboardFound => 'رابط جاهز في الحافظة';
 
   @override
   String get clipboardLinkReady => 'لصق الرابط';
@@ -419,10 +441,18 @@ class MTLocalizationsAr extends MTLocalizations {
   String get downloadFailedTitle => 'فشل التنزيل';
 
   @override
+  String get downloadNow => 'تحميل';
+
+  @override
   String get downloadQuality => 'جودة التنزيل';
 
   @override
   String get downloadStarted => 'بدأ التحميل...';
+
+  @override
+  String downloadStartedQuality(Object quality) {
+    return 'بدأ التحميل · $quality';
+  }
 
   @override
   String downloadTracks(int count) {
@@ -811,6 +841,9 @@ class MTLocalizationsAr extends MTLocalizations {
   String get needsAttention => 'تحتاج انتباهك';
 
   @override
+  String get networkBackRetrying => 'عادت الشبكة — إعادة المحاولة';
+
+  @override
   String get networkSettings => 'الشبكات';
 
   @override
@@ -1005,6 +1038,11 @@ class MTLocalizationsAr extends MTLocalizations {
   String get preparingShare => 'يُجهَّز الملف للمشاركة…';
 
   @override
+  String preparingToShare(String percent) {
+    return 'يُجهَّز للمشاركة… $percent٪';
+  }
+
+  @override
   String get previous => 'السابق';
 
   @override
@@ -1063,6 +1101,13 @@ class MTLocalizationsAr extends MTLocalizations {
   String get queuedSection => 'بالانتظار';
 
   @override
+  String get quickDownload => 'التحميل السريع';
+
+  @override
+  String get quickDownloadHelp =>
+      'الرابط المشارَك أو الملصوق يبدأ التحميل فوراً بالجودة الافتراضية بلا نافذة. الجودات الرقمية ليوتيوب وحده — غيره ينزل بأفضل جودة، وإن كانت الجودة الافتراضية «صوت فقط» فهي تُطبَّق على كل المنصات.';
+
+  @override
   String get readyToShare => 'جاهز للمشاركة!';
 
   @override
@@ -1087,6 +1132,9 @@ class MTLocalizationsAr extends MTLocalizations {
   String get remove => 'إزالة';
 
   @override
+  String get removeFromFavorites => 'أزل من المفضلة';
+
+  @override
   String get removeFromPlaylist => 'إزالة من القائمة';
 
   @override
@@ -1101,9 +1149,6 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get removeOfflineTitle => 'إزالة النسخة المحلية';
-
-  @override
-  String get removeFromFavorites => 'أزل من المفضلة';
 
   @override
   String get removedFromFavorites => 'أُزيل من المفضلة';
@@ -1157,6 +1202,20 @@ class MTLocalizationsAr extends MTLocalizations {
   String get restoreSuccess => 'تمت استعادة البيانات بنجاح';
 
   @override
+  String resultsFound(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count نتيجة',
+      few: '$count نتائج',
+      two: 'نتيجتان',
+      one: 'نتيجة واحدة',
+      zero: 'لا نتائج',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get retry => 'إعادة المحاولة';
 
   @override
@@ -1169,6 +1228,12 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get saveSettings => 'حفظ الإعدادات';
+
+  @override
+  String get saveToDevice => 'حفظ للجهاز';
+
+  @override
+  String get savedOnDevice => 'محفوظ للجهاز';
 
   @override
   String get savedPartial => 'تم الحفظ (فشل الحذف من السيرفر)';
@@ -1428,6 +1493,9 @@ class MTLocalizationsAr extends MTLocalizations {
   String get themeSystem => 'النظام';
 
   @override
+  String get titleLabel => 'العنوان';
+
+  @override
   String totalDuration(Object duration) {
     return 'الإجمالي: $duration';
   }
@@ -1499,7 +1567,26 @@ class MTLocalizationsAr extends MTLocalizations {
   String get viewAllInPlaylists => 'عرض الكل';
 
   @override
+  String get viewGrid => 'شبكة';
+
+  @override
+  String get viewList => 'قائمة';
+
+  @override
+  String get viewMode => 'العرض';
+
+  @override
   String get waiting => 'بانتظار السيرفر...';
+
+  @override
+  String get waitingForWifi => 'بانتظار Wi‑Fi';
+
+  @override
+  String get wifiOnly => 'التحميل عبر Wi‑Fi فقط';
+
+  @override
+  String get wifiOnlyHelp =>
+      'يمنع سحب الملفات إلى جهازك على بيانات الجوّال. المهام تنتظر وتُستأنف تلقائياً عند اتصال Wi‑Fi.';
 
   @override
   String get yourPlaylists => 'قوائمك';
@@ -1509,24 +1596,4 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get youtubeDownloadStarting => 'جاري بدء تحميل يوتيوب...';
-
-  @override
-  String get addingToServer => 'يُرسَل للسيرفر…';
-
-  @override
-  String get availableOfflineNow => 'صار متاحاً دون اتصال';
-
-  @override
-  String preparingToShare(String percent) {
-    return 'يُجهَّز للمشاركة… $percent٪';
-  }
-
-  @override
-  String get saveToDevice => 'حفظ للجهاز';
-
-  @override
-  String get savedOnDevice => 'محفوظ للجهاز';
-
-  @override
-  String get titleLabel => 'العنوان';
 }

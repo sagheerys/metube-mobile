@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -7,8 +9,14 @@ import 'package:mt_ui/mt_ui.dart';
 
 import '../../di.dart';
 import '../home/add_flow.dart';
+import '../home/app_shortcuts.dart';
+import '../home/network_gate.dart';
+import '../home/quick_download.dart';
 import '../home/reception.dart';
 import '../library/library_enricher.dart';
+import '../library/library_models.dart' show MediaTypeFilter;
+import '../library/library_providers.dart'
+    show completionGlowProvider, libraryViewProvider;
 import '../player/playback_providers.dart';
 import '../shared/notification_permission.dart';
 
@@ -41,6 +49,7 @@ class _ShellScreenState extends ConsumerState<ShellScreen>
       ref.read(audioHandlerProvider).restoreSession();
       // 33+: بلا هذا الطلب لا يظهر إشعار الوسائط إطلاقاً (خلل مصطاد).
       const NotificationPermission().request();
+      unawaited(_handleShortcut());
     });
   }
 
@@ -48,6 +57,36 @@ class _ShellScreenState extends ConsumerState<ShellScreen>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       ref.read(clipboardRefresherProvider)();
+      // الاختصار يصل كنيّة جديدة على تطبيق يعمل — لا إقلاع جديد.
+      unawaited(_handleShortcut());
+    }
+  }
+
+  /// م-41: تنفيذ اختصار الأيقونة. **الحافظة تُقرأ الآن لا من الحالة
+  /// المحفوظة**: المستخدم نسخ الرابط ثم ضغط الأيقونة مباشرة، ولقطة
+  /// `clipboardUrlProvider` قد تسبق النسخ بثوانٍ.
+  Future<void> _handleShortcut() async {
+    final shortcut = await const AppShortcuts().consume();
+    if (shortcut == null || !mounted) return;
+    switch (shortcut) {
+      case AppShortcut.paste:
+        await ref.read(clipboardRefresherProvider)();
+        if (!mounted) return;
+        final url = ref.read(clipboardUrlProvider);
+        widget.navigationShell.goBranch(0);
+        if (url == null) {
+          openAddSheet(context, ref);
+        } else if (startQuickDownload(context, ref, url)) {
+          ref.read(clipboardUrlProvider.notifier).state = null;
+        } else {
+          openAddSheet(context, ref, initialUrl: url);
+        }
+      case AppShortcut.shorts:
+        widget.navigationShell.goBranch(0);
+        ref.read(libraryViewProvider.notifier).setType(MediaTypeFilter.shorts);
+      case AppShortcut.audio:
+        widget.navigationShell.goBranch(0);
+        ref.read(libraryViewProvider.notifier).setType(MediaTypeFilter.audio);
     }
   }
 
@@ -63,6 +102,12 @@ class _ShellScreenState extends ConsumerState<ShellScreen>
     if (!mounted || urls.isEmpty) return;
     widget.navigationShell.goBranch(0);
     if (urls.length == 1) {
+      // «التحميل السريع» يجعل الجودة الافتراضية إعداداً فاعلاً: الرابط
+      // المشارَك ينزل فوراً بلا ورقة، والشريط يتيح التراجع.
+      if (ref.read(settingsProvider).quickDownload &&
+          startQuickDownload(context, ref, urls.first)) {
+        return;
+      }
       openAddSheet(context, ref, initialUrl: urls.first);
       return;
     }
@@ -84,12 +129,8 @@ class _ShellScreenState extends ConsumerState<ShellScreen>
   void _onFabPressed() {
     final clipboardUrl = ref.read(clipboardUrlProvider);
     if (clipboardUrl != null) {
-      final engine = ref.read(downloadEngineProvider);
-      if (engine != null && !PlaylistDetector.isPlaylist(clipboardUrl)) {
-        engine.submit(clipboardUrl, ref.read(settingsProvider).quality);
+      if (startQuickDownload(context, ref, clipboardUrl)) {
         ref.read(clipboardUrlProvider.notifier).state = null;
-        showMTSnack(context, context.mtl.downloadStarted,
-            type: MTSnackType.success);
         return;
       }
       openAddSheet(context, ref, initialUrl: clipboardUrl);
@@ -97,6 +138,14 @@ class _ShellScreenState extends ConsumerState<ShellScreen>
     }
     openAddSheet(context, ref);
   }
+
+  /// شريط الحافظة: **يُطوى ولا يعود** لنفس الرابط في هذه الجلسة.
+  void _dismissClipboard() {
+    _dismissedClipboardUrl = ref.read(clipboardUrlProvider);
+    setState(() {});
+  }
+
+  String? _dismissedClipboardUrl;
 
   @override
   Widget build(BuildContext context) {
@@ -109,6 +158,11 @@ class _ShellScreenState extends ConsumerState<ShellScreen>
     // م-18/م-35: أغلفة وأبعاد عناصر المكتبة — يعيش بعمر التطبيق كي لا
     // يتوقف السبر عند مغادرة شاشة المكتبة.
     ref.watch(libraryEnrichmentProvider);
+    // توهج العنصر المكتمل — يراقب من الغلاف كي لا يفوته اكتمال وقع
+    // والمستخدم في شاشة أخرى.
+    ref.watch(completionGlowProvider);
+    // م-43: يستمع لعودة الشبكة فيعيد ما فشل بسببها.
+    ref.watch(autoRetryProvider);
 
     return Scaffold(
       body: widget.navigationShell,
@@ -130,6 +184,28 @@ class _ShellScreenState extends ConsumerState<ShellScreen>
       bottomNavigationBar: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
+          // **شريط الحافظة**: تغيير عنوان الزر العائم وحده كان إشارة
+          // خافتة جداً — الرابط نفسه لا يُرى، ولا سبيل لفتح الخيارات
+          // بدل التحميل الفوري. الشريط يعرض الرابط ويقدّم الفعلين معاً.
+          if (branch != 2 &&
+              clipboardUrl != null &&
+              clipboardUrl != _dismissedClipboardUrl)
+            MTClipboardBanner(
+              url: clipboardUrl,
+              title: l10n.clipboardFound,
+              downloadLabel: l10n.downloadNow,
+              optionsLabel: l10n.chooseOptions,
+              onDownload: () {
+                if (startQuickDownload(context, ref, clipboardUrl)) {
+                  ref.read(clipboardUrlProvider.notifier).state = null;
+                } else {
+                  openAddSheet(context, ref, initialUrl: clipboardUrl);
+                }
+              },
+              onOptions: () =>
+                  openAddSheet(context, ref, initialUrl: clipboardUrl),
+              onDismiss: _dismissClipboard,
+            ),
           if (branch != 2)
             MTMiniPlayer(
               handler: ref.watch(audioHandlerProvider),

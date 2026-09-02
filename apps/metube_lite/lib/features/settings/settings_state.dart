@@ -13,6 +13,9 @@ class LiteSettings {
     this.username,
     this.password,
     this.quality = Quality.best,
+    this.quickDownload = false,
+    this.wifiOnly = false,
+    this.autoRetry = true,
     this.themeMode = ThemeMode.system,
     this.localeCode,
   });
@@ -21,6 +24,16 @@ class LiteSettings {
   final String? username;
   final String? password;
   final Quality quality;
+
+  /// **التحميل السريع**: الرابط المشارَك/الملصوق ينزل فوراً بالجودة
+  /// الافتراضية بلا ورقة — يجعلها إعداداً فاعلاً لا قيمة مبدئية.
+  final bool quickDownload;
+
+  /// السحب إلى الجهاز على Wi‑Fi فقط — يهمّ نسخة العائلة أكثر من غيرها.
+  final bool wifiOnly;
+
+  /// إعادة ما فشل بسبب الشبكة عند عودتها (لا ما رفضه الخادم).
+  final bool autoRetry;
   final ThemeMode themeMode;
 
   /// null = لغة النظام (كشف أول تشغيل — م-30).
@@ -38,6 +51,9 @@ class LiteSettings {
     String? username,
     String? password,
     Quality? quality,
+    bool? quickDownload,
+    bool? wifiOnly,
+    bool? autoRetry,
     ThemeMode? themeMode,
     String? localeCode,
   }) =>
@@ -46,6 +62,9 @@ class LiteSettings {
         username: username ?? this.username,
         password: password ?? this.password,
         quality: quality ?? this.quality,
+        quickDownload: quickDownload ?? this.quickDownload,
+        wifiOnly: wifiOnly ?? this.wifiOnly,
+        autoRetry: autoRetry ?? this.autoRetry,
         themeMode: themeMode ?? this.themeMode,
         localeCode: localeCode ?? this.localeCode,
       );
@@ -59,6 +78,9 @@ class LiteSettings {
       username: await secrets.read(SecretKeys.username),
       password: await secrets.read(SecretKeys.password),
       quality: Quality.fromWire(await store.getString('video_quality')),
+      quickDownload: await store.getBool('quick_download_enabled') ?? false,
+      wifiOnly: await store.getBool('wifi_only_downloads') ?? false,
+      autoRetry: await store.getBool('auto_retry_downloads') ?? true,
       themeMode: ThemeMode.values.firstWhere(
         (m) => m.name == themeName,
         orElse: () => ThemeMode.system,
@@ -116,6 +138,21 @@ class SettingsNotifier extends Notifier<LiteSettings> {
   Future<void> setQuality(Quality quality) async {
     await _mutex.run(() => _store.setString('video_quality', quality.wire));
     state = state.copyWith(quality: quality);
+  }
+
+  Future<void> setQuickDownload(bool enabled) async {
+    await _mutex.run(() => _store.setBool('quick_download_enabled', enabled));
+    state = state.copyWith(quickDownload: enabled);
+  }
+
+  Future<void> setWifiOnly(bool enabled) async {
+    await _mutex.run(() => _store.setBool('wifi_only_downloads', enabled));
+    state = state.copyWith(wifiOnly: enabled);
+  }
+
+  Future<void> setAutoRetry(bool enabled) async {
+    await _mutex.run(() => _store.setBool('auto_retry_downloads', enabled));
+    state = state.copyWith(autoRetry: enabled);
   }
 
   Future<void> setThemeMode(ThemeMode mode) async {

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:mt_ui/mt_ui.dart';
 
 import 'mt_video_session.dart';
+import 'video_buttons.dart';
 import 'video_control_bars.dart';
 
 /// أدوات الفيديو فوق المقطع (مرجع «وهج» C): لمسة تُظهرها و٣ ثوانٍ

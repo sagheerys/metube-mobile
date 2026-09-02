@@ -73,6 +73,13 @@
       }
     }
   },
+  "@downloadStartedQuality": {
+    "placeholders": {
+      "quality": {
+        "type": "Object"
+      }
+    }
+  },
   "@downloadTracks": {
     "placeholders": {
       "count": {
@@ -187,6 +194,13 @@
       }
     }
   },
+  "@preparingToShare": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
   "@queueItemsCount": {
     "placeholders": {
       "count": {
@@ -197,6 +211,13 @@
   "@queuePosition": {
     "placeholders": {
       "position": {
+        "type": "int"
+      }
+    }
+  },
+  "@resultsFound": {
+    "placeholders": {
+      "count": {
         "type": "int"
       }
     }
@@ -279,13 +300,14 @@
   "addEndpoint": "Add endpoint",
   "addLinkFab": "Add link",
   "addNToServer": "Add {count} to server",
+  "addToFavorites": "Add to favorites",
   "addToPlaylist": "Add to Playlist",
   "addUrl": "Add URL",
   "addedNToServer": "Added {count} to server",
-  "addToFavorites": "Add to favorites",
   "addedToFavorites": "Added to favorites",
   "addedToPlaylistCount": "{count} added to the playlist",
   "addedToQueue": "Added to download queue",
+  "addingToServer": "Sending to the server…",
   "allDownloadsFinished": "All downloads finished!",
   "allPlatforms": "All platforms",
   "allRightsReserved": "All rights reserved",
@@ -298,17 +320,20 @@
   "authentication": "Authentication (Optional)",
   "autoBackgroundAudio": "Auto Background Audio",
   "autoBackgroundAudioSubtitle": "Play audio in background when pressing back button",
+  "autoBackupNote": "Saved automatically after every change to Downloads/MeTube_Lite",
   "autoBuilt": "Automatic",
   "autoPlayNext": "Auto-play next: ON",
   "autoPlayOff": "Auto-play next: OFF",
-  "autoBackupNote": "Saved automatically after every change to Downloads/MeTube_Lite",
   "autoRestoreSuccess": "Data restored from backup successfully!",
+  "autoRetry": "Retry when the network returns",
+  "autoRetryHelp": "Anything that failed because the network dropped is retried on its own when it returns. Server refusals are not retried — repeating them unchanged just fails again.",
   "autoSwitchDisabledHint": "Auto-switching is off — the app uses the single Server URL from Settings.",
   "autoUrlSwitching": "Automatic URL switching",
   "autoUrlSwitchingDesc": "Connect through the local URL when it is reachable, and use external connections elsewhere",
   "availability": "Availability",
   "availabilityOffline": "Offline (local copy)",
   "availabilityServer": "Server (stream)",
+  "availableOfflineNow": "Now available offline",
   "backgroundDownload": "Downloading files in background...",
   "backgroundPlay": "Background play",
   "backupFailed": "Backup failed",
@@ -331,14 +356,17 @@
   "batchTitle": "Batch download",
   "cancel": "Cancel",
   "cardView": "Card view",
+  "changeQuality": "Change quality",
   "chooseBackupFile": "Choose the backup file",
+  "chooseOptions": "Options",
+  "cleaningServer": "Cleaning up the server...",
   "clear": "Clear",
   "clearAllConfirm": "This will remove all saved settings including credentials. Continue?",
   "clearAllSettings": "Clear All Settings",
-  "cleaningServer": "Cleaning up the server...",
   "clearLogs": "Clear Logs",
   "clearLogsConfirm": "Delete all diagnostic logs?",
   "clipboardEmpty": "Clipboard is empty",
+  "clipboardFound": "A link is ready in your clipboard",
   "clipboardLinkReady": "Paste link",
   "closePlayer": "Close player",
   "comingSoonPhase": "This screen is built in a later phase of the plan",
@@ -394,8 +422,10 @@
   "downloadFailed": "Download Failed",
   "downloadFailedStatus": "Download failed",
   "downloadFailedTitle": "Download Failed",
+  "downloadNow": "Download",
   "downloadQuality": "Download Quality",
   "downloadStarted": "Download started...",
+  "downloadStartedQuality": "Download started · {quality}",
   "downloadTracks": "Download {count} Tracks",
   "downloadUrlUnavailable": "Download URL not available",
   "downloading": "Downloading...",
@@ -513,6 +543,7 @@
   "navPlaylists": "Playlists",
   "navSettings": "Settings",
   "needsAttention": "Needs your attention",
+  "networkBackRetrying": "Network is back — retrying",
   "networkSettings": "Networks",
   "networkSettingsSubtitle": "Auto-switch between local and external server URLs",
   "newPlaylistAction": "New playlist",
@@ -573,6 +604,7 @@
   "preferences": "Preferences",
   "preparingDownload": "Preparing download...",
   "preparingShare": "Preparing the file for sharing…",
+  "preparingToShare": "Preparing to share… {percent}%",
   "previous": "Previous",
   "pullingToDevice": "Saving to device…",
   "quality": "Quality",
@@ -588,6 +620,8 @@
   "queueSavedAsPlaylist": "Saved as a playlist",
   "queued": "Queued",
   "queuedSection": "Waiting",
+  "quickDownload": "Quick download",
+  "quickDownloadHelp": "A shared or pasted link starts downloading right away at the default quality, with no dialog. Numeric qualities apply to YouTube only — other platforms fall back to best, and an “audio only” default applies everywhere.",
   "readyToShare": "Ready to share!",
   "reelsEndBack": "Back to library",
   "reelsEndContinue": "Continue the rest of the list",
@@ -596,12 +630,12 @@
   "reelsSwipeHint": "Swipe up for the next short",
   "refresh": "Refresh",
   "remove": "Remove",
+  "removeFromFavorites": "Remove from favorites",
   "removeFromPlaylist": "Remove from playlist",
   "removeLocalCopy": "Remove local copy",
   "removeOfflineConfirm": "Delete the local copy from this device?\nThe video stays on the server and can be streamed again.",
   "removeOfflineCopy": "Remove offline copy",
   "removeOfflineTitle": "Remove Offline Copy",
-  "removeFromFavorites": "Remove from favorites",
   "removedFromFavorites": "Removed from favorites",
   "removedFromPlaylist": "Removed from the playlist",
   "rename": "Rename",
@@ -618,10 +652,13 @@
   "restoreSettings": "Restore All Data",
   "restoreSettingsSubtitle": "Import from Downloads/metube_lite_backup.json",
   "restoreSuccess": "Data restored successfully",
+  "resultsFound": "{count, plural, =1{1 result} other{{count} results}}",
   "retry": "Retry",
   "retryingAttempt": "Retry {attempt}/{max}…",
   "saveQueueAsPlaylist": "Save this queue as a playlist",
   "saveSettings": "Save Settings",
+  "saveToDevice": "Save to device",
+  "savedOnDevice": "Saved on device",
   "savedPartial": "Saved (Server delete failed)",
   "savedSuccess": "Settings saved",
   "savedTo": "Saved to Downloads/MeTube_Lite",
@@ -704,6 +741,7 @@
   "themeLight": "Light",
   "themeLightMode": "Light theme",
   "themeSystem": "System",
+  "titleLabel": "Title",
   "totalDuration": "Total: {duration}",
   "tracksCount": "{count} tracks",
   "tryAgain": "Try again",
@@ -725,21 +763,14 @@
   "videoRemoved": "Removed from playlist",
   "videosCount": "{count} videos",
   "viewAllInPlaylists": "View all",
+  "viewGrid": "Grid",
+  "viewList": "List",
+  "viewMode": "View",
   "waiting": "Waiting for server...",
+  "waitingForWifi": "Waiting for Wi-Fi",
+  "wifiOnly": "Download over Wi-Fi only",
+  "wifiOnlyHelp": "Stops pulling files to your device over mobile data. Tasks wait and resume automatically on Wi-Fi.",
   "yourPlaylists": "Your playlists",
   "yourTags": "Your tags",
-  "youtubeDownloadStarting": "Starting YouTube download...",
-  "addingToServer": "Sending to the server…",
-  "availableOfflineNow": "Now available offline",
-  "preparingToShare": "Preparing to share… {percent}%",
-  "@preparingToShare": {
-    "placeholders": {
-      "percent": {
-        "type": "String"
-      }
-    }
-  },
-  "saveToDevice": "Save to device",
-  "savedOnDevice": "Saved on device",
-  "titleLabel": "Title"
+  "youtubeDownloadStarting": "Starting YouTube download..."
 }

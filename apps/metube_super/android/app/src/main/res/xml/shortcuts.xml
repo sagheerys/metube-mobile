@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  اختصارات ضغطة الأيقونة المطولة (م-41).
+
+  **لماذا فعل مخصص بلا `data` (خلل مصطاد على المحاكي 2026-09-02):**
+  المحاولة الأولى رمّزت الوجهة في URI: `metube://shortcut/shorts`.
+  النتيجة شاشة «Page Not Found» فور الضغط على الاختصار — لأن Flutter
+  يشتق مسار الإقلاع من `intent.getData()` حين يكون الفعل VIEW، فرأى
+  go_router الموقع `/shorts` ولا مسار له فرمى `GoException`. أي بيانات
+  في النية تُختطف بهذه الطريقة مهما كان مخططها.
+
+  الحل: **فعل مخصص وبلا `data` إطلاقاً**، فيبقى مسار الإقلاع `/`
+  ويقرأ MainActivity الوجهة من اسم الفعل.
+
+  ودعم `<extra>` في الاختصارات الساكنة غير مضمون عبر الإصدارات، فالفعل
+  وحده هو القناة الموثوقة.
+
+  النية مرتبة بالتكرار: اللصق أولاً (الفعل اليومي)، ثم القِصار، ثم
+  الصوتيات — أندرويد يعرض أول أربعة فقط عملياً.
+-->
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:shortcutId="paste"
+        android:enabled="true"
+        android:icon="@mipmap/ic_launcher"
+        android:shortcutShortLabel="@string/shortcut_paste_short"
+        android:shortcutLongLabel="@string/shortcut_paste_long">
+        <intent
+            android:action="com.yasir.metubesuper.SHORTCUT_PASTE"
+            android:targetPackage="com.yasir.metubesuper"
+            android:targetClass="com.yasir.metubesuper.MainActivity" />
+        <categories android:name="android.shortcut.conversation" />
+    </shortcut>
+    <shortcut
+        android:shortcutId="shorts"
+        android:enabled="true"
+        android:icon="@mipmap/ic_launcher"
+        android:shortcutShortLabel="@string/shortcut_shorts_short"
+        android:shortcutLongLabel="@string/shortcut_shorts_long">
+        <intent
+            android:action="com.yasir.metubesuper.SHORTCUT_SHORTS"
+            android:targetPackage="com.yasir.metubesuper"
+            android:targetClass="com.yasir.metubesuper.MainActivity" />
+        <categories android:name="android.shortcut.conversation" />
+    </shortcut>
+    <shortcut
+        android:shortcutId="audio"
+        android:enabled="true"
+        android:icon="@mipmap/ic_launcher"
+        android:shortcutShortLabel="@string/shortcut_audio_short"
+        android:shortcutLongLabel="@string/shortcut_audio_long">
+        <intent
+            android:action="com.yasir.metubesuper.SHORTCUT_AUDIO"
+            android:targetPackage="com.yasir.metubesuper"
+            android:targetClass="com.yasir.metubesuper.MainActivity" />
+        <categories android:name="android.shortcut.conversation" />
+    </shortcut>
+</shortcuts>

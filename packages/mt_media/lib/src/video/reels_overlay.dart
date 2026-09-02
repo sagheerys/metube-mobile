@@ -182,7 +182,8 @@ class MTReelsInfo extends StatelessWidget {
             child: Text(
               mtFormatDuration(item.duration!),
               style: text.labelSmall!
-                  .copyWith(color: ink, fontWeight: FontWeight.w700),
+                  .copyWith(color: ink, fontWeight: FontWeight.w700)
+                  .tabular,
             ),
           ),
         const SizedBox(height: MTSpace.xs),

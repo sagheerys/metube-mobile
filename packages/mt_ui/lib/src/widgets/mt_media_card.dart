@@ -5,6 +5,7 @@ import '../l10n/l10n.dart';
 import '../theme/mt_theme.dart';
 import '../tokens/tokens.dart';
 import 'mt_equalizer.dart';
+import 'mt_highlight_surface.dart';
 import 'mt_platform_chip.dart';
 
 /// موقع العنصر — يلوّن شارته: «دون اتصال» زيتوني · «على السيرفر» وهج soft.
@@ -24,6 +25,7 @@ class MTMediaCard extends StatelessWidget {
     this.locationLabel,
     this.compact = false,
     this.selected = false,
+    this.highlighted = false,
     this.playing = false,
     this.favorite = false,
     this.onTap,
@@ -43,6 +45,15 @@ class MTMediaCard extends StatelessWidget {
   final String? locationLabel;
   final bool compact;
   final bool selected;
+
+  /// **توهّج واحد يتلاشى** — «انظر هنا»، لا «هذا محدد».
+  ///
+  /// كان المنادي يمرّر `selected: true` ليبرز عنصراً وصله المستخدم من
+  /// نقرة إشعار أو اكتمل تحميله للتو. لكن `selected` تعني في كل مكان
+  /// آخر «داخل التحديد الجماعي»، فبدا العنصر عالقاً في وضع تحديد لا
+  /// يخرج منه — وهو بالضبط ما وصفه المالك بـ«يظل مؤشراً على طول».
+  /// الآن حالتان مختلفتان بصرياً ودلالياً: التحديد يثبت، والتوهج يمضي.
+  final bool highlighted;
   final bool playing;
   final bool favorite;
   final VoidCallback? onTap;
@@ -75,25 +86,26 @@ class MTMediaCard extends StatelessWidget {
       label: _semanticsLabel(l10n),
       // الأزرار الداخلية تحتفظ بدلالتها؛ النصوص تُستبدل بالوصف الموحّد.
       explicitChildNodes: true,
-      child: Material(
-      color: selected ? p.accentSoft : Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        onLongPress: onLongPress == null
-            ? null
-            : () {
-                // ر-6: الدخول لوضع التحديد يستحق نبضة تأكيد.
-                HapticFeedback.selectionClick();
-                onLongPress!();
-              },
-        child: Container(
-          padding: EdgeInsets.symmetric(
-            vertical: compact ? MTSpace.xs : MTSpace.md - 1,
-            horizontal: 2,
-          ),
-          decoration: BoxDecoration(
-            border: Border(bottom: BorderSide(color: p.line)),
-          ),
+      child: MTHighlightSurface(
+        selected: selected,
+        highlighted: highlighted,
+        child: InkWell(
+          onTap: onTap,
+          onLongPress: onLongPress == null
+              ? null
+              : () {
+                  // ر-6: الدخول لوضع التحديد يستحق نبضة تأكيد.
+                  HapticFeedback.selectionClick();
+                  onLongPress!();
+                },
+          child: Container(
+            padding: EdgeInsets.symmetric(
+              vertical: compact ? MTSpace.xs : MTSpace.md - 1,
+              horizontal: 2,
+            ),
+            decoration: BoxDecoration(
+              border: Border(bottom: BorderSide(color: p.line)),
+            ),
           child: Row(
             children: [
               _Thumb(
@@ -231,12 +243,10 @@ class _Thumb extends StatelessWidget {
                 child: Text(
                   duration!,
                   style: TextStyle(
-                    fontFamily: MTType.body,
-                    package: MTType.package,
                     fontSize: 9.5,
                     fontWeight: FontWeight.w700,
                     color: p.bg,
-                  ),
+                  ).tabular,
                 ),
               ),
             ),

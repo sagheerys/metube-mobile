@@ -6,11 +6,16 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../di.dart';
+import '../home/network_gate.dart';
 import 'library_models.dart';
 import 'library_providers.dart';
 
 /// مجلد وسائط Super «دون اتصال» (§5.3).
 const superMediaDir = '/storage/emulated/0/Download/MeTube_Super';
+
+/// وسم `detail` الذي يميّز رفضَ «Wi‑Fi فقط» عن انقطاع شبكة حقيقي (م-42)
+/// — يقرؤه `errorText` ليعرض الرسالة الصحيحة.
+const wifiOnlyRejection = 'wifi-only';
 
 /// تقدم سحب «إتاحة دون اتصال» الجاري: canonicalUrl → 0..1.
 final offlinePullProgressProvider =
@@ -44,8 +49,18 @@ class LibraryActions {
         .contains(MTConstants.favoritesSystemTag);
   }
 
+  /// م-42: هل يُسمح بسحب ملف للجهاز الآن؟ (يُسأل قبل «إتاحة دون اتصال»
+  /// وقبل المشاركة التي تسحب نسخة مؤقتة.)
+  bool get canPullNow =>
+      !_ref.read(settingsProvider).wifiOnly ||
+      _ref.read(networkGateProvider).onWifi;
+
   /// «إتاحة دون اتصال» (م-17): سحب بتقدم مع بقاء الأصل على السيرفر.
   Future<String> makeOffline(LibraryItem item) async {
+    // **يُرفض صراحةً لا ينتظر**: خط الإضافة في Lite له طابور يصبر فيه
+    // العنصر، أما هذا فعل مباشر بنقرة المستخدم — تركه صامتاً «يفكر»
+    // بلا نهاية أسوأ من إخباره أن Wi‑Fi هو الشرط.
+    if (!canPullNow) throw const NetworkException(wifiOnlyRejection);
     final filename = item.serverFilename;
     if (filename == null) throw const UnsafeFilenameException();
     final dir = Directory(superMediaDir);
@@ -104,6 +119,7 @@ class LibraryActions {
       await Share.shareXFiles([XFile(localPath)]);
       return;
     }
+    if (!canPullNow) throw const NetworkException(wifiOnlyRejection);
     final filename = item.serverFilename;
     if (filename == null) throw const UnsafeFilenameException();
     final tmp = await getTemporaryDirectory();

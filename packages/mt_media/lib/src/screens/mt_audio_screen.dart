@@ -2,9 +2,9 @@ import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
 import 'package:mt_ui/mt_ui.dart';
 
-import '../models/play_mode.dart';
 import '../models/playlist_item.dart';
 import '../playback/audio_handler.dart';
+import '../widgets/media_time.dart';
 import '../widgets/mt_player_controls_row.dart';
 import '../widgets/mt_progress_slider.dart';
 import '../widgets/mt_queue_panel.dart';
@@ -236,8 +236,8 @@ class _SubControls extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             _Pill(
-              onTap: () => handler.setSpeed(_nextSpeed(speed)),
-              leading: '${_format(speed)}×',
+              onTap: () => handler.setSpeed(mtNextSpeed(speed)),
+              leading: '${mtFormatSpeed(speed)}×',
               label: l10n.playbackSpeed,
             ),
             const SizedBox(width: MTSpace.md),
@@ -252,15 +252,6 @@ class _SubControls extends StatelessWidget {
       },
     );
   }
-
-  static double _nextSpeed(double current) {
-    final options = PlaybackSpeeds.options;
-    final index = options.indexWhere((s) => (s - current).abs() < 0.01);
-    return options[(index + 1) % options.length];
-  }
-
-  static String _format(double speed) =>
-      speed == speed.roundToDouble() ? speed.toStringAsFixed(1) : '$speed';
 }
 
 class _Pill extends StatelessWidget {

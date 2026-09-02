@@ -52,6 +52,13 @@
                 <category android:name="android.intent.category.DEFAULT"/>
                 <data android:mimeType="text/plain"/>
             </intent-filter>
+            <!-- م-41: اختصارات ضغطة الأيقونة المطولة. **لا مرشح نوايا
+                 ولا `data`**: الاختصار الساكن يستدعي المكوّن صراحةً،
+                 وأي `data` في النية يختطفها Flutter كمسار إقلاع فينتهي
+                 المستخدم في «Page Not Found» (مصطاد على المحاكي). -->
+            <meta-data
+                android:name="android.app.shortcuts"
+                android:resource="@xml/shortcuts"/>
         </activity>
         <!-- خدمة الصوت الخلفي ومستقبل أزرار الوسائط (audio_service). -->
         <service

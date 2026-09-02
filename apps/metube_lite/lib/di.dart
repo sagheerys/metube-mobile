@@ -6,6 +6,7 @@ import 'package:mt_media/mt_media.dart';
 
 import 'features/downloads_library/download_wiring.dart';
 import 'features/downloads_library/local_item.dart';
+import 'features/home/network_gate.dart';
 import 'features/settings/settings_state.dart';
 import 'features/shared/stores.dart';
 
@@ -80,6 +81,13 @@ final downloadEngineProvider = Provider<DownloadEngine?>((ref) {
     savePathBuilder: (task, filename) =>
         '$liteMediaDir/${buildLocalFilename(task.title, serverFilename: filename)}',
     onCompleted: (task) => unawaited(onDownloadCompleted(ref, task)),
+    // م-42: الملف لا يُسحب على بيانات الجوّال إن اختار المستخدم ذلك.
+    // `ref.read` داخل الإغلاق بقصد: قراءة **لحظة السؤال**، فتغيير
+    // الإعداد أثناء انتظار مهمة يُطلقها فوراً بلا إعادة بناء المحرك.
+    pullGate: () {
+      if (!ref.read(settingsProvider).wifiOnly) return true;
+      return ref.read(networkGateProvider).onWifi;
+    },
   );
   ref.onDispose(engine.dispose);
   return engine;

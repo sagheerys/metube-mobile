@@ -64,8 +64,26 @@ void main() {
     });
 
     test('تصفية وسم', () {
-      expect(buildLibraryView(items, tag: 'وثائقي').single.title,
+      expect(buildLibraryView(items, tags: {'وثائقي'}).single.title,
           'وثائقي البحار');
+    });
+
+    test('تصفية وسوم مركبة: التضمين «أو» والاستثناء يغلب', () {
+      // التضمين يوسّع: وسمان ⇒ كل ما يحمل أياً منهما.
+      expect(
+        buildLibraryView(items, tags: {'وثائقي', 'أناشيد'}).length,
+        greaterThanOrEqualTo(1),
+      );
+      // الاستثناء يطرح العنصر ولو كان مُضمَّناً بوسم آخر — نية صريحة.
+      expect(
+        buildLibraryView(items,
+            tags: {'وثائقي'}, excludedTags: {'وثائقي'}),
+        isEmpty,
+      );
+      // استثناء وحده بلا تضمين: كل شيء إلا حاملي الوسم.
+      final withoutDoc = buildLibraryView(items, excludedTags: {'وثائقي'});
+      expect(withoutDoc.any((i) => i.title == 'وثائقي البحار'), isFalse);
+      expect(withoutDoc, isNotEmpty);
     });
 
     test('الفرز بالحجم والاسم', () {

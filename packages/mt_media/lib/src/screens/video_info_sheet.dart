@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:mt_ui/mt_ui.dart';
 
-import '../models/play_mode.dart';
 import '../models/playlist_item.dart';
 import '../video/mt_video_session.dart';
+import '../widgets/media_time.dart';
 import '../widgets/mt_player_controls_row.dart';
 import '../widgets/mt_queue_panel.dart';
 import '../widgets/mt_up_next_list.dart';
@@ -187,18 +187,12 @@ class _ModeRow extends StatelessWidget {
         ),
         const Spacer(),
         _Chip(
-          label: '${speed.toStringAsFixed(speed % 1 == 0 ? 1 : 2)}×',
+          label: '${mtFormatSpeed(speed)}×',
           selected: false,
-          onTap: () => session.setSpeed(_nextSpeed(speed)),
+          onTap: () => session.setSpeed(mtNextSpeed(speed)),
         ),
       ],
     );
-  }
-
-  static double _nextSpeed(double current) {
-    final options = PlaybackSpeeds.options;
-    final index = options.indexWhere((s) => (s - current).abs() < 0.01);
-    return options[(index + 1) % options.length];
   }
 }
 

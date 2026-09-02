@@ -135,7 +135,8 @@ List<LibraryItem> buildLibraryView(
   LibraryScope scope = LibraryScope.all,
   MediaTypeFilter type = MediaTypeFilter.all,
   String query = '',
-  String? tag,
+  Set<String> tags = const {},
+  Set<String> excludedTags = const {},
   LibrarySort sort = LibrarySort.newest,
 }) {
   final q = query.trim().toLowerCase();
@@ -155,7 +156,11 @@ List<LibraryItem> buildLibraryView(
       MediaTypeFilter.shorts => item.isShortForm,
     };
     if (!typeOk) return false;
-    if (tag != null && !item.tags.contains(tag)) return false;
+    // **تصفية وسوم مركبة**: المضمَّنة تُجمع بـ«أو» (توسيع: أرني tech
+    // أو science)، والمستثناة تُطرح دائماً وتغلب التضمين — الاستثناء
+    // نية صريحة لا يجوز أن يبطلها وسم آخر على نفس العنصر.
+    if (tags.isNotEmpty && !item.tags.any(tags.contains)) return false;
+    if (item.tags.any(excludedTags.contains)) return false;
     if (q.isNotEmpty && !item.title.toLowerCase().contains(q)) return false;
     return true;
   }).toList();

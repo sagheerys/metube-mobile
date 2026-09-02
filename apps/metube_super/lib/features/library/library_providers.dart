@@ -73,40 +73,59 @@ class LibraryViewOptions {
     this.scope = LibraryScope.all,
     this.type = MediaTypeFilter.all,
     this.query = '',
-    this.tag,
+    this.tags = const {},
+    this.excludedTags = const {},
     this.sort = LibrarySort.newest,
     this.compact = false,
+    this.grid = false,
     this.selection = const {},
   });
 
   final LibraryScope scope;
   final MediaTypeFilter type;
   final String query;
-  final String? tag;
+
+  /// وسوم التضمين (أو بينها) والاستثناء — تصفية مركبة بلا شاشة جديدة.
+  final Set<String> tags;
+  final Set<String> excludedTags;
   final LibrarySort sort;
   final bool compact;
+
+  /// عرض شبكي بعمودين — أنسب للمسح البصري السريع للفيديو.
+  final bool grid;
 
   /// canonicalUrl المحددة — غير فارغة = وضع التحديد (ر-6).
   final Set<String> selection;
 
   bool get selecting => selection.isNotEmpty;
 
+  /// عدد المرشحات النشطة فوق «الكل» — لشارة زر الفرز.
+  int get activeFilters =>
+      (scope == LibraryScope.all ? 0 : 1) +
+      (type == MediaTypeFilter.all ? 0 : 1) +
+      tags.length +
+      excludedTags.length;
+
   LibraryViewOptions copyWith({
     LibraryScope? scope,
     MediaTypeFilter? type,
     String? query,
-    String? Function()? tag,
+    Set<String>? tags,
+    Set<String>? excludedTags,
     LibrarySort? sort,
     bool? compact,
+    bool? grid,
     Set<String>? selection,
   }) =>
       LibraryViewOptions(
         scope: scope ?? this.scope,
         type: type ?? this.type,
         query: query ?? this.query,
-        tag: tag == null ? this.tag : tag(),
+        tags: tags ?? this.tags,
+        excludedTags: excludedTags ?? this.excludedTags,
         sort: sort ?? this.sort,
         compact: compact ?? this.compact,
+        grid: grid ?? this.grid,
         selection: selection ?? this.selection,
       );
 }
@@ -122,19 +141,42 @@ class LibraryViewNotifier extends Notifier<LibraryViewOptions> {
     final store = ref.read(keyValueStoreProvider);
     final sortName = await store.getString('video_sort_option');
     final compact = await store.getBool('library_compact_view') ?? false;
+    final grid = await store.getBool('library_grid_view') ?? false;
     state = state.copyWith(
       sort: LibrarySort.values
           .where((s) => s.name == sortName)
           .firstOrNull ??
           LibrarySort.newest,
       compact: compact,
+      grid: grid,
     );
   }
 
   void setScope(LibraryScope scope) => state = state.copyWith(scope: scope);
   void setType(MediaTypeFilter type) => state = state.copyWith(type: type);
   void setQuery(String query) => state = state.copyWith(query: query);
-  void setTag(String? tag) => state = state.copyWith(tag: () => tag);
+
+  /// وسم واحد يحل محل كل شيء — قدوم من تبويب «وسومك» (م-37/ج).
+  void setTag(String? tag) => state = state.copyWith(
+        tags: tag == null ? const {} : {tag},
+        excludedTags: const {},
+      );
+
+  /// **دورة الوسم الثلاثية**: محايد ← مُضمَّن ← مُستثنى ← محايد.
+  /// دورة واحدة على نفس الرقاقة تغني عن قائمة منسدلة وشاشة إعدادات.
+  void cycleTag(String tag) {
+    final included = Set<String>.from(state.tags);
+    final excluded = Set<String>.from(state.excludedTags);
+    if (included.remove(tag)) {
+      excluded.add(tag);
+    } else if (!excluded.remove(tag)) {
+      included.add(tag);
+    }
+    state = state.copyWith(tags: included, excludedTags: excluded);
+  }
+
+  void clearTags() =>
+      state = state.copyWith(tags: const {}, excludedTags: const {});
 
   Future<void> setSort(LibrarySort sort) async {
     state = state.copyWith(sort: sort);
@@ -149,6 +191,13 @@ class LibraryViewNotifier extends Notifier<LibraryViewOptions> {
     await mutex.run(() => ref
         .read(keyValueStoreProvider)
         .setBool('library_compact_view', compact));
+  }
+
+  Future<void> setGrid(bool grid) async {
+    state = state.copyWith(grid: grid);
+    final mutex = ref.read(prefsMutexProvider);
+    await mutex.run(
+        () => ref.read(keyValueStoreProvider).setBool('library_grid_view', grid));
   }
 
   void toggleSelected(String canonicalUrl) {
@@ -178,8 +227,28 @@ final visibleLibraryProvider = Provider<AsyncValue<List<LibraryItem>>>((ref) {
           scope: options.scope,
           type: options.type,
           query: options.query,
-          tag: options.tag,
+          tags: options.tags,
+          excludedTags: options.excludedTags,
           sort: options.sort,
         ),
       );
+});
+
+/// العنصر الذي يتوهّج الآن: نقرة إشعار أو اكتمال تحميل — يُطفأ من نفسه.
+final highlightedItemProvider = StateProvider<String?>((ref) => null);
+
+/// **لحظة الذروة**: يراقب اكتمال المهام فيوهّج العنصر الواصل للمكتبة.
+/// يعيش بعمر التطبيق (يُراقَب من الغلاف) كي لا يفوته اكتمال وقع بينما
+/// المستخدم في شاشة أخرى.
+final completionGlowProvider = Provider<void>((ref) {
+  final seen = <String>{};
+  ref.listen<AsyncValue<List<DownloadTask>>>(engineTasksProvider, (_, next) {
+    for (final task in next.value ?? const <DownloadTask>[]) {
+      if (task.phase != TaskPhase.completed || !seen.add(task.id)) continue;
+      final arrived = task.canonicalUrl;
+      if (arrived != null) {
+        ref.read(highlightedItemProvider.notifier).state = arrived;
+      }
+    }
+  });
 });

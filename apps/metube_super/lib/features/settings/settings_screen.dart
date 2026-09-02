@@ -64,6 +64,21 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     }
   }
 
+  Widget _switchTile({
+    required String title,
+    required String subtitle,
+    required bool value,
+    required ValueChanged<bool> onChanged,
+  }) =>
+      SwitchListTile(
+        contentPadding: EdgeInsets.zero,
+        title: Text(title, style: Theme.of(context).textTheme.bodyMedium),
+        subtitle: Text(subtitle,
+            style: Theme.of(context).textTheme.bodySmall),
+        value: value,
+        onChanged: onChanged,
+      );
+
   ListTile _navTile(
           IconData icon, String title, String subtitle, String route) =>
       ListTile(
@@ -177,6 +192,27 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
             HelpButton(title: l10n.defaultQuality, body: l10n.qualityHelper),
           ]),
+          // **الجودة الافتراضية كانت إعداداً بلا أثر**: تُملأ في ورقة
+          // الإضافة فيعيد المستخدم اختيارها كل مرة. مع «التحميل السريع»
+          // تصير هي القرار فعلاً — والورقة تُتخطى كلياً.
+          _switchTile(
+            title: l10n.quickDownload,
+            subtitle: l10n.quickDownloadHelp,
+            value: settings.quickDownload,
+            onChanged: ref.read(settingsProvider.notifier).setQuickDownload,
+          ),
+          _switchTile(
+            title: l10n.wifiOnly,
+            subtitle: l10n.wifiOnlyHelp,
+            value: settings.wifiOnly,
+            onChanged: ref.read(settingsProvider.notifier).setWifiOnly,
+          ),
+          _switchTile(
+            title: l10n.autoRetry,
+            subtitle: l10n.autoRetryHelp,
+            value: settings.autoRetry,
+            onChanged: ref.read(settingsProvider.notifier).setAutoRetry,
+          ),
           const SizedBox(height: MTSpace.lg),
           Text(l10n.theme, style: Theme.of(context).textTheme.titleSmall),
           const SizedBox(height: MTSpace.xs),

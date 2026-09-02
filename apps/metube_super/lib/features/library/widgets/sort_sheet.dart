@@ -62,12 +62,45 @@ class _SortSheet extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: MTSpace.xl),
-          SwitchListTile(
-            contentPadding: EdgeInsets.zero,
-            title: Text(l10n.compactView,
-                style: Theme.of(context).textTheme.bodyMedium),
-            value: options.compact,
-            onChanged: controller.setCompact,
+          // **ثلاثة أوضاع بدل مفتاحين متداخلين**: «مضغوط» و«شبكي» كانا
+          // سيصيران مفتاحين يمكن تشغيلهما معاً بلا معنى. الاختيار الواحد
+          // من ثلاثة يمنع الحالة المستحيلة أصلاً.
+          MTSectionHeader(title: l10n.viewMode),
+          const SizedBox(height: MTSpace.md),
+          Wrap(
+            spacing: MTSpace.xs,
+            runSpacing: MTSpace.xs,
+            children: [
+              for (final (label, isOn, apply) in <(String, bool, VoidCallback)>[
+                (
+                  l10n.viewList,
+                  !options.grid && !options.compact,
+                  () {
+                    controller.setGrid(false);
+                    controller.setCompact(false);
+                  }
+                ),
+                (
+                  l10n.compactView,
+                  !options.grid && options.compact,
+                  () {
+                    controller.setGrid(false);
+                    controller.setCompact(true);
+                  }
+                ),
+                (l10n.viewGrid, options.grid, () => controller.setGrid(true)),
+              ])
+                ChoiceChip(
+                  label: Text(label),
+                  selected: isOn,
+                  showCheckmark: false,
+                  labelStyle: Theme.of(context).textTheme.labelMedium!.copyWith(
+                      color: isOn
+                          ? MTThemeX.of(context).palette.bg
+                          : MTThemeX.of(context).palette.ink2),
+                  onSelected: (_) => apply(),
+                ),
+            ],
           ),
         ],
       ),

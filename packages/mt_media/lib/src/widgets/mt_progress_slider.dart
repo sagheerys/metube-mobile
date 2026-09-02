@@ -103,9 +103,10 @@ class _MTProgressSliderState extends State<MTProgressSlider> {
     );
   }
 
+  /// **كان يطلب `tabularFigures` ولا يحصل عليها**: النمط يرث خط النصوص
+  /// Tajawal الذي لا يملك جدول `tnum` أصلاً (فحص الملف الثنائي
+  /// 2026-09-02)، فتُتجاهل الميزة بصمت ويظل العدّاد يرقص. `.tabular`
+  /// ينقله لخط العناوين الذي يدعمها فعلاً.
   TextStyle _timeStyle(BuildContext context, Color color) =>
-      Theme.of(context).textTheme.bodySmall!.copyWith(
-            color: color,
-            fontFeatures: const [FontFeature.tabularFigures()],
-          );
+      Theme.of(context).textTheme.bodySmall!.copyWith(color: color).tabular;
 }

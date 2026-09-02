@@ -1,6 +1,7 @@
 package com.yasir.metubesuper
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import androidx.core.app.ActivityCompat
@@ -38,9 +39,44 @@ class MainActivity : AudioServiceActivity() {
                             runOnUiThread { result.success(data) }
                         }.start()
                     }
+                    // م-41: وجهة اختصار الأيقونة — **تُستهلك مرة واحدة**.
+                    // إبقاؤها يعيد تنفيذ الاختصار عند كل عودة للتطبيق.
+                    "consumeShortcut" -> {
+                        result.success(pendingShortcut)
+                        pendingShortcut = null
+                    }
                     else -> result.notImplemented()
                 }
             }
+    }
+
+    /** اسم الاختصار المنتظر — من فعل النية `<pkg>.SHORTCUT_<NAME>`. */
+    private var pendingShortcut: String? = null
+
+    override fun onCreate(savedInstanceState: android.os.Bundle?) {
+        super.onCreate(savedInstanceState)
+        captureShortcut(intent)
+    }
+
+    // `launchMode="singleTask"`: التطبيق العامل لا يُعاد إنشاؤه، فالنية
+    // الجديدة تصل هنا وحدها. بلا هذا يعمل الاختصار أول مرة فقط.
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        captureShortcut(intent)
+    }
+
+    /**
+     * الوجهة من **اسم الفعل** لا من `data` (خلل مصطاد على المحاكي
+     * 2026-09-02): أي `data` في النية يقرؤها Flutter كمسار إقلاع،
+     * فكان `metube://shortcut/shorts` ينتهي بـ «Page Not Found».
+     */
+    private fun captureShortcut(intent: Intent?) {
+        val action = intent?.action ?: return
+        val marker = ".SHORTCUT_"
+        val at = action.indexOf(marker)
+        if (at < 0) return
+        pendingShortcut = action.substring(at + marker.length).lowercase()
     }
 
     /** true ⇔ الإذن ممنوح أصلاً (أو النسخة أقدم من 33 فلا إذن مطلوب). */

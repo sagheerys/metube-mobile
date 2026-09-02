@@ -152,6 +152,12 @@ abstract class MTLocalizations {
   /// **'Add {count} to server'**
   String addNToServer(int count);
 
+  /// No description provided for @addToFavorites.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to favorites'**
+  String get addToFavorites;
+
   /// No description provided for @addToPlaylist.
   ///
   /// In en, this message translates to:
@@ -170,12 +176,6 @@ abstract class MTLocalizations {
   /// **'Added {count} to server'**
   String addedNToServer(int count);
 
-  /// No description provided for @addToFavorites.
-  ///
-  /// In en, this message translates to:
-  /// **'Add to favorites'**
-  String get addToFavorites;
-
   /// No description provided for @addedToFavorites.
   ///
   /// In en, this message translates to:
@@ -193,6 +193,12 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'Added to download queue'**
   String get addedToQueue;
+
+  /// No description provided for @addingToServer.
+  ///
+  /// In en, this message translates to:
+  /// **'Sending to the server…'**
+  String get addingToServer;
 
   /// No description provided for @allDownloadsFinished.
   ///
@@ -266,6 +272,12 @@ abstract class MTLocalizations {
   /// **'Play audio in background when pressing back button'**
   String get autoBackgroundAudioSubtitle;
 
+  /// No description provided for @autoBackupNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved automatically after every change to Downloads/MeTube_Lite'**
+  String get autoBackupNote;
+
   /// No description provided for @autoBuilt.
   ///
   /// In en, this message translates to:
@@ -284,17 +296,23 @@ abstract class MTLocalizations {
   /// **'Auto-play next: OFF'**
   String get autoPlayOff;
 
-  /// No description provided for @autoBackupNote.
-  ///
-  /// In en, this message translates to:
-  /// **'Saved automatically after every change to Downloads/MeTube_Lite'**
-  String get autoBackupNote;
-
   /// No description provided for @autoRestoreSuccess.
   ///
   /// In en, this message translates to:
   /// **'Data restored from backup successfully!'**
   String get autoRestoreSuccess;
+
+  /// No description provided for @autoRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry when the network returns'**
+  String get autoRetry;
+
+  /// No description provided for @autoRetryHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Anything that failed because the network dropped is retried on its own when it returns. Server refusals are not retried — repeating them unchanged just fails again.'**
+  String get autoRetryHelp;
 
   /// No description provided for @autoSwitchDisabledHint.
   ///
@@ -331,6 +349,12 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'Server (stream)'**
   String get availabilityServer;
+
+  /// No description provided for @availableOfflineNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Now available offline'**
+  String get availableOfflineNow;
 
   /// No description provided for @backgroundDownload.
   ///
@@ -464,11 +488,29 @@ abstract class MTLocalizations {
   /// **'Card view'**
   String get cardView;
 
+  /// No description provided for @changeQuality.
+  ///
+  /// In en, this message translates to:
+  /// **'Change quality'**
+  String get changeQuality;
+
   /// No description provided for @chooseBackupFile.
   ///
   /// In en, this message translates to:
   /// **'Choose the backup file'**
   String get chooseBackupFile;
+
+  /// No description provided for @chooseOptions.
+  ///
+  /// In en, this message translates to:
+  /// **'Options'**
+  String get chooseOptions;
+
+  /// No description provided for @cleaningServer.
+  ///
+  /// In en, this message translates to:
+  /// **'Cleaning up the server...'**
+  String get cleaningServer;
 
   /// No description provided for @clear.
   ///
@@ -488,12 +530,6 @@ abstract class MTLocalizations {
   /// **'Clear All Settings'**
   String get clearAllSettings;
 
-  /// No description provided for @cleaningServer.
-  ///
-  /// In en, this message translates to:
-  /// **'Cleaning up the server...'**
-  String get cleaningServer;
-
   /// No description provided for @clearLogs.
   ///
   /// In en, this message translates to:
@@ -511,6 +547,12 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'Clipboard is empty'**
   String get clipboardEmpty;
+
+  /// No description provided for @clipboardFound.
+  ///
+  /// In en, this message translates to:
+  /// **'A link is ready in your clipboard'**
+  String get clipboardFound;
 
   /// No description provided for @clipboardLinkReady.
   ///
@@ -842,6 +884,12 @@ abstract class MTLocalizations {
   /// **'Download Failed'**
   String get downloadFailedTitle;
 
+  /// No description provided for @downloadNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Download'**
+  String get downloadNow;
+
   /// No description provided for @downloadQuality.
   ///
   /// In en, this message translates to:
@@ -853,6 +901,12 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'Download started...'**
   String get downloadStarted;
+
+  /// No description provided for @downloadStartedQuality.
+  ///
+  /// In en, this message translates to:
+  /// **'Download started · {quality}'**
+  String downloadStartedQuality(Object quality);
 
   /// No description provided for @downloadTracks.
   ///
@@ -1556,6 +1610,12 @@ abstract class MTLocalizations {
   /// **'Needs your attention'**
   String get needsAttention;
 
+  /// No description provided for @networkBackRetrying.
+  ///
+  /// In en, this message translates to:
+  /// **'Network is back — retrying'**
+  String get networkBackRetrying;
+
   /// No description provided for @networkSettings.
   ///
   /// In en, this message translates to:
@@ -1916,6 +1976,12 @@ abstract class MTLocalizations {
   /// **'Preparing the file for sharing…'**
   String get preparingShare;
 
+  /// No description provided for @preparingToShare.
+  ///
+  /// In en, this message translates to:
+  /// **'Preparing to share… {percent}%'**
+  String preparingToShare(String percent);
+
   /// No description provided for @previous.
   ///
   /// In en, this message translates to:
@@ -2006,6 +2072,18 @@ abstract class MTLocalizations {
   /// **'Waiting'**
   String get queuedSection;
 
+  /// No description provided for @quickDownload.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick download'**
+  String get quickDownload;
+
+  /// No description provided for @quickDownloadHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'A shared or pasted link starts downloading right away at the default quality, with no dialog. Numeric qualities apply to YouTube only — other platforms fall back to best, and an “audio only” default applies everywhere.'**
+  String get quickDownloadHelp;
+
   /// No description provided for @readyToShare.
   ///
   /// In en, this message translates to:
@@ -2054,6 +2132,12 @@ abstract class MTLocalizations {
   /// **'Remove'**
   String get remove;
 
+  /// No description provided for @removeFromFavorites.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from favorites'**
+  String get removeFromFavorites;
+
   /// No description provided for @removeFromPlaylist.
   ///
   /// In en, this message translates to:
@@ -2083,12 +2167,6 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'Remove Offline Copy'**
   String get removeOfflineTitle;
-
-  /// No description provided for @removeFromFavorites.
-  ///
-  /// In en, this message translates to:
-  /// **'Remove from favorites'**
-  String get removeFromFavorites;
 
   /// No description provided for @removedFromFavorites.
   ///
@@ -2186,6 +2264,12 @@ abstract class MTLocalizations {
   /// **'Data restored successfully'**
   String get restoreSuccess;
 
+  /// No description provided for @resultsFound.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 result} other{{count} results}}'**
+  String resultsFound(int count);
+
   /// No description provided for @retry.
   ///
   /// In en, this message translates to:
@@ -2209,6 +2293,18 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'Save Settings'**
   String get saveSettings;
+
+  /// No description provided for @saveToDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'Save to device'**
+  String get saveToDevice;
+
+  /// No description provided for @savedOnDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved on device'**
+  String get savedOnDevice;
 
   /// No description provided for @savedPartial.
   ///
@@ -2702,6 +2798,12 @@ abstract class MTLocalizations {
   /// **'System'**
   String get themeSystem;
 
+  /// No description provided for @titleLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get titleLabel;
+
   /// No description provided for @totalDuration.
   ///
   /// In en, this message translates to:
@@ -2828,11 +2930,47 @@ abstract class MTLocalizations {
   /// **'View all'**
   String get viewAllInPlaylists;
 
+  /// No description provided for @viewGrid.
+  ///
+  /// In en, this message translates to:
+  /// **'Grid'**
+  String get viewGrid;
+
+  /// No description provided for @viewList.
+  ///
+  /// In en, this message translates to:
+  /// **'List'**
+  String get viewList;
+
+  /// No description provided for @viewMode.
+  ///
+  /// In en, this message translates to:
+  /// **'View'**
+  String get viewMode;
+
   /// No description provided for @waiting.
   ///
   /// In en, this message translates to:
   /// **'Waiting for server...'**
   String get waiting;
+
+  /// No description provided for @waitingForWifi.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for Wi-Fi'**
+  String get waitingForWifi;
+
+  /// No description provided for @wifiOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Download over Wi-Fi only'**
+  String get wifiOnly;
+
+  /// No description provided for @wifiOnlyHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Stops pulling files to your device over mobile data. Tasks wait and resume automatically on Wi-Fi.'**
+  String get wifiOnlyHelp;
 
   /// No description provided for @yourPlaylists.
   ///
@@ -2851,42 +2989,6 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'Starting YouTube download...'**
   String get youtubeDownloadStarting;
-
-  /// No description provided for @addingToServer.
-  ///
-  /// In en, this message translates to:
-  /// **'Sending to the server…'**
-  String get addingToServer;
-
-  /// No description provided for @availableOfflineNow.
-  ///
-  /// In en, this message translates to:
-  /// **'Now available offline'**
-  String get availableOfflineNow;
-
-  /// No description provided for @preparingToShare.
-  ///
-  /// In en, this message translates to:
-  /// **'Preparing to share… {percent}%'**
-  String preparingToShare(String percent);
-
-  /// No description provided for @saveToDevice.
-  ///
-  /// In en, this message translates to:
-  /// **'Save to device'**
-  String get saveToDevice;
-
-  /// No description provided for @savedOnDevice.
-  ///
-  /// In en, this message translates to:
-  /// **'Saved on device'**
-  String get savedOnDevice;
-
-  /// No description provided for @titleLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Title'**
-  String get titleLabel;
 }
 
 class _MTLocalizationsDelegate extends LocalizationsDelegate<MTLocalizations> {

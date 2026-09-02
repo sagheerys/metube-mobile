@@ -50,12 +50,18 @@ class _DownloadsSheet extends ConsumerWidget {
               title: task.effectiveUrl,
               statusText: error
                   ? taskErrorText(l10n, task)
-                  : task.phase == TaskPhase.queued
-                      ? l10n.queuedSection
-                      : l10n.onServerProgress(
+                  : switch (task.phase) {
+                      TaskPhase.queued => l10n.queuedSection,
+                      // م-42: الانتظار سببه قرار المستخدم لا بطء شبكة.
+                      TaskPhase.waitingForNetwork => l10n.waitingForWifi,
+                      TaskPhase.pulling => l10n.pullingToDevice,
+                      _ => l10n.onServerProgress(
                           (task.progress * 100).toStringAsFixed(0)),
-              progress:
-                  task.phase == TaskPhase.queued ? null : task.progress,
+                    },
+              progress: task.phase == TaskPhase.queued ||
+                      task.phase == TaskPhase.waitingForNetwork
+                  ? null
+                  : task.progress,
               isError: error,
               onCancel: error
                   ? null

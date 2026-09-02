@@ -259,6 +259,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       TaskPhase.queued => l10n.queuedSection,
       TaskPhase.adding || TaskPhase.polling => l10n.onServerProgress(
           (task.progress * 100).toStringAsFixed(0)),
+      TaskPhase.waitingForNetwork => l10n.waitingForWifi,
       TaskPhase.pulling => l10n.pullingToDevice,
       // Lite ينظف السيرفر بعد السحب — مرحلة قصيرة تستحق نصاً صريحاً.
       TaskPhase.deleting => l10n.cleaningServer,
@@ -313,7 +314,8 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       // Super حيث يتعايش المحلي والسيرفري.
       compact: options.compact,
       favorite: item.favorite,
-      selected: options.selection.contains(item.key) || highlighted,
+      selected: options.selection.contains(item.key),
+      highlighted: highlighted,
       onFavoriteToggle: () async {
         final added = await actions.toggleFavorite(item.key);
         if (!mounted) return;

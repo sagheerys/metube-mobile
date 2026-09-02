@@ -40,6 +40,9 @@ class MTLocalizationsEn extends MTLocalizations {
   }
 
   @override
+  String get addToFavorites => 'Add to favorites';
+
+  @override
   String get addToPlaylist => 'Add to Playlist';
 
   @override
@@ -51,9 +54,6 @@ class MTLocalizationsEn extends MTLocalizations {
   }
 
   @override
-  String get addToFavorites => 'Add to favorites';
-
-  @override
   String get addedToFavorites => 'Added to favorites';
 
   @override
@@ -63,6 +63,9 @@ class MTLocalizationsEn extends MTLocalizations {
 
   @override
   String get addedToQueue => 'Added to download queue';
+
+  @override
+  String get addingToServer => 'Sending to the server…';
 
   @override
   String get allDownloadsFinished => 'All downloads finished!';
@@ -102,6 +105,10 @@ class MTLocalizationsEn extends MTLocalizations {
       'Play audio in background when pressing back button';
 
   @override
+  String get autoBackupNote =>
+      'Saved automatically after every change to Downloads/MeTube_Lite';
+
+  @override
   String get autoBuilt => 'Automatic';
 
   @override
@@ -111,11 +118,14 @@ class MTLocalizationsEn extends MTLocalizations {
   String get autoPlayOff => 'Auto-play next: OFF';
 
   @override
-  String get autoBackupNote =>
-      'Saved automatically after every change to Downloads/MeTube_Lite';
+  String get autoRestoreSuccess => 'Data restored from backup successfully!';
 
   @override
-  String get autoRestoreSuccess => 'Data restored from backup successfully!';
+  String get autoRetry => 'Retry when the network returns';
+
+  @override
+  String get autoRetryHelp =>
+      'Anything that failed because the network dropped is retried on its own when it returns. Server refusals are not retried — repeating them unchanged just fails again.';
 
   @override
   String get autoSwitchDisabledHint =>
@@ -136,6 +146,9 @@ class MTLocalizationsEn extends MTLocalizations {
 
   @override
   String get availabilityServer => 'Server (stream)';
+
+  @override
+  String get availableOfflineNow => 'Now available offline';
 
   @override
   String get backgroundDownload => 'Downloading files in background...';
@@ -213,7 +226,16 @@ class MTLocalizationsEn extends MTLocalizations {
   String get cardView => 'Card view';
 
   @override
+  String get changeQuality => 'Change quality';
+
+  @override
   String get chooseBackupFile => 'Choose the backup file';
+
+  @override
+  String get chooseOptions => 'Options';
+
+  @override
+  String get cleaningServer => 'Cleaning up the server...';
 
   @override
   String get clear => 'Clear';
@@ -226,9 +248,6 @@ class MTLocalizationsEn extends MTLocalizations {
   String get clearAllSettings => 'Clear All Settings';
 
   @override
-  String get cleaningServer => 'Cleaning up the server...';
-
-  @override
   String get clearLogs => 'Clear Logs';
 
   @override
@@ -236,6 +255,9 @@ class MTLocalizationsEn extends MTLocalizations {
 
   @override
   String get clipboardEmpty => 'Clipboard is empty';
+
+  @override
+  String get clipboardFound => 'A link is ready in your clipboard';
 
   @override
   String get clipboardLinkReady => 'Paste link';
@@ -421,10 +443,18 @@ class MTLocalizationsEn extends MTLocalizations {
   String get downloadFailedTitle => 'Download Failed';
 
   @override
+  String get downloadNow => 'Download';
+
+  @override
   String get downloadQuality => 'Download Quality';
 
   @override
   String get downloadStarted => 'Download started...';
+
+  @override
+  String downloadStartedQuality(Object quality) {
+    return 'Download started · $quality';
+  }
 
   @override
   String downloadTracks(int count) {
@@ -815,6 +845,9 @@ class MTLocalizationsEn extends MTLocalizations {
   String get needsAttention => 'Needs your attention';
 
   @override
+  String get networkBackRetrying => 'Network is back — retrying';
+
+  @override
   String get networkSettings => 'Networks';
 
   @override
@@ -1009,6 +1042,11 @@ class MTLocalizationsEn extends MTLocalizations {
   String get preparingShare => 'Preparing the file for sharing…';
 
   @override
+  String preparingToShare(String percent) {
+    return 'Preparing to share… $percent%';
+  }
+
+  @override
   String get previous => 'Previous';
 
   @override
@@ -1065,6 +1103,13 @@ class MTLocalizationsEn extends MTLocalizations {
   String get queuedSection => 'Waiting';
 
   @override
+  String get quickDownload => 'Quick download';
+
+  @override
+  String get quickDownloadHelp =>
+      'A shared or pasted link starts downloading right away at the default quality, with no dialog. Numeric qualities apply to YouTube only — other platforms fall back to best, and an “audio only” default applies everywhere.';
+
+  @override
   String get readyToShare => 'Ready to share!';
 
   @override
@@ -1089,6 +1134,9 @@ class MTLocalizationsEn extends MTLocalizations {
   String get remove => 'Remove';
 
   @override
+  String get removeFromFavorites => 'Remove from favorites';
+
+  @override
   String get removeFromPlaylist => 'Remove from playlist';
 
   @override
@@ -1103,9 +1151,6 @@ class MTLocalizationsEn extends MTLocalizations {
 
   @override
   String get removeOfflineTitle => 'Remove Offline Copy';
-
-  @override
-  String get removeFromFavorites => 'Remove from favorites';
 
   @override
   String get removedFromFavorites => 'Removed from favorites';
@@ -1160,6 +1205,17 @@ class MTLocalizationsEn extends MTLocalizations {
   String get restoreSuccess => 'Data restored successfully';
 
   @override
+  String resultsFound(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count results',
+      one: '1 result',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get retry => 'Retry';
 
   @override
@@ -1172,6 +1228,12 @@ class MTLocalizationsEn extends MTLocalizations {
 
   @override
   String get saveSettings => 'Save Settings';
+
+  @override
+  String get saveToDevice => 'Save to device';
+
+  @override
+  String get savedOnDevice => 'Saved on device';
 
   @override
   String get savedPartial => 'Saved (Server delete failed)';
@@ -1431,6 +1493,9 @@ class MTLocalizationsEn extends MTLocalizations {
   String get themeSystem => 'System';
 
   @override
+  String get titleLabel => 'Title';
+
+  @override
   String totalDuration(Object duration) {
     return 'Total: $duration';
   }
@@ -1502,7 +1567,26 @@ class MTLocalizationsEn extends MTLocalizations {
   String get viewAllInPlaylists => 'View all';
 
   @override
+  String get viewGrid => 'Grid';
+
+  @override
+  String get viewList => 'List';
+
+  @override
+  String get viewMode => 'View';
+
+  @override
   String get waiting => 'Waiting for server...';
+
+  @override
+  String get waitingForWifi => 'Waiting for Wi-Fi';
+
+  @override
+  String get wifiOnly => 'Download over Wi-Fi only';
+
+  @override
+  String get wifiOnlyHelp =>
+      'Stops pulling files to your device over mobile data. Tasks wait and resume automatically on Wi-Fi.';
 
   @override
   String get yourPlaylists => 'Your playlists';
@@ -1512,24 +1596,4 @@ class MTLocalizationsEn extends MTLocalizations {
 
   @override
   String get youtubeDownloadStarting => 'Starting YouTube download...';
-
-  @override
-  String get addingToServer => 'Sending to the server…';
-
-  @override
-  String get availableOfflineNow => 'Now available offline';
-
-  @override
-  String preparingToShare(String percent) {
-    return 'Preparing to share… $percent%';
-  }
-
-  @override
-  String get saveToDevice => 'Save to device';
-
-  @override
-  String get savedOnDevice => 'Saved on device';
-
-  @override
-  String get titleLabel => 'Title';
 }

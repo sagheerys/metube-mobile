@@ -5,7 +5,6 @@ import 'package:video_player/video_player.dart';
 import '../models/playlist_item.dart';
 import '../screens/mt_video_screen.dart';
 import 'reels_overlay.dart';
-import 'reels_progress.dart';
 
 /// طبقات مشهد الريلز — الصورة وطبقة المعلومات فوقها.
 /// فُصلت عن `mt_reels_player.dart` لحدّ الأسطر (القاعدة 4).
@@ -36,12 +35,16 @@ class ReelsVideoLayer extends StatelessWidget {
               )
             : controller == null || !controller!.value.isInitialized
                 ? const Center(child: CircularProgressIndicator())
-                : FittedBox(
-                    fit: BoxFit.cover,
-                    clipBehavior: Clip.hardEdge,
-                    child: SizedBox(
-                      width: controller!.value.size.width,
-                      height: controller!.value.size.height,
+                // **`contain` لا `cover`** (بلاغ المالك 2026-09-02: «يقتطع
+                // جزءاً من الفيديو ويظهر مكبراً»). `cover` يملأ الشاشة
+                // بتكبير المقطع حتى يغطي البعد الأطول ويقصّ الباقي — على
+                // هاتف 20:9 يعني قصّ ~20% من مقطع 16:9 رأسي، أي رأس
+                // المتحدث. إنستقرام وشورتس يلائمان العرض ويتركان الفراغ
+                // للتدرج والأدوات، وهو ما نفعله الآن: **المقاس الأصلي
+                // كاملاً بلا اقتطاع**.
+                : Center(
+                    child: AspectRatio(
+                      aspectRatio: controller!.value.aspectRatio,
                       child: VideoPlayer(controller!),
                     ),
                   ),
@@ -57,8 +60,8 @@ class ReelsOverlayLayer extends StatelessWidget {
     required this.favorite,
     required this.onToggleFavorite,
     required this.actions,
+    required this.visible,
     this.subtitle,
-    this.controller,
   });
 
   final PlaylistItem item;
@@ -68,62 +71,73 @@ class ReelsOverlayLayer extends StatelessWidget {
   final VoidCallback onToggleFavorite;
   final List<MTPlayerAction> actions;
   final String? subtitle;
-  final VideoPlayerController? controller;
+
+  /// **الأدوات تختفي بعد لحظة وتعود باللمس** (طلب المالك 2026-09-02).
+  /// شريط التقدم وحده يبقى دائماً — فهو خارج هذه الطبقة.
+  final bool visible;
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.mtl;
     return IgnorePointer(
-      ignoring: false,
-      child: Stack(
-        children: [
-          Positioned.fill(child: _Gradient()),
-          PositionedDirectional(
-            top: MTSpace.sm,
-            start: MTSpace.xs,
-            end: MTSpace.xs,
-            child: SafeArea(
-              child: MTReelsTopBar(
-                position: index + 1,
-                total: total,
-                onBack: () => Navigator.of(context).maybePop(),
+      // مخفية ⇒ لا تلتقط اللمس، وإلا ابتلع عمود الأفعال الشفاف النقرة
+      // التي يريدها المستخدم لإظهار الأدوات.
+      ignoring: !visible,
+      child: AnimatedOpacity(
+        opacity: visible ? 1 : 0,
+        duration: MTMotion.reveal,
+        curve: visible ? MTMotion.entrance : MTMotion.exit,
+        child: Stack(
+          children: [
+            Positioned.fill(child: _Gradient()),
+            PositionedDirectional(
+              top: MTSpace.sm,
+              start: MTSpace.xs,
+              end: MTSpace.xs,
+              child: SafeArea(
+                child: MTReelsTopBar(
+                  position: index + 1,
+                  total: total,
+                  onBack: () => Navigator.of(context).maybePop(),
+                ),
               ),
             ),
-          ),
-          PositionedDirectional(
-            top: 64,
-            start: 0,
-            end: 0,
-            child: Center(
-              child: Text(
-                '⌃ ${l10n.reelsSwipeHint}',
-                style: Theme.of(context).textTheme.labelSmall!.copyWith(
-                    color: MTPalette.serverCardInk.withValues(alpha: 0.45)),
+            PositionedDirectional(
+              top: 64,
+              start: 0,
+              end: 0,
+              child: Center(
+                child: Text(
+                  '⌃ ${l10n.reelsSwipeHint}',
+                  style: Theme.of(context).textTheme.labelSmall!.copyWith(
+                      color: MTPalette.serverCardInk.withValues(alpha: 0.45)),
+                ),
               ),
             ),
-          ),
-          PositionedDirectional(
-            start: MTSpace.md,
-            bottom: 120,
-            child: MTReelsRail(
-              favorite: favorite,
-              onToggleFavorite: onToggleFavorite,
-              actions: actions,
+            PositionedDirectional(
+              start: MTSpace.md,
+              bottom: 150,
+              child: MTReelsRail(
+                favorite: favorite,
+                onToggleFavorite: onToggleFavorite,
+                actions: actions,
+              ),
             ),
-          ),
-          PositionedDirectional(
-            start: 74,
-            end: MTSpace.lg,
-            bottom: MTSpace.xxl,
-            child: MTReelsInfo(item: item, subtitle: subtitle),
-          ),
-          PositionedDirectional(
-            start: MTSpace.lg,
-            end: MTSpace.lg,
-            bottom: MTSpace.sm,
-            child: ReelsProgressBar(controller: controller),
-          ),
-        ],
+            // **فوق شريط التقدم لا عليه** (لقطة على المحاكي 2026-09-02):
+            // الشريط صار دائم الظهور، فكان الخيط البرتقالي يمر في منتصف
+            // عنوان المقطع. 64 = ارتفاع الشريط (24) + هامش الأمان السفلي
+            // + فجوة تنفس.
+            PositionedDirectional(
+              start: 74,
+              end: MTSpace.lg,
+              bottom: 64,
+              child: SafeArea(
+                top: false,
+                child: MTReelsInfo(item: item, subtitle: subtitle),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

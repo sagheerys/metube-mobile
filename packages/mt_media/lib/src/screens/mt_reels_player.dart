@@ -1,12 +1,16 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:mt_ui/mt_ui.dart';
 import 'package:video_player/video_player.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 
 import '../models/playback_source.dart';
 import '../models/playlist_item.dart';
 import '../video/reels_overlay.dart';
+import '../video/reels_progress.dart';
 import '../video/reels_stage.dart';
 import '../video/shorts_lane.dart';
 import 'mt_video_screen.dart';
@@ -64,6 +68,19 @@ class _MTReelsPlayerState extends State<MTReelsPlayer> {
   /// خلف الصورة الجديدة**. كل سحبة إضافية تضيف صوتاً ثالثاً ورابعاً.
   int _generation = 0;
 
+  /// **الأدوات تختفي بعد لحظة** (طلب المالك 2026-09-02). القاعدة واحدة
+  /// بلا أوضاع خفية: أي لمسة تُظهر الأدوات **وتقلب التشغيل** (م-35)، ثم
+  /// تختفي بعد [_chromeLinger] إن بقي المقطع يعمل. الإيقاف يثبّتها —
+  /// المتوقف يريد أن يقرأ ويتصرف، لا أن يشاهد.
+  static const _chromeLinger = Duration(seconds: 3);
+  bool _chrome = true;
+  Timer? _hideTimer;
+
+  /// **الشاشة كانت تطفأ أثناء المشاهدة** (بلاغ المالك 2026-09-02):
+  /// `MTVideoSession` تمسك القفل لكن الريلز يملك متحكمه الخام مباشرة،
+  /// فلم يكن أحد يمسكه هنا إطلاقاً.
+  bool _wakelockOn = false;
+
   @override
   void initState() {
     super.initState();
@@ -71,14 +88,10 @@ class _MTReelsPlayerState extends State<MTReelsPlayer> {
     // وتيك توك يمدّان الفيديو خلف الشريط ولا يخفيانه — الساعة والبطارية
     // حق المستخدم، و`immersiveSticky` كان يبتلعهما ويجعل السحب من الحافة
     // يستدعي الشريط بدل تغيير المقطع.
+    //
+    // لون أيقوناته يُضبط بـ `AnnotatedRegion` في `build` لا هنا — انظر
+    // التعليق هناك، فالسبب مثبت بـ `dumpsys` لا مستنتج.
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-    SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent,
-      statusBarIconBrightness: Brightness.light,
-      statusBarBrightness: Brightness.dark,
-      systemNavigationBarColor: Colors.transparent,
-      systemNavigationBarIconBrightness: Brightness.light,
-    ));
     WidgetsBinding.instance.addPostFrameCallback((_) => _load(_index));
   }
 
@@ -87,9 +100,33 @@ class _MTReelsPlayerState extends State<MTReelsPlayer> {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     // إعادة أيقونات النظام لما يقرره الثيم — الريلز وحده داكن دائماً.
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light);
+    _hideTimer?.cancel();
+    unawaited(_setWakelock(false));
     _controller?.dispose();
     _pages.dispose();
     super.dispose();
+  }
+
+  /// إبقاء الشاشة مضاءة أثناء التشغيل فقط — لا تُترك مفعّلة أبداً.
+  Future<void> _setWakelock(bool enabled) async {
+    if (_wakelockOn == enabled) return;
+    _wakelockOn = enabled;
+    try {
+      await WakelockPlus.toggle(enable: enabled);
+    } on Object {
+      // منصة بلا دعم ⇒ التشغيل يستمر بلا إبقاء الشاشة.
+    }
+  }
+
+  /// إظهار الأدوات وإعادة تشغيل مؤقت الاختفاء (يُلغى إن كان متوقفاً).
+  void _showChrome() {
+    _hideTimer?.cancel();
+    if (!_chrome) setState(() => _chrome = true);
+    if (_controller?.value.isPlaying ?? false) {
+      _hideTimer = Timer(_chromeLinger, () {
+        if (mounted) setState(() => _chrome = false);
+      });
+    }
   }
 
   PlaylistItem? get _current =>
@@ -133,12 +170,20 @@ class _MTReelsPlayerState extends State<MTReelsPlayer> {
     if (!mounted || generation != _generation) return controller.dispose();
     await controller.play();
     setState(() => _controller = controller);
+    await _setWakelock(true);
+    // المقطع الجديد يعرّف بنفسه ثم ينسحب: العنوان والناشر يُقرآن أولاً.
+    _showChrome();
   }
 
   void _onPageChanged(int page) {
     if (page >= widget.lane.length) {
-      setState(() => _endReached = true);
+      setState(() {
+        _endReached = true;
+        _chrome = true;
+      });
+      _hideTimer?.cancel();
       _controller?.pause();
+      unawaited(_setWakelock(false));
       return;
     }
     setState(() {
@@ -153,18 +198,42 @@ class _MTReelsPlayerState extends State<MTReelsPlayer> {
     if (controller == null) return;
     if (controller.value.isPlaying) {
       await controller.pause();
+      await _setWakelock(false);
     } else {
       await widget.onTakeAudioFocus?.call();
       await controller.play();
+      await _setWakelock(true);
     }
-    if (mounted) setState(() {});
+    if (!mounted) return;
+    setState(() {});
+    // بعد قلب الحالة: التشغيل يبدأ مؤقت الاختفاء، والإيقاف يثبّت الأدوات.
+    _showChrome();
   }
 
   @override
   Widget build(BuildContext context) {
     final item = _current;
-    return Scaffold(
-      backgroundColor: Colors.black,
+    // **الشريط كان ظاهراً وغير مقروء** (بلاغ المالك «يغطي الشريط
+    // العلوي»، وتشخيصه بـ `dumpsys window` 2026-09-02):
+    // `vsysui=… LIGHT_STATUS_BAR` — أي أن النظام كان يرسم أيقوناته
+    // **سوداء** لأن الثيم النهاري كريمي، فوق خلفية الريلز السوداء.
+    // النتيجة شريط موجود لا يُرى منه شيء: الساعة والبطارية سواد على
+    // سواد (قياس البكسل: القمة كلها 0,0,0).
+    //
+    // و`SystemChrome.setSystemUIOverlayStyle` في `initState` لا يكفي:
+    // الإطار يعيد فرض نمط الطبقات كل إطار من `AnnotatedRegion` الأعلى
+    // في الشجرة، فتُداس القيمة المضبوطة مرة واحدة. `AnnotatedRegion`
+    // هنا يشارك في القرار كل إطار ويفوز لأنه الأعلى.
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.light,
+        statusBarBrightness: Brightness.dark,
+        systemNavigationBarColor: Colors.transparent,
+        systemNavigationBarIconBrightness: Brightness.light,
+      ),
+      child: Scaffold(
+        backgroundColor: Colors.black,
       body: Stack(
         fit: StackFit.expand,
         children: [
@@ -199,7 +268,7 @@ class _MTReelsPlayerState extends State<MTReelsPlayer> {
                 _onPageChanged(0);
               },
             )
-          else if (item != null)
+          else if (item != null) ...[
             ReelsOverlayLayer(
               item: item,
               index: _index,
@@ -208,12 +277,27 @@ class _MTReelsPlayerState extends State<MTReelsPlayer> {
               onToggleFavorite: () {
                 widget.onToggleFavorite?.call(item);
                 setState(() {});
+                _showChrome();
               },
               actions: widget.actionsBuilder?.call(item) ?? const [],
               subtitle: widget.subtitleBuilder?.call(context, item),
-              controller: _controller,
+              visible: _chrome,
             ),
-        ],
+            // **الشريط وحده يبقى دائماً** (طلب المالك): هو المرجع الوحيد
+            // لموضعك في المقطع، وإخفاؤه مع الأدوات يجعل التقديم مستحيلاً
+            // إلا بلمستين. لذلك هو **خارج** طبقة الأدوات المتلاشية.
+            PositionedDirectional(
+              start: MTSpace.lg,
+              end: MTSpace.lg,
+              bottom: MTSpace.sm,
+              child: SafeArea(
+                top: false,
+                child: ReelsProgressBar(controller: _controller),
+              ),
+            ),
+          ],
+          ],
+        ),
       ),
     );
   }

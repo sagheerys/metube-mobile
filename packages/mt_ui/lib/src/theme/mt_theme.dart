@@ -229,6 +229,13 @@ ThemeData mtTheme(MTVariant variant, Brightness brightness) {
     bottomSheetTheme: BottomSheetThemeData(
       backgroundColor: p.card,
       surfaceTintColor: Colors.transparent,
+      // **مقبض سحب موحّد لكل الأوراق الثماني عشرة** (فحص 2026-09-02:
+      // لم يكن في أي ورقة مقبض إطلاقاً). ضبطه في الثيم لا في كل ورقة
+      // يمنع أن تُبنى الورقة التاسعة عشرة بلا مقبض — وهو ما يجعل
+      // الواجهة تبدو مجمّعة من أطوار مختلفة.
+      showDragHandle: true,
+      dragHandleColor: p.line2,
+      dragHandleSize: const Size(38, 4),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(MTRadius.sheet)),
       ),
