@@ -23,6 +23,17 @@ class MTLocalizationsEn extends MTLocalizations {
   String get activeDownloads => 'Active Downloads';
 
   @override
+  String activeDownloadsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count downloads in progress',
+      one: '1 download in progress',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get activeDownloadsSheet => 'Active downloads';
 
   @override
@@ -283,6 +294,13 @@ class MTLocalizationsEn extends MTLocalizations {
 
   @override
   String get compactView => 'Compact view';
+
+  @override
+  String get compatiblePlayback => 'Best playback compatibility';
+
+  @override
+  String get compatiblePlaybackHelp =>
+      'Asks the server for H.264/AAC, which every phone decodes in hardware. Without it YouTube may deliver AV1, which many devices render as a garbled picture. Turning it off allows the highest resolution at the cost of compatibility.';
 
   @override
   String get completed => 'Completed';
@@ -941,6 +959,9 @@ class MTLocalizationsEn extends MTLocalizations {
   String get ok => 'OK';
 
   @override
+  String get onServerPhase => 'On the server';
+
+  @override
   String onServerProgress(Object percent) {
     return 'On the server · $percent%';
   }
@@ -1063,6 +1084,11 @@ class MTLocalizationsEn extends MTLocalizations {
 
   @override
   String get pullingToDevice => 'Saving to device…';
+
+  @override
+  String pullingToDeviceProgress(Object percent) {
+    return 'Saving to device · $percent%';
+  }
 
   @override
   String get quality => 'Quality';
@@ -1574,6 +1600,9 @@ class MTLocalizationsEn extends MTLocalizations {
   String videosCount(int count) {
     return '$count videos';
   }
+
+  @override
+  String get viewAll => 'View all';
 
   @override
   String get viewAllInPlaylists => 'View all';

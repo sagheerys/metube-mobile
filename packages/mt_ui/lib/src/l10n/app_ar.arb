@@ -1,5 +1,12 @@
 {
   "@@locale": "ar",
+  "@activeDownloadsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "@addedToPlaylistCount": {
     "placeholders": {
       "count": {
@@ -35,6 +42,7 @@
   "aboutApp": "حول التطبيق",
   "aboutDescription": "تطبيق خفيف وسريع لتحميل الفيديوهات من مختلف المنصات عبر سيرفر MeTube مع مشغل فيديو مدمج وإدارة قوائم التشغيل.",
   "activeDownloads": "التحميلات النشطة",
+  "activeDownloadsCount": "{count, plural, =1{تحميل واحد جارٍ} =2{تحميلان جاريان} few{{count} تحميلات جارية} other{{count} تحميلاً جارياً}}",
   "activeDownloadsSheet": "التحميلات الجارية",
   "activeNow": "نشط الآن",
   "addEndpoint": "أضف نقطة نهاية",
@@ -115,6 +123,8 @@
   "closePlayer": "إغلاق المشغل",
   "comingSoonPhase": "هذه الشاشة تُبنى في مرحلة لاحقة من الخطة",
   "compactView": "عرض مدمج",
+  "compatiblePlayback": "أفضل توافق للتشغيل",
+  "compatiblePlaybackHelp": "يطلب من الخادم صيغة H.264/AAC التي تفكّها كل الهواتف عتادياً. بدونها قد يعطي يوتيوب صيغة AV1 فيظهر المقطع مشوشاً على أجهزة كثيرة. إطفاؤها يتيح أعلى دقة ممكنة على حساب التوافق.",
   "completed": "مكتمل",
   "connecting": "جارٍ الاتصال...",
   "connectionFailed": "فشل الاتصال",
@@ -313,6 +323,7 @@
   "nowPlaying": "قيد التشغيل",
   "offlineSmartList": "دون اتصال",
   "ok": "حسناً",
+  "onServerPhase": "على السيرفر",
   "onServerProgress": "على السيرفر · {percent}٪",
   "openGithub": "فتح MeTube على GitHub",
   "openOriginalLink": "فتح الرابط الأصلي",
@@ -351,6 +362,7 @@
   "preparingToShare": "يُجهَّز للمشاركة… {percent}٪",
   "previous": "السابق",
   "pullingToDevice": "يُسحب للجهاز…",
+  "pullingToDeviceProgress": "يُسحب للجهاز · {percent}٪",
   "quality": "الجودة",
   "quality1080": "1080p",
   "quality480": "480p",
@@ -506,6 +518,7 @@
   "videoPlayer": "مشغّل الفيديو",
   "videoRemoved": "أُزيل من القائمة",
   "videosCount": "{count} فيديو",
+  "viewAll": "عرض الكل",
   "viewAllInPlaylists": "عرض الكل",
   "viewGrid": "شبكة",
   "viewList": "قائمة",

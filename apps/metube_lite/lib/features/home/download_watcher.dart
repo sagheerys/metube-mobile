@@ -102,11 +102,15 @@ final downloadWatcherProvider = Provider<void>((ref) {
             channelName: texts.activeDownloads,
             percent: null,
           );
+        // **النسبة في نص الإشعار أيضاً** (بلاغ المالك 2026-09-03: «العداد
+        // لا يظهر عند السحب من السيرفر إلى الجهاز»). شريط الإشعار وحده
+        // لا يُقرأ رقماً، ومرحلة السحب هي الأطول في Lite.
         case TaskPhase.pulling:
           await notifications.showProgress(
             id,
             title: task.title ?? texts.downloadingTitle,
-            body: texts.pullingToDevice,
+            body: texts.pullingToDeviceProgress(
+                (task.progress * 100).toStringAsFixed(0)),
             channelName: texts.activeDownloads,
             percent: (task.progress * 100).round(),
           );

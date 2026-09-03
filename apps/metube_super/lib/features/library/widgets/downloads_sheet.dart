@@ -55,17 +55,24 @@ class _DownloadsSheet extends ConsumerWidget {
                       // م-42: الانتظار سببه قرار المستخدم لا بطء شبكة.
                       TaskPhase.waitingForNetwork => l10n.waitingForWifi,
                       TaskPhase.pulling => l10n.pullingToDevice,
-                      _ => l10n.onServerProgress(
-                          (task.progress * 100).toStringAsFixed(0)),
+                      // النسبة عنصر مستقل في البطاقة — لا تُكرَّر هنا.
+                      _ => l10n.onServerPhase,
                     },
-              progress: task.phase == TaskPhase.queued ||
-                      task.phase == TaskPhase.waitingForNetwork
-                  ? null
-                  : task.progress,
+              progress: task.hasKnownProgress ? task.progress : null,
               isError: error,
-              onCancel: error
-                  ? null
-                  : () => engine?.cancel(task.id),
+              // **الفاشلة تُزال بنفس زر الإغلاق** (بلاغ المالك
+              // 2026-09-03: «إذا فشل تحميل ملف لا تستطيع إزالته من قائمة
+              // التحميلات»). كان `onCancel: null` عند الخطأ فتختفي علامة
+              // الإغلاق ولا يبقى إلا «إعادة المحاولة» — فتسكن البطاقة في
+              // «تحتاج انتباهك» إلى أن يُقتل التطبيق. `forget` موجود في
+              // المحرك منذ م-4 ولم يكن أحد يناديه من الواجهة.
+              onCancel: () {
+                if (error) {
+                  engine?.forget(task.id);
+                } else {
+                  engine?.cancel(task.id);
+                }
+              },
             ),
             if (error)
               Row(
@@ -74,6 +81,8 @@ class _DownloadsSheet extends ConsumerWidget {
                   TextButton(
                     onPressed: () {
                       engine?.submit(task.effectiveUrl, task.quality);
+                      // البطاقة القديمة لا تبقى بجانب المحاولة الجديدة.
+                      engine?.forget(task.id);
                       Navigator.pop(context);
                     },
                     child: Text(l10n.retry),

@@ -122,6 +122,12 @@ abstract class MTLocalizations {
   /// **'Active Downloads'**
   String get activeDownloads;
 
+  /// No description provided for @activeDownloadsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 download in progress} other{{count} downloads in progress}}'**
+  String activeDownloadsCount(int count);
+
   /// No description provided for @activeDownloadsSheet.
   ///
   /// In en, this message translates to:
@@ -601,6 +607,18 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'Compact view'**
   String get compactView;
+
+  /// No description provided for @compatiblePlayback.
+  ///
+  /// In en, this message translates to:
+  /// **'Best playback compatibility'**
+  String get compatiblePlayback;
+
+  /// No description provided for @compatiblePlaybackHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Asks the server for H.264/AAC, which every phone decodes in hardware. Without it YouTube may deliver AV1, which many devices render as a garbled picture. Turning it off allows the highest resolution at the cost of compatibility.'**
+  String get compatiblePlaybackHelp;
 
   /// No description provided for @completed.
   ///
@@ -1790,6 +1808,12 @@ abstract class MTLocalizations {
   /// **'OK'**
   String get ok;
 
+  /// No description provided for @onServerPhase.
+  ///
+  /// In en, this message translates to:
+  /// **'On the server'**
+  String get onServerPhase;
+
   /// No description provided for @onServerProgress.
   ///
   /// In en, this message translates to:
@@ -2017,6 +2041,12 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'Saving to device…'**
   String get pullingToDevice;
+
+  /// No description provided for @pullingToDeviceProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Saving to device · {percent}%'**
+  String pullingToDeviceProgress(Object percent);
 
   /// No description provided for @quality.
   ///
@@ -2947,6 +2977,12 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'{count} videos'**
   String videosCount(int count);
+
+  /// No description provided for @viewAll.
+  ///
+  /// In en, this message translates to:
+  /// **'View all'**
+  String get viewAll;
 
   /// No description provided for @viewAllInPlaylists.
   ///

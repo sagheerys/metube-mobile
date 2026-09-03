@@ -75,10 +75,32 @@ class MTDownloadProgressCard extends StatelessWidget {
                       .copyWith(fontWeight: FontWeight.w700),
                 ),
                 const SizedBox(height: 3),
-                Text(statusText,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: text.bodySmall!.copyWith(color: softInk)),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(statusText,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: text.bodySmall!.copyWith(color: softInk)),
+                    ),
+                    // **العداد يرافق كل طور تقدمه معروف** (بلاغ المالك
+                    // 2026-09-03: «العداد لا يظهر عند السحب للجهاز»).
+                    // كانت النسبة مدفونة داخل نص «على السيرفر ٪» وحده،
+                    // فمرحلة السحب — وهي الأطول في Lite — تعرض شريطاً
+                    // يتحرك بلا رقم. الرقم عنصر مستقل الآن، فيظهر في
+                    // السحب والاستطلاع معاً بلا نص إضافي لكل مرحلة.
+                    if (!isError && progress != null) ...[
+                      const SizedBox(width: MTSpace.sm),
+                      Text(
+                        '${(progress!.clamp(0, 1) * 100).round()}%',
+                        style: text.bodySmall!.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: tint,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
                 if (!isError) ...[
                   const SizedBox(height: MTSpace.xs + 1),
                   ClipRRect(

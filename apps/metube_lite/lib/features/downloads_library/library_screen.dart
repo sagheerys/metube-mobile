@@ -187,11 +187,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
               const SizedBox(height: MTSpace.xs),
               const PlatformFilterChips(),
               const SizedBox(height: MTSpace.md),
-              for (final task in active) ...[
-                _taskCard(l10n, task),
-                const SizedBox(height: MTSpace.xs),
-              ],
-              if (active.isNotEmpty) const SizedBox(height: MTSpace.sm),
+              ..._activeStrip(l10n, active),
             ],
           ),
         ),
@@ -253,12 +249,34 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     );
   }
 
+  /// **مهمة واحدة ⇒ بطاقتها كاملة · أكثر ⇒ سطر واحد يلخّصها.**
+  ///
+  /// بلاغ المالك 2026-09-03: «عدة تحميلات تظهر كلها في مكتبة التحميلات
+  /// وهي موجود لها زر فوق في الأعلى — أوجد طريقة بحيث ما تتزاحم».
+  /// البطاقة الحية ~78 نقطة، فثلاث مهام كانت تدفع أول ملف خارج الشاشة.
+  List<Widget> _activeStrip(MTLocalizations l10n, List<DownloadTask> active) {
+    if (active.isEmpty) return const [];
+    return [
+      if (active.length == 1)
+        _taskCard(l10n, active.first)
+      else
+        MTActiveDownloadsBar(
+          label: l10n.activeDownloadsCount(active.length),
+          actionLabel: l10n.viewAll,
+          progress: averageTaskProgress(active),
+          onTap: () => showDownloadsSheet(context),
+        ),
+      const SizedBox(height: MTSpace.sm),
+    ];
+  }
+
   Widget _taskCard(MTLocalizations l10n, DownloadTask task) {
     final engine = ref.read(downloadEngineProvider);
     final statusText = switch (task.phase) {
       TaskPhase.queued => l10n.queuedSection,
-      TaskPhase.adding || TaskPhase.polling => l10n.onServerProgress(
-          (task.progress * 100).toStringAsFixed(0)),
+      // **بلا نسبة في النص**: العداد صار عنصراً مستقلاً في البطاقة، فبقاؤها
+      // هنا كان يطبعها مرتين («على السيرفر · ٠٪» بجوار «0%») — رُصد بلقطة.
+      TaskPhase.adding || TaskPhase.polling => l10n.onServerPhase,
       TaskPhase.waitingForNetwork => l10n.waitingForWifi,
       TaskPhase.pulling => l10n.pullingToDevice,
       // Lite ينظف السيرفر بعد السحب — مرحلة قصيرة تستحق نصاً صريحاً.
@@ -269,7 +287,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     return MTDownloadProgressCard(
       title: task.title ?? task.effectiveUrl,
       statusText: statusText,
-      progress: task.phase == TaskPhase.queued ? null : task.progress,
+      progress: task.hasKnownProgress ? task.progress : null,
       isError: task.phase == TaskPhase.failed,
       onCancel: () => engine?.cancel(task.id),
     );

@@ -23,6 +23,19 @@ class MTLocalizationsAr extends MTLocalizations {
   String get activeDownloads => 'التحميلات النشطة';
 
   @override
+  String activeDownloadsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count تحميلاً جارياً',
+      few: '$count تحميلات جارية',
+      two: 'تحميلان جاريان',
+      one: 'تحميل واحد جارٍ',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get activeDownloadsSheet => 'التحميلات الجارية';
 
   @override
@@ -282,6 +295,13 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get compactView => 'عرض مدمج';
+
+  @override
+  String get compatiblePlayback => 'أفضل توافق للتشغيل';
+
+  @override
+  String get compatiblePlaybackHelp =>
+      'يطلب من الخادم صيغة H.264/AAC التي تفكّها كل الهواتف عتادياً. بدونها قد يعطي يوتيوب صيغة AV1 فيظهر المقطع مشوشاً على أجهزة كثيرة. إطفاؤها يتيح أعلى دقة ممكنة على حساب التوافق.';
 
   @override
   String get completed => 'مكتمل';
@@ -937,6 +957,9 @@ class MTLocalizationsAr extends MTLocalizations {
   String get ok => 'حسناً';
 
   @override
+  String get onServerPhase => 'على السيرفر';
+
+  @override
   String onServerProgress(Object percent) {
     return 'على السيرفر · $percent٪';
   }
@@ -1059,6 +1082,11 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get pullingToDevice => 'يُسحب للجهاز…';
+
+  @override
+  String pullingToDeviceProgress(Object percent) {
+    return 'يُسحب للجهاز · $percent٪';
+  }
 
   @override
   String get quality => 'الجودة';
@@ -1574,6 +1602,9 @@ class MTLocalizationsAr extends MTLocalizations {
   String videosCount(int count) {
     return '$count فيديو';
   }
+
+  @override
+  String get viewAll => 'عرض الكل';
 
   @override
   String get viewAllInPlaylists => 'عرض الكل';

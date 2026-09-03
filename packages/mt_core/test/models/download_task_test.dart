@@ -42,4 +42,44 @@ void main() {
       expect(task.copyWith(phase: TaskPhase.pulling).isFinished, isFalse);
     });
   });
+
+  /// الشريط المُجمِّع أعلى المكتبة حين تتعدد التحميلات (بلاغ المالك
+  /// 2026-09-03) — المنتظِرة **تُحسب صفراً لا تُستبعد**.
+  group('averageTaskProgress', () {
+    DownloadTask make(TaskPhase phase, double progress) =>
+        DownloadTask(inputUrl: 'u', quality: Quality.best)
+            .copyWith(phase: phase, progress: progress);
+
+    test('فارغة ⇒ null', () => expect(averageTaskProgress(const []), isNull));
+
+    test('كلها بلا تقدم معروف ⇒ null (شريط غير محدد)', () {
+      expect(
+        averageTaskProgress([
+          make(TaskPhase.queued, 0),
+          make(TaskPhase.waitingForNetwork, 0.9),
+        ]),
+        isNull,
+      );
+    });
+
+    test('المنتظِرة تخفض المتوسط بدل أن تُستبعد', () {
+      // واحدة على 90٪ واثنتان في الطابور ⇒ 30٪ لا 90٪.
+      final average = averageTaskProgress([
+        make(TaskPhase.pulling, 0.9),
+        make(TaskPhase.queued, 0),
+        make(TaskPhase.queued, 0),
+      ]);
+      expect(average, closeTo(0.3, 0.001));
+    });
+
+    test('متوسط عادي', () {
+      expect(
+        averageTaskProgress([
+          make(TaskPhase.polling, 0.25),
+          make(TaskPhase.pulling, 0.75),
+        ]),
+        closeTo(0.5, 0.001),
+      );
+    });
+  });
 }

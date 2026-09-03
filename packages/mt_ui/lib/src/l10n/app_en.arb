@@ -1,5 +1,12 @@
 {
   "@@locale": "en",
+  "@activeDownloadsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "@addNToServer": {
     "placeholders": {
       "count": {
@@ -201,6 +208,13 @@
       }
     }
   },
+  "@pullingToDeviceProgress": {
+    "placeholders": {
+      "percent": {
+        "type": "Object"
+      }
+    }
+  },
   "@queueItemsCount": {
     "placeholders": {
       "count": {
@@ -295,6 +309,7 @@
   "aboutApp": "About App",
   "aboutDescription": "A lightweight and fast app for downloading videos from various platforms via MeTube server, with a built-in video player and playlist management.",
   "activeDownloads": "Active Downloads",
+  "activeDownloadsCount": "{count, plural, =1{1 download in progress} other{{count} downloads in progress}}",
   "activeDownloadsSheet": "Active downloads",
   "activeNow": "Active now",
   "addEndpoint": "Add endpoint",
@@ -375,6 +390,8 @@
   "closePlayer": "Close player",
   "comingSoonPhase": "This screen is built in a later phase of the plan",
   "compactView": "Compact view",
+  "compatiblePlayback": "Best playback compatibility",
+  "compatiblePlaybackHelp": "Asks the server for H.264/AAC, which every phone decodes in hardware. Without it YouTube may deliver AV1, which many devices render as a garbled picture. Turning it off allows the highest resolution at the cost of compatibility.",
   "completed": "Completed",
   "connecting": "Connecting...",
   "connectionFailed": "Connection failed",
@@ -573,6 +590,7 @@
   "nowPlaying": "Now playing",
   "offlineSmartList": "Offline",
   "ok": "OK",
+  "onServerPhase": "On the server",
   "onServerProgress": "On the server · {percent}%",
   "openGithub": "Open MeTube on GitHub",
   "openOriginalLink": "Open Original Link",
@@ -611,6 +629,7 @@
   "preparingToShare": "Preparing to share… {percent}%",
   "previous": "Previous",
   "pullingToDevice": "Saving to device…",
+  "pullingToDeviceProgress": "Saving to device · {percent}%",
   "quality": "Quality",
   "quality1080": "1080p",
   "quality480": "480p",
@@ -766,6 +785,7 @@
   "videoPlayer": "Video Player",
   "videoRemoved": "Removed from playlist",
   "videosCount": "{count} videos",
+  "viewAll": "View all",
   "viewAllInPlaylists": "View all",
   "viewGrid": "Grid",
   "viewList": "List",

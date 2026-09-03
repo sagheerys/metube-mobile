@@ -6,6 +6,7 @@ export 'src/gallery/gallery_screen.dart';
 export 'src/l10n/l10n.dart';
 export 'src/theme/mt_theme.dart';
 export 'src/tokens/tokens.dart';
+export 'src/widgets/mt_active_downloads_bar.dart';
 export 'src/widgets/mt_clipboard_banner.dart';
 export 'src/widgets/mt_download_progress_card.dart';
 export 'src/widgets/mt_empty_state.dart';

@@ -77,6 +77,11 @@ class DownloadTask {
   final bool isBatchMember;
   final DateTime createdAt;
 
+  /// **هل لهذه المرحلة تقدم معروف؟** المنتظِرة وموقوفة الشبكة لا تتحرك،
+  /// فعرض «0٪» عليها كذب يوحي بالتعليق (نفس منطق `waitingForNetwork`).
+  bool get hasKnownProgress =>
+      phase != TaskPhase.queued && phase != TaskPhase.waitingForNetwork;
+
   bool get isFinished =>
       phase == TaskPhase.completed ||
       phase == TaskPhase.failed ||
@@ -111,4 +116,20 @@ class DownloadTask {
         isBatchMember: isBatchMember,
         createdAt: createdAt,
       );
+}
+
+/// متوسط تقدم مجموعة مهام (0..1) — للشريط المُجمِّع أعلى المكتبة حين
+/// تتعدد التحميلات (بلاغ المالك 2026-09-03).
+///
+/// المهام بلا تقدم معروف تُحسب **صفراً لا تُستبعد**: استبعادها يجعل
+/// «٣ تحميلات» تعرض ٩٠٪ لأن واحدة فقط تعمل والباقي في الطابور.
+/// المجموعة الفارغة أو التي لا تقدم فيها بتاتاً ⇒ `null` (شريط غير محدد).
+double? averageTaskProgress(List<DownloadTask> tasks) {
+  if (tasks.isEmpty) return null;
+  if (!tasks.any((t) => t.hasKnownProgress)) return null;
+  var sum = 0.0;
+  for (final task in tasks) {
+    if (task.hasKnownProgress) sum += task.progress.clamp(0, 1);
+  }
+  return sum / tasks.length;
 }
