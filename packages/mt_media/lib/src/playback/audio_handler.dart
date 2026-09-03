@@ -151,8 +151,19 @@ class MTAudioHandler extends BaseAudioHandler with SeekHandler {
 
   @override
   Future<void> play() async {
-    await onTakeVideoFocus?.call();
+    await _takeVideoFocus();
     await player.play();
+  }
+
+  /// **إسكات الفيديو لا يُلغي التشغيل** (2026-09-03): المسجِّل شاشةٌ قد
+  /// تموت، ورميةٌ منه كانت تُجهض `player.play()` قبل أن يبدأ — فيبدو
+  /// التطبيق وكأنه «لا يشغّل شيئاً» بعد زيارة الريلز (بلاغ المالك).
+  Future<void> _takeVideoFocus() async {
+    try {
+      await onTakeVideoFocus?.call();
+    } on Object {
+      onTakeVideoFocus = null; // مسجِّل ميت لا يُسأل مرة أخرى
+    }
   }
 
   @override

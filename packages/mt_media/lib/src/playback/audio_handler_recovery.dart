@@ -79,7 +79,7 @@ extension MTAudioHandlerRecovery on MTAudioHandler {
         Duration.zero;
     if (_isStale(generation)) return;
     try {
-      if (autoPlay) await onTakeVideoFocus?.call();
+      if (autoPlay) await _takeVideoFocus();
       if (_isStale(generation)) return;
       await player.setSource(source, initialPosition: resume);
       if (_isStale(generation)) return;

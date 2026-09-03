@@ -56,9 +56,14 @@ final videoSessionProvider = Provider.autoDispose<MTVideoSession>((ref) {
   // الفيديو العامل.
   final handler = ref.read(audioHandlerProvider);
   session.onTakeAudioFocus = handler.pause;
-  handler.onTakeVideoFocus = session.pause;
+  // **يُمسح تسجيلنا وحده** (2026-09-03): الريلز يسجّل موقِفه أيضاً، وشطب
+  // التسجيل بلا تمييز كان يترك الطرف الحي بلا حماية فيعزف مصدران معاً.
+  final pauseVideo = session.pause;
+  handler.onTakeVideoFocus = pauseVideo;
   ref.onDispose(() {
-    handler.onTakeVideoFocus = null;
+    if (handler.onTakeVideoFocus == pauseVideo) {
+      handler.onTakeVideoFocus = null;
+    }
     unawaited(session.dispose());
   });
   return session;

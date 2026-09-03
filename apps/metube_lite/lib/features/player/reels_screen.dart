@@ -20,6 +20,27 @@ class ReelsScreen extends ConsumerStatefulWidget {
 }
 
 class _ReelsScreenState extends ConsumerState<ReelsScreen> {
+  /// **يُلتقط مرة واحدة وهذه الشاشة حية** (العطل الميداني 2026-09-03).
+  /// المشغل الابن ينادي [_setLive] من `dispose()` الخاص به، والشجرة
+  /// وقتها **مُبطلة**: `ref.read` حينئذٍ يرمي، والرمية كانت تُسقط بقية
+  /// `dispose()` فيبقى مقطع يعمل بلا مالك.
+  late final MTAudioHandler _audio = ref.read(audioHandlerProvider);
+
+  /// آخر «موقِف» سلّمناه للمشغل الخلفي — لتمييز تسجيلنا عن تسجيل غيرنا.
+  Future<void> Function()? _pauser;
+
+  /// **لا نمسح تسجيل مالك آخر:** شاشة الفيديو تسجّل نفسها أيضاً، وموتنا
+  /// بعد ولادتها كان يمحو تسجيلها فيعزف مصدران معاً.
+  void _setLive(Future<void> Function()? pauser) {
+    if (pauser == null) {
+      if (_audio.onTakeVideoFocus == _pauser) _audio.onTakeVideoFocus = null;
+      _pauser = null;
+      return;
+    }
+    _pauser = pauser;
+    _audio.onTakeVideoFocus = pauser;
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.mtl;
@@ -53,10 +74,9 @@ class _ReelsScreenState extends ConsumerState<ReelsScreen> {
       lane: lane,
       resolver: ref.watch(playbackResolverProvider),
       startIndex: laneIndex,
-      onTakeAudioFocus: ref.read(audioHandlerProvider).pause,
+      onTakeAudioFocus: _audio.pause,
       // ع-4: ما دام الريل حياً، تشغيل الصوت من الإشعار يُسكته أولاً.
-      onLive: (pauser) =>
-          ref.read(audioHandlerProvider).onTakeVideoFocus = pauser,
+      onLive: _setLive,
       subtitleBuilder: (context, item) =>
           platformOfKey(item.canonicalUrl).label,
       isFavorite: (item) => _libraryItemOf(item)?.favorite ?? false,

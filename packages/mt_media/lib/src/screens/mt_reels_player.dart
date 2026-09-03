@@ -15,6 +15,8 @@ import '../video/reels_stage.dart';
 import '../video/shorts_lane.dart';
 import 'mt_video_screen.dart';
 
+part 'mt_reels_player_controls.dart';
+
 /// **مشغل الريلز (م-35)** — غامر بسحب عمودي داخل «مسار القِصار» فقط:
 /// القِصار العمودية من القائمة المعروضة بنفس ترتيبها، والصوتي والعرضي
 /// يُتخطيان بصمت (العداد يعدّ القِصار وحدها).
@@ -88,6 +90,17 @@ class _MTReelsPlayerState extends State<MTReelsPlayer> {
   /// فلم يكن أحد يمسكه هنا إطلاقاً.
   bool _wakelockOn = false;
 
+  /// **علم الموت — ولا يُستبدل بـ`mounted` أبداً** (العطل الميداني
+  /// 2026-09-03، مثبت بأثر على الجهاز).
+  ///
+  /// `State.mounted` هو `_element != null`، والإطار يصفّر `_element`
+  /// **بعد** عودة `dispose()`. فإن رمى أي سطر داخل `dispose()` — وقد
+  /// رمى: `onLive` أدناه — لم يُصفَّر، **فبقي `mounted == true` إلى
+  /// الأبد على شاشة ميتة**. حينها يمرّ التحميل المعلّق من كل حُرّاس
+  /// `mounted`، فيشغّل مقطعاً ويسلّمه لحقلٍ لن يصرّفه أحد: صوت يعمل
+  /// خلف التطبيق بلا مشغل مصغر ولا سبيل لإيقافه (بلاغ المالك).
+  bool _disposed = false;
+
   @override
   void initState() {
     super.initState();
@@ -99,111 +112,50 @@ class _MTReelsPlayerState extends State<MTReelsPlayer> {
     // لون أيقوناته يُضبط بـ `AnnotatedRegion` في `build` لا هنا — انظر
     // التعليق هناك، فالسبب مثبت بـ `dumpsys` لا مستنتج.
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-    widget.onLive?.call(_pauseForAudioFocus);
+    _notifyLive(_pauseForAudioFocus);
     WidgetsBinding.instance.addPostFrameCallback((_) => _load(_index));
   }
 
-  /// إسكات الريل حين يطلب مشغل الصوت التركيز (ع-4) — مع إطفاء قفل
-  /// الشاشة، فالمقطع لم يعد يُشاهَد.
-  Future<void> _pauseForAudioFocus() async {
-    final controller = _controller;
-    if (controller == null || !controller.value.isPlaying) return;
-    await controller.pause();
-    await _setWakelock(false);
-    if (mounted) {
-      setState(() {});
-      _showChrome();
+  /// `setState` محمية ولا تُنادى من امتداد ولو في نفس المكتبة — هذه
+  /// نافذتها الوحيدة لملف الأوامر (`part`)، نفس نمط
+  /// `MTVideoSession.notifyFromCommands`.
+  void applyState(VoidCallback fn) => setState(fn);
+
+  /// **رد نداء المضيف محصَّن**: `onLive` يصل غالباً إلى `ref` في تطبيق
+  /// المضيف، و`ref.read` من `ConsumerState` بعد إبطاله **يرمي**. رميةٌ
+  /// واحدة داخل `dispose()` كانت تُسقط كل ما بعدها (انظر [_disposed]).
+  void _notifyLive(Future<void> Function()? pauser) {
+    try {
+      widget.onLive?.call(pauser);
+    } on Object catch (error) {
+      debugPrint('MTReelsPlayer: onLive threw — $error');
     }
   }
 
+  /// **الترتيب هنا عقد لا تنسيق:** العلم أولاً ثم إبطال الأجيال ثم
+  /// تحرير الموارد — وكل ما قد يرمي في النهاية ومحاطاً بحصانة.
   @override
   void dispose() {
+    _disposed = true;
+    _generation++; // تحميل معلّق لا يشغّل شيئاً بعد هذه اللحظة
+    _hideTimer?.cancel();
+    final controller = _controller;
+    _controller = null;
+    if (controller != null) unawaited(_shutdownController(controller));
+    unawaited(_setWakelock(false));
+    _pages.dispose();
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     // إعادة أيقونات النظام لما يقرره الثيم — الريلز وحده داكن دائماً.
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light);
-    widget.onLive?.call(null);
-    _hideTimer?.cancel();
-    unawaited(_setWakelock(false));
-    _controller?.dispose();
-    _pages.dispose();
+    _notifyLive(null);
     super.dispose();
-  }
-
-  /// إبقاء الشاشة مضاءة أثناء التشغيل فقط — لا تُترك مفعّلة أبداً.
-  Future<void> _setWakelock(bool enabled) async {
-    if (_wakelockOn == enabled) return;
-    _wakelockOn = enabled;
-    try {
-      await WakelockPlus.toggle(enable: enabled);
-    } on Object {
-      // منصة بلا دعم ⇒ التشغيل يستمر بلا إبقاء الشاشة.
-    }
-  }
-
-  /// إظهار الأدوات وإعادة تشغيل مؤقت الاختفاء (يُلغى إن كان متوقفاً).
-  void _showChrome() {
-    _hideTimer?.cancel();
-    if (!_chrome) setState(() => _chrome = true);
-    if (_controller?.value.isPlaying ?? false) {
-      _hideTimer = Timer(_chromeLinger, () {
-        if (mounted) setState(() => _chrome = false);
-      });
-    }
   }
 
   PlaylistItem? get _current =>
       _index >= 0 && _index < widget.lane.length ? widget.lane.items[_index] : null;
 
-  Future<void> _load(int index) async {
-    final generation = ++_generation;
-    final item = index < widget.lane.length ? widget.lane.items[index] : null;
-    final old = _controller;
-    _controller = null;
-    if (mounted) setState(() => _failed = false);
-    // إسكاته أولاً: `dispose()` قد ينتظر، والصوت يستمر طوال الانتظار.
-    await old?.pause();
-    await old?.dispose();
-    if (item == null) return;
-
-    final source = widget.resolver.resolve(item);
-    if (source == null) {
-      if (mounted && generation == _generation) {
-        setState(() => _failed = true);
-      }
-      return;
-    }
-    final controller = source.origin == PlaybackOrigin.local
-        ? VideoPlayerController.file(File(source.uri.toFilePath()))
-        : VideoPlayerController.networkUrl(source.uri,
-            httpHeaders: source.headers);
-    try {
-      await controller.initialize();
-    } on Object {
-      await controller.dispose();
-      if (mounted && generation == _generation) {
-        setState(() => _failed = true);
-      }
-      return;
-    }
-    // سحبة أحدث سبقتنا ⇒ نتخلص من هذا المتحكم بدل أن نتركه يعمل.
-    if (!mounted || generation != _generation) return controller.dispose();
-    await controller.setLooping(true); // يتكرر حتى السحب (م-35)
-    await widget.onTakeAudioFocus?.call();
-    if (!mounted || generation != _generation) return controller.dispose();
-    await controller.play();
-    // **الحارس بعد آخر `await` أيضاً (العطل ط-1):** كان الفحص يقف سطراً
-    // واحداً قبل النهاية. رجوعٌ أثناء `play()` على شبكة بطيئة يعني:
-    // `setState` على شاشة ميتة، **ومتحكم مُفعّل عليه التكرار لا يصرّفه
-    // أحد فيعزف في حلقة لبقية عمر العملية**، وقفل شاشة يُعاد إشعاله بعد
-    // أن أطفأه الخروج.
-    if (!mounted || generation != _generation) return controller.dispose();
-    setState(() => _controller = controller);
-    await _setWakelock(true);
-    // المقطع الجديد يعرّف بنفسه ثم ينسحب: العنوان والناشر يُقرآن أولاً.
-    _showChrome();
-  }
-
   void _onPageChanged(int page) {
+    if (_disposed) return;
     if (page >= widget.lane.length) {
       setState(() {
         _endReached = true;
@@ -226,44 +178,6 @@ class _MTReelsPlayerState extends State<MTReelsPlayer> {
   /// تركيز صوت ولا محاسبة قفل شاشة: تستأنف بعد سحبة فتنام الشاشة أثناء
   /// التشغيل (بلاغك نفسه من باب خلفي)، ويعود الصوت الخلفي فيُسمع اثنان.
   bool _resumeAfterScrub = false;
-
-  void _onScrubStart() {
-    final controller = _controller;
-    if (controller == null) return;
-    _resumeAfterScrub = controller.value.isPlaying;
-    unawaited(controller.pause());
-    unawaited(_setWakelock(false));
-    _showChrome();
-  }
-
-  Future<void> _onScrubEnd() async {
-    final controller = _controller;
-    // الإلغاء (غلبة `PageView` العمودي على السحب) يمرّ من هنا أيضاً،
-    // وإلا بقي المقطع موقوفاً بلا أي مؤشر إيقاف ظاهر.
-    if (controller == null || !_resumeAfterScrub) return;
-    _resumeAfterScrub = false;
-    await widget.onTakeAudioFocus?.call();
-    await controller.play();
-    await _setWakelock(true);
-    if (mounted) _showChrome();
-  }
-
-  Future<void> _togglePlay() async {
-    final controller = _controller;
-    if (controller == null) return;
-    if (controller.value.isPlaying) {
-      await controller.pause();
-      await _setWakelock(false);
-    } else {
-      await widget.onTakeAudioFocus?.call();
-      await controller.play();
-      await _setWakelock(true);
-    }
-    if (!mounted) return;
-    setState(() {});
-    // بعد قلب الحالة: التشغيل يبدأ مؤقت الاختفاء، والإيقاف يثبّت الأدوات.
-    _showChrome();
-  }
 
   @override
   Widget build(BuildContext context) {
