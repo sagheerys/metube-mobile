@@ -17,6 +17,7 @@ class SuperSettings {
     this.quality = Quality.best,
     this.quickDownload = false,
     this.wifiOnly = false,
+    this.saveBatchToDevice = false,
     this.autoRetry = true,
     this.themeMode = ThemeMode.system,
     this.localeCode,
@@ -39,6 +40,11 @@ class SuperSettings {
 
   /// السحب إلى الجهاز على Wi‑Fi فقط — الإضافة للسيرفر تبقى متاحة دائماً.
   final bool wifiOnly;
+
+  /// **دفعة القائمة تُحفظ على الجهاز أيضاً** (طلب المالك 2026-09-03).
+  /// Super يضيف للسيرفر ولا يسحب (ر-2)؛ هذا يطبّق «إتاحة دون اتصال»
+  /// (م-17) تلقائياً على كل عضو دفعة يكتمل — الأصل يبقى على السيرفر.
+  final bool saveBatchToDevice;
 
   /// إعادة ما فشل بسبب الشبكة عند عودتها (لا ما رفضه الخادم).
   final bool autoRetry;
@@ -70,6 +76,7 @@ class SuperSettings {
     Quality? quality,
     bool? quickDownload,
     bool? wifiOnly,
+    bool? saveBatchToDevice,
     bool? autoRetry,
     ThemeMode? themeMode,
     String? localeCode,
@@ -85,6 +92,7 @@ class SuperSettings {
         quality: quality ?? this.quality,
         quickDownload: quickDownload ?? this.quickDownload,
         wifiOnly: wifiOnly ?? this.wifiOnly,
+        saveBatchToDevice: saveBatchToDevice ?? this.saveBatchToDevice,
         autoRetry: autoRetry ?? this.autoRetry,
         themeMode: themeMode ?? this.themeMode,
         localeCode: localeCode ?? this.localeCode,
@@ -105,6 +113,8 @@ class SuperSettings {
       quality: Quality.fromWire(await store.getString('video_quality')),
       quickDownload: await store.getBool('quick_download_enabled') ?? false,
       wifiOnly: await store.getBool('wifi_only_downloads') ?? false,
+      saveBatchToDevice:
+          await store.getBool('batch_save_to_device') ?? false,
       autoRetry: await store.getBool('auto_retry_downloads') ?? true,
       themeMode: ThemeMode.values.firstWhere(
         (m) => m.name == themeName,
@@ -176,6 +186,11 @@ class SettingsNotifier extends Notifier<SuperSettings> {
   Future<void> setWifiOnly(bool enabled) async {
     await _mutex.run(() => _store.setBool('wifi_only_downloads', enabled));
     state = state.copyWith(wifiOnly: enabled);
+  }
+
+  Future<void> setSaveBatchToDevice(bool enabled) async {
+    await _mutex.run(() => _store.setBool('batch_save_to_device', enabled));
+    state = state.copyWith(saveBatchToDevice: enabled);
   }
 
   Future<void> setAutoRetry(bool enabled) async {

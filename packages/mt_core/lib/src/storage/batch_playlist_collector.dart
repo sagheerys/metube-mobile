@@ -14,9 +14,16 @@ import 'playlists_store.dart';
 /// واحد لكن الفشل يزيح الترتيب). القائمة الفارغة تماماً (فشل الكل)
 /// تُحذف فلا تبقى قائمة شبح.
 class BatchPlaylistCollector {
-  BatchPlaylistCollector({required this.playlists});
+  BatchPlaylistCollector({required this.playlists, this.onChanged});
 
   final PlaylistsStore playlists;
+
+  /// **يُخبِر الواجهة أن القوائم تغيّرت** (بلاغ ميداني 2026-09-03).
+  /// القائمة المُجمَّعة كانت تُكتب على القرص صحيحةً **ولا تظهر أبداً**:
+  /// الكتابة تقع خارج شاشة القوائم، وغلاف `indexedStack` يُبقي تبويبها
+  /// حياً بمزوّدٍ يحتفظ بقيمته المخبأة — فلا يُقرأ القرص ثانيةً حتى
+  /// إعادة تشغيل التطبيق.
+  final void Function()? onChanged;
 
   /// taskId ⇒ (معرف القائمة، ترتيب العنصر في المصدر).
   final Map<String, (String playlistId, int order)> _members = {};
@@ -35,6 +42,7 @@ class BatchPlaylistCollector {
     }
     _remaining[playlist.id] = taskIds.length;
     _added[playlist.id] = 0;
+    onChanged?.call();
     return playlist;
   }
 
@@ -57,6 +65,7 @@ class BatchPlaylistCollector {
       _added[playlistId] = (_added[playlistId] ?? 0) + 1;
     }
     await _closeIfDone(playlistId);
+    onChanged?.call();
   }
 
   /// يُنادى عند فشل/إلغاء عضو دفعة — لا يُضاف شيء لكن العدّ يتقدم.
@@ -64,6 +73,7 @@ class BatchPlaylistCollector {
     final member = _members.remove(taskId);
     if (member == null) return;
     await _closeIfDone(member.$1);
+    onChanged?.call();
   }
 
   /// إعادة العنصر لموضعه من المصدر (الإضافة تأتي بترتيب الاكتمال).

@@ -118,6 +118,7 @@ class _BatchScreenState extends ConsumerState<BatchScreen> {
           _selected.toList(),
           _quality ?? Quality.best,
           groupName: _playlistName,
+          saveToDevice: ref.read(settingsProvider).saveBatchToDevice,
         );
     if (count == 0) {
       showMTSnack(context, l10n.noServerTitle, type: MTSnackType.error);
@@ -164,6 +165,22 @@ class _BatchScreenState extends ConsumerState<BatchScreen> {
             youtubeOnly: kind == PlaylistKind.youtube,
             onChanged: (q) => setState(() => _quality = q),
           ),
+        // **الألبوم على الجهاز** (طلب المالك 2026-09-03): Super يضيف
+        // للسيرفر ولا يسحب (ر-2)، فكانت القائمة كلها تبقى هناك. المفتاح
+        // يطبّق «إتاحة دون اتصال» (م-17) على كل عضو يكتمل، ويُحفظ اختياره
+        // فلا يُعاد ضبطه مع كل ألبوم.
+        SwitchListTile(
+          value: ref.watch(
+              settingsProvider.select((s) => s.saveBatchToDevice)),
+          onChanged: (value) => ref
+              .read(settingsProvider.notifier)
+              .setSaveBatchToDevice(value),
+          dense: true,
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: MTSpace.pagePad),
+          secondary: const Icon(Icons.save_alt_rounded),
+          title: Text(context.mtl.batchSaveToDevice),
+        ),
         Expanded(
           child: ListView.builder(
             padding: const EdgeInsets.fromLTRB(

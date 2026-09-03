@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mt_core/mt_core.dart';
 import 'package:mt_media/mt_media.dart';
 
+import 'features/batch/batch_offline_saver.dart';
 import 'features/settings/settings_state.dart';
 import 'features/shared/stores.dart';
 
@@ -59,7 +60,14 @@ final playlistsStoreProvider = Provider((ref) => PlaylistsStore(
 /// تجميع تحميل القائمة في قائمة محفوظة واحدة (بلاغ المالك 2026-09-02).
 final batchCollectorProvider = Provider((ref) => BatchPlaylistCollector(
       playlists: ref.watch(playlistsStoreProvider),
+      onChanged: () =>
+          ref.read(playlistsRevisionProvider.notifier).state++,
     ));
+
+/// **عدّاد يُبطل تخبئة القوائم** حين تُكتب من خارج شاشتها. بلا هذا كانت
+/// القائمة المُجمَّعة تلقائياً تبقى غير مرئية حتى إعادة تشغيل التطبيق
+/// (مثبت على المحاكي 2026-09-03: الملف على القرص صحيح والشاشة فارغة).
+final playlistsRevisionProvider = StateProvider<int>((ref) => 0);
 
 /// محرك Super: إضافة للسيرفر فقط (ر-2) — لا سحب ولا حذف تلقائي.
 final downloadEngineProvider = Provider<DownloadEngine?>((ref) {
@@ -75,6 +83,8 @@ final downloadEngineProvider = Provider<DownloadEngine?>((ref) {
         throw StateError('Super لا يسحب من خط الإضافة'),
     onCompleted: (task) {
       collector.onFinished(task);
+      // إن طلب المالك «احفظ على الجهاز» لهذه الدفعة (م-17 على كل عضو).
+      ref.read(batchOfflineSaverProvider).onFinished(task);
       ref.invalidate(historyProvider);
     },
     // م-32: **أول موصل سجل في Super إطلاقاً** — كانت شاشة السجلات تقرأ
@@ -111,6 +121,7 @@ final batchDropWatcherProvider = Provider<void>((ref) {
       if (task.phase == TaskPhase.failed ||
           task.phase == TaskPhase.cancelled) {
         unawaited(collector.onDropped(task.id));
+        ref.read(batchOfflineSaverProvider).forget(task.id);
       }
     }
   });

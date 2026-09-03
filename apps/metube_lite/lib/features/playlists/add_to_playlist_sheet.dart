@@ -58,19 +58,7 @@ class _AddToPlaylistSheet extends ConsumerWidget {
                     shrinkWrap: true,
                     children: [
                       for (final playlist in all)
-                        ListTile(
-                          contentPadding: EdgeInsets.zero,
-                          leading: Icon(
-                            playlist.pinned
-                                ? Icons.push_pin_rounded
-                                : Icons.queue_music_rounded,
-                            color: MTThemeX.of(context).palette.ink2,
-                          ),
-                          title: Text(playlist.name),
-                          subtitle: Text(
-                              l10n.queueItemsCount(playlist.items.length)),
-                          onTap: () => _add(context, ref, playlist),
-                        ),
+                        _tile(context, ref, playlist),
                       if (all.isEmpty)
                         Padding(
                           padding: const EdgeInsets.all(MTSpace.lg),
@@ -96,8 +84,41 @@ class _AddToPlaylistSheet extends ConsumerWidget {
     );
   }
 
+  /// **علامة «مضاف مسبقاً»** (بلاغ المالك 2026-09-03): كانت الورقة تعرض
+  /// كل القوائم متشابهة، فلا سبيل لمعرفة أين وضعتَ المقطع قبل قليل إلا
+  /// بفتح كل قائمة. المخزن يمنع التكرار أصلاً — الناقص كان الإخبار.
+  Widget _tile(BuildContext context, WidgetRef ref, SavedPlaylist playlist) {
+    final l10n = context.mtl;
+    final palette = MTThemeX.of(context).palette;
+    final present = {for (final entry in playlist.items) entry.canonicalUrl};
+    // المعيار: **كل** المحدد موجود — وإلا فللنقرة ما تضيفه.
+    final already = items
+        .every((item) => present.contains(toPlaylistEntry(item).canonicalUrl));
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      leading: Icon(
+        playlist.pinned
+            ? Icons.push_pin_rounded
+            : Icons.queue_music_rounded,
+        color: palette.ink2,
+      ),
+      title: Text(playlist.name),
+      subtitle: Text(already
+          ? l10n.alreadyInPlaylist
+          : l10n.queueItemsCount(playlist.items.length)),
+      trailing: already
+          ? Icon(Icons.check_circle_rounded, color: palette.accent)
+          : null,
+      onTap: () => _add(context, ref, playlist, already: already),
+    );
+  }
+
   Future<void> _add(
-      BuildContext context, WidgetRef ref, SavedPlaylist playlist) async {
+    BuildContext context,
+    WidgetRef ref,
+    SavedPlaylist playlist, {
+    bool already = false,
+  }) async {
     Navigator.pop(context);
     await ref.read(playlistsStoreProvider).addItems(
           playlist.id,
@@ -108,9 +129,11 @@ class _AddToPlaylistSheet extends ConsumerWidget {
     if (context.mounted) {
       showMTSnack(
         context,
-        items.length == 1
-            ? context.mtl.videoAdded
-            : context.mtl.addedToPlaylistCount(items.length),
+        already
+            ? context.mtl.alreadyInPlaylist
+            : (items.length == 1
+                ? context.mtl.videoAdded
+                : context.mtl.addedToPlaylistCount(items.length)),
         type: MTSnackType.success,
       );
     }

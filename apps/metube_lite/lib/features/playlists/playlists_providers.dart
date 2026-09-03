@@ -51,8 +51,11 @@ List<SmartList> buildSmartLists(List<LocalItem> items) {
   ];
 }
 
-final playlistsProvider = FutureProvider<List<SavedPlaylist>>((ref) async =>
-    sortPlaylists(await ref.watch(playlistsStoreProvider).readAll()));
+final playlistsProvider = FutureProvider<List<SavedPlaylist>>((ref) async {
+  // كتابةٌ من خارج هذه الشاشة (تجميع الدفعة) تصل عبر العدّاد.
+  ref.watch(playlistsRevisionProvider);
+  return sortPlaylists(await ref.watch(playlistsStoreProvider).readAll());
+});
 
 final smartListsProvider = Provider<List<SmartList>>((ref) =>
     buildSmartLists(ref.watch(localMediaProvider).value ?? const []));

@@ -73,7 +73,14 @@ final playlistsStoreProvider = Provider((ref) => PlaylistsStore(
 /// تجميع تحميل القائمة في قائمة محفوظة واحدة (بلاغ المالك 2026-09-02).
 final batchCollectorProvider = Provider((ref) => BatchPlaylistCollector(
       playlists: ref.watch(playlistsStoreProvider),
+      onChanged: () =>
+          ref.read(playlistsRevisionProvider.notifier).state++,
     ));
+
+/// **عدّاد يُبطل تخبئة القوائم** حين تُكتب من خارج شاشتها. بلا هذا كانت
+/// القائمة المُجمَّعة تلقائياً تبقى غير مرئية حتى إعادة تشغيل التطبيق
+/// (مثبت على المحاكي 2026-09-03: الملف على القرص صحيح والشاشة فارغة).
+final playlistsRevisionProvider = StateProvider<int>((ref) => 0);
 
 /// محرك Lite: الخط الرباعي كاملاً — يسحب للجهاز ثم **يحذف من السيرفر
 /// تلقائياً** (م-6/4) فيبقى سيرفر العائلة نظيفاً.

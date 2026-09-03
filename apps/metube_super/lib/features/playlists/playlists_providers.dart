@@ -55,8 +55,11 @@ List<SmartList> buildSmartLists(List<LibraryItem> items) {
   ];
 }
 
-final playlistsProvider = FutureProvider<List<SavedPlaylist>>((ref) async =>
-    sortPlaylists(await ref.watch(playlistsStoreProvider).readAll()));
+final playlistsProvider = FutureProvider<List<SavedPlaylist>>((ref) async {
+  // كتابةٌ من خارج هذه الشاشة (تجميع الدفعة) تصل عبر العدّاد.
+  ref.watch(playlistsRevisionProvider);
+  return sortPlaylists(await ref.watch(playlistsStoreProvider).readAll());
+});
 
 /// وسومك بعدادات (م-37/ج).
 final tagCountsProvider = FutureProvider<Map<String, int>>(

@@ -56,19 +56,34 @@ class LibraryActions {
       _ref.read(networkGateProvider).onWifi;
 
   /// «إتاحة دون اتصال» (م-17): سحب بتقدم مع بقاء الأصل على السيرفر.
-  Future<String> makeOffline(LibraryItem item) async {
+  Future<String> makeOffline(LibraryItem item) => pullToDevice(
+        canonicalUrl: item.canonicalUrl,
+        serverFilename: item.serverFilename,
+        title: item.title,
+        thumbnail: item.thumbnail,
+      );
+
+  /// نفس الفعل لعنصر **اكتمل توّاً** ولم يظهر في المكتبة بعد — تجميع
+  /// الدفعة على الجهاز يحتاجه قبل أن يصل `/history` الجديد (طلب المالك
+  /// 2026-09-03: «الألبوم لا يُحمَّل على الجهاز وإنما على السيرفر»).
+  Future<String> pullToDevice({
+    required String canonicalUrl,
+    required String? serverFilename,
+    required String title,
+    String? thumbnail,
+  }) async {
     // **يُرفض صراحةً لا ينتظر**: خط الإضافة في Lite له طابور يصبر فيه
     // العنصر، أما هذا فعل مباشر بنقرة المستخدم — تركه صامتاً «يفكر»
     // بلا نهاية أسوأ من إخباره أن Wi‑Fi هو الشرط.
     if (!canPullNow) throw const NetworkException(wifiOnlyRejection);
-    final filename = item.serverFilename;
+    final filename = serverFilename;
     if (filename == null) throw const UnsafeFilenameException();
     final dir = Directory(superMediaDir);
     await dir.create(recursive: true);
     final savePath =
-        '$superMediaDir/${buildLocalFilename(item.title, serverFilename: filename)}';
+        '$superMediaDir/${buildLocalFilename(title, serverFilename: filename)}';
 
-    _setProgress(item.canonicalUrl, 0);
+    _setProgress(canonicalUrl, 0);
     final String finalPath;
     try {
       // المسار النهائي من `pull` — التصادم يزيحه (خ-3)، وفهرسة المسار
@@ -76,16 +91,14 @@ class LibraryActions {
       finalPath = await Transfer(api: _api).pull(
         serverFilename: filename,
         savePath: savePath,
-        onProgress: (p) => _setProgress(item.canonicalUrl, p),
+        onProgress: (p) => _setProgress(canonicalUrl, p),
       );
     } finally {
-      _clearProgress(item.canonicalUrl);
+      _clearProgress(canonicalUrl);
     }
-    await _ref.read(offlineIndexProvider).put(item.canonicalUrl, finalPath);
-    if (item.thumbnail != null) {
-      await _ref
-          .read(artworkIndexProvider)
-          .put(item.canonicalUrl, item.thumbnail!);
+    await _ref.read(offlineIndexProvider).put(canonicalUrl, finalPath);
+    if (thumbnail != null) {
+      await _ref.read(artworkIndexProvider).put(canonicalUrl, thumbnail);
     }
     _refreshLibrary();
     return finalPath;

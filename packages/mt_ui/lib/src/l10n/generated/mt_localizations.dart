@@ -206,6 +206,12 @@ abstract class MTLocalizations {
   /// **'All downloads finished!'**
   String get allDownloadsFinished;
 
+  /// No description provided for @alreadyInPlaylist.
+  ///
+  /// In en, this message translates to:
+  /// **'Already added'**
+  String get alreadyInPlaylist;
+
   /// No description provided for @allPlatforms.
   ///
   /// In en, this message translates to:
@@ -475,6 +481,12 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'Select at least one item'**
   String get batchNothingSelected;
+
+  /// No description provided for @batchSaveToDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'Save a copy on the device'**
+  String get batchSaveToDevice;
 
   /// No description provided for @batchSelectedOf.
   ///

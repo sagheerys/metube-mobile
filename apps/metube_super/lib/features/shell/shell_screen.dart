@@ -102,6 +102,14 @@ class _ShellScreenState extends ConsumerState<ShellScreen>
     if (!mounted || urls.isEmpty) return;
     widget.navigationShell.goBranch(0);
     if (urls.length == 1) {
+      // **رابط قائمة صريح ⇒ شاشة الدفعي مباشرة** (م-5). مشاركة ألبوم
+      // واحد كانت تفتح ورقة «إضافة رابط» — الشرط كان في مسار الروابط
+      // المتعددة وحده. `watch?v=…&list=…` يبقى على سلوكه: هو فيديو
+      // مفرد بالدرجة الأولى، ويوتيوب يُلحق `list` بمشاركاته كثيراً.
+      if (_isPurePlaylistLink(urls.first)) {
+        GoRouter.of(context).push('/batch', extra: urls.first);
+        return;
+      }
       // «التحميل السريع» يجعل الجودة الافتراضية إعداداً فاعلاً: الرابط
       // المشارَك ينزل فوراً بلا ورقة، والشريط يتيح التراجع.
       if (ref.read(settingsProvider).quickDownload &&
@@ -124,6 +132,11 @@ class _ShellScreenState extends ConsumerState<ShellScreen>
     showMTSnack(context, context.mtl.downloadStarted,
         type: MTSnackType.success);
   }
+
+
+  /// قائمة **بذاتها** لا فيديو داخل قائمة.
+  static bool _isPurePlaylistLink(String url) =>
+      PlaylistDetector.isPlaylist(url) && UrlKit.youtubeVideoId(url) == null;
 
   /// م-2: رابط جاهز بالحافظة ⇒ تنفيذ مباشر عند الضغط.
   void _onFabPressed() {

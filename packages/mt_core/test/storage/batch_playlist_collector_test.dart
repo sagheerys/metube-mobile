@@ -70,6 +70,19 @@ void main() {
     expect(await playlists.readAll(), isEmpty);
   });
 
+  test('كل كتابة تُخبِر الواجهة (وإلا بقيت القائمة غير مرئية)', () async {
+    var notified = 0;
+    final watched = BatchPlaylistCollector(
+      playlists: playlists,
+      onChanged: () => notified++,
+    );
+    await watched.begin('دورة', ['t1', 't2']);
+    expect(notified, 1, reason: 'الإنشاء وحده يستحق إظهار البطاقة');
+    await watched.onFinished(done('t1', 'https://y/1'));
+    await watched.onDropped('t2');
+    expect(notified, 3);
+  });
+
   test('مهمة ليست من الدفعة لا تُضاف لشيء', () async {
     await collector.begin('دورة', ['t1']);
     await collector.onFinished(done('غريب', 'https://y/x'));

@@ -71,6 +71,9 @@ class MTLocalizationsAr extends MTLocalizations {
   String get allDownloadsFinished => 'اكتملت جميع التحميلات!';
 
   @override
+  String get alreadyInPlaylist => 'مضاف مسبقاً';
+
+  @override
   String get allPlatforms => 'كل المنصات';
 
   @override
@@ -216,6 +219,9 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get batchNothingSelected => 'اختر عنصراً واحداً على الأقل';
+
+  @override
+  String get batchSaveToDevice => 'احفظ نسخة على الجهاز';
 
   @override
   String batchSelectedOf(int selected, int total) {
