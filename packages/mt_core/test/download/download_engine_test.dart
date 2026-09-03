@@ -29,6 +29,7 @@ void main() {
     DeletePolicy policy = DeletePolicy.autoDelete,
     int maxPollAttempts = 5,
     void Function(DownloadTask)? onCompleted,
+    bool Function()? compatibleVideo,
   }) =>
       DownloadEngine(
         api: api,
@@ -40,6 +41,7 @@ void main() {
         transfer: Transfer(api: api, backoff: const [Duration.zero, Duration.zero]),
         shortLinkResolver: ShortLinkResolver(redirectStep: (_) async => null),
         onCompleted: onCompleted,
+        compatibleVideo: compatibleVideo,
       );
 
   Future<DownloadTask> awaitFinished(DownloadEngine engine, String taskId) =>
@@ -48,6 +50,34 @@ void main() {
           .timeout(const Duration(seconds: 5));
 
   group('DownloadEngine — الخط الرباعي (§3)', () {
+    // **توافق التشغيل يُسأل عند الإضافة** (بلاغ المالك 2026-09-03) —
+    // كـ`pullGate`: قراءة لحظية فلا يحتاج تبديل الإعداد إعادة بناء.
+    test('compatibleVideo يصل إلى api.add كما تقوله البوابة', () async {
+      for (final answer in [true, false]) {
+        final api = FakeApi(historyScript: [
+          historyWith(),
+          historyWith(done: [doneItem()]),
+        ]);
+        final engine = makeEngine(api, compatibleVideo: () => answer);
+        final task = engine.submit(canonical, Quality.best);
+        await awaitFinished(engine, task.id);
+        expect(api.lastCompatibleVideo, answer);
+        await engine.dispose();
+      }
+    });
+
+    test('بلا بوابة توافق ⇒ false (سلوك ما قبل التغيير)', () async {
+      final api = FakeApi(historyScript: [
+        historyWith(),
+        historyWith(done: [doneItem()]),
+      ]);
+      final engine = makeEngine(api);
+      final task = engine.submit(canonical, Quality.best);
+      await awaitFinished(engine, task.id);
+      expect(api.lastCompatibleVideo, isFalse);
+      await engine.dispose();
+    });
+
     test('نجاح كامل بسياسة Lite: add ← poll ← pull ← delete بالمُقنون',
         () async {
       final api = FakeApi(historyScript: [

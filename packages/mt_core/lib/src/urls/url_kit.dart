@@ -151,11 +151,20 @@ abstract final class UrlKit {
       shorter.isNotEmpty && longer.startsWith('$shorter/');
 
   /// حارس اجتياز المسار لأسماء الملفات القادمة من السيرفر قبل بناء رابط
-  /// `/download/<filename>` — يرفض الفارغ و`..` و`/` و`\`.
+  /// `/download/<filename>` — يرفض الفارغ وفواصل المسار والمكوّنين
+  /// `.` و`..` وحدهما ومحرف NUL.
+  ///
+  /// **`..` داخل الاسم ليست اجتيازاً (بلاغ المالك 2026-09-03).** كان
+  /// الشرط `contains('..')`، وyt-dlp يقتطع العناوين الطويلة بنقاط —
+  /// فكان **كل مقطع طويل العنوان يفشل** بـ«unsafe filename» رغم أن
+  /// السيرفر يخدمه. القياس على سيرفر Lite الحقيقي:
+  /// `…كهرباء.  مدر... [2077436096300945409].mp4` ⇒ **HTTP 206
+  /// video/mp4**. الاجتياز يحتاج فاصل مسار، وهو مرفوض أصلاً.
   static bool isSafeServerFilename(String name) {
     if (name.isEmpty) return false;
-    if (name.contains('..')) return false;
+    if (name == '.' || name == '..') return false;
     if (name.contains('/') || name.contains('\\')) return false;
+    if (name.contains('\u0000')) return false;
     return true;
   }
 

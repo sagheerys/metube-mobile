@@ -127,6 +127,38 @@ void main() {
       expect(body['url'], contains('tiktok.com'));
     });
 
+    // **توافق التشغيل** (بلاغ المالك 2026-09-03: «الريلز تظهر مشوشة»).
+    // مقيس على السيرفر الحقيقي: `format:mp4` وحدها أعطت av1 داخل mp4،
+    // والحقلان معاً أعطيا h264/aac. لذا يُتحقق من **كليهما**.
+    test('توافق التشغيل يرسل download_type+format+codec للفيديو', () async {
+      final (client, adapter) = makeClient((o) => _json('{"status": "ok"}'));
+      await client.add('https://youtu.be/dQw4w9WgXcQ', Quality.best,
+          compatibleVideo: true);
+      final body = json.decode(adapter.requests.single.data as String) as Map;
+      expect(body['format'], 'mp4');
+      expect(body['codec'], 'h264');
+      // **بدونه يُتجاهَل codec** — مقيس على السيرفر الحقيقي مرتين.
+      expect(body['download_type'], 'video');
+    });
+
+    test('توافق التشغيل لا يُرسل مع الصوت', () async {
+      final (client, adapter) = makeClient((o) => _json('{"status": "ok"}'));
+      await client.add('https://youtu.be/dQw4w9WgXcQ', Quality.audio,
+          compatibleVideo: true);
+      final body = json.decode(adapter.requests.single.data as String) as Map;
+      expect(body.containsKey('format'), isFalse);
+      expect(body.containsKey('codec'), isFalse);
+      expect(body.containsKey('download_type'), isFalse);
+      expect(body['quality'], 'audio');
+    });
+
+    test('بلا توافق التشغيل: الجسم كما كان بالضبط', () async {
+      final (client, adapter) = makeClient((o) => _json('{"status": "ok"}'));
+      await client.add('https://youtu.be/dQw4w9WgXcQ', Quality.best);
+      final body = json.decode(adapter.requests.single.data as String) as Map;
+      expect(body.keys.toSet(), {'url', 'quality'});
+    });
+
     test('يوتيوب يحتفظ بالرقمية', () async {
       final (client, adapter) = makeClient((o) => _json('{"status": "ok"}'));
       await client.add('https://youtu.be/dQw4w9WgXcQ', Quality.q720);
@@ -176,7 +208,23 @@ void main() {
           'https://metube.example.com/download/${Uri.encodeComponent('ملف جميل.mp4')}');
     });
 
-    for (final bad in ['', '../secret', 'a/b.mp4', r'a\b.mp4']) {
+    // **العنوان المقتطع بنقاط اسمٌ مشروع (بلاغ المالك 2026-09-03).**
+    // yt-dlp يقصّ العناوين الطويلة بـ«...»، وحارسنا كان يرفض كل اسم
+    // فيه `..` فيفشل المقطع بـ«unsafe filename» — والسيرفر الحقيقي
+    // يخدم هذا الاسم بعينه بـHTTP 206.
+    for (final good in [
+      'كهرباء.  مدر... [2077436096300945409].mp4',
+      'a..b.mp4',
+      'clip....webm',
+    ]) {
+      test('حارس المسار يقبل "$good"', () {
+        final (client, _) = makeClient((o) => _json('{}'));
+        expect(client.downloadUrl(good),
+            'https://metube.example.com/download/${Uri.encodeComponent(good)}');
+      });
+    }
+
+    for (final bad in ['', '.', '..', '../secret', 'a/b.mp4', r'a\b.mp4']) {
       test('حارس المسار يرفض "$bad"', () {
         final (client, _) = makeClient((o) => _json('{}'));
         expect(() => client.downloadUrl(bad),

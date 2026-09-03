@@ -8,7 +8,9 @@ import '../models/quality.dart';
 abstract interface class MeTubeApi {
   Future<void> testConnection({Duration? timeout});
   Future<HistoryResponse> fetchHistory();
-  Future<void> add(String url, Quality quality);
+  /// [compatibleVideo] يطلب **H.264/AAC في mp4** بدل ترك الخادم يختار
+  /// (§2.2) — لا يُرسل مع `audio` أبداً. انظر التنفيذ للسبب المقيس.
+  Future<void> add(String url, Quality quality, {bool compatibleVideo});
   Future<void> delete(List<String> canonicalUrls, {String where});
   String downloadUrl(String serverFilename);
 

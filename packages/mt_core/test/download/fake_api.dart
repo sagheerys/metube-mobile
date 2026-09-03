@@ -38,8 +38,16 @@ class FakeApi implements MeTubeApi {
         call < historyScript.length ? call : historyScript.length - 1];
   }
 
+  /// آخر قيمة وصلت لـ`compatibleVideo` — يتحقق منها اختبار المحرك.
+  bool? lastCompatibleVideo;
+
   @override
-  Future<void> add(String url, Quality quality) async {
+  Future<void> add(
+    String url,
+    Quality quality, {
+    bool compatibleVideo = false,
+  }) async {
+    lastCompatibleVideo = compatibleVideo;
     await beforeAdd?.call();
     adds.add((url, quality.applyRule(url)));
   }

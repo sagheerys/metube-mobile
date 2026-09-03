@@ -38,6 +38,7 @@ class DownloadEngine {
     this.pullToDevice = true,
     this.onCompleted,
     this.pullGate,
+    this.compatibleVideo,
     this.onLog,
   })  : _resolver = shortLinkResolver ?? ShortLinkResolver(),
         _transfer = transfer ?? Transfer(api: api),
@@ -64,6 +65,12 @@ class DownloadEngine {
   /// قبل السحب لا قبل الإضافة بقصد: الغالي هو الملف. والتطبيق هو من
   /// يجيب — mt_core لا يعرف `connectivity_plus` (القاعدة 6).
   final bool Function()? pullGate;
+
+  /// **توافق التشغيل** (بلاغ المالك 2026-09-03): تُسأل عند كل إضافة،
+  /// فتطلب H.264/AAC بدل ما يختاره الخادم (AV1/VP9) — انظر
+  /// [MeTubeApiClient.add]. تُقرأ **لحظة الإضافة** كـ[pullGate] بقصد،
+  /// فتبديل الإعداد لا يستوجب إعادة بناء المحرك.
+  final bool Function()? compatibleVideo;
 
   final ShortLinkResolver _resolver;
   final Transfer _transfer;
@@ -212,7 +219,11 @@ class DownloadEngine {
     // ح-3: نعرف ما كان موجوداً قبلنا كي لا ننسب عملية غيرنا لأنفسنا.
     _snapshots[taskId] = await _matcher.snapshot(task.effectiveUrl);
     _throwIfCancelRequested(taskId);
-    await api.add(resolved, task.quality);
+    await api.add(
+      resolved,
+      task.quality,
+      compatibleVideo: compatibleVideo?.call() ?? false,
+    );
 
     // 2) الاستطلاع حتى الاكتمال أو الخطأ الفوري
     task = _emit(task.copyWith(phase: TaskPhase.polling));

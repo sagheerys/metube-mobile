@@ -120,7 +120,25 @@ void main() {
       expect(UrlKit.isSafeServerFilename('أغنية جميلة.dQw4.mp3'), isTrue);
     });
 
-    for (final bad in ['', '../etc/passwd', 'a/b.mp4', r'a\b.mp4', 'x..y']) {
+    // **`x..y` صار مقبولاً عمداً (بلاغ المالك 2026-09-03).** yt-dlp
+    // يقتطع العناوين الطويلة بـ«...»، فكان الشرط القديم
+    // `contains('..')` يرفض ملفات مشروعة يخدمها السيرفر فعلاً
+    // (مقيس: HTTP 206). الاجتياز يحتاج فاصل مسار، وهو مرفوض أدناه.
+    for (final good in ['x..y', 'مدر... [2077436096300945409].mp4', 'a....b']) {
+      test('يقبل "$good"', () {
+        expect(UrlKit.isSafeServerFilename(good), isTrue);
+      });
+    }
+
+    for (final bad in [
+      '',
+      '.',
+      '..',
+      '../etc/passwd',
+      'a/b.mp4',
+      r'a\b.mp4',
+      'a\u0000b.mp4',
+    ]) {
       test('يرفض "$bad"', () {
         expect(UrlKit.isSafeServerFilename(bad), isFalse);
       });

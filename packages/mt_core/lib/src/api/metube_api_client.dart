@@ -102,14 +102,40 @@ class MeTubeApiClient implements MeTubeApi {
 
   /// §2.2 — إضافة رابط. **قاعدة الجودة تُطبَّق هنا** فلا تفلت رقمية لغير
   /// YouTube مهما كان المنادي.
+  ///
+  /// **توافق التشغيل ([compatibleVideo])** — بلاغ المالك 2026-09-03
+  /// «مقاطع اليوتيوب في الريلز تظهر مشوشة وغير واضحة». القياس على
+  /// سيرفره الحقيقي: `quality:best` وحدها تعطي **VP9 أو AV1 في webm**
+  /// (`av1 1920×1080`، `vp9 480×848`) — وفكّ AV1 عتاديّاً غائب عن أغلب
+  /// الهواتف، فيتولاه فكٌّ برمجي يتخلف عن الإطارات: صورة ممزقة.
+  ///
+  /// و`format:mp4` وحدها **لا تكفي** (مقيس: أعطت av1 داخل mp4).
+  ///
+  /// **و`codec` وحده يُتجاهَل ما لم يُرسل `download_type` معه** — مقيس
+  /// مرتين: بدونه يعود السجل بـ`codec:auto` وملف av1؛ ومعه بـ`codec:h264`
+  /// وملف **h264 Main / aac LC**. لذلك تُرسل الثلاثة معاً أو لا شيء،
+  /// وهي نفس الحقول التي ترسلها واجهة MeTube نفسها.
+  ///
+  /// **لا يُرسل مع `audio` أبداً**: `format:mp4` على مسار صوتي يغيّر
+  /// وعاء الملف المطلوب.
   @override
-  Future<void> add(String url, Quality quality) async {
+  Future<void> add(
+    String url,
+    Quality quality, {
+    bool compatibleVideo = false,
+  }) async {
+    final applied = quality.applyRule(url);
     final response = await _request(
       () => _dio.post<String>(
         '${config.baseUrl}/add',
         data: jsonEncode({
           'url': url,
-          'quality': quality.applyRule(url).wire,
+          'quality': applied.wire,
+          if (compatibleVideo && applied != Quality.audio) ...{
+            'download_type': 'video',
+            'format': 'mp4',
+            'codec': 'h264',
+          },
         }),
         options: Options(contentType: 'application/json'),
       ),
