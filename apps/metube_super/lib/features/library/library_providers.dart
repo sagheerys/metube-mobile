@@ -3,6 +3,7 @@ import 'package:mt_core/mt_core.dart';
 import 'package:mt_media/mt_media.dart' show MediaShape;
 
 import '../../di.dart';
+import '../shared/async_view.dart';
 import 'library_models.dart';
 
 /// عناصر المكتبة الموحدة: done السيرفر + الفهرس المحلي، مفتاح الدمج
@@ -219,19 +220,35 @@ final libraryViewProvider =
         LibraryViewNotifier.new);
 
 /// القائمة المعروضة بعد التصفية والفرز.
+///
+/// **`whenData` كان يمحو البيانات المحفوظة** (بلاغ المالك 2026-09-03:
+/// «لا يزال هناك وميض في المكتبة أثناء التحميل»). الدالة توزّع على
+/// **نوع** الحالة لا على وجود قيمة، فتعيد عند `AsyncLoading` نسخة
+/// **جديدة فارغة** — فيضيع ما يحتفظ به Riverpod من بيانات سابقة.
+///
+/// والأثر ليس وميضاً خاطفاً: الاستطلاع الحي يُبطل السجل كل ثانيتين
+/// وجلب `/history` لسيرفر فيه 261 عنصراً يستغرق قريباً من ذلك، فيبقى
+/// المزوّد في حالة تحميل شبه متصلة. **قياس بتسجيل شاشة على المحاكي:
+/// المكتبة استُبدلت بدوّارة ١٣ ثانية متصلة أثناء تحميل واحد، ثم عادت
+/// لحظة توقف الاستطلاع.** الترتيب في الشاشة كان سليماً — لكن القيمة
+/// كانت قد أُتلفت قبل أن تصله.
+///
+/// القاعدة الآن صريحة: **قيمة موجودة ⇒ تُعرض · وإلا الخطأ · وإلا
+/// التحميل**.
 final visibleLibraryProvider = Provider<AsyncValue<List<LibraryItem>>>((ref) {
   final options = ref.watch(libraryViewProvider);
-  return ref.watch(libraryItemsProvider).whenData(
-        (items) => buildLibraryView(
-          items,
-          scope: options.scope,
-          type: options.type,
-          query: options.query,
-          tags: options.tags,
-          excludedTags: options.excludedTags,
-          sort: options.sort,
-        ),
-      );
+  return asyncViewOf(
+    ref.watch(libraryItemsProvider),
+    (items) => buildLibraryView(
+      items,
+      scope: options.scope,
+      type: options.type,
+      query: options.query,
+      tags: options.tags,
+      excludedTags: options.excludedTags,
+      sort: options.sort,
+    ),
+  );
 });
 
 /// العنصر الذي يتوهّج الآن: نقرة إشعار أو اكتمال تحميل — يُطفأ من نفسه.

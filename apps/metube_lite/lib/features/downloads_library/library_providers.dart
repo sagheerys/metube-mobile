@@ -5,6 +5,7 @@ import 'package:mt_core/mt_core.dart';
 import 'package:mt_media/mt_media.dart' show MediaShape;
 
 import '../../di.dart';
+import '../shared/async_view.dart';
 import 'local_item.dart';
 
 /// المكتبة المحلية (م-12): **مسح المجلد** هو المصدر — الملف الموجود
@@ -153,18 +154,29 @@ final libraryViewProvider =
         LibraryViewNotifier.new);
 
 /// القائمة المعروضة بعد التصفية والفرز.
+///
+/// **`whenData` كان يمحو البيانات المحفوظة** (بلاغ المالك 2026-09-03،
+/// مُستنسخ على Super بتسجيل شاشة: المكتبة استُبدلت بدوّارة ١٣ ثانية
+/// أثناء تحميل واحد). الدالة توزّع على **نوع** الحالة لا على وجود
+/// قيمة، فتعيد عند `AsyncLoading` نسخة **جديدة فارغة** — فيضيع ما
+/// يحتفظ به Riverpod من بيانات سابقة، ويظهر الترتيب في الشاشة كأنه
+/// بلا أثر. Lite يعيد مسح المجلد بعد كل اكتمال فيصيبه الشيء نفسه.
+///
+/// القاعدة الآن صريحة: **قيمة موجودة ⇒ تُعرض · وإلا الخطأ · وإلا
+/// التحميل**.
 final visibleLibraryProvider = Provider<AsyncValue<List<LocalItem>>>((ref) {
   final options = ref.watch(libraryViewProvider);
-  return ref.watch(localMediaProvider).whenData(
-        (items) => buildLocalLibraryView(
-          items,
-          scope: options.scope,
-          type: options.type,
-          query: options.query,
-          platform: options.platform,
-          sort: options.sort,
-        ),
-      );
+  return asyncViewOf(
+    ref.watch(localMediaProvider),
+    (items) => buildLocalLibraryView(
+      items,
+      scope: options.scope,
+      type: options.type,
+      query: options.query,
+      platform: options.platform,
+      sort: options.sort,
+    ),
+  );
 });
 
 /// عدّادات رقائق المنصات — تُحسب على المكتبة كاملة لا على المعروض،
