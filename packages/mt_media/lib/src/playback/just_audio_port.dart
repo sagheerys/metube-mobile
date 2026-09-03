@@ -31,8 +31,22 @@ class JustAudioPort implements MediaPlayerPort {
         initialPosition: initialPosition,
       );
 
+  /// **مستقبل `play()` في just_audio لا يكتمل إلا حين يتوقف التشغيل** —
+  /// نصّ الحزمة: «يكتمل حين ينتهي التشغيل أو يُوقَف». فانتظاره يعني
+  /// انتظار المقطع كله (بلاغ المالك 2026-09-03):
+  ///
+  /// «متابعة صوتاً» كانت تعلّق شاشة الفيديو فلا تُغلق مهما انتظرت،
+  /// **ثم** يُنفَّذ `pop` المؤجل عند إيقاف الصوت — وقد غادر المستخدم
+  /// الشاشة بطريق آخر — فيُسقط الغلاف نفسه: **شاشة سوداء**.
+  ///
+  /// عقد [MediaPlayerPort.play] هو «أصدر أمر التشغيل»، لا «شغّل حتى
+  /// النهاية». الخطأ يُحوَّل إلى مجرى الأخطاء فيتخطّى المعالجُ العنصر.
   @override
-  Future<void> play() => _player.play();
+  Future<void> play() async {
+    unawaited(_player.play().catchError((Object error) {
+      if (!_errors.isClosed) _errors.add(error);
+    }));
+  }
 
   @override
   Future<void> pause() => _player.pause();

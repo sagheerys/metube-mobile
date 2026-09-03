@@ -143,7 +143,15 @@ class MTVideoScreen extends StatelessWidget {
   Future<void> _askContinueAsAudio(BuildContext context) async {
     final item = session.current;
     final navigator = Navigator.of(context);
-    if (item == null) return navigator.pop();
+    // **لا نُسقط إلا صفحتنا** (بلاغ المالك 2026-09-03): النقل إلى الصوت
+    // قد يطول، وقد يكون المستخدم غادر بطريق آخر خلاله — فـ`pop()` عمياء
+    // بعده تُسقط **الغلاف نفسه** فلا يبقى شيء: شاشة سوداء.
+    final route = ModalRoute.of(context);
+    void popSelf() {
+      if (route == null || route.isCurrent) navigator.pop();
+    }
+
+    if (item == null) return popSelf();
     final position = session.position;
     await session.savePosition();
     if (!context.mounted) return;
@@ -167,7 +175,7 @@ class MTVideoScreen extends StatelessWidget {
       ),
     );
     if (choice == true) await onContinueAsAudio?.call(item, position);
-    navigator.pop();
+    popSelf();
   }
 }
 

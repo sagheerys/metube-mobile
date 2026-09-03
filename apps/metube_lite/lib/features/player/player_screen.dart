@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -145,20 +147,30 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
   }) async {
     final session = ref.read(videoSessionProvider);
     final handler = ref.read(audioHandlerProvider);
+    final positions = ref.read(playbackPositionsProvider);
+    // **كل ما يخصّ الجلسة يُقرأ الآن** — بعد الإغلاق تُصرَّف (autoDispose)
+    // فتصير `duration` عدماً و`ref.read` عليها خطأً (العطل ط-5).
     final ordered = session.orderedItems;
+    final playlistId = session.playlistId;
+    final duration = session.duration;
     final index =
         ordered.indexWhere((i) => i.canonicalUrl == item.canonicalUrl);
     // **قبل** بدء الصوت: الفيديو كان يستمر طوال تحميل المصدر الصوتي
     // فيُسمع المقطع مرتين (خلل مصطاد — يطول على شبكة بطيئة).
     await session.pause();
-    await ref
-        .read(playbackPositionsProvider)
-        .save(item.canonicalUrl, position, duration: session.duration);
-    await handler.playItems(
-      ordered,
-      startIndex: index < 0 ? 0 : index,
-      playlistId: session.playlistId,
-    );
+    await positions.save(item.canonicalUrl, position, duration: duration);
+    // **يُسلَّم للخلفية هنا** (بلاغ المالك 2026-09-03): ما بقي لا يمسّ
+    // الجلسة إطلاقاً، وانتظار تحميل المصدر — ثوانٍ على ملف كبير — كان
+    // يجمّد الشاشة فتبدو وكأنها لم تستجب للزر.
+    unawaited(handler
+        .playItems(
+          ordered,
+          startIndex: index < 0 ? 0 : index,
+          playlistId: playlistId,
+        )
+        .catchError((Object error) => unawaited(ref
+            .read(loggerProvider)
+            .error('continue as audio failed: $error', tag: 'playback'))));
     if (pop && mounted) context.pop();
   }
 }

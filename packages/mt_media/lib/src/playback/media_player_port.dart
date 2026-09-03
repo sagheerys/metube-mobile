@@ -10,6 +10,11 @@ enum MediaPlaybackState { idle, loading, buffering, ready, completed }
 /// قابلاً للاستبدال في مكان واحد.
 abstract interface class MediaPlayerPort {
   Future<void> setSource(PlaybackSource source, {Duration initialPosition});
+
+  /// **عقدها «أصدر أمر التشغيل» لا «شغّل حتى النهاية»** — يكتمل
+  /// مستقبلها حين يُقبل الأمر. حزمة `just_audio` تفعل العكس (مستقبلها
+  /// يكتمل عند التوقف)، فتغليفها هو ما يحفظ هذا العقد. كسرُه علّق شاشة
+  /// الفيديو وأسقط الغلاف لاحقاً (بلاغ المالك 2026-09-03).
   Future<void> play();
   Future<void> pause();
   Future<void> stop();
