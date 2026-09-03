@@ -16,6 +16,7 @@ class LiteSettings {
     this.quickDownload = false,
     this.wifiOnly = false,
     this.autoRetry = true,
+    this.compatiblePlayback = true,
     this.themeMode = ThemeMode.system,
     this.localeCode,
   });
@@ -34,6 +35,12 @@ class LiteSettings {
 
   /// إعادة ما فشل بسبب الشبكة عند عودتها (لا ما رفضه الخادم).
   final bool autoRetry;
+
+  /// **أفضل توافق للتشغيل (H.264/AAC)** — بلاغ المالك 2026-09-03.
+  /// مقيس على سيرفره: `quality:best` وحدها تعطي VP9/AV1 في webm، وفكّ
+  /// AV1 عتادياً غائب عن أغلب الهواتف فتظهر الصورة ممزقة. مفعّل
+  /// افتراضياً؛ إطفاؤه يتيح أعلى دقة على حساب التوافق.
+  final bool compatiblePlayback;
   final ThemeMode themeMode;
 
   /// null = لغة النظام (كشف أول تشغيل — م-30).
@@ -54,6 +61,7 @@ class LiteSettings {
     bool? quickDownload,
     bool? wifiOnly,
     bool? autoRetry,
+    bool? compatiblePlayback,
     ThemeMode? themeMode,
     String? localeCode,
   }) =>
@@ -65,6 +73,7 @@ class LiteSettings {
         quickDownload: quickDownload ?? this.quickDownload,
         wifiOnly: wifiOnly ?? this.wifiOnly,
         autoRetry: autoRetry ?? this.autoRetry,
+        compatiblePlayback: compatiblePlayback ?? this.compatiblePlayback,
         themeMode: themeMode ?? this.themeMode,
         localeCode: localeCode ?? this.localeCode,
       );
@@ -81,6 +90,8 @@ class LiteSettings {
       quickDownload: await store.getBool('quick_download_enabled') ?? false,
       wifiOnly: await store.getBool('wifi_only_downloads') ?? false,
       autoRetry: await store.getBool('auto_retry_downloads') ?? true,
+      compatiblePlayback:
+          await store.getBool('compatible_playback') ?? true,
       themeMode: ThemeMode.values.firstWhere(
         (m) => m.name == themeName,
         orElse: () => ThemeMode.system,
@@ -153,6 +164,11 @@ class SettingsNotifier extends Notifier<LiteSettings> {
   Future<void> setAutoRetry(bool enabled) async {
     await _mutex.run(() => _store.setBool('auto_retry_downloads', enabled));
     state = state.copyWith(autoRetry: enabled);
+  }
+
+  Future<void> setCompatiblePlayback(bool enabled) async {
+    await _mutex.run(() => _store.setBool('compatible_playback', enabled));
+    state = state.copyWith(compatiblePlayback: enabled);
   }
 
   Future<void> setThemeMode(ThemeMode mode) async {

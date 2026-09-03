@@ -213,6 +213,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             value: settings.autoRetry,
             onChanged: ref.read(settingsProvider.notifier).setAutoRetry,
           ),
+          _switchTile(
+            title: l10n.compatiblePlayback,
+            subtitle: l10n.compatiblePlaybackHelp,
+            value: settings.compatiblePlayback,
+            onChanged:
+                ref.read(settingsProvider.notifier).setCompatiblePlayback,
+          ),
           const SizedBox(height: MTSpace.lg),
           Text(l10n.theme, style: Theme.of(context).textTheme.titleSmall),
           const SizedBox(height: MTSpace.xs),

@@ -106,6 +106,9 @@ final downloadEngineProvider = Provider<DownloadEngine?>((ref) {
       if (!ref.read(settingsProvider).wifiOnly) return true;
       return ref.read(networkGateProvider).onWifi;
     },
+    // بلاغ المالك 2026-09-03: يوتيوب «الأفضل» يعطي AV1/VP9 فيظهر المقطع
+    // مشوشاً على الهواتف — هذا يطلب H.264/AAC بدلها.
+    compatibleVideo: () => ref.read(settingsProvider).compatiblePlayback,
   );
   ref.onDispose(engine.dispose);
   return engine;

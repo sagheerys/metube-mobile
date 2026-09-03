@@ -87,6 +87,9 @@ final downloadEngineProvider = Provider<DownloadEngine?>((ref) {
       ref.read(batchOfflineSaverProvider).onFinished(task);
       ref.invalidate(historyProvider);
     },
+    // بلاغ المالك 2026-09-03: يوتيوب «الأفضل» يعطي AV1/VP9 فيظهر المقطع
+    // مشوشاً على الهواتف — هذا يطلب H.264/AAC بدلها.
+    compatibleVideo: () => ref.read(settingsProvider).compatiblePlayback,
     // م-32: **أول موصل سجل في Super إطلاقاً** — كانت شاشة السجلات تقرأ
     // ملفاً لا يكتب فيه أحد، فتظهر فارغة دائماً (بلاغ المالك 2026-09-02).
     onLog: (message) => unawaited(logger.log(message, tag: 'download')),
