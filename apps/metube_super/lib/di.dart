@@ -5,6 +5,7 @@ import 'package:mt_core/mt_core.dart';
 import 'package:mt_media/mt_media.dart';
 
 import 'features/batch/batch_offline_saver.dart';
+import 'features/settings/auto_backup.dart';
 import 'features/settings/settings_state.dart';
 import 'features/shared/stores.dart';
 
@@ -45,6 +46,10 @@ final offlineIndexProvider = Provider((ref) => OfflineIndex(
 final tagsIndexProvider = Provider((ref) => TagsIndex(
       store: ref.watch(keyValueStoreProvider),
       mutex: ref.watch(prefsMutexProvider),
+      // **نقطة اختناق واحدة للنسخة التلقائية** (2026-09-04): كل كتابة
+      // وسم — من أي شاشة — تطلب نسخة، فلا تُنسى شاشة.
+      onChanged: () =>
+          unawaited(ref.read(autoBackupProvider).requestBackup()),
     ));
 
 final artworkIndexProvider = Provider((ref) => ArtworkIndex(
@@ -55,6 +60,10 @@ final artworkIndexProvider = Provider((ref) => ArtworkIndex(
 final playlistsStoreProvider = Provider((ref) => PlaylistsStore(
       store: ref.watch(keyValueStoreProvider),
       mutex: ref.watch(prefsMutexProvider),
+      // **نقطة اختناق واحدة للنسخة التلقائية** (2026-09-04): كل كتابة
+      // قوائم — من أي شاشة — تطلب نسخة، فلا تُنسى شاشة.
+      onChanged: () =>
+          unawaited(ref.read(autoBackupProvider).requestBackup()),
     ));
 
 /// تجميع تحميل القائمة في قائمة محفوظة واحدة (بلاغ المالك 2026-09-02).

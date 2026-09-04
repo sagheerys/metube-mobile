@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -6,6 +7,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../di.dart';
+import '../settings/auto_backup.dart';
 import '../home/network_gate.dart';
 import 'library_models.dart';
 import 'library_providers.dart';
@@ -38,6 +40,10 @@ class LibraryActions {
   void _refreshLibrary() {
     _ref.invalidate(historyProvider);
     _ref.invalidate(libraryItemsProvider);
+    // **نسخة تلقائية بعد كل تغيير بيانات** (أُضيف 2026-09-04): كان لايت
+    // وحده ينسخ تلقائياً، وبيانات سوبر — الوسوم والقوائم على مئات
+    // العناصر — لا يمكن إعادة تحميلها من أي مكان.
+    unawaited(_ref.read(autoBackupProvider).requestBackup());
   }
 
   /// م-36: المفضلة وسم نظامي — تدخل النسخ الاحتياطي تلقائياً.
@@ -45,6 +51,7 @@ class LibraryActions {
     final tags = _ref.read(tagsIndexProvider);
     await tags.toggleTag(canonicalUrl, MTConstants.favoritesSystemTag);
     _ref.invalidate(libraryItemsProvider);
+    unawaited(_ref.read(autoBackupProvider).requestBackup());
     return (await tags.tagsOf(canonicalUrl))
         .contains(MTConstants.favoritesSystemTag);
   }

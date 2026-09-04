@@ -293,7 +293,7 @@ abstract class MTLocalizations {
   /// No description provided for @autoBackupNote.
   ///
   /// In en, this message translates to:
-  /// **'Saved automatically after every change to Downloads/MeTube_Lite'**
+  /// **'A backup is written automatically after every change — the last 7 are kept'**
   String get autoBackupNote;
 
   /// No description provided for @autoBuilt.
@@ -407,7 +407,7 @@ abstract class MTLocalizations {
   /// No description provided for @backupNote.
   ///
   /// In en, this message translates to:
-  /// **'Includes playlists, tags, offline index, artwork & settings (plus username). The password is never backed up. Keep your backup key safe — it\'s required to restore on another device.'**
+  /// **'Includes playlists, tags, the offline index, artwork links and settings. Passwords and usernames are never backed up, and media files are not included. Backups are plain text — anyone who opens the file can read it.'**
   String get backupNote;
 
   /// No description provided for @backupNow.
@@ -1369,6 +1369,72 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'In playlists'**
   String get inPlaylists;
+
+  /// No description provided for @backupsKept.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} backups kept'**
+  String backupsKept(int count);
+
+  /// No description provided for @lastBackup.
+  ///
+  /// In en, this message translates to:
+  /// **'Last backup {when}'**
+  String lastBackup(String when);
+
+  /// No description provided for @noBackupsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No backups yet'**
+  String get noBackupsYet;
+
+  /// No description provided for @restoreFromBackupSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick one of the saved backups, or a file'**
+  String get restoreFromBackupSubtitle;
+
+  /// No description provided for @exportShare.
+  ///
+  /// In en, this message translates to:
+  /// **'Export & share'**
+  String get exportShare;
+
+  /// No description provided for @exportShareSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'A dated copy to send or keep elsewhere'**
+  String get exportShareSubtitle;
+
+  /// No description provided for @pickAnotherFile.
+  ///
+  /// In en, this message translates to:
+  /// **'From another file…'**
+  String get pickAnotherFile;
+
+  /// No description provided for @pickAnotherFileSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'A backup from another phone or an older version'**
+  String get pickAnotherFileSubtitle;
+
+  /// No description provided for @migrationSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Migration'**
+  String get migrationSection;
+
+  /// No description provided for @importLegacyKey.
+  ///
+  /// In en, this message translates to:
+  /// **'Import an old backup key'**
+  String get importLegacyKey;
+
+  /// No description provided for @importLegacyKeySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Only needed to open an encrypted backup from an older version'**
+  String get importLegacyKeySubtitle;
 
   /// No description provided for @invalidUrl.
   ///

@@ -21,8 +21,12 @@ Future<void> maybeOfferAutoRestore(BuildContext context, WidgetRef ref) async {
   if (ref.read(settingsProvider).isConfigured) return;
 
   final backup = ref.read(autoBackupProvider);
-  final state = await backup.inspect();
-  if (state == AutoRestoreState.none) return;
+  // **أحدث نسخة من الدوّار** (قرار المالك 2026-09-04): كانت نسخة واحدة
+  // بملف ثابت، وقد تكون **يتيمة** لأن مفتاحها مات مع إعادة التثبيت.
+  // النسخ الآن نصّية فلا يتيم فيها، ومؤرَّخة فيمكن الرجوع لأقدم منها
+  // من شاشة النسخ إن كانت الأحدث هي المشكلة.
+  final latest = await backup.latest();
+  if (latest == null) return;
 
   await ref
       .read(prefsMutexProvider)
@@ -50,7 +54,7 @@ Future<void> maybeOfferAutoRestore(BuildContext context, WidgetRef ref) async {
   if (accepted != true || !context.mounted) return;
 
   try {
-    await backup.restore();
+    await backup.restore(latest);
     await ref.read(settingsProvider.notifier).reloadFromStore();
     ref.invalidate(localMediaProvider);
     ref.invalidate(playlistsProvider);
@@ -58,37 +62,9 @@ Future<void> maybeOfferAutoRestore(BuildContext context, WidgetRef ref) async {
       showMTSnack(context, l10n.autoRestoreSuccess,
           type: MTSnackType.success);
     }
-  } on BackupKeyMismatchException {
-    // الفخ الموروث: المفتاح ضاع مع إعادة التثبيت ⇒ الملف لا يُفك أبداً.
-    if (context.mounted) await _offerOrphanReset(context, ref, backup);
   } catch (_) {
     if (context.mounted) {
       showMTSnack(context, l10n.restoreFailed, type: MTSnackType.error);
     }
   }
-}
-
-Future<void> _offerOrphanReset(
-    BuildContext context, WidgetRef ref, AutoBackup backup) async {
-  final l10n = context.mtl;
-  final reset = await showDialog<bool>(
-    context: context,
-    builder: (dialogContext) => AlertDialog(
-      title: Text(l10n.backupOrphaned),
-      content: Text(l10n.backupOrphanedMessage),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(dialogContext, false),
-          child: Text(l10n.cancel),
-        ),
-        FilledButton(
-          onPressed: () => Navigator.pop(dialogContext, true),
-          child: Text(l10n.resetBackup),
-        ),
-      ],
-    ),
-  );
-  if (reset != true) return;
-  await backup.deleteFile();
-  if (context.mounted) showMTSnack(context, l10n.backupReset);
 }

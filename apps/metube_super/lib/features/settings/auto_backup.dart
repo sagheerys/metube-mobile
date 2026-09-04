@@ -4,19 +4,19 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mt_core/mt_core.dart';
 
 import '../../di.dart';
-import '../downloads_library/local_item.dart';
+import '../library/library_actions.dart' show superMediaDir;
 
 /// مجلد النسخ داخل مجلد وسائط التطبيق (§5.3).
-const liteBackupDir = '$liteMediaDir/backups';
+const superBackupDir = '$superMediaDir/backups';
 
 /// بادئة أسماء النسخ — **جديدة عمداً** (طلب المالك 2026-09-04): الاسم
-/// القديم `metube_lite_backup.json` يملكه تثبيت سابق، وأندرويد 11+
+/// القديم `metube_super_backup.json` يملكه تثبيت سابق، وأندرويد 11+
 /// يمنع الكتابة فوقه (`errno 13`).
-const liteBackupPrefix = 'metube_lite';
+const superBackupPrefix = 'metube_super';
 
 final backupRotationProvider = Provider((ref) => BackupRotation(
-      directory: liteBackupDir,
-      prefix: liteBackupPrefix,
+      directory: superBackupDir,
+      prefix: superBackupPrefix,
     ));
 
 final autoBackupProvider = Provider((ref) => AutoBackup(
@@ -25,7 +25,10 @@ final autoBackupProvider = Provider((ref) => AutoBackup(
       logger: ref.watch(loggerProvider),
     ));
 
-/// م-31: نسخة تلقائية بعد كل تغيير بيانات + استعادة بعد إعادة التثبيت.
+/// م-31 (سوبر — أُضيف 2026-09-04): نسخة تلقائية بعد كل تغيير بيانات.
+///
+/// كان لايت وحده ينسخ تلقائياً، بينما بيانات سوبر (الوسوم والقوائم على
+/// مئات العناصر) أثمن ولا يمكن إعادة تحميلها.
 ///
 /// **الفخ الذي زال** (قرار المالك 2026-09-04): كانت النسخة مشفّرة
 /// بمفتاح يعيش في التخزين الآمن، فإلغاء التثبيت أو «مسح البيانات» يمحوه

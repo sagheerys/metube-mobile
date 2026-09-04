@@ -3,7 +3,7 @@ import 'url_keyed_index.dart';
 /// فهرس الوسوم (Super — م-26): canonicalUrl → قائمة وسوم المستخدم.
 /// مفتاح prefs: `tags_index` (§5.1). حذف وسم لا يحذف الوسائط أبداً.
 final class TagsIndex extends UrlKeyedIndex<List<String>> {
-  TagsIndex({required super.store, required super.mutex})
+  TagsIndex({required super.store, required super.mutex, super.onChanged})
       : super(prefsKey: 'tags_index');
 
   @override

@@ -123,7 +123,7 @@ class MTLocalizationsEn extends MTLocalizations {
 
   @override
   String get autoBackupNote =>
-      'Saved automatically after every change to Downloads/MeTube_Lite';
+      'A backup is written automatically after every change — the last 7 are kept';
 
   @override
   String get autoBuilt => 'Automatic';
@@ -185,7 +185,7 @@ class MTLocalizationsEn extends MTLocalizations {
 
   @override
   String get backupNote =>
-      'Includes playlists, tags, offline index, artwork & settings (plus username). The password is never backed up. Keep your backup key safe — it\'s required to restore on another device.';
+      'Includes playlists, tags, the offline index, artwork links and settings. Passwords and usernames are never backed up, and media files are not included. Backups are plain text — anyone who opens the file can read it.';
 
   @override
   String get backupNow => 'Back up now';
@@ -718,6 +718,46 @@ class MTLocalizationsEn extends MTLocalizations {
 
   @override
   String get inPlaylists => 'In playlists';
+
+  @override
+  String backupsKept(int count) {
+    return '$count backups kept';
+  }
+
+  @override
+  String lastBackup(String when) {
+    return 'Last backup $when';
+  }
+
+  @override
+  String get noBackupsYet => 'No backups yet';
+
+  @override
+  String get restoreFromBackupSubtitle =>
+      'Pick one of the saved backups, or a file';
+
+  @override
+  String get exportShare => 'Export & share';
+
+  @override
+  String get exportShareSubtitle => 'A dated copy to send or keep elsewhere';
+
+  @override
+  String get pickAnotherFile => 'From another file…';
+
+  @override
+  String get pickAnotherFileSubtitle =>
+      'A backup from another phone or an older version';
+
+  @override
+  String get migrationSection => 'Migration';
+
+  @override
+  String get importLegacyKey => 'Import an old backup key';
+
+  @override
+  String get importLegacyKeySubtitle =>
+      'Only needed to open an encrypted backup from an older version';
 
   @override
   String get invalidUrl => 'Enter a valid link';

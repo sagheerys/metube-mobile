@@ -13,12 +13,12 @@
     <!-- فخ §6.2: Dio يتجاوز قيد cleartext وExoPlayer لا — سيرفر المالك
          محلي بـ http، لذلك Super يسمح cleartext عاماً (Lite يقيّده
          بالنطاقات الخاصة في المرحلة 7). بدونه: التحميل يعمل والبث يفشل. -->
+    <!-- نسخ أندرويد التلقائي: مفعَّل، لكن **بلا ملف التخزين الآمن**
+         (انظر res/xml/backup_rules.xml — عطل كامن كُشف 2026-09-04). -->
     <application
         android:label="MeTube Super"
         android:name="${applicationName}"
         android:usesCleartextTraffic="true"
-        <!-- نسخ أندرويد التلقائي: مفعَّل، لكن **بلا ملف التخزين الآمن**
-             (انظر res/xml/backup_rules.xml — عطل كامن كُشف 2026-09-04). -->
         android:allowBackup="true"
         android:fullBackupContent="@xml/backup_rules"
         android:dataExtractionRules="@xml/data_extraction_rules"

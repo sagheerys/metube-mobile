@@ -19,12 +19,12 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="28"/>
 
+    <!-- نسخ أندرويد التلقائي: مفعَّل، لكن **بلا ملف التخزين الآمن**
+         (انظر res/xml/backup_rules.xml — عطل كامن كُشف 2026-09-04). -->
     <application
         android:label="MeTube Lite"
         android:name="${applicationName}"
         android:networkSecurityConfig="@xml/network_security_config"
-        <!-- نسخ أندرويد التلقائي: مفعَّل، لكن **بلا ملف التخزين الآمن**
-             (انظر res/xml/backup_rules.xml — عطل كامن كُشف 2026-09-04). -->
         android:allowBackup="true"
         android:fullBackupContent="@xml/backup_rules"
         android:dataExtractionRules="@xml/data_extraction_rules"

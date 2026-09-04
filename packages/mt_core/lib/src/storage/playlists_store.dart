@@ -6,12 +6,16 @@ import 'key_value_store.dart';
 /// مخزن القوائم المحفوظة (م-25) تحت مفتاح `saved_playlists` (§5.1) —
 /// كل تعديل داخل [PrefsMutex]، ويقرأ صيغة Lite القديمة (videoPaths) تلقائياً.
 class PlaylistsStore {
-  PlaylistsStore({required this.store, required this.mutex});
+  PlaylistsStore({required this.store, required this.mutex, this.onChanged});
 
   static const String prefsKey = 'saved_playlists';
 
   final KeyValueStore store;
   final PrefsMutex mutex;
+
+  /// **يُنادى بعد كل كتابة ناجحة** — نقطة الاختناق الوحيدة للمخزن.
+  /// يستعملها التطبيق ليطلب نسخة تلقائية بدل نثر النداء في كل شاشة.
+  final void Function()? onChanged;
 
   /// **قراءة دفاعية عنصراً عنصراً (إصلاح خ-1):** كان الالتقاط مقصوراً
   /// على `FormatException`، بينما `SavedPlaylist.fromJson` يرمي
@@ -146,5 +150,6 @@ class PlaylistsStore {
           prefsKey,
           json.encode(all.map((p) => p.toJson()).toList()),
         );
+        onChanged?.call();
       });
 }

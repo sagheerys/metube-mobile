@@ -7,6 +7,7 @@ import 'package:mt_media/mt_media.dart';
 import 'features/downloads_library/download_wiring.dart';
 import 'features/downloads_library/local_item.dart';
 import 'features/home/network_gate.dart';
+import 'features/settings/auto_backup.dart';
 import 'features/settings/settings_state.dart';
 import 'features/shared/stores.dart';
 
@@ -63,11 +64,19 @@ final titleIndexProvider = Provider((ref) => TitleIndex(
 final tagsIndexProvider = Provider((ref) => TagsIndex(
       store: ref.watch(keyValueStoreProvider),
       mutex: ref.watch(prefsMutexProvider),
+      // **نقطة اختناق واحدة للنسخة التلقائية** (2026-09-04): كل كتابة
+      // وسم — من أي شاشة — تطلب نسخة، فلا تُنسى شاشة.
+      onChanged: () =>
+          unawaited(ref.read(autoBackupProvider).requestBackup()),
     ));
 
 final playlistsStoreProvider = Provider((ref) => PlaylistsStore(
       store: ref.watch(keyValueStoreProvider),
       mutex: ref.watch(prefsMutexProvider),
+      // **نقطة اختناق واحدة للنسخة التلقائية** (2026-09-04): كل كتابة
+      // قوائم — من أي شاشة — تطلب نسخة، فلا تُنسى شاشة.
+      onChanged: () =>
+          unawaited(ref.read(autoBackupProvider).requestBackup()),
     ));
 
 /// تجميع تحميل القائمة في قائمة محفوظة واحدة (بلاغ المالك 2026-09-02).

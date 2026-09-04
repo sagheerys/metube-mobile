@@ -125,7 +125,7 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get autoBackupNote =>
-      'تُحفظ نسخة تلقائياً بعد كل تغيير في Downloads/MeTube_Lite';
+      'تُكتب نسخة تلقائياً بعد كل تغيير — ويُحتفظ بآخر ٧ نسخ';
 
   @override
   String get autoBuilt => 'تلقائية';
@@ -188,7 +188,7 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get backupNote =>
-      'يشمل القوائم والوسوم وفهرس عدم الاتصال والأغلفة والإعدادات (واسم المستخدم). لا تُنسخ كلمة المرور أبداً. احفظ مفتاح النسخ بأمان — فهو لازم للاستعادة على جهاز آخر.';
+      'يشمل القوائم والوسوم وفهرس عدم الاتصال وروابط الأغلفة والإعدادات. لا تُنسخ كلمة المرور ولا اسم المستخدم أبداً، ولا تُنسخ ملفات الوسائط. النسخة نصّية غير مشفّرة — من يفتح الملف يقرأه.';
 
   @override
   String get backupNow => 'انسخ الآن';
@@ -716,6 +716,45 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get inPlaylists => 'في قوائم التشغيل';
+
+  @override
+  String backupsKept(int count) {
+    return '$count نسخ محفوظة';
+  }
+
+  @override
+  String lastBackup(String when) {
+    return 'آخر نسخة $when';
+  }
+
+  @override
+  String get noBackupsYet => 'لا توجد نسخ بعد';
+
+  @override
+  String get restoreFromBackupSubtitle => 'اختر من النسخ المحفوظة، أو من ملف';
+
+  @override
+  String get exportShare => 'تصدير ومشاركة';
+
+  @override
+  String get exportShareSubtitle =>
+      'نسخة مؤرَّخة لإرسالها أو حفظها في مكان آخر';
+
+  @override
+  String get pickAnotherFile => 'من ملف آخر…';
+
+  @override
+  String get pickAnotherFileSubtitle => 'نسخة من هاتف آخر أو من إصدار سابق';
+
+  @override
+  String get migrationSection => 'الهجرة';
+
+  @override
+  String get importLegacyKey => 'استيراد مفتاح نسخة قديمة';
+
+  @override
+  String get importLegacyKeySubtitle =>
+      'لازم فقط لفتح نسخة مشفّرة من إصدار سابق';
 
   @override
   String get invalidUrl => 'أدخل رابطاً صالحاً';
