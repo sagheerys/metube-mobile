@@ -87,6 +87,27 @@ void showPlaylistActionsSheet(
               ref.invalidate(playlistsProvider);
             },
           ),
+          // **إزالة المداخل الميتة بضغطة** (بلاغ المالك 2026-09-04:
+          // «حذفتُ الملفات فبقيت في القائمة»). الحذف من داخل التطبيق
+          // صار يشذّب القوائم تلقائياً، وهذا يعالج ما تراكم قبله أو ما
+          // حُذف من خارج التطبيق.
+          // `read` لا `watch`: هذه دالةٌ لا `build`، و`WidgetRef.watch`
+          // خارج البناء يرمي وقت التشغيل ولا يمسكه المحلل.
+          if (ref.read(playlistViewProvider(playlist.id)).value
+              case final PlaylistView view when view.missing.isNotEmpty)
+            ListTile(
+              leading: Icon(Icons.playlist_remove_rounded, color: p.ink2),
+              title: Text(l10n.removeUnavailable(view.missing.length)),
+              onTap: () async {
+                Navigator.pop(sheetContext);
+                for (final key in view.missing) {
+                  await store.removeItem(playlist.id, key);
+                }
+                ref.invalidate(playlistViewProvider(playlist.id));
+                ref.invalidate(playlistItemsProvider(playlist.id));
+                ref.invalidate(playlistsProvider);
+              },
+            ),
           const Divider(),
           ListTile(
             leading: Icon(Icons.delete_outline_rounded, color: p.err),

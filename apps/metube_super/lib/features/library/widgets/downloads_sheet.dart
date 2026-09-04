@@ -128,15 +128,27 @@ class _DownloadsSheet extends ConsumerWidget {
       builder: (context, scrollController) => Padding(
         padding: const EdgeInsets.fromLTRB(
             MTSpace.xl, MTSpace.lg, MTSpace.xl, MTSpace.xxl),
-        child: ListView(
-          controller: scrollController,
+        // **العنوان مثبَّت والقائمة وحدها تمرّر** (بلاغ المالك
+        // 2026-09-04): كان أولَ عنصر في `ListView`، فيمرّ مع المحتوى
+        // ويختفي عند كثرة التحميلات — فتُمرَّر قائمةٌ بلا رأس يقول
+        // ما هي.
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(l10n.activeDownloadsSheet,
                 style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: MTSpace.lg),
-            section(l10n.activeNow, running),
-            section(l10n.queuedSection, queued),
-            section(l10n.needsAttention, failed, error: true),
+            Expanded(
+              child: ListView(
+                controller: scrollController,
+                padding: EdgeInsets.zero,
+                children: [
+                  section(l10n.activeNow, running),
+                  section(l10n.queuedSection, queued),
+                  section(l10n.needsAttention, failed, error: true),
+                ],
+              ),
+            ),
           ],
         ),
       ),

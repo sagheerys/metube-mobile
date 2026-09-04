@@ -726,6 +726,9 @@ class MTLocalizationsEn extends MTLocalizations {
   String get itemOptions => 'Item options';
 
   @override
+  String get itemUnavailable => 'No longer available';
+
+  @override
   String get keyExportFailed => 'Failed to export backup key';
 
   @override
@@ -1176,6 +1179,11 @@ class MTLocalizationsEn extends MTLocalizations {
 
   @override
   String get remove => 'Remove';
+
+  @override
+  String removeUnavailable(int count) {
+    return 'Remove $count unavailable';
+  }
 
   @override
   String get removeFromFavorites => 'Remove from favorites';

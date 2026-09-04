@@ -34,9 +34,24 @@ class BatchPlaylistCollector {
   /// ما أُضيف فعلاً لكل قائمة — لمعرفة الفارغة.
   final Map<String, int> _added = {};
 
-  /// يُنشئ القائمة ويسجّل مهامها. [taskIds] بترتيب المصدر.
+  /// أول موضع لأعضاء هذه الدفعة داخل القائمة — 0 للقائمة الجديدة،
+  /// وطولُ الموجود عند إعادة استعمال قائمة قائمة.
+  final Map<String, int> _base = {};
+
+  /// يُنشئ القائمة — **أو يعيد استعمال القائمة ذات الاسم نفسه** —
+  /// ويسجّل مهامها. [taskIds] بترتيب المصدر.
+  ///
+  /// بلاغ المالك 2026-09-04: «حمّلت القائمة من يوتيوب مرة أخرى فظهرت
+  /// في قائمة جديدة وصار عندي قائمتان». `create` كانت تُنشئ قائمة في
+  /// كل مرة بلا سؤال. الآن: نفس الاسم ⇒ نفس القائمة، والمداخل المكررة
+  /// يمنعها [PlaylistsStore.addItems] بالرابط المُقنون — فإعادة تحميل
+  /// المصدر تُحيي المداخل الميتة بدل أن تستنسخ القائمة.
   Future<SavedPlaylist> begin(String name, List<String> taskIds) async {
-    final playlist = await playlists.create(name);
+    final existing = await playlists.byName(name);
+    final playlist = existing ?? await playlists.create(name);
+    // الترتيب المطلوب يُزاح بما في القائمة أصلاً، وإلا قفز عضو الدفعة
+    // الأول إلى رأس قائمة فيها عشرة عناصر.
+    _base[playlist.id] = existing?.items.length ?? 0;
     for (var i = 0; i < taskIds.length; i++) {
       _members[taskIds[i]] = (playlist.id, i);
     }
@@ -82,7 +97,8 @@ class BatchPlaylistCollector {
     if (playlist == null) return;
     final current = playlist.items.indexWhere((e) => e.canonicalUrl == url);
     if (current < 0) return;
-    final target = order.clamp(0, playlist.items.length - 1);
+    final target =
+        (order + (_base[playlistId] ?? 0)).clamp(0, playlist.items.length - 1);
     if (current != target) {
       await playlists.reorderItem(playlistId, current, target);
     }
@@ -93,7 +109,10 @@ class BatchPlaylistCollector {
     _remaining[playlistId] = left;
     if (left > 0) return;
     _remaining.remove(playlistId);
+    final base = _base.remove(playlistId) ?? 0;
     final added = _added.remove(playlistId) ?? 0;
-    if (added == 0) await playlists.delete(playlistId);
+    // **لا تُحذف قائمة كانت موجودة قبلنا**: الحذف علاجٌ لقائمةٍ أنشأناها
+    // نحن ثم سقط كل أعضائها — لا لقائمة المستخدم التي أضفنا إليها.
+    if (added == 0 && base == 0) await playlists.delete(playlistId);
   }
 }

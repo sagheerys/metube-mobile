@@ -66,10 +66,42 @@ final smartListsProvider = Provider<List<SmartList>>((ref) =>
 /// فتُطابَق بالمسار مباشرة ثم بالاسم المجرد — هكذا تحيا قوائم المالك
 /// الـ18 مدخلاً بعد الاستيراد. ما لم يُطابق يُبنى من بياناته المخبأة
 /// فلا يختفي بصمت.
+/// عناصر القائمة بعد ربطها بالمكتبة، **ومعها مفاتيح ما لم يعد له
+/// وجود**.
+///
+/// بلاغ المالك 2026-09-04: «عند إزالة فيديو من القائمة يظل موجوداً
+/// وغير قابل للتشغيل، أو يشغّل مقطعاً آخر». المدخل غير المطابَق كان
+/// يُعرض كأي عنصر ويدخل طابور التشغيل — فيفشل مصدره ويقفز المشغل
+/// للتالي، فيبدو أن النقرة شغّلت مقطعاً غيره.
+///
+/// **لا يُحذف شيء هنا:** غياب العنصر قد يكون مؤقتاً (مجلد لم يُمسح
+/// بعد، أو سيرفر متعذّر في Super). الغائب يُعلَّم فقط، وتتولى الشاشة
+/// إخراجه من التشغيل وعرض إزالته للمستخدم.
+class PlaylistView {
+  const PlaylistView({required this.items, required this.missing});
+
+  final List<PlaylistItem> items;
+
+  /// مفاتيح المداخل التي لا نسخة لها — بترتيب [items].
+  final Set<String> missing;
+
+  bool isMissing(PlaylistItem item) => missing.contains(item.canonicalUrl);
+
+  /// ما يصلح للتشغيل فعلاً — هو وحده ما يدخل الطابور.
+  List<PlaylistItem> get playable =>
+      [for (final item in items) if (!isMissing(item)) item];
+}
+
 final playlistItemsProvider =
-    FutureProvider.family<List<PlaylistItem>, String>((ref, id) async {
+    FutureProvider.family<List<PlaylistItem>, String>((ref, id) async =>
+        (await ref.watch(playlistViewProvider(id).future)).items);
+
+final playlistViewProvider =
+    FutureProvider.family<PlaylistView, String>((ref, id) async {
   final playlist = await ref.watch(playlistsStoreProvider).byId(id);
-  if (playlist == null) return const [];
+  if (playlist == null) {
+    return const PlaylistView(items: [], missing: {});
+  }
   final library = await ref.watch(localMediaProvider.future);
   final byKey = {for (final item in library) item.key: item};
   final byPath = {for (final item in library) item.path: item};
@@ -84,21 +116,26 @@ final playlistItemsProvider =
     return byKey[entry.canonicalUrl] ?? byPath[entry.canonicalUrl];
   }
 
-  return [
-    for (final entry in playlist.items)
-      if (match(entry) case final LocalItem found)
-        toPlaylistItem(found)
-      else
-        PlaylistItem(
-          canonicalUrl: entry.canonicalUrl.isNotEmpty
-              ? entry.canonicalUrl
-              : (entry.legacyPath ?? ''),
-          title: entry.cachedTitle ??
-              LocalItem.titleFromFilename(
-                  (entry.legacyPath ?? entry.canonicalUrl).split('/').last),
-          artworkUrl: entry.cachedThumb,
-        ),
-  ];
+  final items = <PlaylistItem>[];
+  final missing = <String>{};
+  for (final entry in playlist.items) {
+    if (match(entry) case final LocalItem found) {
+      items.add(toPlaylistItem(found));
+      continue;
+    }
+    final key = entry.canonicalUrl.isNotEmpty
+        ? entry.canonicalUrl
+        : (entry.legacyPath ?? '');
+    missing.add(key);
+    items.add(PlaylistItem(
+      canonicalUrl: key,
+      title: entry.cachedTitle ??
+          LocalItem.titleFromFilename(
+              (entry.legacyPath ?? entry.canonicalUrl).split('/').last),
+      artworkUrl: entry.cachedThumb,
+    ));
+  }
+  return PlaylistView(items: items, missing: missing);
 });
 
 /// مدخل قائمة من عنصر مكتبة — يخبئ العنوان والغلاف لبقاء البطاقة حية.

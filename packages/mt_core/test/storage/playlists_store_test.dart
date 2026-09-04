@@ -15,6 +15,47 @@ void main() {
       PlaylistEntry(canonicalUrl: url, cachedTitle: title);
 
   group('PlaylistsStore', () {
+    // **بلاغ المالك 2026-09-04:** «حذفتُ ملفات القائمة فبقيت في القائمة
+    // ولا تعمل». الحذف كان يشذّب كل الفهارس إلا القوائم.
+    test('removeFromAll يزيل المفتاح من كل القوائم ويعيد العدد', () async {
+      final a = await playlists.create('أ');
+      final b = await playlists.create('ب');
+      await playlists.addItems(a.id, [entry('u1'), entry('u2')]);
+      await playlists.addItems(b.id, [entry('u1'), entry('u3')]);
+
+      expect(await playlists.removeFromAll(['u1']), 2);
+      final all = await playlists.readAll();
+      expect(all.firstWhere((p) => p.id == a.id).items.single.canonicalUrl,
+          'u2');
+      expect(all.firstWhere((p) => p.id == b.id).items.single.canonicalUrl,
+          'u3');
+    });
+
+    test('removeFromAll يطابق مسار Lite القديم أيضاً', () async {
+      final p = await playlists.create('مهاجرة');
+      await playlists.addItems(p.id, [
+        const PlaylistEntry(canonicalUrl: '', legacyPath: '/sd/old.mp4'),
+      ]);
+      expect(await playlists.removeFromAll(['/sd/old.mp4']), 1);
+      expect((await playlists.readAll()).single.items, isEmpty);
+    });
+
+    test('removeFromAll يتجاهل المفاتيح الفارغة فلا يمسح المهاجَرة', () async {
+      final p = await playlists.create('مهاجرة');
+      await playlists.addItems(p.id, [
+        const PlaylistEntry(canonicalUrl: '', legacyPath: '/sd/old.mp4'),
+      ]);
+      expect(await playlists.removeFromAll(['', '  x']), 0);
+      expect((await playlists.readAll()).single.items, hasLength(1));
+    });
+
+    test('byName يجد بالاسم المشذّب ولا يخترع', () async {
+      await playlists.create('دورة');
+      expect((await playlists.byName('  دورة  '))?.name, 'دورة');
+      expect(await playlists.byName('غير موجودة'), isNull);
+      expect(await playlists.byName('   '), isNull);
+    });
+
     test('إنشاء/تسمية/حذف', () async {
       final p = await playlists.create('مفضلاتي');
       expect((await playlists.readAll()).single.name, 'مفضلاتي');

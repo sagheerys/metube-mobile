@@ -27,14 +27,26 @@ String qualityLabel(MTLocalizations l10n, Quality quality) =>
 /// 3. **تراجع لا تأكيد**: حوار تأكيد يُبطل معنى «سريع»؛ بدلاً منه فعل في
 ///    الشريط يلغي المهمة ويفتح الورقة بنفس الرابط.
 ///
-/// يرجع `false` إن لم يستطع التنفيذ (لا خادم) فيتولى المنادي الورقة.
+/// **بوابة الإعداد هنا لا عند المنادي** (بلاغ المالك 2026-09-04:
+/// «التحميل السريع مفعّل على طول رغم إيقافه»). كان الشرط مكتوباً في
+/// مسار المشاركة وحده، بينما زر الإضافة العائم واختصار الأيقونة
+/// ينزّلان فوراً بلا سؤال — فبدا الإعداد بلا أثر. البوابة داخل الدالة
+/// تجعل نسيانها مستحيلاً.
+///
+/// [explicit] لفعل صريح لا لبس فيه (زر «حمّل الآن» في شريط الحافظة،
+/// وبجانبه «اختر الخيارات») — هذا يعمل مهما كان الإعداد.
+///
+/// يرجع `false` إن لم يستطع التنفيذ (الإعداد مطفأ، قائمة، لا خادم)
+/// فيتولى المنادي الورقة.
 bool startQuickDownload(
   BuildContext context,
   WidgetRef ref,
   String url, {
   bool announce = true,
+  bool explicit = false,
 }) {
   if (PlaylistDetector.isPlaylist(url)) return false;
+  if (!explicit && !ref.read(settingsProvider).quickDownload) return false;
   final engine = ref.read(downloadEngineProvider);
   if (engine == null) return false;
 

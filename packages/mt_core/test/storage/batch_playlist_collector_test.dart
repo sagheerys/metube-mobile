@@ -89,4 +89,51 @@ void main() {
     final saved = (await playlists.readAll()).single;
     expect(saved.items, isEmpty);
   });
+
+  // **بلاغ المالك 2026-09-04:** «حمّلت القائمة من يوتيوب مرة أخرى
+  // فظهرت في قائمة جديدة وصار عندي قائمتان». `begin` كانت تُنشئ قائمة
+  // في كل مرة بلا سؤال.
+  group('إعادة تحميل المصدر نفسه', () {
+    test('لا تُستنسخ القائمة — نفس الاسم يعني نفس القائمة', () async {
+      await collector.begin('دورة', ['t1', 't2']);
+      await collector.onFinished(done('t1', 'https://y/1'));
+      await collector.onFinished(done('t2', 'https://y/2'));
+
+      await collector.begin('دورة', ['r1', 'r2']);
+      await collector.onFinished(done('r1', 'https://y/1'));
+      await collector.onFinished(done('r2', 'https://y/2'));
+
+      final all = await playlists.readAll();
+      expect(all, hasLength(1), reason: 'قائمة واحدة لا قائمتان');
+      expect(all.single.items.map((e) => e.canonicalUrl),
+          ['https://y/1', 'https://y/2'],
+          reason: 'ولا مداخل مكررة داخلها');
+    });
+
+    test('الجديد يُلحق بآخر القائمة لا برأسها', () async {
+      await collector.begin('دورة', ['t1']);
+      await collector.onFinished(done('t1', 'https://y/1'));
+
+      await collector.begin('دورة', ['r1', 'r2']);
+      await collector.onFinished(done('r2', 'https://y/3'));
+      await collector.onFinished(done('r1', 'https://y/2'));
+
+      final saved = (await playlists.readAll()).single;
+      expect(saved.items.map((e) => e.canonicalUrl),
+          ['https://y/1', 'https://y/2', 'https://y/3'],
+          reason: 'الترتيب يُزاح بما كان في القائمة قبل الدفعة');
+    });
+
+    test('قائمة كانت موجودة لا تُحذف لو سقط كل أعضاء الدفعة', () async {
+      await collector.begin('دورة', ['t1']);
+      await collector.onFinished(done('t1', 'https://y/1'));
+
+      await collector.begin('دورة', ['r1']);
+      await collector.onDropped('r1');
+
+      final all = await playlists.readAll();
+      expect(all, hasLength(1));
+      expect(all.single.items, hasLength(1));
+    });
+  });
 }

@@ -724,6 +724,9 @@ class MTLocalizationsAr extends MTLocalizations {
   String get itemOptions => 'خيارات العنصر';
 
   @override
+  String get itemUnavailable => 'لم يعد متوفراً';
+
+  @override
   String get keyExportFailed => 'فشل تصدير مفتاح النسخ الاحتياطي';
 
   @override
@@ -1176,6 +1179,11 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get remove => 'إزالة';
+
+  @override
+  String removeUnavailable(int count) {
+    return 'إزالة $count غير متوفر';
+  }
 
   @override
   String get removeFromFavorites => 'أزل من المفضلة';

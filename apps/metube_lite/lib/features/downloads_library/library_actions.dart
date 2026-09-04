@@ -50,6 +50,16 @@ class LibraryActions {
       await _ref.read(playbackPositionsProvider).clear(item.key);
       await _ref.read(mediaStoreProvider).scanFile(item.path);
     }
+    // **والقوائم المحفوظة** (بلاغ المالك 2026-09-04): كل الفهارس كانت
+    // تُشذَّب إلا القوائم، فيبقى مدخل ميت يشغّل غيره عند النقر.
+    await _ref.read(playlistsStoreProvider).removeFromAll([
+      for (final item in items) ...[
+        item.key,
+        item.path,
+        ?item.canonicalUrl,
+      ],
+    ]);
+    _ref.read(playlistsRevisionProvider.notifier).state++;
     _ref.invalidate(localMediaProvider);
     await _ref.read(autoBackupProvider).requestBackup();
     return deleted;

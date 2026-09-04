@@ -115,11 +115,9 @@ class _ShellScreenState extends ConsumerState<ShellScreen>
         return;
       }
       // «التحميل السريع» يجعل الجودة الافتراضية إعداداً فاعلاً: الرابط
-      // المشارَك ينزل فوراً بلا ورقة، والشريط يتيح التراجع.
-      if (ref.read(settingsProvider).quickDownload &&
-          startQuickDownload(context, ref, urls.first)) {
-        return;
-      }
+      // المشارَك ينزل فوراً بلا ورقة، والشريط يتيح التراجع. البوابة
+      // داخل `startQuickDownload` نفسها فلا تُكرَّر هنا.
+      if (startQuickDownload(context, ref, urls.first)) return;
       openAddSheet(context, ref, initialUrl: urls.first);
       return;
     }
@@ -208,7 +206,10 @@ class _ShellScreenState extends ConsumerState<ShellScreen>
               downloadLabel: l10n.downloadNow,
               optionsLabel: l10n.chooseOptions,
               onDownload: () {
-                if (startQuickDownload(context, ref, clipboardUrl)) {
+                // زر صريح مكتوب عليه «حمّل الآن» وبجانبه «اختر
+                // الخيارات» — لا يمرّ ببوابة الإعداد.
+                if (startQuickDownload(context, ref, clipboardUrl,
+                    explicit: true)) {
                   ref.read(clipboardUrlProvider.notifier).state = null;
                 } else {
                   openAddSheet(context, ref, initialUrl: clipboardUrl);

@@ -128,6 +128,10 @@ class LibraryActions {
       await positions.clear(url);
       await offline.removeKey(url);
     }
+    // **والقوائم المحفوظة** (بلاغ المالك 2026-09-04): كل الفهارس كانت
+    // تُشذَّب إلا القوائم، فيبقى مدخل ميت يشغّل غيره عند النقر.
+    await _ref.read(playlistsStoreProvider).removeFromAll(canonicalUrls);
+    _ref.read(playlistsRevisionProvider.notifier).state++;
   }
 
   /// إزالة النسخة المحلية فقط (يبقى على السيرفر).

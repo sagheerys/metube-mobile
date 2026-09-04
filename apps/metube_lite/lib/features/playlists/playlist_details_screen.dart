@@ -24,7 +24,7 @@ class PlaylistDetailsScreen extends ConsumerWidget {
     final l10n = context.mtl;
     final playlists = ref.watch(playlistsProvider).value ?? const [];
     final playlist = playlists.where((p) => p.id == playlistId).firstOrNull;
-    final itemsAsync = ref.watch(playlistItemsProvider(playlistId));
+    final itemsAsync = ref.watch(playlistViewProvider(playlistId));
 
     if (playlist == null) {
       return Scaffold(
@@ -55,7 +55,7 @@ class PlaylistDetailsScreen extends ConsumerWidget {
           title: l10n.tryAgain,
           message: l10n.emptyPlaylistMessage,
         ),
-        data: (items) => items.isEmpty
+        data: (view) => view.items.isEmpty
             ? MTEmptyState(
                 icon: Icons.queue_music_outlined,
                 title: l10n.emptyPlaylist,
@@ -63,10 +63,10 @@ class PlaylistDetailsScreen extends ConsumerWidget {
               )
             : Column(
                 children: [
-                  _Actions(playlist: playlist, items: items),
+                  _Actions(playlist: playlist, view: view),
                   Expanded(
                     child: _ReorderableItems(
-                        playlistId: playlistId, items: items),
+                        playlistId: playlistId, view: view),
                   ),
                 ],
               ),
@@ -76,10 +76,10 @@ class PlaylistDetailsScreen extends ConsumerWidget {
 }
 
 class _Actions extends ConsumerWidget {
-  const _Actions({required this.playlist, required this.items});
+  const _Actions({required this.playlist, required this.view});
 
   final SavedPlaylist playlist;
-  final List<PlaylistItem> items;
+  final PlaylistView view;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -87,8 +87,10 @@ class _Actions extends ConsumerWidget {
     final p = MTThemeX.of(context).palette;
 
     Future<void> start({bool shuffle = false, bool audioOnly = false}) async {
+      // **المفقود لا يدخل الطابور**: مصدره يفشل فيقفز المشغل للتالي،
+      // فتبدو النقرة كأنها شغّلت مقطعاً غيره (بلاغ المالك 2026-09-04).
       final visual = await ref.read(playlistPlayerProvider).play(
-            items,
+            view.playable,
             playlistId: playlist.id,
             playlistName: playlist.name,
             shuffle: shuffle,
@@ -129,10 +131,12 @@ class _Actions extends ConsumerWidget {
 }
 
 class _ReorderableItems extends ConsumerWidget {
-  const _ReorderableItems({required this.playlistId, required this.items});
+  const _ReorderableItems({required this.playlistId, required this.view});
 
   final String playlistId;
-  final List<PlaylistItem> items;
+  final PlaylistView view;
+
+  List<PlaylistItem> get items => view.items;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -176,6 +180,7 @@ class _ReorderableItems extends ConsumerWidget {
       },
       itemBuilder: (context, index) {
         final item = items[index];
+        final missing = view.isMissing(item);
         return Dismissible(
           key: ValueKey(item.canonicalUrl),
           direction: DismissDirection.endToStart,
@@ -184,29 +189,39 @@ class _ReorderableItems extends ConsumerWidget {
           child: MTMediaCard(
             key: ValueKey('card-${item.canonicalUrl}'),
             title: item.title,
-            subtitle: item.uploader,
-            playing: item.canonicalUrl == playingKey,
+            // المفقود يقول ذلك بنفسه بدل أن يبدو صالحاً ثم لا يعمل.
+            subtitle: missing ? context.mtl.itemUnavailable : item.uploader,
+            playing: !missing && item.canonicalUrl == playingKey,
             paused: !isPlaying,
             thumbnail: item.artworkUrl == null
                 ? null
                 : artworkFor(item.artworkUrl),
             platform: platformKindOf(platformOfKey(item.canonicalUrl)),
             compact: true,
-            onTap: () => _playFrom(context, ref, index),
+            onTap: () => missing
+                ? showMTSnack(context, context.mtl.itemUnavailable,
+                    type: MTSnackType.error)
+                : _playFrom(context, ref, item),
           ),
         );
       },
     );
   }
 
+  /// **الفهرس يُحسب داخل الصالح لا داخل المعروض**: قائمة فيها مداخل
+  /// ميتة كانت تُشغّل العنصر الخطأ لأن الفهرسين اختلفا.
   Future<void> _playFrom(
-      BuildContext context, WidgetRef ref, int index) async {
+      BuildContext context, WidgetRef ref, PlaylistItem item) async {
     final playlist =
         (ref.read(playlistsProvider).value ?? const <SavedPlaylist>[])
             .where((p) => p.id == playlistId)
             .firstOrNull;
+    final playable = view.playable;
+    final index =
+        playable.indexWhere((i) => i.canonicalUrl == item.canonicalUrl);
+    if (index < 0) return;
     final visual = await ref.read(playlistPlayerProvider).play(
-          items,
+          playable,
           startIndex: index,
           playlistId: playlistId,
           playlistName: playlist?.name,

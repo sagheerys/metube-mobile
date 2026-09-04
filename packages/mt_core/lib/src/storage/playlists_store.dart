@@ -84,6 +84,42 @@ class PlaylistsStore {
       _mutateOne(id, (p) =>
           p.items.removeWhere((e) => e.canonicalUrl == canonicalUrl));
 
+  /// **إزالة مفاتيح من كل القوائم** — تُنادى عند حذف الملف نهائياً.
+  ///
+  /// بلاغ المالك 2026-09-04: «حذفتُ ملفات القائمة فبقيت في القائمة ولا
+  /// تعمل». الحذف كان يشذّب كل الفهارس (العناوين، الأغلفة، الوسوم،
+  /// المواضع) **ما عدا القوائم** — فيبقى مدخل ميت يشغّل غيره عند النقر.
+  ///
+  /// يقارن بالمفتاحين: [PlaylistEntry.canonicalUrl] ومسار Lite القديم
+  /// [PlaylistEntry.legacyPath] — مفتاح المكتبة قد يكون أيّهما.
+  /// يعيد عدد المداخل التي أُزيلت فعلاً.
+  Future<int> removeFromAll(Iterable<String> keys) async {
+    final targets = {...keys.where((k) => k.isNotEmpty)};
+    if (targets.isEmpty) return 0;
+    var removed = 0;
+    await _mutateAll((all) {
+      for (final playlist in all) {
+        final before = playlist.items.length;
+        playlist.items.removeWhere((e) =>
+            targets.contains(e.canonicalUrl) ||
+            (e.legacyPath != null && targets.contains(e.legacyPath)));
+        removed += before - playlist.items.length;
+      }
+    });
+    return removed;
+  }
+
+  /// قائمة بهذا الاسم بالضبط (بلا حساسية للمسافات الطرفية) — يستعملها
+  /// مُجمِّع الدفعة كي لا تتكرر قائمةٌ عند إعادة تحميل المصدر نفسه.
+  Future<SavedPlaylist?> byName(String name) async {
+    final target = name.trim();
+    if (target.isEmpty) return null;
+    for (final playlist in await readAll()) {
+      if (playlist.name.trim() == target) return playlist;
+    }
+    return null;
+  }
+
   /// إعادة ترتيب بالسحب.
   Future<void> reorderItem(String id, int oldIndex, int newIndex) =>
       _mutateOne(id, (p) {

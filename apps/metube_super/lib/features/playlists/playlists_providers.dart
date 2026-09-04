@@ -71,24 +71,60 @@ final smartListsProvider = Provider<List<SmartList>>((ref) => buildSmartLists(
 
 /// عناصر قائمة محفوظة بعد ربطها بالمكتبة — العنصر الذي لم يعد موجوداً
 /// يُبنى من البيانات المخبأة في المدخل نفسه فلا يختفي بصمت.
+/// عناصر القائمة بعد ربطها بالمكتبة، **ومعها مفاتيح ما لم يعد له
+/// وجود**.
+///
+/// بلاغ المالك 2026-09-04: «عند إزالة فيديو من القائمة يظل موجوداً
+/// وغير قابل للتشغيل، أو يشغّل مقطعاً آخر». المدخل غير المطابَق كان
+/// يُعرض كأي عنصر ويدخل طابور التشغيل — فيفشل مصدره ويقفز المشغل
+/// للتالي، فيبدو أن النقرة شغّلت مقطعاً غيره.
+///
+/// **لا يُحذف شيء هنا:** الغياب قد يكون مؤقتاً — سيرفر متعذّر يجعل
+/// المكتبة محلية فقط. الغائب يُعلَّم، وتتولى الشاشة إخراجه من التشغيل
+/// وعرض إزالته للمستخدم.
+class PlaylistView {
+  const PlaylistView({required this.items, required this.missing});
+
+  final List<PlaylistItem> items;
+
+  /// مفاتيح المداخل التي لا نسخة لها — بترتيب [items].
+  final Set<String> missing;
+
+  bool isMissing(PlaylistItem item) => missing.contains(item.canonicalUrl);
+
+  /// ما يصلح للتشغيل فعلاً — هو وحده ما يدخل الطابور.
+  List<PlaylistItem> get playable =>
+      [for (final item in items) if (!isMissing(item)) item];
+}
+
 final playlistItemsProvider =
-    FutureProvider.family<List<PlaylistItem>, String>((ref, id) async {
+    FutureProvider.family<List<PlaylistItem>, String>((ref, id) async =>
+        (await ref.watch(playlistViewProvider(id).future)).items);
+
+final playlistViewProvider =
+    FutureProvider.family<PlaylistView, String>((ref, id) async {
   final playlist = await ref.watch(playlistsStoreProvider).byId(id);
-  if (playlist == null) return const [];
+  if (playlist == null) {
+    return const PlaylistView(items: [], missing: {});
+  }
   final library = await ref.watch(libraryItemsProvider.future);
   final byUrl = {for (final item in library) item.canonicalUrl: item};
-  return [
-    for (final entry in playlist.items)
-      if (byUrl[entry.canonicalUrl] case final LibraryItem match)
-        toPlaylistItem(match)
-      else
-        PlaylistItem(
-          canonicalUrl: entry.canonicalUrl,
-          title: entry.cachedTitle ?? entry.canonicalUrl,
-          artworkUrl: entry.cachedThumb,
-          serverFilename: entry.serverFilename,
-        ),
-  ];
+  final items = <PlaylistItem>[];
+  final missing = <String>{};
+  for (final entry in playlist.items) {
+    if (byUrl[entry.canonicalUrl] case final LibraryItem match) {
+      items.add(toPlaylistItem(match));
+      continue;
+    }
+    missing.add(entry.canonicalUrl);
+    items.add(PlaylistItem(
+      canonicalUrl: entry.canonicalUrl,
+      title: entry.cachedTitle ?? entry.canonicalUrl,
+      artworkUrl: entry.cachedThumb,
+      serverFilename: entry.serverFilename,
+    ));
+  }
+  return PlaylistView(items: items, missing: missing);
 });
 
 /// مدخل قائمة من عنصر مكتبة — يخبئ العنوان والغلاف لبقاء البطاقة حية.

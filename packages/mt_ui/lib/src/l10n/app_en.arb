@@ -519,6 +519,7 @@
   "inPlaylists": "In playlists",
   "invalidUrl": "Enter a valid link",
   "itemOptions": "Item options",
+  "itemUnavailable": "No longer available",
   "keyExportFailed": "Failed to export backup key",
   "keyExported": "Key saved to:\n{path}\n\nStore it somewhere safe (e.g. Google Drive).",
   "keyExportedMessage": "Saved to:\n{path}\n\nUpload this file to Google Drive (or another safe place). You'll need it to restore your backup after Clear Data or on a new phone.",
@@ -655,6 +656,10 @@
   "reelsSwipeHint": "Swipe up for the next short",
   "refresh": "Refresh",
   "remove": "Remove",
+  "removeUnavailable": "Remove {count} unavailable",
+  "@removeUnavailable": {
+    "placeholders": { "count": { "type": "int" } }
+  },
   "removeFromFavorites": "Remove from favorites",
   "removeFromPlaylist": "Remove from playlist",
   "removeLocalCopy": "Remove local copy",

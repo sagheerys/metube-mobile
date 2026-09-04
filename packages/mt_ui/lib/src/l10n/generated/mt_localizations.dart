@@ -1382,6 +1382,12 @@ abstract class MTLocalizations {
   /// **'Item options'**
   String get itemOptions;
 
+  /// No description provided for @itemUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'No longer available'**
+  String get itemUnavailable;
+
   /// No description provided for @keyExportFailed.
   ///
   /// In en, this message translates to:
@@ -2197,6 +2203,12 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'Remove'**
   String get remove;
+
+  /// No description provided for @removeUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove {count} unavailable'**
+  String removeUnavailable(int count);
 
   /// No description provided for @removeFromFavorites.
   ///
