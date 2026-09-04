@@ -33,8 +33,10 @@ class _SortSheet extends ConsumerWidget {
     };
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(
-          MTSpace.xl, MTSpace.lg, MTSpace.xl, MTSpace.xxl),
+      // آخر خيار كان يقع تحت أزرار التنقل الثلاثة (بلاغ المالك
+      // 2026-09-04) — الورقة تمتد لحافة الشاشة دائماً.
+      padding: EdgeInsets.fromLTRB(MTSpace.xl, MTSpace.lg, MTSpace.xl,
+          mtSheetBottomPad(context, MTSpace.xxl)),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,

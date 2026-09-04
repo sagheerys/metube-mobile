@@ -26,6 +26,10 @@ class LiteApp extends ConsumerWidget {
       localizationsDelegates: MTLocalizations.localizationsDelegates,
       supportedLocales: MTLocalizations.supportedLocales,
       routerConfig: router,
+      // **أشرطة النظام تتبع الثيم** — بلا حجاب التباين الذي يفرضه
+      // أندرويد خلف أزرار التنقل الثلاثة فيقطع لون الشريط السفلي.
+      builder: (context, child) =>
+          MTSystemBars(child: child ?? const SizedBox.shrink()),
     );
   }
 }

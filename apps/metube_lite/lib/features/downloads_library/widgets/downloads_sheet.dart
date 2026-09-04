@@ -104,8 +104,8 @@ class _DownloadsSheet extends ConsumerWidget {
         tasks.where((t) => !t.isFinished || t.phase == TaskPhase.failed);
     if (shown.isEmpty) {
       return Padding(
-        padding: const EdgeInsets.fromLTRB(
-            MTSpace.xl, MTSpace.lg, MTSpace.xl, MTSpace.xxl),
+        padding: EdgeInsets.fromLTRB(MTSpace.xl, MTSpace.lg, MTSpace.xl,
+            mtSheetBottomPad(context, MTSpace.xxl)),
         child: MTEmptyState(
           icon: Icons.download_done_rounded,
           title: l10n.noDownloads,
@@ -126,8 +126,8 @@ class _DownloadsSheet extends ConsumerWidget {
       minChildSize: 0.35,
       maxChildSize: 0.85,
       builder: (context, scrollController) => Padding(
-        padding: const EdgeInsets.fromLTRB(
-            MTSpace.xl, MTSpace.lg, MTSpace.xl, MTSpace.xxl),
+        padding: EdgeInsets.fromLTRB(MTSpace.xl, MTSpace.lg, MTSpace.xl,
+            mtSheetBottomPad(context, MTSpace.xxl)),
         // **العنوان مثبَّت والقائمة وحدها تمرّر** (بلاغ المالك
         // 2026-09-04): كان أولَ عنصر في `ListView`، فيمرّ مع المحتوى
         // ويختفي عند كثرة التحميلات — فتُمرَّر قائمةٌ بلا رأس يقول

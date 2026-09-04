@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../theme/mt_theme.dart';
 import '../tokens/tokens.dart';
 import 'mt_platform_chip.dart';
+import 'mt_system_bars.dart';
 
 /// خيار جودة معروض في الورقة — القيم والنص من التطبيق (mt_ui لا يعرف
 /// عقد السيرفر): الرقمية تُمرَّر فقط عندما يكون الرابط YouTube (م-1).
@@ -53,7 +54,8 @@ class MTUrlInputSheet extends StatelessWidget {
         left: MTSpace.xl,
         right: MTSpace.xl,
         top: MTSpace.md,
-        bottom: MediaQuery.viewInsetsOf(context).bottom + MTSpace.xl,
+        // لوحة المفاتيح **أو** شريط أزرار النظام — أيهما ظاهر.
+        bottom: mtSheetBottomPad(context),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
