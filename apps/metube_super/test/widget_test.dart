@@ -88,7 +88,9 @@ void main() {
 
     await tester.runAsync(handler.stop);
     await tester.pump();
-    await tester.pump(const Duration(milliseconds: 50));
+    // المشغل المصغر يختفي بتلاشٍ وانكماش (تلميع 2026-09-04) — ننتظر
+    // مدة الحركة كاملةً ثم نؤكد أنه زال فعلاً لا أنه يتلاشى.
+    await tester.pump(MTMotion.reveal + const Duration(milliseconds: 50));
     expect(find.text('مقطع صوتي'), findsNothing);
   });
 }

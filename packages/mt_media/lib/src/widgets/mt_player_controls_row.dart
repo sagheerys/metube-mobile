@@ -97,23 +97,28 @@ class _PlayButton extends StatelessWidget {
   Widget build(BuildContext context) => Semantics(
     button: true,
     label: label,
-    child: Material(
-      color: palette.accent,
-      borderRadius: BorderRadius.circular(size / 3),
-      child: InkWell(
-        onTap: onTap,
+    // انكماش خفيف عند الضغط، و▶ ⇄ ⏸ بتلاشٍ وتوسّع (تلميع 2026-09-04).
+    child: MTPressable(
+      child: Material(
+        color: palette.accent,
         borderRadius: BorderRadius.circular(size / 3),
-        child: Container(
-          width: size,
-          height: size,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(size / 3),
-            boxShadow: MTShadow.fab(palette),
-          ),
-          child: Icon(
-            playing ? Icons.pause_rounded : Icons.play_arrow_rounded,
-            size: size * 0.42,
-            color: palette.onAccent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(size / 3),
+          child: Container(
+            width: size,
+            height: size,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(size / 3),
+              boxShadow: MTShadow.fab(palette),
+            ),
+            child: Center(
+              child: MTIconSwap(
+                icon: playing ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                size: size * 0.42,
+                color: palette.onAccent,
+              ),
+            ),
           ),
         ),
       ),

@@ -8,6 +8,7 @@ import 'mt_equalizer.dart';
 import 'mt_highlight_surface.dart';
 import 'mt_media_card.dart' show MTMediaLocation;
 import 'mt_platform_chip.dart';
+import 'mt_polish.dart';
 
 /// بطاقة المكتبة في **العرض الشبكي**: المصغرة تتصدر بنسبة 16:9 والعنوان
 /// تحتها سطران. الصف الواحد يعرض ضعف ما تعرضه القائمة، فالمسح البصري
@@ -56,12 +57,12 @@ class MTMediaGridCard extends StatelessWidget {
   final VoidCallback? onMore;
 
   String _semanticsLabel(MTLocalizations l10n) => [
-        title,
-        ?subtitle,
-        ?locationLabel,
-        if (favorite) l10n.favorites,
-        if (playing) l10n.nowPlaying,
-      ].join('، ');
+    title,
+    ?subtitle,
+    ?locationLabel,
+    if (favorite) l10n.favorites,
+    if (playing) l10n.nowPlaying,
+  ].join('، ');
 
   @override
   Widget build(BuildContext context) {
@@ -198,7 +199,9 @@ class _Cover extends StatelessWidget {
                 start: 5,
                 child: Container(
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 6, vertical: 2),
+                    horizontal: 6,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
                     color: p.ink.withValues(alpha: 0.8),
                     borderRadius: BorderRadius.circular(5),
@@ -267,23 +270,22 @@ class _CoverButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Tooltip(
-        message: tooltip,
-        child: InkWell(
-          onTap: onTap,
-          customBorder: const CircleBorder(),
-          child: Padding(
-            padding: const EdgeInsets.all(MTSpace.xs),
-            child: Icon(
-              icon,
-              size: 17,
-              color: color,
-              // الأيقونات فوق مصغرة مجهولة اللون: ظل خفيف يضمن قراءتها
-              // على غلاف فاتح وداكن معاً.
-              shadows: const [
-                Shadow(color: Color(0x99000000), blurRadius: 5),
-              ],
-            ),
-          ),
+    message: tooltip,
+    child: InkWell(
+      onTap: onTap,
+      customBorder: const CircleBorder(),
+      child: Padding(
+        padding: const EdgeInsets.all(MTSpace.xs),
+        // ♡ ⇄ ♥ بتلاشٍ وتوسّع بدل القفزة (تلميع 2026-09-04).
+        child: MTIconSwap(
+          icon: icon,
+          size: 17,
+          color: color,
+          // الأيقونات فوق مصغرة مجهولة اللون: ظل خفيف يضمن قراءتها
+          // على غلاف فاتح وداكن معاً.
+          shadows: const [Shadow(color: Color(0x99000000), blurRadius: 5)],
         ),
-      );
+      ),
+    ),
+  );
 }

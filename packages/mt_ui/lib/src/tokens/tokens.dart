@@ -69,6 +69,24 @@ abstract final class MTMotion {
 
   /// نسبة انزلاق الصفحة من عرضها.
   static const double pageSlide = 0.06;
+
+  // ── تلميع 2026-09-04 (طلب المالك: «حركات لمسات خفيفة متناسقة») ────
+
+  /// شاشة تصعد كورقة من أسفل (شاشة الصوت من المشغل المصغر) — أطول من
+  /// [page] لأن المسافة كاملة، وتحت سقف 320ms المعتمد.
+  static const Duration sheetPage = Duration(milliseconds: 300);
+
+  /// مقدار انكماش العنصر عند الضغط — يُلمَح لا يُشاهَد.
+  static const double pressScale = 0.97;
+
+  /// مقدار انكماش الأيقونة الخارجة في تبديل الأيقونات.
+  static const double iconSwapScale = 0.6;
+
+  /// سحبٌ لأسفل يتجاوزه ⇒ إغلاق شاشة الصوت (نقاط).
+  static const double dismissDragDistance = 120;
+
+  /// أو سرعةٌ تتجاوزها (نقطة/ثانية) — قذفة قصيرة تكفي.
+  static const double dismissFlingVelocity = 700;
 }
 
 /// الطباعة المعتمدة: عناوين Noto Kufi Arabic (700/500) · نصوص Tajawal.

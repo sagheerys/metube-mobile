@@ -19,7 +19,11 @@ class MTMiniPlayer extends StatelessWidget {
     required this.onOpen,
     this.artwork,
     this.margin = const EdgeInsets.fromLTRB(
-        MTSpace.md, 0, MTSpace.md, MTSpace.sm),
+      MTSpace.md,
+      0,
+      MTSpace.md,
+      MTSpace.sm,
+    ),
   });
 
   final MTAudioHandler handler;
@@ -29,23 +33,40 @@ class MTMiniPlayer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => StreamBuilder<MediaItem?>(
-        stream: handler.mediaItem,
-        builder: (context, snapshot) {
-          final item = snapshot.data;
-          if (item == null) return const SizedBox.shrink();
-          return Padding(
-            padding: margin,
-            child: _Bar(
-              handler: handler,
-              onOpen: onOpen,
-              artwork: artwork,
-              title: item.title,
-              subtitle: item.artist,
-              current: handler.currentItem,
-            ),
-          );
-        },
+    stream: handler.mediaItem,
+    builder: (context, snapshot) {
+      final item = snapshot.data;
+      // **يظهر ويختفي بحركة لا بقفزة** (تلميع 2026-09-04): كان يطفر
+      // في مكانه فيدفع الشريط السفلي دفعةً واحدة.
+      return AnimatedSwitcher(
+        duration: mtMotionDuration(context, MTMotion.reveal),
+        switchInCurve: MTMotion.entrance,
+        switchOutCurve: MTMotion.exit,
+        transitionBuilder: (child, animation) => FadeTransition(
+          opacity: animation,
+          child: SizeTransition(
+            sizeFactor: animation,
+            alignment: Alignment.bottomCenter,
+            child: child,
+          ),
+        ),
+        child: item == null
+            ? const SizedBox.shrink(key: ValueKey('mt-mini-none'))
+            : Padding(
+                key: const ValueKey('mt-mini-bar'),
+                padding: margin,
+                child: _Bar(
+                  handler: handler,
+                  onOpen: onOpen,
+                  artwork: artwork,
+                  title: item.title,
+                  subtitle: item.artist,
+                  current: handler.currentItem,
+                ),
+              ),
       );
+    },
+  );
 }
 
 class _Bar extends StatelessWidget {
@@ -75,70 +96,89 @@ class _Bar extends StatelessWidget {
       key: const ValueKey('mt-mini-player'),
       direction: DismissDirection.down,
       onDismissed: (_) => handler.stop(),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onOpen,
-          borderRadius: BorderRadius.circular(MTRadius.mini),
-          child: Container(
-            height: 62,
-            padding: const EdgeInsets.symmetric(horizontal: MTSpace.sm),
-            decoration: BoxDecoration(
-              color: p.miniBg,
-              borderRadius: BorderRadius.circular(MTRadius.mini),
-              boxShadow: MTShadow.mini(p),
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 42,
-                      height: 42,
-                      clipBehavior: Clip.antiAlias,
-                      decoration: BoxDecoration(
-                        color: p.miniInk.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(MTRadius.thumb),
+      // انكماش خفيف عند الضغط — يمهّد لصعود شاشة الصوت من مكانه.
+      child: MTPressable(
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onOpen,
+            borderRadius: BorderRadius.circular(MTRadius.mini),
+            child: Container(
+              height: 62,
+              padding: const EdgeInsets.symmetric(horizontal: MTSpace.sm),
+              decoration: BoxDecoration(
+                color: p.miniBg,
+                borderRadius: BorderRadius.circular(MTRadius.mini),
+                boxShadow: MTShadow.mini(p),
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        width: 42,
+                        height: 42,
+                        clipBehavior: Clip.antiAlias,
+                        decoration: BoxDecoration(
+                          color: p.miniInk.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(MTRadius.thumb),
+                        ),
+                        child: current != null && artwork != null
+                            ? artwork!(context, current!)
+                            : Icon(
+                                Icons.music_note_rounded,
+                                size: 18,
+                                color: p.miniInkMuted,
+                              ),
                       ),
-                      child: current != null && artwork != null
-                          ? artwork!(context, current!)
-                          : Icon(Icons.music_note_rounded,
-                              size: 18, color: p.miniInkMuted),
-                    ),
-                    const SizedBox(width: MTSpace.sm),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(title,
+                      const SizedBox(width: MTSpace.sm),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              title,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: text.bodyMedium!.copyWith(
-                                  color: p.miniInk,
-                                  fontWeight: FontWeight.w700)),
-                          if (subtitle != null && subtitle!.isNotEmpty)
-                            Text(subtitle!,
+                                color: p.miniInk,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            if (subtitle != null && subtitle!.isNotEmpty)
+                              Text(
+                                subtitle!,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                style: text.labelSmall!
-                                    .copyWith(color: p.miniInkMuted)),
-                        ],
+                                style: text.labelSmall!.copyWith(
+                                  color: p.miniInkMuted,
+                                ),
+                              ),
+                          ],
+                        ),
                       ),
-                    ),
-                    _PlayButton(handler: handler, palette: p, label: l10n.play),
-                    IconButton(
-                      onPressed: handler.stop,
-                      tooltip: l10n.closePlayer,
-                      visualDensity: VisualDensity.compact,
-                      icon: Icon(Icons.close_rounded,
-                          size: 20, color: p.miniInkMuted),
-                    ),
-                  ],
-                ),
-                _Progress(handler: handler, palette: p),
-              ],
+                      _PlayButton(
+                        handler: handler,
+                        palette: p,
+                        label: l10n.play,
+                      ),
+                      IconButton(
+                        onPressed: handler.stop,
+                        tooltip: l10n.closePlayer,
+                        visualDensity: VisualDensity.compact,
+                        icon: Icon(
+                          Icons.close_rounded,
+                          size: 20,
+                          color: p.miniInkMuted,
+                        ),
+                      ),
+                    ],
+                  ),
+                  _Progress(handler: handler, palette: p),
+                ],
+              ),
             ),
           ),
         ),
@@ -160,20 +200,20 @@ class _PlayButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => StreamBuilder<PlaybackState>(
-        stream: handler.playbackState,
-        builder: (context, snapshot) {
-          final playing = snapshot.data?.playing ?? false;
-          return IconButton(
-            onPressed: playing ? handler.pause : handler.play,
-            tooltip: label,
-            icon: Icon(
-              playing ? Icons.pause_rounded : Icons.play_arrow_rounded,
-              size: 28,
-              color: palette.accent,
-            ),
-          );
-        },
+    stream: handler.playbackState,
+    builder: (context, snapshot) {
+      final playing = snapshot.data?.playing ?? false;
+      return IconButton(
+        onPressed: playing ? handler.pause : handler.play,
+        tooltip: label,
+        icon: MTIconSwap(
+          icon: playing ? Icons.pause_rounded : Icons.play_arrow_rounded,
+          size: 28,
+          color: palette.accent,
+        ),
       );
+    },
+  );
 }
 
 class _Progress extends StatelessWidget {
@@ -184,26 +224,27 @@ class _Progress extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => StreamBuilder<Duration>(
-        stream: handler.positionStream,
-        builder: (context, snapshot) {
-          final total = handler.mediaItem.value?.duration;
-          final position = snapshot.data ?? Duration.zero;
-          final value = total == null || total.inMilliseconds <= 0
-              ? 0.0
-              : (position.inMilliseconds / total.inMilliseconds).clamp(0, 1)
-                  .toDouble();
-          return Padding(
-            padding: const EdgeInsets.only(top: 2, bottom: 4),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(2),
-              child: LinearProgressIndicator(
-                value: value,
-                minHeight: 2.5,
-                backgroundColor: palette.miniInk.withValues(alpha: 0.18),
-                valueColor: AlwaysStoppedAnimation(palette.accent),
-              ),
-            ),
-          );
-        },
+    stream: handler.positionStream,
+    builder: (context, snapshot) {
+      final total = handler.mediaItem.value?.duration;
+      final position = snapshot.data ?? Duration.zero;
+      final value = total == null || total.inMilliseconds <= 0
+          ? 0.0
+          : (position.inMilliseconds / total.inMilliseconds)
+                .clamp(0, 1)
+                .toDouble();
+      return Padding(
+        padding: const EdgeInsets.only(top: 2, bottom: 4),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(2),
+          child: LinearProgressIndicator(
+            value: value,
+            minHeight: 2.5,
+            backgroundColor: palette.miniInk.withValues(alpha: 0.18),
+            valueColor: AlwaysStoppedAnimation(palette.accent),
+          ),
+        ),
       );
+    },
+  );
 }

@@ -66,6 +66,18 @@ final router = GoRouter(
     ),
     GoRoute(path: '/player', builder: (_, _) => const PlayerScreen()),
     GoRoute(path: '/reels', builder: (_, _) => const ReelsScreen()),
-    GoRoute(path: '/audio', builder: (_, _) => const AudioScreen()),
+    // **شاشة الصوت تصعد من المشغل المصغر كورقة** وتُسحب لأسفل لتعود
+    // إليه (طلب المالك 2026-09-04) — لا الانزلاق الأفقي المعتمد لبقية
+    // المسارات، لأن العلاقة هنا «توسّع» لا «دخول أعمق».
+    GoRoute(
+      path: '/audio',
+      pageBuilder: (_, state) => CustomTransitionPage<void>(
+        key: state.pageKey,
+        child: const AudioScreen(),
+        transitionDuration: MTMotion.sheetPage,
+        reverseTransitionDuration: MTMotion.page,
+        transitionsBuilder: mtSheetPageTransition,
+      ),
+    ),
   ],
 );

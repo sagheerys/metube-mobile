@@ -26,6 +26,7 @@ export 'src/stores/playback_prefs.dart';
 export 'src/video/reels_overlay.dart';
 export 'src/video/shorts_lane.dart';
 export 'src/widgets/media_time.dart';
+export 'src/widgets/mt_drag_to_dismiss.dart';
 export 'src/widgets/mt_mini_player.dart';
 export 'src/widgets/mt_player_controls_row.dart';
 export 'src/widgets/mt_progress_slider.dart';

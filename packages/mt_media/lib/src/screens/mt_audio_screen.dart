@@ -9,6 +9,7 @@ import '../widgets/mt_player_controls_row.dart';
 import '../widgets/mt_progress_slider.dart';
 import '../widgets/mt_queue_panel.dart';
 import '../widgets/mt_tilted_artwork.dart';
+import '../widgets/mt_drag_to_dismiss.dart';
 import '../widgets/mt_up_next_list.dart';
 
 /// شاشة الصوت الكاملة (م-22 · ر-4 خطوة 4) — غلاف مائل، شريط تقدم
@@ -37,52 +38,57 @@ class MTAudioScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => StreamBuilder<MediaItem?>(
-        stream: handler.mediaItem,
-        builder: (context, snapshot) {
-          final media = snapshot.data;
-          final item = handler.currentItem;
-          if (media == null || item == null) {
-            return const _EmptyPlayer();
-          }
-          return Scaffold(
-            body: SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: MTSpace.xl),
-                child: Column(
-                  children: [
-                    _Header(handler: handler, onQueue: () => _openQueue(context)),
-                    const Spacer(flex: 2),
-                    MTTiltedArtwork(
-                      item: item,
-                      artwork: artwork,
-                      size: _artSize(context),
-                    ),
-                    const Spacer(),
-                    _Titles(
-                      item: item,
-                      media: media,
-                      playlistName: playlistName,
-                      index: handler.currentIndex,
-                      total: handler.items.length,
-                      showSourceChip: showSourceChip,
-                    ),
-                    const SizedBox(height: MTSpace.xl),
-                    _Slider(handler: handler, media: media),
-                    const SizedBox(height: MTSpace.md),
-                    MTPlayerControlsRow(handler: handler),
-                    const SizedBox(height: MTSpace.lg),
-                    _SubControls(
-                      handler: handler,
-                      onQueue: () => _openQueue(context),
-                    ),
-                    const SizedBox(height: MTSpace.lg),
-                  ],
-                ),
+    stream: handler.mediaItem,
+    builder: (context, snapshot) {
+      final media = snapshot.data;
+      final item = handler.currentItem;
+      if (media == null || item == null) {
+        return const _EmptyPlayer();
+      }
+      return Scaffold(
+        // **السحب لأسفل يعيدها إلى المشغل المصغر** (طلب المالك
+        // 2026-09-04) — الشاشة صعدت منه كورقة، فمن الطبيعي أن تُسحب
+        // إليه. الشريط الأفقي والأزرار لا تتأثر: الإيماءة عمودية.
+        body: MTDragToDismiss(
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: MTSpace.xl),
+              child: Column(
+                children: [
+                  _Header(handler: handler, onQueue: () => _openQueue(context)),
+                  const Spacer(flex: 2),
+                  MTTiltedArtwork(
+                    item: item,
+                    artwork: artwork,
+                    size: _artSize(context),
+                  ),
+                  const Spacer(),
+                  _Titles(
+                    item: item,
+                    media: media,
+                    playlistName: playlistName,
+                    index: handler.currentIndex,
+                    total: handler.items.length,
+                    showSourceChip: showSourceChip,
+                  ),
+                  const SizedBox(height: MTSpace.xl),
+                  _Slider(handler: handler, media: media),
+                  const SizedBox(height: MTSpace.md),
+                  MTPlayerControlsRow(handler: handler),
+                  const SizedBox(height: MTSpace.lg),
+                  _SubControls(
+                    handler: handler,
+                    onQueue: () => _openQueue(context),
+                  ),
+                  const SizedBox(height: MTSpace.lg),
+                ],
               ),
             ),
-          );
-        },
+          ),
+        ),
       );
+    },
+  );
 
   double _artSize(BuildContext context) {
     final size = MediaQuery.sizeOf(context);
@@ -95,8 +101,7 @@ class MTAudioScreen extends StatelessWidget {
     showMTQueueSheet(
       context,
       items: ordered,
-      currentIndex:
-          ordered.indexWhere((i) => i.canonicalUrl == currentUrl),
+      currentIndex: ordered.indexWhere((i) => i.canonicalUrl == currentUrl),
       artwork: artwork,
       playlistName: playlistName,
       liveness: handler.playingNotifier,
@@ -114,13 +119,13 @@ class _EmptyPlayer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(),
-        body: MTEmptyState(
-          icon: Icons.music_note_rounded,
-          title: context.mtl.nowPlaying,
-          message: context.mtl.nothingHereYet,
-        ),
-      );
+    appBar: AppBar(),
+    body: MTEmptyState(
+      icon: Icons.music_note_rounded,
+      title: context.mtl.nowPlaying,
+      message: context.mtl.nothingHereYet,
+    ),
+  );
 }
 
 class _Header extends StatelessWidget {
@@ -144,9 +149,7 @@ class _Header extends StatelessWidget {
           child: Text(
             l10n.nowPlaying,
             textAlign: TextAlign.center,
-            style: Theme.of(context)
-                .textTheme
-                .labelSmall!
+            style: Theme.of(context).textTheme.labelSmall!
                 .copyWith(color: p.ink3, letterSpacing: 1.6),
           ),
         ),
@@ -223,13 +226,13 @@ class _Slider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => StreamBuilder<Duration>(
-        stream: handler.positionStream,
-        builder: (context, snapshot) => MTProgressSlider(
-          position: snapshot.data ?? Duration.zero,
-          duration: media.duration,
-          onSeek: handler.seek,
-        ),
-      );
+    stream: handler.positionStream,
+    builder: (context, snapshot) => MTProgressSlider(
+      position: snapshot.data ?? Duration.zero,
+      duration: media.duration,
+      onSeek: handler.seek,
+    ),
+  );
 }
 
 class _SubControls extends StatelessWidget {
@@ -286,8 +289,10 @@ class _Pill extends StatelessWidget {
   Widget build(BuildContext context) {
     final p = MTThemeX.of(context).palette;
     final text = Theme.of(context).textTheme;
-    final strong = text.labelSmall!
-        .copyWith(color: p.accentInk, fontWeight: FontWeight.w700);
+    final strong = text.labelSmall!.copyWith(
+      color: p.accentInk,
+      fontWeight: FontWeight.w700,
+    );
     return Material(
       color: p.card,
       borderRadius: BorderRadius.circular(MTRadius.field - 1),
@@ -296,7 +301,9 @@ class _Pill extends StatelessWidget {
         borderRadius: BorderRadius.circular(MTRadius.field - 1),
         child: Container(
           padding: const EdgeInsets.symmetric(
-              horizontal: MTSpace.lg, vertical: MTSpace.xs + 2),
+            horizontal: MTSpace.lg,
+            vertical: MTSpace.xs + 2,
+          ),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(MTRadius.field - 1),
             border: Border.all(color: p.line2),
@@ -312,8 +319,7 @@ class _Pill extends StatelessWidget {
                 Text(leading!, style: strong),
                 const SizedBox(width: MTSpace.xs),
               ],
-              Text(label,
-                  style: text.labelSmall!.copyWith(color: p.ink2)),
+              Text(label, style: text.labelSmall!.copyWith(color: p.ink2)),
               if (trailing != null) ...[
                 const SizedBox(width: MTSpace.xs),
                 Text(trailing!, style: strong),

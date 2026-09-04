@@ -35,16 +35,16 @@ class MTReelsTopBar extends StatelessWidget {
           child: Center(
             child: Container(
               padding: const EdgeInsets.symmetric(
-                  horizontal: MTSpace.md, vertical: MTSpace.xxs + 1),
+                horizontal: MTSpace.md,
+                vertical: MTSpace.xxs + 1,
+              ),
               decoration: BoxDecoration(
                 color: Colors.black.withValues(alpha: 0.45),
                 borderRadius: BorderRadius.circular(MTRadius.chip),
               ),
               child: Text(
                 '⚡ ${l10n.shortsFilter}   $position / $total',
-                style: Theme.of(context)
-                    .textTheme
-                    .labelSmall!
+                style: Theme.of(context).textTheme.labelSmall!
                     .copyWith(color: ink, fontWeight: FontWeight.w700),
               ),
             ),
@@ -140,7 +140,9 @@ class _RailButton extends StatelessWidget {
             child: SizedBox(
               width: 46,
               height: 46,
-              child: Icon(icon, size: 20, color: ink),
+              child: Center(
+                child: MTIconSwap(icon: icon, size: 20, color: ink),
+              ),
             ),
           ),
         ),
@@ -152,9 +154,7 @@ class _RailButton extends StatelessWidget {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             textAlign: TextAlign.center,
-            style: Theme.of(context)
-                .textTheme
-                .labelSmall!
+            style: Theme.of(context).textTheme.labelSmall!
                 .copyWith(color: ink, fontSize: 9.5),
           ),
         ),
@@ -181,7 +181,9 @@ class MTReelsInfo extends StatelessWidget {
         if (item.duration != null)
           Container(
             padding: const EdgeInsets.symmetric(
-                horizontal: MTSpace.sm, vertical: MTSpace.xxs),
+              horizontal: MTSpace.sm,
+              vertical: MTSpace.xxs,
+            ),
             decoration: BoxDecoration(
               color: Colors.black.withValues(alpha: 0.45),
               borderRadius: BorderRadius.circular(MTRadius.badge + 2),
@@ -206,8 +208,7 @@ class MTReelsInfo extends StatelessWidget {
             subtitle!,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: text.labelSmall!
-                .copyWith(color: ink.withValues(alpha: 0.7)),
+            style: text.labelSmall!.copyWith(color: ink.withValues(alpha: 0.7)),
           ),
         ],
       ],
@@ -247,9 +248,11 @@ class MTReelsEndCard extends StatelessWidget {
           children: [
             Icon(Icons.bolt_rounded, size: 34, color: p.accent),
             const SizedBox(height: MTSpace.sm),
-            Text(l10n.reelsEndTitle,
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.titleMedium),
+            Text(
+              l10n.reelsEndTitle,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
             const SizedBox(height: MTSpace.lg),
             if (onContinueRest != null)
               FilledButton(
@@ -257,14 +260,8 @@ class MTReelsEndCard extends StatelessWidget {
                 child: Text(l10n.reelsEndContinue),
               ),
             if (onReplay != null)
-              TextButton(
-                onPressed: onReplay,
-                child: Text(l10n.reelsEndReplay),
-              ),
-            TextButton(
-              onPressed: onBack,
-              child: Text(l10n.reelsEndBack),
-            ),
+              TextButton(onPressed: onReplay, child: Text(l10n.reelsEndReplay)),
+            TextButton(onPressed: onBack, child: Text(l10n.reelsEndBack)),
           ],
         ),
       ),

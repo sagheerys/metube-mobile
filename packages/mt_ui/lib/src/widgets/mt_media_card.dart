@@ -7,6 +7,8 @@ import '../tokens/tokens.dart';
 import 'mt_equalizer.dart';
 import 'mt_highlight_surface.dart';
 import 'mt_platform_chip.dart';
+import 'mt_location_badge.dart';
+import 'mt_polish.dart';
 
 /// موقع العنصر — يلوّن شارته: «دون اتصال» زيتوني · «على السيرفر» وهج soft.
 enum MTMediaLocation { none, offline, onServer, both }
@@ -69,12 +71,12 @@ class MTMediaCard extends StatelessWidget {
   /// وصف قارئ الشاشة: العنوان ثم ما يميّز حالة البطاقة (م-2.7 «RTL
   /// وSemantics»). يُبنى نصاً واحداً لأن القارئ يقرأ البطاقة كوحدة.
   String _semanticsLabel(MTLocalizations l10n) => [
-        title,
-        ?subtitle,
-        ?locationLabel,
-        if (favorite) l10n.favorites,
-        if (playing) l10n.nowPlaying,
-      ].join('، ');
+    title,
+    ?subtitle,
+    ?locationLabel,
+    if (favorite) l10n.favorites,
+    if (playing) l10n.nowPlaying,
+  ].join('، ');
 
   @override
   Widget build(BuildContext context) {
@@ -111,92 +113,103 @@ class MTMediaCard extends StatelessWidget {
             decoration: BoxDecoration(
               border: Border(bottom: BorderSide(color: p.line)),
             ),
-          child: Row(
-            children: [
-              _Thumb(
+            child: Row(
+              children: [
+                _Thumb(
                   width: thumbW,
                   height: thumbH,
                   duration: duration,
                   playing: playing,
-                  child: thumbnail),
-              const SizedBox(width: MTSpace.md - 1),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      maxLines: compact ? 1 : 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: text.bodyMedium!
-                          .copyWith(fontWeight: FontWeight.w700, height: 1.55),
-                    ),
-                    SizedBox(height: compact ? 3 : 6),
-                    Row(
-                      children: [
-                        // المنصة المجهولة لا تستحق رمزاً ولا فاصلاً:
-                        // «• · منذ ٣ دقائق» ضجيج بصري (تدقيق 8.1).
-                        if (platform != MTPlatformKind.other)
-                          MTPlatformChip(kind: platform),
-                        if (subtitle != null) ...[
+                  child: thumbnail,
+                ),
+                const SizedBox(width: MTSpace.md - 1),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        maxLines: compact ? 1 : 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: text.bodyMedium!.copyWith(
+                          fontWeight: FontWeight.w700,
+                          height: 1.55,
+                        ),
+                      ),
+                      SizedBox(height: compact ? 3 : 6),
+                      Row(
+                        children: [
+                          // المنصة المجهولة لا تستحق رمزاً ولا فاصلاً:
+                          // «• · منذ ٣ دقائق» ضجيج بصري (تدقيق 8.1).
                           if (platform != MTPlatformKind.other)
-                            Text(' · ',
-                                style:
-                                    text.bodySmall!.copyWith(color: p.ink3)),
-                          Flexible(
-                            child: Text(subtitle!,
+                            MTPlatformChip(kind: platform),
+                          if (subtitle != null) ...[
+                            if (platform != MTPlatformKind.other)
+                              Text(
+                                ' · ',
+                                style: text.bodySmall!.copyWith(color: p.ink3),
+                              ),
+                            Flexible(
+                              child: Text(
+                                subtitle!,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                style: text.bodySmall!
-                                    .copyWith(color: p.ink3)),
-                          ),
+                                style: text.bodySmall!.copyWith(color: p.ink3),
+                              ),
+                            ),
+                          ],
+                          if (location != MTMediaLocation.none &&
+                              locationLabel != null) ...[
+                            const SizedBox(width: MTSpace.xs),
+                            MTLocationBadge(
+                              location: location,
+                              label: locationLabel!,
+                            ),
+                          ],
                         ],
-                        if (location != MTMediaLocation.none &&
-                            locationLabel != null) ...[
-                          const SizedBox(width: MTSpace.xs),
-                          _LocationBadge(
-                              location: location, label: locationLabel!),
-                        ],
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              if (playing)
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: MTSpace.xs),
-                  child: MTEqualizer(animate: !paused),
-                ),
-              if (onFavoriteToggle != null)
-                IconButton(
-                  tooltip: favorite
-                      ? l10n.removeFromFavorites
-                      : l10n.addToFavorites,
-                  onPressed: () {
-                    HapticFeedback.selectionClick();
-                    onFavoriteToggle!();
-                  },
-                  visualDensity: VisualDensity.compact,
-                  icon: Icon(
-                    favorite
-                        ? Icons.favorite_rounded
-                        : Icons.favorite_border_rounded,
-                    size: 20,
-                    color: favorite ? p.favorite : p.ink3,
+                      ),
+                    ],
                   ),
                 ),
-              if (onMore != null)
-                IconButton(
-                  tooltip: l10n.itemOptions,
-                  onPressed: onMore,
-                  visualDensity: VisualDensity.compact,
-                  icon: Icon(Icons.more_vert_rounded,
-                      size: 20, color: p.ink3),
-                ),
-            ],
+                if (playing)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: MTSpace.xs),
+                    child: MTEqualizer(animate: !paused),
+                  ),
+                if (onFavoriteToggle != null)
+                  IconButton(
+                    tooltip: favorite
+                        ? l10n.removeFromFavorites
+                        : l10n.addToFavorites,
+                    onPressed: () {
+                      HapticFeedback.selectionClick();
+                      onFavoriteToggle!();
+                    },
+                    visualDensity: VisualDensity.compact,
+                    // ♡ ⇄ ♥ بتلاشٍ وتوسّع بدل القفزة (تلميع 2026-09-04).
+                    icon: MTIconSwap(
+                      icon: favorite
+                          ? Icons.favorite_rounded
+                          : Icons.favorite_border_rounded,
+                      size: 20,
+                      color: favorite ? p.favorite : p.ink3,
+                    ),
+                  ),
+                if (onMore != null)
+                  IconButton(
+                    tooltip: l10n.itemOptions,
+                    onPressed: onMore,
+                    visualDensity: VisualDensity.compact,
+                    icon: Icon(
+                      Icons.more_vert_rounded,
+                      size: 20,
+                      color: p.ink3,
+                    ),
+                  ),
+              ],
+            ),
           ),
         ),
-      ),
       ),
     );
   }
@@ -232,15 +245,13 @@ class _Thumb extends StatelessWidget {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          child ??
-              Icon(Icons.music_note_rounded, size: 20, color: p.ink3),
+          child ?? Icon(Icons.music_note_rounded, size: 20, color: p.ink3),
           if (duration != null)
             PositionedDirectional(
               bottom: 5,
               start: 5,
               child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
                   color: p.ink.withValues(alpha: 0.8),
                   borderRadius: BorderRadius.circular(5),
@@ -256,38 +267,6 @@ class _Thumb extends StatelessWidget {
               ),
             ),
         ],
-      ),
-    );
-  }
-}
-
-class _LocationBadge extends StatelessWidget {
-  const _LocationBadge({required this.location, required this.label});
-
-  final MTMediaLocation location;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    final p = MTThemeX.of(context).palette;
-    final (bg, fg) = location == MTMediaLocation.offline
-        ? (p.offlineSoft, p.offlineInk)
-        : (p.onServerSoft, p.onServerInk);
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
-      decoration: BoxDecoration(
-        color: bg,
-        borderRadius: BorderRadius.circular(MTRadius.badge),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontFamily: MTType.body,
-          package: MTType.package,
-          fontSize: 10,
-          fontWeight: FontWeight.w700,
-          color: fg,
-        ),
       ),
     );
   }
