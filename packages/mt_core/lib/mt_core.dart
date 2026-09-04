@@ -8,6 +8,7 @@ export 'src/api/endpoint_resolver.dart';
 export 'src/api/metube_api.dart';
 export 'src/api/metube_api_client.dart' show MeTubeApiClient, ServerConfig;
 export 'src/backup/backup_crypto.dart';
+export 'src/backup/backup_rotation.dart';
 export 'src/backup/backup_service.dart';
 export 'src/constants/mt_constants.dart';
 export 'src/download/delete_policy.dart';

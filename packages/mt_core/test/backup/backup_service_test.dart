@@ -19,32 +19,35 @@ void main() {
     );
   });
 
-  group('BackupService — v2 (MTF1)', () {
-    test('roundtrip كامل بكل الأنواع + username', () async {
+  group('BackupService — الصيغة النصّية (قرار المالك 2026-09-04)', () {
+    test('roundtrip كامل بكل الأنواع، وبلا أي سرّ', () async {
       await store.setString('server_url', 'https://metube.example.com');
       await store.setBool('library_compact_view', true);
       await store.setInt('player_play_mode', 2);
       await store.setDouble('player_playback_speed', 1.5);
       await store.setStringList('external_urls', ['https://a', 'https://b']);
       await secrets.write(SecretKeys.username, 'yasir');
+      await secrets.write(SecretKeys.password, 'sirri-jiddan');
 
       final exported = await service.exportToString();
-      expect(exported, startsWith('MTF1\n'));
+      // نصّ لا ترويسة مشفّرة — ولا مفتاح يموت مع إعادة التثبيت.
+      expect(exported, startsWith('{'));
+      expect(BackupCrypto.headerOf(exported), isNull);
+      expect(exported, isNot(contains('sirri-jiddan')));
+      expect(exported, isNot(contains('yasir')),
+          reason: 'اسم المستخدم لم يعد يُنسخ — الملف بلا سرّ إطلاقاً');
 
-      // استيراد في جهاز جديد بنفس المفتاح (محاكاة استيراد ملف المفتاح)
+      // جهاز جديد: **بلا استيراد أي مفتاح**، وهذا هو المكسب كله.
       final freshStore = MemoryKeyValueStore();
-      final freshSecrets = MemorySecretStore();
-      await freshSecrets.write(SecretKeys.backupAesKey,
-          (await secrets.read(SecretKeys.backupAesKey))!);
       final freshService = BackupService(
         store: freshStore,
-        secrets: freshSecrets,
+        secrets: MemorySecretStore(),
         mutex: PrefsMutex(),
         variant: 'super',
       );
 
       final result = await freshService.importFromString(exported);
-      expect(result.format, BackupFormat.v2);
+      expect(result.format, BackupFormat.plain);
       expect(result.keysRestored, 5);
       expect(await freshStore.getString('server_url'),
           'https://metube.example.com');
@@ -53,30 +56,62 @@ void main() {
       expect(await freshStore.getDouble('player_playback_speed'), 1.5);
       expect(await freshStore.getStringList('external_urls'),
           ['https://a', 'https://b']);
-      expect(await freshSecrets.read(SecretKeys.username), 'yasir');
     });
 
-    test('كلمة المرور لا تدخل النسخة أبداً', () async {
-      await secrets.write(SecretKeys.password, 'sirri-jiddan');
-      await store.setString('server_url', 'https://s');
+    test('الاعتمادات المضمّنة في الرابط تُحذف (إصلاح خ-2 باقٍ)', () async {
+      await store.setString('server_url', 'https://u:pw@host/path');
       final exported = await service.exportToString();
-      final plaintext = BackupCrypto.decrypt(
-        contents: exported,
-        keyBase64: (await secrets.read(SecretKeys.backupAesKey))!,
-      );
-      expect(plaintext, isNot(contains('sirri-jiddan')));
-      expect(plaintext, isNot(contains('password')));
+      expect(exported, isNot(contains('pw@host')));
+      expect(exported, contains('https://host/path'));
+    });
+
+    test('نصّ ليس نسخة ⇒ BackupFormatException لا انهيار', () async {
+      expect(service.importFromString('مرحبا'),
+          throwsA(isA<BackupFormatException>()));
+      expect(service.importFromString('{"app":"شيء آخر"}'),
+          throwsA(isA<BackupFormatException>()));
+      expect(service.importFromString('{ليس json'),
+          throwsA(isA<BackupFormatException>()));
+    });
+  });
+
+  /// **الهجرة تبقى**: من كان عنده ملف `MTF1` من إصدار سابق يفتحه بعد
+  /// استيراد مفتاحه — الكتابة وحدها هي التي تغيّرت.
+  group('استيراد MTF1 المشفَّر (قراءة فقط بعد 2026-09-04)', () {
+    String legacyV2File(String keyBase64, Map<String, dynamic> prefs) =>
+        BackupCrypto.encrypt(
+          plaintext: json.encode({
+            'app': 'MTF',
+            'variant': 'super',
+            'version': 2,
+            'prefs': prefs,
+            'secure': {'username': 'yasir'},
+          }),
+          keyBase64: keyBase64,
+        );
+
+    test('يُقرأ بالمفتاح الصحيح ويعيد اسم المستخدم', () async {
+      final key = BackupCrypto.generateKeyBase64();
+      await secrets.write(SecretKeys.backupAesKey, key);
+      final file = legacyV2File(key, {
+        'server_url': {'t': 's', 'v': 'https://old.example'},
+      });
+
+      final result = await service.importFromString(file);
+      expect(result.format, BackupFormat.v2);
+      expect(await store.getString('server_url'), 'https://old.example');
+      expect(await secrets.read(SecretKeys.username), 'yasir');
     });
 
     test('مفتاح آخر ⇒ BackupKeyMismatchException', () async {
-      final exported = await service.exportToString();
+      final file = legacyV2File(BackupCrypto.generateKeyBase64(), const {});
       final other = BackupService(
         store: MemoryKeyValueStore(),
         secrets: MemorySecretStore(),
         mutex: PrefsMutex(),
         variant: 'lite',
       );
-      expect(other.importFromString(exported),
+      expect(other.importFromString(file),
           throwsA(isA<BackupKeyMismatchException>()));
     });
   });

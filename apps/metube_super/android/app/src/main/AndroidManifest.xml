@@ -17,6 +17,11 @@
         android:label="MeTube Super"
         android:name="${applicationName}"
         android:usesCleartextTraffic="true"
+        <!-- نسخ أندرويد التلقائي: مفعَّل، لكن **بلا ملف التخزين الآمن**
+             (انظر res/xml/backup_rules.xml — عطل كامن كُشف 2026-09-04). -->
+        android:allowBackup="true"
+        android:fullBackupContent="@xml/backup_rules"
+        android:dataExtractionRules="@xml/data_extraction_rules"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"

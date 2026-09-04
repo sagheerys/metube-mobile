@@ -7,7 +7,9 @@ import 'backup_crypto.dart';
 
 part 'backup_legacy.dart';
 
-enum BackupFormat { v2, legacyLite, legacySuper }
+/// `plain` هي الصيغة المكتوبة اليوم؛ الثلاث الباقية **قراءة فقط**
+/// (هجرة من إصدارات سابقة).
+enum BackupFormat { plain, v2, legacyLite, legacySuper }
 
 class ImportResult {
   const ImportResult({required this.format, required this.keysRestored});
@@ -69,32 +71,46 @@ class BackupService {
     return key;
   }
 
-  /// تصدير v2 مشفراً — لقطة كاملة تحت القفل كي لا يمزقها كاتب متزامن.
+  /// **تصدير نصّي غير مشفَّر — وبلا أي سرّ** (قرار المالك 2026-09-04).
+  ///
+  /// كان `MTF1` مشفَّراً بمفتاح يعيش في التخزين الآمن، فيموت مع «مسح
+  /// البيانات» أو إعادة التثبيت — تاركاً نسخةً **يتيمة** لا تُفتح إلا
+  /// إن كان المستخدم صدّر المفتاح، وهو ما لا يفعله أحد. والمحتوى نفسه
+  /// (روابط، عناوين، قوائم، وسوم) يراه من يفتح التطبيق أصلاً.
+  ///
+  /// و[SecretKeys.username] **لم يعد يُنسخ**: كلمة المرور لم تكن تُنسخ
+  /// أبداً، فالمستخدم يعيد إدخالها على كل حال — واسمٌ بلا كلمة لا يفتح
+  /// شيئاً، فإخراجه يجعل الملف بلا سرّ إطلاقاً.
+  ///
+  /// لقطة كاملة تحت القفل كي لا يمزقها كاتب متزامن. مُنسَّقة بمسافات
+  /// بادئة: ملفٌ غير مشفَّر يُقرأ بالعين مخرجٌ إنساني بلا كلفة.
   Future<String> exportToString() => mutex.run(() async {
         final prefsMap = <String, dynamic>{};
         for (final key in await store.keys()) {
           final cell = _encodeCell(_sanitize(key, await store.get(key)));
           if (cell != null) prefsMap[key] = cell;
         }
-        final username = await secrets.read(SecretKeys.username);
-        final payload = json.encode({
+        return const JsonEncoder.withIndent('  ').convert({
           'app': 'MTF',
           'variant': variant,
-          'version': 2,
+          'version': 3,
           'backupDate': DateTime.now().toIso8601String(),
           'prefs': prefsMap,
-          'secure': {'username': ?username},
         });
-        return BackupCrypto.encrypt(
-          plaintext: payload,
-          keyBase64: await _getOrCreateKey(),
-        );
       });
 
-  /// استيراد أي تنسيق من الثلاثة — التمييز بالترويسة قبل أي فك.
+  /// استيراد أي تنسيق: النصّي الجديد أو الثلاثة المشفّرة القديمة.
+  ///
+  /// **الترويسة تُفحص أولاً** (قاعدة §5.4: لا `json.decode` لملف مشفَّر
+  /// قبل فكّه)، وغيابها مع بداية `{` يعني الصيغة النصّية.
   Future<ImportResult> importFromString(String contents) async {
     final header = BackupCrypto.headerOf(contents);
-    if (header == null) throw const BackupFormatException('unknown header');
+    if (header == null) {
+      if (!contents.trimLeft().startsWith('{')) {
+        throw const BackupFormatException('unknown header');
+      }
+      return _applyPlain(contents);
+    }
     final plaintext = BackupCrypto.decrypt(
       contents: contents,
       keyBase64: await _getOrCreateKey(),
@@ -115,6 +131,20 @@ class BackupService {
     };
   }
 
+  Future<ImportResult> _applyPlain(String contents) async {
+    final Object? decoded;
+    try {
+      decoded = json.decode(contents);
+    } on FormatException {
+      throw const BackupFormatException('bad json');
+    }
+    if (decoded is! Map || decoded['app'] != 'MTF') {
+      throw const BackupFormatException('not an MTF backup');
+    }
+    return _applyTypedPrefs(
+        Map<String, dynamic>.from(decoded), BackupFormat.plain);
+  }
+
   Future<ImportResult> _applyTypedPrefs(
       Map<String, dynamic> payload, BackupFormat format) async {
     final prefs = (payload['prefs'] as Map?) ?? const {};
@@ -131,7 +161,10 @@ class BackupService {
         for (final entry in prefs.entries) {
           if (await _applyCell(entry.key.toString(), entry.value)) restored++;
         }
-        if (format != BackupFormat.v2) await _migrateLegacyShapes();
+        if (format == BackupFormat.legacyLite ||
+            format == BackupFormat.legacySuper) {
+          await _migrateLegacyShapes();
+        }
       } on Object {
         for (final entry in rollback.entries) {
           entry.value == null
