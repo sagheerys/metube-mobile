@@ -401,7 +401,7 @@ abstract class MTLocalizations {
   /// No description provided for @backupNote.
   ///
   /// In en, this message translates to:
-  /// **'Includes playlists, tags, the offline index, artwork links and settings. Passwords and usernames are never backed up, and media files are not included. Backups are plain text — anyone who opens the file can read it.'**
+  /// **'Includes playlists, tags, the offline index, artwork links and settings. Passwords and usernames are never backed up, and media files are not included.'**
   String get backupNote;
 
   /// No description provided for @backupRestore.

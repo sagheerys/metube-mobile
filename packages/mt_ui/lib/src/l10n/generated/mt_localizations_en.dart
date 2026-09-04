@@ -181,7 +181,7 @@ class MTLocalizationsEn extends MTLocalizations {
 
   @override
   String get backupNote =>
-      'Includes playlists, tags, the offline index, artwork links and settings. Passwords and usernames are never backed up, and media files are not included. Backups are plain text — anyone who opens the file can read it.';
+      'Includes playlists, tags, the offline index, artwork links and settings. Passwords and usernames are never backed up, and media files are not included.';
 
   @override
   String get backupRestore => 'Backup & Restore';
