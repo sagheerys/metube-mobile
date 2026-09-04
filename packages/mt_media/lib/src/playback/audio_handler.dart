@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:audio_service/audio_service.dart';
+import 'package:flutter/foundation.dart' show ValueNotifier;
 
 import '../models/play_mode.dart';
 import '../models/playback_source.dart';
@@ -86,6 +87,10 @@ class MTAudioHandler extends BaseAudioHandler with SeekHandler {
   /// تعرف إلا العنصر الحالي (بلاغ المالك 2026-09-04).
   Stream<bool> get playingStream =>
       playbackState.map((state) => state.playing).distinct();
+
+  /// نفس المعلومة كـ[Listenable] — للأوراق التي تُبنى مرة ولا تراقب
+  /// تياراً (ورقة قائمة الانتظار)، فيتوقف مؤشر التوازن فيها أيضاً.
+  final ValueNotifier<bool> playingNotifier = ValueNotifier(false);
 
   /// العناصر بترتيب الإدراج (فهارسها هي التي يقبلها [skipToQueueItem]).
   List<PlaylistItem> get items => _queue.items;
@@ -277,6 +282,7 @@ class MTAudioHandler extends BaseAudioHandler with SeekHandler {
 
   void _broadcast() {
     final playing = player.playing;
+    playingNotifier.value = playing;
     playbackState.add(playbackState.value.copyWith(
       controls: mtMediaControls(playing: playing),
       systemActions: const {MediaAction.seek},

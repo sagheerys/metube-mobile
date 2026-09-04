@@ -19,6 +19,7 @@ class MTQueuePanel extends StatelessWidget {
     this.onShowAll,
     this.playlistName,
     this.dark = false,
+    this.paused = false,
     this.nested = false,
   });
 
@@ -37,6 +38,9 @@ class MTQueuePanel extends StatelessWidget {
   final VoidCallback? onShowAll;
   final String? playlistName;
   final bool dark;
+
+  /// العنصر الحالي موقوف مؤقتاً — يُمرَّر لمؤشر التوازن فيسكن.
+  final bool paused;
 
   /// **داخل أب قابل للتمرير؟** (بلاغ المالك 2026-09-02: «لا تستطيع تمرير
   /// قائمة الفيديوهات السفلية»). القائمة الداخلية كانت `shrinkWrap` بلا
@@ -70,9 +74,13 @@ class MTQueuePanel extends StatelessWidget {
             if (onShowAll != null)
               TextButton(
                 onPressed: onShowAll,
-                child: Text(l10n.viewAllInPlaylists,
-                    style: text.labelSmall!.copyWith(
-                        color: p.accentInk, fontWeight: FontWeight.w700)),
+                child: Text(
+                  l10n.viewAllInPlaylists,
+                  style: text.labelSmall!.copyWith(
+                    color: p.accentInk,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
               ),
           ],
         ),
@@ -87,9 +95,9 @@ class MTQueuePanel extends StatelessWidget {
             currentIndex: currentIndex,
             artwork: artwork,
             dark: dark,
+            paused: paused,
             shrinkWrap: true,
-            physics:
-                nested ? const NeverScrollableScrollPhysics() : null,
+            physics: nested ? const NeverScrollableScrollPhysics() : null,
             onTap: onSelect,
           ),
         ),
@@ -100,7 +108,9 @@ class MTQueuePanel extends StatelessWidget {
         if (onSaveAsPlaylist != null && playlistName == null) ...[
           const SizedBox(height: MTSpace.sm),
           MTSaveQueueButton(
-              onTap: onSaveAsPlaylist!, label: l10n.saveQueueAsPlaylist),
+            onTap: onSaveAsPlaylist!,
+            label: l10n.saveQueueAsPlaylist,
+          ),
         ],
       ],
     );
@@ -140,8 +150,8 @@ class MTSaveQueueButton extends StatelessWidget {
               const SizedBox(width: MTSpace.xs),
               Text(
                 label,
-                style: Theme.of(context).textTheme.labelMedium!.copyWith(
-                    color: p.accentInk, fontWeight: FontWeight.w700),
+                style: Theme.of(context).textTheme.labelMedium!
+                    .copyWith(color: p.accentInk, fontWeight: FontWeight.w700),
               ),
             ],
           ),
@@ -161,31 +171,56 @@ Future<void> showMTQueueSheet(
   VoidCallback? onSaveAsPlaylist,
   VoidCallback? onShowAll,
   String? playlistName,
-}) =>
-    showModalBottomSheet<void>(
-      context: context,
-      useRootNavigator: true,
-      isScrollControlled: true,
-      builder: (sheetContext) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(MTSpace.pagePad),
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              maxHeight: MediaQuery.sizeOf(sheetContext).height * 0.72,
-            ),
-            child: MTQueuePanel(
-              items: items,
-              currentIndex: currentIndex,
-              artwork: artwork,
-              playlistName: playlistName,
-              onSaveAsPlaylist: onSaveAsPlaylist,
-              onShowAll: onShowAll,
-              onSelect: (index) {
-                Navigator.of(sheetContext).pop();
-                onSelect(index);
-              },
-            ),
+  Listenable? liveness,
+  bool Function()? paused,
+}) => showModalBottomSheet<void>(
+  context: context,
+  useRootNavigator: true,
+  isScrollControlled: true,
+  builder: (sheetContext) => SafeArea(
+    child: Padding(
+      padding: const EdgeInsets.all(MTSpace.pagePad),
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.sizeOf(sheetContext).height * 0.72,
+        ),
+        // **الورقة تُبنى مرة ولا تعرف أن التشغيل توقّف** — لذلك
+        // تُعاد بناؤها على [liveness] (جلسة الفيديو أو مُنبّه مشغل
+        // الصوت)، وإلا بقي مؤشر التوازن يرقص على مقطع ساكن.
+        child: _LiveQueue(
+          liveness: liveness,
+          builder: (context) => MTQueuePanel(
+            items: items,
+            currentIndex: currentIndex,
+            artwork: artwork,
+            playlistName: playlistName,
+            paused: paused?.call() ?? false,
+            onSaveAsPlaylist: onSaveAsPlaylist,
+            onShowAll: onShowAll,
+            onSelect: (index) {
+              Navigator.of(sheetContext).pop();
+              onSelect(index);
+            },
           ),
         ),
       ),
-    );
+    ),
+  ),
+);
+
+/// يعيد بناء محتوى الورقة كلما تغيّرت [liveness] — أو مرة واحدة إن
+/// لم يُمرَّر مصدر حياة.
+class _LiveQueue extends StatelessWidget {
+  const _LiveQueue({required this.builder, this.liveness});
+
+  final WidgetBuilder builder;
+  final Listenable? liveness;
+
+  @override
+  Widget build(BuildContext context) => liveness == null
+      ? builder(context)
+      : ListenableBuilder(
+          listenable: liveness!,
+          builder: (context, _) => builder(context),
+        );
+}

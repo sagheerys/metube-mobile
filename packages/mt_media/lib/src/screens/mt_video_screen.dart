@@ -140,6 +140,9 @@ class MTVideoScreen extends StatelessWidget {
       currentIndex: ordered.indexWhere((i) => i.canonicalUrl == currentUrl),
       artwork: artwork,
       playlistName: playlistName,
+      // الجلسة تُخطر عند كل نبضة، فالورقة تعرف متى توقّف التشغيل.
+      liveness: session,
+      paused: () => !session.isPlaying,
       onSaveAsPlaylist: onSaveQueueAsPlaylist,
       onShowAll: onShowPlaylist,
       onSelect: (index) =>

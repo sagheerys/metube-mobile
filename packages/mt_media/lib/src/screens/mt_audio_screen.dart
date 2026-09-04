@@ -99,6 +99,8 @@ class MTAudioScreen extends StatelessWidget {
           ordered.indexWhere((i) => i.canonicalUrl == currentUrl),
       artwork: artwork,
       playlistName: playlistName,
+      liveness: handler.playingNotifier,
+      paused: () => !handler.playingNotifier.value,
       onSaveAsPlaylist: onSaveQueueAsPlaylist,
       onShowAll: onShowPlaylist,
       onSelect: (index) =>

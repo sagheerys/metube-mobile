@@ -158,6 +158,7 @@ class _SidePanel extends StatelessWidget {
                   ordered.indexWhere((i) => i.canonicalUrl == currentUrl),
               artwork: artwork,
               playlistName: playlistName,
+              paused: !session.isPlaying,
               onSaveAsPlaylist: onSaveAsPlaylist,
               onShowAll: onShowAll,
               onSelect: (index) {
@@ -181,6 +182,7 @@ class _PanelBody extends StatelessWidget {
     this.onSaveAsPlaylist,
     this.onShowAll,
     this.playlistName,
+    this.paused = false,
   });
 
   final List<PlaylistItem> items;
@@ -190,6 +192,7 @@ class _PanelBody extends StatelessWidget {
   final VoidCallback? onSaveAsPlaylist;
   final VoidCallback? onShowAll;
   final String? playlistName;
+  final bool paused;
 
   @override
   Widget build(BuildContext context) {
@@ -210,6 +213,7 @@ class _PanelBody extends StatelessWidget {
             currentIndex: currentIndex,
             artwork: artwork,
             playlistName: playlistName,
+            paused: paused,
             onSaveAsPlaylist: onSaveAsPlaylist,
             onShowAll: onShowAll,
             onSelect: onSelect,

@@ -8,6 +8,7 @@ import 'package:mt_ui/mt_ui.dart';
 import '../../di.dart';
 import '../library/library_providers.dart';
 import '../playlists/playlists_providers.dart';
+import '../shared/membership.dart';
 import 'manage_tags_sheet.dart';
 
 /// ورقة وسوم العنصر (م-26 · ر-7 خطوة 3): تبديل وسوم موجودة، إنشاء وسم،
@@ -135,6 +136,10 @@ class _ItemTagsSheetState extends ConsumerState<_ItemTagsSheet> {
   void _refreshHost() {
     ref.invalidate(tagCountsProvider);
     ref.invalidate(libraryItemsProvider);
+    // **وسطر «الوسوم» في التفاصيل والمشغلين**: الفهرس يقرأ `TagsIndex`
+    // مرة، ولا شيء كان يُبطله بعد الكتابة — فيبقى السطر معروضاً بوسم
+    // أُزيل للتو (فحص 2026-09-04).
+    ref.invalidate(membershipIndexProvider);
   }
 
   @override

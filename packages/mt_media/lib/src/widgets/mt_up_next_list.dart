@@ -19,6 +19,7 @@ class MTUpNextList extends StatelessWidget {
     required this.onTap,
     this.artwork,
     this.dark = false,
+    this.paused = false,
     this.shrinkWrap = false,
     this.physics,
   });
@@ -30,6 +31,10 @@ class MTUpNextList extends StatelessWidget {
   final ValueChanged<int> onTap;
   final MTArtworkBuilder? artwork;
   final bool dark;
+
+  /// العنصر الحالي **موقوف مؤقتاً** — المؤشر يسكن ولا يرقص (نفس علاج
+  /// شاشة القائمة: بلاغ المالك 2026-09-04).
+  final bool paused;
   final bool shrinkWrap;
   final ScrollPhysics? physics;
 
@@ -42,6 +47,7 @@ class MTUpNextList extends StatelessWidget {
         itemBuilder: (context, index) => _UpNextRow(
           item: items[index],
           playing: index == currentIndex,
+          paused: paused,
           artwork: artwork,
           dark: dark,
           onTap: () => onTap(index),
@@ -53,6 +59,7 @@ class _UpNextRow extends StatelessWidget {
   const _UpNextRow({
     required this.item,
     required this.playing,
+    required this.paused,
     required this.dark,
     required this.onTap,
     this.artwork,
@@ -60,6 +67,7 @@ class _UpNextRow extends StatelessWidget {
 
   final PlaylistItem item;
   final bool playing;
+  final bool paused;
   final bool dark;
   final VoidCallback onTap;
   final MTArtworkBuilder? artwork;
@@ -114,7 +122,7 @@ class _UpNextRow extends StatelessWidget {
             ),
             const SizedBox(width: MTSpace.xs),
             if (playing)
-              const MTEqualizer(size: 11)
+              MTEqualizer(size: 11, animate: !paused)
             else if (item.duration != null)
               Text(
                 mtFormatDuration(item.duration!),

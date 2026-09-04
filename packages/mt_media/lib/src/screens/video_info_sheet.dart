@@ -93,6 +93,7 @@ class MTVideoInfoSheet extends StatelessWidget {
               currentIndex: currentIndex,
               artwork: artwork,
               playlistName: playlistName,
+              paused: !session.isPlaying,
               onShowAll: onShowPlaylist,
               onSaveAsPlaylist: onSaveQueueAsPlaylist,
               onSelect: (index) =>
