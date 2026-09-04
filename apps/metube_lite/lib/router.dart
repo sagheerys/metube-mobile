@@ -70,6 +70,10 @@ final router = GoRouter(
       pageBuilder: (_, state) => CustomTransitionPage<void>(
         key: state.pageKey,
         child: const AudioScreen(),
+        // **غير معتمة**: ما تحتها يبقى مرسوماً، فعند سحبها لأسفل يظهر
+        // الغلاف والمشغل المصغر خلفها لا خلفيةٌ سوداء (بلاغ المالك
+        // 2026-09-04 بلقطة).
+        opaque: false,
         transitionDuration: MTMotion.sheetPage,
         reverseTransitionDuration: MTMotion.page,
         transitionsBuilder: mtSheetPageTransition,

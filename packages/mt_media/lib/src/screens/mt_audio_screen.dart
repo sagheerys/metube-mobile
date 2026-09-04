@@ -45,12 +45,17 @@ class MTAudioScreen extends StatelessWidget {
       if (media == null || item == null) {
         return const _EmptyPlayer();
       }
-      return Scaffold(
-        // **السحب لأسفل يعيدها إلى المشغل المصغر** (طلب المالك
-        // 2026-09-04) — الشاشة صعدت منه كورقة، فمن الطبيعي أن تُسحب
-        // إليه. الشريط الأفقي والأزرار لا تتأثر: الإيماءة عمودية.
-        body: MTDragToDismiss(
-          child: SafeArea(
+      // **السحب لأسفل يعيدها إلى المشغل المصغر** (طلب المالك
+      // 2026-09-04) — الشاشة صعدت منه كورقة، فمن الطبيعي أن تُسحب
+      // إليه. الشريط الأفقي والأزرار لا تتأثر: الإيماءة عمودية.
+      //
+      // **الـ Scaffold كله يتحرك لا محتواه** (بلاغ المالك بلقطة):
+      // تحريك المحتوى وحده كان يترك خلفية الشاشة ثابتةً فيظهر فراغ
+      // داكن فوقه — والمطلوب أن يظهر الغلاف والمشغل المصغر خلفها كأنها
+      // ورقة تُسحب (مسارها غير معتم في الراوتر لهذا السبب).
+      return MTDragToDismiss(
+        child: Scaffold(
+          body: SafeArea(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: MTSpace.xl),
               child: Column(

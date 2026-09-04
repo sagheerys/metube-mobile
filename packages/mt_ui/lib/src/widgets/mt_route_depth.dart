@@ -44,23 +44,39 @@ class MTRouteDepth extends NavigatorObserver {
 
 /// يُظهر [child] فقط حين لا شيء مكدّس فوق الغلاف، بتلاشٍ قصير بدل
 /// اختفاء مفاجئ.
+///
+/// **الظهور مرآة الاختفاء** (بلاغ المالك 2026-09-04: «حركة ظهور زر
+/// إضافة رابط أريدها مثل حركة اختفائه لا مثل الباوربوينت»). كان الزر
+/// ينكمش إلى **صفر** فيُقرأ اختفاؤه تلاشياً سريعاً، لكن عودته من الصفر
+/// تُقرأ «تكبيراً من نقطة». الآن الانكماش خفيف ([_hiddenScale]) فيبقى
+/// الاتجاهان تلاشياً واحداً بنفس المدة.
 class MTHiddenUnderRoutes extends StatelessWidget {
   const MTHiddenUnderRoutes({super.key, required this.child});
 
   final Widget child;
 
+  static const double _hiddenScale = 0.92;
+
   @override
   Widget build(BuildContext context) => ValueListenableBuilder<int>(
         valueListenable: MTRouteDepth.depth,
-        builder: (context, depth, _) => AnimatedScale(
-          scale: depth == 0 ? 1 : 0,
-          duration: MTMotion.tap,
-          curve: depth == 0 ? MTMotion.entrance : MTMotion.exit,
-          child: AnimatedOpacity(
-            opacity: depth == 0 ? 1 : 0,
-            duration: MTMotion.tap,
-            child: child,
-          ),
-        ),
+        builder: (context, depth, _) {
+          final visible = depth == 0;
+          final curve = visible ? MTMotion.entrance : MTMotion.exit;
+          return IgnorePointer(
+            ignoring: !visible,
+            child: AnimatedScale(
+              scale: visible ? 1 : _hiddenScale,
+              duration: MTMotion.tap,
+              curve: curve,
+              child: AnimatedOpacity(
+                opacity: visible ? 1 : 0,
+                duration: MTMotion.tap,
+                curve: curve,
+                child: child,
+              ),
+            ),
+          );
+        },
       );
 }
