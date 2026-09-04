@@ -17,6 +17,7 @@ import 'history_matcher.dart';
 import 'pull_gate_parking.dart';
 import 'transfer.dart';
 
+part 'download_engine_emit.dart';
 part 'download_engine_pull.dart';
 
 /// أين يُحفظ الملف المسحوب — يقررها التطبيق.
@@ -82,6 +83,9 @@ class DownloadEngine {
 
   /// لقطة `/history` قبل الإضافة (ح-3) — وتميّز يتيم الإلغاء (ع-7).
   final Map<String, Set<String>> _snapshots = {};
+
+  /// آخر **نسبة مئوية صحيحة** بُثَّت لكل مهمة — مرشّح [_emitProgress].
+  final Map<String, int> _lastPercent = {};
 
   /// ما أوقفته بوابة الشبكة، بعنصر سجله جاهزاً للسحب (م-10).
   late final PullGateParking _parked = PullGateParking(
@@ -263,7 +267,7 @@ class DownloadEngine {
           if (_disposed) throw const CancelledException();
           _throwIfCancelRequested(taskId);
         },
-        onProgress: (p) => _emit(_tasks[taskId]!.copyWith(progress: p)),
+        onProgress: (p) => _emitProgress(taskId, p),
       );
 
   /// ع-7: ما أضافته مهمة أُلغيت لا يُترك على السيرفر.
@@ -279,16 +283,5 @@ class DownloadEngine {
     if (_cancelRequested.contains(taskId)) {
       throw const CancelledException();
     }
-  }
-
-  void _emitPhase(String taskId, TaskPhase phase) {
-    final task = _tasks[taskId];
-    if (task != null) _emit(task.copyWith(phase: phase));
-  }
-
-  DownloadTask _emit(DownloadTask task) {
-    _tasks[task.id] = task;
-    if (!_updates.isClosed) _updates.add(task);
-    return task;
   }
 }

@@ -27,6 +27,7 @@ class MTMediaCard extends StatelessWidget {
     this.selected = false,
     this.highlighted = false,
     this.playing = false,
+    this.paused = false,
     this.favorite = false,
     this.onTap,
     this.onLongPress,
@@ -55,6 +56,10 @@ class MTMediaCard extends StatelessWidget {
   /// الآن حالتان مختلفتان بصرياً ودلالياً: التحديد يثبت، والتوهج يمضي.
   final bool highlighted;
   final bool playing;
+
+  /// [playing] يعني «هذا هو العنصر الحالي»؛ [paused] يعني أنه متوقف
+  /// مؤقتاً — فيظهر المؤشر ساكناً بدل أن يرقص على مقطع لا يعمل.
+  final bool paused;
   final bool favorite;
   final VoidCallback? onTap;
   final VoidCallback? onLongPress;
@@ -158,9 +163,9 @@ class MTMediaCard extends StatelessWidget {
                 ),
               ),
               if (playing)
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: MTSpace.xs),
-                  child: MTEqualizer(),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: MTSpace.xs),
+                  child: MTEqualizer(animate: !paused),
                 ),
               if (onFavoriteToggle != null)
                 IconButton(

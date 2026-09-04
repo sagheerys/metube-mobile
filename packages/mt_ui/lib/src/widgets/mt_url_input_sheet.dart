@@ -59,17 +59,9 @@ class MTUrlInputSheet extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Center(
-            child: Container(
-              width: 36,
-              height: 4,
-              decoration: BoxDecoration(
-                color: p.line2,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-          ),
-          const SizedBox(height: MTSpace.lg),
+          // **لا مقبض سحب هنا**: الثيم يضبط `showDragHandle: true` لكل
+          // ورقة سفلية، فرسم مقبض ثانٍ كان يُظهر خطين فوق بعضهما
+          // (لقطة المالك 2026-09-04).
           Row(
             children: [
               Expanded(child: Text(title, style: text.titleLarge)),

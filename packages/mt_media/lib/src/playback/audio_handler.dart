@@ -81,6 +81,12 @@ class MTAudioHandler extends BaseAudioHandler with SeekHandler {
   Stream<String?> get currentKey =>
       mediaItem.map((item) => item?.id).distinct();
 
+  /// **هل يعزف الآن فعلاً؟** — غير «أيّ عنصر هو الحالي» ([currentKey]).
+  /// مؤشر «قيد التشغيل» كان يرقص على مقطع موقوف مؤقتاً لأن الواجهة لا
+  /// تعرف إلا العنصر الحالي (بلاغ المالك 2026-09-04).
+  Stream<bool> get playingStream =>
+      playbackState.map((state) => state.playing).distinct();
+
   /// العناصر بترتيب الإدراج (فهارسها هي التي يقبلها [skipToQueueItem]).
   List<PlaylistItem> get items => _queue.items;
 

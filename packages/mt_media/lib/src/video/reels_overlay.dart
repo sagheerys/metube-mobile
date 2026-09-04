@@ -63,17 +63,22 @@ class MTReelsTopBar extends StatelessWidget {
   }
 }
 
-/// عمود الأفعال الجانبي في متناول الإبهام (مفضلة/تحميل/لقائمة/مشاركة).
+/// عمود الأفعال الجانبي في متناول الإبهام (تفاصيل/أضف إلى/مشاركة).
+///
+/// **زر المفضلة اختياري** (بلاغ المالك 2026-09-04): التطبيقان يقدّمان
+/// بدله زر «أضف إلى…» الذي يجمع المفضلة والوسم والقائمة في مكان واحد،
+/// فبقاء قلبٍ مستقل كان تكراراً لفعل موجود. `onToggleFavorite = null`
+/// ⇒ لا قلب — والضغطة المزدوجة على المقطع تبقى كما هي (م-36).
 class MTReelsRail extends StatelessWidget {
   const MTReelsRail({
     super.key,
-    required this.favorite,
-    required this.onToggleFavorite,
+    this.favorite = false,
+    this.onToggleFavorite,
     this.actions = const [],
   });
 
   final bool favorite;
-  final VoidCallback onToggleFavorite;
+  final VoidCallback? onToggleFavorite;
   final List<MTPlayerAction> actions;
 
   @override
@@ -83,16 +88,18 @@ class MTReelsRail extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        _RailButton(
-          icon: favorite
-              ? Icons.favorite_rounded
-              : Icons.favorite_border_rounded,
-          label: l10n.favorites,
-          onTap: onToggleFavorite,
-          background: favorite ? p.favorite : null,
-        ),
+        if (onToggleFavorite != null)
+          _RailButton(
+            icon: favorite
+                ? Icons.favorite_rounded
+                : Icons.favorite_border_rounded,
+            label: l10n.favorites,
+            onTap: onToggleFavorite!,
+            background: favorite ? p.favorite : null,
+          ),
         for (final action in actions) ...[
-          const SizedBox(height: MTSpace.lg),
+          if (action != actions.first || onToggleFavorite != null)
+            const SizedBox(height: MTSpace.lg),
           _RailButton(
             icon: action.icon,
             label: action.label,

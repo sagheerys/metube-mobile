@@ -68,7 +68,9 @@ class ReelsOverlayLayer extends StatelessWidget {
   final int index;
   final int total;
   final bool favorite;
-  final VoidCallback onToggleFavorite;
+
+  /// `null` ⇒ لا زر مفضلة في العمود (انظر [MTReelsRail]).
+  final VoidCallback? onToggleFavorite;
   final List<MTPlayerAction> actions;
   final String? subtitle;
 

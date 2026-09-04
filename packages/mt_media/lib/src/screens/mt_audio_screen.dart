@@ -21,6 +21,7 @@ class MTAudioScreen extends StatelessWidget {
     this.onSaveQueueAsPlaylist,
     this.onShowPlaylist,
     this.playlistName,
+    this.showSourceChip = true,
   });
 
   final MTAudioHandler handler;
@@ -28,6 +29,11 @@ class MTAudioScreen extends StatelessWidget {
   final VoidCallback? onSaveQueueAsPlaylist;
   final VoidCallback? onShowPlaylist;
   final String? playlistName;
+
+  /// **رقاقة المصدر «بث من السيرفر / تشغيل من جهازك»** — معلومة تفرّق
+  /// في Super حيث يتعايش المصدران، وصفريةٌ في Lite: كل ما في مكتبته
+  /// على الجهاز أصلاً (بلاغ المالك 2026-09-04).
+  final bool showSourceChip;
 
   @override
   Widget build(BuildContext context) => StreamBuilder<MediaItem?>(
@@ -58,6 +64,7 @@ class MTAudioScreen extends StatelessWidget {
                       playlistName: playlistName,
                       index: handler.currentIndex,
                       total: handler.items.length,
+                      showSourceChip: showSourceChip,
                     ),
                     const SizedBox(height: MTSpace.xl),
                     _Slider(handler: handler, media: media),
@@ -158,6 +165,7 @@ class _Titles extends StatelessWidget {
     required this.index,
     required this.total,
     this.playlistName,
+    this.showSourceChip = true,
   });
 
   final PlaylistItem item;
@@ -165,6 +173,7 @@ class _Titles extends StatelessWidget {
   final int index;
   final int total;
   final String? playlistName;
+  final bool showSourceChip;
 
   @override
   Widget build(BuildContext context) {
@@ -178,8 +187,10 @@ class _Titles extends StatelessWidget {
     ];
     return Column(
       children: [
-        MTSourceChip(local: item.hasLocal),
-        const SizedBox(height: MTSpace.sm),
+        if (showSourceChip) ...[
+          MTSourceChip(local: item.hasLocal),
+          const SizedBox(height: MTSpace.sm),
+        ],
         Text(
           media.title,
           textAlign: TextAlign.center,

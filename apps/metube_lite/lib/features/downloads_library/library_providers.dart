@@ -63,6 +63,7 @@ class LibraryViewOptions {
     this.platform,
     this.sort = LibrarySort.newest,
     this.compact = false,
+    this.grid = false,
     this.selection = const {},
   });
 
@@ -74,6 +75,11 @@ class LibraryViewOptions {
   final MediaPlatform? platform;
   final LibrarySort sort;
   final bool compact;
+
+  /// **العرض الشبكي** (نُقل من Super بطلب المالك 2026-09-04): صفٌّ يعرض
+  /// ضعف ما تعرضه القائمة، فالمسح البصري للفيديو أسرع. الأوضاع الثلاثة
+  /// حصرية: قائمة · مضغوط · شبكة — لا حالة «مضغوط وشبكي» المستحيلة.
+  final bool grid;
 
   /// مفاتيح العناصر المحددة — غير فارغة = وضع التحديد (ر-6).
   final Set<String> selection;
@@ -87,6 +93,7 @@ class LibraryViewOptions {
     MediaPlatform? Function()? platform,
     LibrarySort? sort,
     bool? compact,
+    bool? grid,
     Set<String>? selection,
   }) =>
       LibraryViewOptions(
@@ -96,6 +103,7 @@ class LibraryViewOptions {
         platform: platform == null ? this.platform : platform(),
         sort: sort ?? this.sort,
         compact: compact ?? this.compact,
+        grid: grid ?? this.grid,
         selection: selection ?? this.selection,
       );
 }
@@ -111,10 +119,12 @@ class LibraryViewNotifier extends Notifier<LibraryViewOptions> {
     final store = ref.read(keyValueStoreProvider);
     final sortName = await store.getString('video_sort_option');
     final compact = await store.getBool('library_compact_view') ?? false;
+    final grid = await store.getBool('library_grid_view') ?? false;
     state = state.copyWith(
       sort: LibrarySort.values.where((s) => s.name == sortName).firstOrNull ??
           LibrarySort.newest,
       compact: compact,
+      grid: grid,
     );
   }
 
@@ -135,6 +145,12 @@ class LibraryViewNotifier extends Notifier<LibraryViewOptions> {
     await ref.read(prefsMutexProvider).run(() => ref
         .read(keyValueStoreProvider)
         .setBool('library_compact_view', compact));
+  }
+
+  Future<void> setGrid(bool grid) async {
+    state = state.copyWith(grid: grid);
+    await ref.read(prefsMutexProvider).run(() =>
+        ref.read(keyValueStoreProvider).setBool('library_grid_view', grid));
   }
 
   void toggleSelected(String key) {

@@ -22,6 +22,9 @@ class FakeApi implements MeTubeApi {
   MTApiException? deleteError;
 
   int downloadCalls = 0;
+
+  /// عدد نبضات التقدّم التي يبثها السحب المزيف (0 = نبضتان فقط).
+  int fineProgressTicks = 0;
   int failDownloadsBeforeSuccess = 0;
   bool hangDownloadUntilCancel = false;
   String downloadContent = 'MEDIA-DATA';
@@ -86,6 +89,15 @@ class FakeApi implements MeTubeApi {
     if (downloadCalls <= failDownloadsBeforeSuccess) {
       await File(savePath).writeAsString('partial');
       throw const NetworkException('cloudflare hiccup');
+    }
+    // **نبضات دقيقة كما يفعل Dio فعلاً**: `onReceiveProgress` يُنادى مع
+    // كل قطعة مستلمة، لا مرتين. يستعملها حارس خنق البثّ.
+    if (fineProgressTicks > 0) {
+      for (var i = 1; i <= fineProgressTicks; i++) {
+        onProgress?.call(i, fineProgressTicks);
+      }
+      await File(savePath).writeAsString(downloadContent);
+      return;
     }
     onProgress?.call(50, 100);
     await File(savePath).writeAsString(downloadContent);

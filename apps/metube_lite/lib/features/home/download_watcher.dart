@@ -23,6 +23,20 @@ final downloadWatcherProvider = Provider<void>((ref) {
   var backgroundOn = false;
   final notified = <String>{};
 
+  /// **بصمة آخر إشعار نُشر لكل مهمة** — مرشّح تكرار.
+  ///
+  /// بلاغ المالك 2026-09-04: «العدّاد في الإشعارات لا يتحرك مع أنه في
+  /// التطبيق يتحرك». [handle] تمرّ على **كل** المهام في كل بثّة، فسبع
+  /// مهام متوازية كانت تعني سبع منشورات لكل تغيّر في أيٍّ منها — آلاف
+  /// النداءات على قناة المنصة في الدقيقة. أندرويد يخنق النشر المفرط من
+  /// التطبيق الواحد فيتجمّد ما يراه المستخدم. هنا: لا يُنشر إلا ما
+  /// تغيّر نصّه أو نسبته فعلاً.
+  final lastShown = <int, String>{};
+
+  /// **تسلسل النشر**: `unawaited` على استدعاءات متلاحقة كان يسمح
+  /// لنداء قديم أن يصل بعد أحدث منه، فيعيد النسبة إلى الوراء.
+  Future<void> chain = Future.value();
+
   MTLocalizations l10n() => lookupMTLocalizations(
       Locale(ref.read(settingsProvider).localeCode ?? 'ar'));
 
@@ -58,6 +72,26 @@ final downloadWatcherProvider = Provider<void>((ref) {
     }
   }
 
+  /// ينشر شريط تقدّم **إن تغيّر** عمّا نُشر آخر مرة لهذه المهمة.
+  Future<void> showProgressIfChanged(
+    int id, {
+    required String title,
+    required String channelName,
+    required int? percent,
+    required String body,
+  }) async {
+    final signature = '$title|$body|${percent ?? -1}';
+    if (lastShown[id] == signature) return;
+    lastShown[id] = signature;
+    await notifications.showProgress(
+      id,
+      title: title,
+      body: body,
+      channelName: channelName,
+      percent: percent,
+    );
+  }
+
   Future<void> handle(List<DownloadTask> tasks) async {
     final texts = l10n();
     for (final task in tasks) {
@@ -67,7 +101,7 @@ final downloadWatcherProvider = Provider<void>((ref) {
         // فمرحلة السيرفر كلها (وهي الأطول عادة) تمر بلا أي إشعار —
         // يبدو التطبيق ساكناً. الآن كل مرحلة تُعلن نفسها.
         case TaskPhase.queued:
-          await notifications.showProgress(
+          await showProgressIfChanged(
             id,
             title: task.title ?? texts.downloadingTitle,
             body: texts.queuedSection,
@@ -76,7 +110,7 @@ final downloadWatcherProvider = Provider<void>((ref) {
             percent: null,
           );
         case TaskPhase.adding:
-          await notifications.showProgress(
+          await showProgressIfChanged(
             id,
             title: task.title ?? texts.downloadingTitle,
             body: texts.addingToServer,
@@ -84,7 +118,7 @@ final downloadWatcherProvider = Provider<void>((ref) {
             percent: null,
           );
         case TaskPhase.polling:
-          await notifications.showProgress(
+          await showProgressIfChanged(
             id,
             title: task.title ?? texts.downloadingTitle,
             body: texts
@@ -95,7 +129,7 @@ final downloadWatcherProvider = Provider<void>((ref) {
         // م-42: الملف جاهز والسحب موقوف بانتظار Wi‑Fi — الإشعار يقول
         // السبب صراحة، وإلا بدا التطبيق عالقاً بلا تفسير.
         case TaskPhase.waitingForNetwork:
-          await notifications.showProgress(
+          await showProgressIfChanged(
             id,
             title: task.title ?? texts.downloadingTitle,
             body: texts.waitingForWifi,
@@ -106,7 +140,7 @@ final downloadWatcherProvider = Provider<void>((ref) {
         // لا يظهر عند السحب من السيرفر إلى الجهاز»). شريط الإشعار وحده
         // لا يُقرأ رقماً، ومرحلة السحب هي الأطول في Lite.
         case TaskPhase.pulling:
-          await notifications.showProgress(
+          await showProgressIfChanged(
             id,
             title: task.title ?? texts.downloadingTitle,
             body: texts.pullingToDeviceProgress(
@@ -115,7 +149,7 @@ final downloadWatcherProvider = Provider<void>((ref) {
             percent: (task.progress * 100).round(),
           );
         case TaskPhase.deleting:
-          await notifications.showProgress(
+          await showProgressIfChanged(
             id,
             title: task.title ?? texts.downloadingTitle,
             body: texts.cleaningServer,
@@ -123,6 +157,7 @@ final downloadWatcherProvider = Provider<void>((ref) {
             percent: null,
           );
         case TaskPhase.completed:
+          lastShown.remove(id);
           if (!notified.add(task.id)) break;
           // **لحظة الذروة**: العنصر يصل المكتبة بتوهجة واحدة تتلاشى —
           // الاكتمال أسعد لحظة في التطبيق وكان يمر بلا أي احتفاء.
@@ -141,6 +176,7 @@ final downloadWatcherProvider = Provider<void>((ref) {
             payload: task.canonicalUrl ?? task.localPath,
           );
         case TaskPhase.failed:
+          lastShown.remove(id);
           if (!notified.add(task.id)) break;
           await notifications.cancel(id);
           await notifications.showResult(
@@ -153,6 +189,7 @@ final downloadWatcherProvider = Provider<void>((ref) {
             isError: true,
           );
         case TaskPhase.cancelled:
+          lastShown.remove(id);
           await notifications.cancel(id);
       }
     }
@@ -161,7 +198,13 @@ final downloadWatcherProvider = Provider<void>((ref) {
 
   ref.listen<AsyncValue<List<DownloadTask>>>(
     engineTasksProvider,
-    (_, next) => unawaited(handle(next.value ?? const [])),
+    (_, next) {
+      final tasks = next.value ?? const <DownloadTask>[];
+      chain = chain.then((_) => handle(tasks)).catchError((Object e) {
+        unawaited(logger.error('notification failed',
+            cause: e, tag: 'download'));
+      });
+    },
   );
 });
 

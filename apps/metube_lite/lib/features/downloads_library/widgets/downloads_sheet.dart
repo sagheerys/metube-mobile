@@ -13,6 +13,10 @@ void showDownloadsSheet(BuildContext context) {
     context: context,
     useRootNavigator: true,
     isScrollControlled: true,
+    // **لا تصعد إلى فتحة الكاميرا** (بلاغ المالك 2026-09-04): بلا هذا
+    // كانت الورقة تبدأ من أعلى الشاشة تماماً فيختفي مقبض السحب تحت
+    // شريط الحالة ولا يبقى ما يُمسك به لإنزالها.
+    useSafeArea: true,
     builder: (_) => const _DownloadsSheet(),
   );
 }
@@ -96,27 +100,46 @@ class _DownloadsSheet extends ConsumerWidget {
       );
     }
 
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(
-          MTSpace.xl, MTSpace.lg, MTSpace.xl, MTSpace.xxl),
-      child: tasks.where((t) => !t.isFinished || t.phase == TaskPhase.failed)
-              .isEmpty
-          ? MTEmptyState(
-              icon: Icons.download_done_rounded,
-              title: l10n.noDownloads,
-              message: l10n.allDownloadsFinished,
-            )
-          : ListView(
-              shrinkWrap: true,
-              children: [
-                Text(l10n.activeDownloadsSheet,
-                    style: Theme.of(context).textTheme.titleLarge),
-                const SizedBox(height: MTSpace.lg),
-                section(l10n.activeNow, running),
-                section(l10n.queuedSection, queued),
-                section(l10n.needsAttention, failed, error: true),
-              ],
-            ),
+    final shown =
+        tasks.where((t) => !t.isFinished || t.phase == TaskPhase.failed);
+    if (shown.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(
+            MTSpace.xl, MTSpace.lg, MTSpace.xl, MTSpace.xxl),
+        child: MTEmptyState(
+          icon: Icons.download_done_rounded,
+          title: l10n.noDownloads,
+          message: l10n.allDownloadsFinished,
+        ),
+      );
+    }
+
+    // **ارتفاع ثابت وقائمة تمرّر** (بلاغ المالك 2026-09-04: «صفحة
+    // التحميلات صارت في الأعلى تماماً ولا تستطيع سحبها للأسفل، والقائمة
+    // تتقلص كلما اكتمل فيديو»). `ListView(shrinkWrap: true)` كان يجعل
+    // ارتفاع الورقة = ارتفاع محتواها: سبع مهام ⇒ ملء الشاشة، ثم قفزة
+    // لأعلى مع كل اكتمال. الورقة الآن تبدأ عند 62٪ وتُسحب بين 35٪
+    // و85٪ مهما تغيّر العدد، والقائمة وحدها هي التي تمرّر.
+    return DraggableScrollableSheet(
+      expand: false,
+      initialChildSize: 0.62,
+      minChildSize: 0.35,
+      maxChildSize: 0.85,
+      builder: (context, scrollController) => Padding(
+        padding: const EdgeInsets.fromLTRB(
+            MTSpace.xl, MTSpace.lg, MTSpace.xl, MTSpace.xxl),
+        child: ListView(
+          controller: scrollController,
+          children: [
+            Text(l10n.activeDownloadsSheet,
+                style: Theme.of(context).textTheme.titleLarge),
+            const SizedBox(height: MTSpace.lg),
+            section(l10n.activeNow, running),
+            section(l10n.queuedSection, queued),
+            section(l10n.needsAttention, failed, error: true),
+          ],
+        ),
+      ),
     );
   }
 }

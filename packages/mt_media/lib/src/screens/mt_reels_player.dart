@@ -31,6 +31,7 @@ class MTReelsPlayer extends StatefulWidget {
     this.startIndex = 0,
     this.isFavorite,
     this.onToggleFavorite,
+    this.onDoubleTapFavorite,
     this.actionsBuilder,
     this.subtitleBuilder,
     this.onContinueRest,
@@ -42,7 +43,14 @@ class MTReelsPlayer extends StatefulWidget {
   final PlaybackSourceResolver resolver;
   final int startIndex;
   final bool Function(PlaylistItem item)? isFavorite;
+
+  /// **زر القلب في العمود الجانبي** — `null` ⇒ لا يُعرض أصلاً. طلب
+  /// المالك 2026-09-04: زر «أضف إلى…» يغني عنه.
   final void Function(PlaylistItem item)? onToggleFavorite;
+
+  /// **الضغطة المزدوجة (م-36)** — تبقى اختصار المفضلة ولو غاب القلب من
+  /// العمود. حين لا تُمرَّر يُستعمل [onToggleFavorite] كما كان.
+  final void Function(PlaylistItem item)? onDoubleTapFavorite;
   final List<MTPlayerAction> Function(PlaylistItem item)? actionsBuilder;
   final String Function(BuildContext context, PlaylistItem item)?
       subtitleBuilder;
@@ -223,7 +231,8 @@ class _MTReelsPlayerState extends State<MTReelsPlayer> {
                       // م-36: الضغطة المزدوجة إيماءة عمياء — النبضة هي
                       // التأكيد الوحيد أن التبديل وقع فعلاً.
                       HapticFeedback.selectionClick();
-                      widget.onToggleFavorite?.call(target);
+                      (widget.onDoubleTapFavorite ?? widget.onToggleFavorite)
+                          ?.call(target);
                       setState(() {});
                     },
                   ),
@@ -243,11 +252,13 @@ class _MTReelsPlayerState extends State<MTReelsPlayer> {
               index: _index,
               total: widget.lane.length,
               favorite: widget.isFavorite?.call(item) ?? false,
-              onToggleFavorite: () {
-                widget.onToggleFavorite?.call(item);
-                setState(() {});
-                _showChrome();
-              },
+              onToggleFavorite: widget.onToggleFavorite == null
+                  ? null
+                  : () {
+                      widget.onToggleFavorite!(item);
+                      setState(() {});
+                      _showChrome();
+                    },
               actions: widget.actionsBuilder?.call(item) ?? const [],
               subtitle: widget.subtitleBuilder?.call(context, item),
               visible: _chrome,

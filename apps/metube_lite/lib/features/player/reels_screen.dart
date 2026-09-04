@@ -8,6 +8,9 @@ import '../../di.dart';
 import '../downloads_library/library_actions.dart';
 import '../downloads_library/library_providers.dart';
 import '../downloads_library/local_item.dart';
+import '../downloads_library/widgets/item_details_sheet.dart';
+import '../shared/add_to_sheet.dart';
+import '../shared/membership.dart';
 import 'playback_providers.dart';
 
 /// مشغل الريلز في Lite (م-35) — نفس مسار القِصار المصفّى، وأفعاله
@@ -56,6 +59,11 @@ class _ReelsScreenState extends ConsumerState<ReelsScreen> {
       );
     }
 
+    // **يُقرأ في `build` لا داخل `subtitleBuilder`**: البنّاء يُنفَّذ
+    // أثناء بناء ودجت **ابن**، و`ref.watch` هناك خارج نطاقه المسموح.
+    final membership =
+        ref.watch(membershipIndexProvider).value ?? const {};
+
     final lane = ShortsLane.from(request.items);
     final startKey = request.items[request.startIndex].canonicalUrl;
     final laneIndex = lane.laneIndexOf(startKey);
@@ -77,18 +85,42 @@ class _ReelsScreenState extends ConsumerState<ReelsScreen> {
       onTakeAudioFocus: _audio.pause,
       // ع-4: ما دام الريل حياً، تشغيل الصوت من الإشعار يُسكته أولاً.
       onLive: _setLive,
-      subtitleBuilder: (context, item) =>
-          platformOfKey(item.canonicalUrl).label,
+      subtitleBuilder: (context, item) => [
+        platformOfKey(item.canonicalUrl).label,
+        // **الانتماء تحت العنوان** (بلاغ المالك 2026-09-04): في أي
+        // قائمة — كانت المعلومة في المخزن ولا تظهر في أي مشغل.
+        ?membership[item.canonicalUrl]?.line(l10n),
+      ].join(' · '),
       isFavorite: (item) => _libraryItemOf(item)?.favorite ?? false,
-      onToggleFavorite: (item) =>
+      // **لا قلب في العمود** (بلاغ المالك 2026-09-04): زر «أضف إلى…»
+      // أدناه يغطي المفضلة والقائمة معاً. الضغطة المزدوجة على المقطع
+      // تبقى اختصار المفضلة (م-36) عبر [onDoubleTapFavorite].
+      onDoubleTapFavorite: (item) =>
           ref.read(libraryActionsProvider).toggleFavorite(item.canonicalUrl),
-      actionsBuilder: (item) => [
-        MTPlayerAction(
-          icon: Icons.share_rounded,
-          label: l10n.share,
-          onTap: () => _share(item),
-        ),
-      ],
+      actionsBuilder: (item) {
+        final match = _libraryItemOf(item);
+        return [
+          MTPlayerAction(
+            icon: Icons.info_outline_rounded,
+            label: l10n.details,
+            onTap: () {
+              if (match != null) showItemDetailsSheet(context, match);
+            },
+          ),
+          MTPlayerAction(
+            icon: Icons.playlist_add_rounded,
+            label: l10n.addTo,
+            onTap: () {
+              if (match != null) showAddToSheet(context, ref, match);
+            },
+          ),
+          MTPlayerAction(
+            icon: Icons.share_rounded,
+            label: l10n.share,
+            onTap: () => _share(item),
+          ),
+        ];
+      },
       // لا يُعرض الزر أصلاً إن كانت القائمة المعروضة كلها قِصار.
       onContinueRest: lane.nextNonShortIndex(request.items) == null
           ? null

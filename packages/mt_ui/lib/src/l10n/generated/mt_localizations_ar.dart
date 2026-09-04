@@ -56,6 +56,9 @@ class MTLocalizationsAr extends MTLocalizations {
   String get addToFavorites => 'أضف للمفضلة';
 
   @override
+  String get addTo => 'أضف إلى…';
+
+  @override
   String get addToPlaylist => 'إضافة إلى قائمة';
 
   @override
@@ -712,6 +715,9 @@ class MTLocalizationsAr extends MTLocalizations {
   String get importKeyTitle => 'استيراد مفتاح النسخ';
 
   @override
+  String get inPlaylists => 'في قوائم التشغيل';
+
+  @override
   String get invalidUrl => 'أدخل رابطاً صالحاً';
 
   @override
@@ -1264,7 +1270,7 @@ class MTLocalizationsAr extends MTLocalizations {
   }
 
   @override
-  String get saveQueueAsPlaylist => 'احفظ هذه القائمة كبلاي لست';
+  String get saveQueueAsPlaylist => 'احفظ هذه القائمة كقائمة تشغيل';
 
   @override
   String get saveSettings => 'حفظ الإعدادات';

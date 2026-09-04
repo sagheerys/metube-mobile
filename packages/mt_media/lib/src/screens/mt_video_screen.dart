@@ -41,6 +41,7 @@ class MTVideoScreen extends StatelessWidget {
     this.onContinueAsAudio,
     this.shouldOfferContinueAsAudio,
     this.playlistName,
+    this.membershipLine,
   });
 
   final MTVideoSession session;
@@ -70,6 +71,11 @@ class MTVideoScreen extends StatelessWidget {
   final bool Function()? shouldOfferContinueAsAudio;
   final String? playlistName;
 
+  /// **انتماء المقطع** (بلاغ المالك 2026-09-04): «في أي وسم يتبع أو في
+  /// أي قائمة مضاف». يظهر في الوضع العرضي تحت العنوان — العمودي يعرضه
+  /// عبر [subtitleBuilder] في ورقة المعلومات.
+  final String? membershipLine;
+
   bool get _offersAudio =>
       onContinueAsAudio != null &&
       (shouldOfferContinueAsAudio?.call() ?? true);
@@ -89,6 +95,7 @@ class MTVideoScreen extends StatelessWidget {
                 _VideoArea(
                   session: session,
                   playlistName: playlistName,
+                  membershipLine: membershipLine,
                   onBack: () => Navigator.of(context).maybePop(),
                   onFullscreen: () => _openFullscreen(context),
                   onQueue: () => _openQueue(context),
@@ -117,6 +124,7 @@ class MTVideoScreen extends StatelessWidget {
             session: session,
             artwork: artwork,
             playlistName: playlistName,
+            membershipLine: membershipLine,
             onSaveQueueAsPlaylist: onSaveQueueAsPlaylist,
             onShowPlaylist: onShowPlaylist,
           ),
@@ -186,6 +194,7 @@ class _VideoArea extends StatelessWidget {
     required this.onFullscreen,
     required this.onQueue,
     this.playlistName,
+    this.membershipLine,
   });
 
   final MTVideoSession session;
@@ -193,6 +202,7 @@ class _VideoArea extends StatelessWidget {
   final VoidCallback onFullscreen;
   final VoidCallback onQueue;
   final String? playlistName;
+  final String? membershipLine;
 
   @override
   Widget build(BuildContext context) {
@@ -224,6 +234,7 @@ class _VideoArea extends StatelessWidget {
               MTVideoControls(
                 session: session,
                 playlistName: playlistName,
+                membershipLine: membershipLine,
                 onBack: onBack,
                 onToggleFullscreen: onFullscreen,
                 onQueue: onQueue,

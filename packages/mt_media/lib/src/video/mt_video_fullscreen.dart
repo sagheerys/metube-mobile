@@ -19,6 +19,7 @@ class MTVideoFullscreenPage extends StatefulWidget {
     this.onSaveQueueAsPlaylist,
     this.onShowPlaylist,
     this.playlistName,
+    this.membershipLine,
   });
 
   final MTVideoSession session;
@@ -26,6 +27,9 @@ class MTVideoFullscreenPage extends StatefulWidget {
   final VoidCallback? onSaveQueueAsPlaylist;
   final VoidCallback? onShowPlaylist;
   final String? playlistName;
+
+  /// انتماء المقطع (وسوم/قوائم) — يُعرض تحت العنوان في الوضع العرضي.
+  final String? membershipLine;
 
   @override
   State<MTVideoFullscreenPage> createState() => _MTVideoFullscreenPageState();
@@ -78,6 +82,7 @@ class _MTVideoFullscreenPageState extends State<MTVideoFullscreenPage> {
                 session: session,
                 fullscreen: true,
                 playlistName: widget.playlistName,
+                membershipLine: widget.membershipLine,
                 onBack: () => Navigator.of(context).maybePop(),
                 onToggleFullscreen: () => Navigator.of(context).maybePop(),
                 onQueue: () => setState(() => _queueOpen = true),

@@ -18,6 +18,7 @@ class MTVideoControls extends StatefulWidget {
     required this.onQueue,
     this.fullscreen = false,
     this.playlistName,
+    this.membershipLine,
   });
 
   final MTVideoSession session;
@@ -26,6 +27,7 @@ class MTVideoControls extends StatefulWidget {
   final VoidCallback onQueue;
   final bool fullscreen;
   final String? playlistName;
+  final String? membershipLine;
 
   @override
   State<MTVideoControls> createState() => _MTVideoControlsState();
@@ -114,6 +116,7 @@ class _MTVideoControlsState extends State<MTVideoControls> {
               onToggleFullscreen: widget.onToggleFullscreen,
               fullscreen: widget.fullscreen,
               playlistName: widget.playlistName,
+              membershipLine: widget.membershipLine,
               onLock: widget.fullscreen
                   ? () {
                       _hideTimer?.cancel();

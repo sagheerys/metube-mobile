@@ -30,6 +30,21 @@ class _MTEqualizerState extends State<MTEqualizer>
     if (widget.animate) _controller.repeat(reverse: true);
   }
 
+  /// **يتوقف فعلاً عند الإيقاف المؤقت** (بلاغ المالك 2026-09-04:
+  /// «التأثير يستمر بعد إيقاف المقطع فيوحي أنه يعمل»). العلم كان
+  /// يُقرأ في `initState` فقط، فتغيّره لاحقاً لا يوقف المتحكم — يبقى
+  /// يعيد البناء ستين مرة في الثانية على مقطع ساكن.
+  @override
+  void didUpdateWidget(MTEqualizer oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.animate == oldWidget.animate) return;
+    if (widget.animate) {
+      _controller.repeat(reverse: true);
+    } else {
+      _controller.stop();
+    }
+  }
+
   @override
   void dispose() {
     _controller.dispose();

@@ -27,6 +27,7 @@ class MTMediaGridCard extends StatelessWidget {
     this.selected = false,
     this.highlighted = false,
     this.playing = false,
+    this.paused = false,
     this.favorite = false,
     this.onTap,
     this.onLongPress,
@@ -44,6 +45,10 @@ class MTMediaGridCard extends StatelessWidget {
   final bool selected;
   final bool highlighted;
   final bool playing;
+
+  /// [playing] يعني «هذا هو العنصر الحالي»؛ [paused] يعني أنه متوقف
+  /// مؤقتاً — فيظهر المؤشر ساكناً بدل أن يرقص على مقطع لا يعمل.
+  final bool paused;
   final bool favorite;
   final VoidCallback? onTap;
   final VoidCallback? onLongPress;
@@ -91,6 +96,7 @@ class MTMediaGridCard extends StatelessWidget {
                 _Cover(
                   duration: duration,
                   playing: playing,
+                  paused: paused,
                   favorite: favorite,
                   onFavoriteToggle: onFavoriteToggle,
                   onMore: onMore,
@@ -140,6 +146,7 @@ class _Cover extends StatelessWidget {
   const _Cover({
     required this.duration,
     required this.playing,
+    required this.paused,
     required this.favorite,
     required this.onFavoriteToggle,
     required this.onMore,
@@ -148,6 +155,7 @@ class _Cover extends StatelessWidget {
 
   final String? duration;
   final bool playing;
+  final bool paused;
   final bool favorite;
   final VoidCallback? onFavoriteToggle;
   final VoidCallback? onMore;
@@ -178,9 +186,9 @@ class _Cover extends StatelessWidget {
                     color: p.ink.withValues(alpha: 0.55),
                     shape: BoxShape.circle,
                   ),
-                  child: const Padding(
-                    padding: EdgeInsets.all(MTSpace.xs),
-                    child: MTEqualizer(),
+                  child: Padding(
+                    padding: const EdgeInsets.all(MTSpace.xs),
+                    child: MTEqualizer(animate: !paused),
                   ),
                 ),
               ),

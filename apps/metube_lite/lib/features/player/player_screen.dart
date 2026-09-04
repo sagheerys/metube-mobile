@@ -12,6 +12,7 @@ import '../downloads_library/library_actions.dart';
 import '../downloads_library/library_providers.dart';
 import '../downloads_library/local_item.dart';
 import '../playlists/playlist_dialogs.dart';
+import '../shared/membership.dart';
 import 'playback_providers.dart';
 
 /// مشغل الفيديو في Lite (ر-4): كل المصادر محلية، فالأفعال هي المتابعة
@@ -60,11 +61,20 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
         ),
       );
     }
+    // **يُقرأ في `build` لا داخل `subtitleBuilder`**: البنّاء يُنفَّذ
+    // أثناء بناء ودجت **ابن**، و`ref.watch` هناك خارج نطاقه المسموح.
+    final membership = ref.watch(membershipIndexProvider).value ?? const {};
+
     return MTVideoScreen(
       session: session,
       artwork: artworkBuilderFor(ref),
       playlistName: request.playlistName,
-      subtitleBuilder: _subtitle,
+      // **الانتماء في الوضع العرضي** (بلاغ المالك 2026-09-04): لا ورقة
+      // معلومات هناك، فالسطر تحت العنوان هو مكانه الوحيد.
+      membershipLine:
+          membership[session.current?.canonicalUrl]?.line(context.mtl),
+      subtitleBuilder: (context, item) =>
+          _subtitle(context, item, membership),
       actions: _actions(session),
       onContinueAsAudio: _continueAsAudio,
       // **لا يُسأل مرتين** (بلاغ المالك 2026-09-02): من نقل المقطع
@@ -77,8 +87,11 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
     );
   }
 
-  String _subtitle(BuildContext context, PlaylistItem item) =>
-      platformOfKey(item.canonicalUrl).label;
+  String _subtitle(BuildContext context, PlaylistItem item,
+          Map<String, ItemMembership> membership) => [
+        platformOfKey(item.canonicalUrl).label,
+        ?membership[item.canonicalUrl]?.line(context.mtl),
+      ].join(' · ');
 
   List<MTPlayerAction> _actions(MTVideoSession session) {
     final l10n = context.mtl;

@@ -6,7 +6,8 @@ import 'mt_up_next_list.dart';
 
 /// محتوى قائمة الانتظار — نفس المحتوى في الأشكال الثلاثة (م-38):
 /// ورقة سفلية (صوتي) · قسم «التالي» (فيديو عمودي) · لوحة جانبية (عرضي).
-/// في كلها زر «احفظ هذه القائمة كبلاي لست» ورابط «عرض الكل ↩».
+/// في كلها زر «احفظ هذه القائمة» ورابط «عرض الكل ↩» — والزر يغيب
+/// حين يكون المصدر قائمةً محفوظة أصلاً ([playlistName] غير فارغ).
 class MTQueuePanel extends StatelessWidget {
   const MTQueuePanel({
     super.key,
@@ -92,7 +93,11 @@ class MTQueuePanel extends StatelessWidget {
             onTap: onSelect,
           ),
         ),
-        if (onSaveAsPlaylist != null) ...[
+        // **لا يُعرض والقائمة قائمةٌ محفوظة أصلاً** (بلاغ المالك
+        // 2026-09-04: «الزر موجود في كل مكان حتى في قائمة التشغيل»).
+        // [playlistName] غير فارغ ⇔ التشغيل انطلق من قائمة محفوظة،
+        // فحفظها «كقائمة تشغيل» يصنع نسخة ثانية بلا معنى.
+        if (onSaveAsPlaylist != null && playlistName == null) ...[
           const SizedBox(height: MTSpace.sm),
           MTSaveQueueButton(
               onTap: onSaveAsPlaylist!, label: l10n.saveQueueAsPlaylist),
@@ -102,7 +107,7 @@ class MTQueuePanel extends StatelessWidget {
   }
 }
 
-/// «احفظ هذه القائمة كبلاي لست» (م-38).
+/// «احفظ هذه القائمة كقائمة تشغيل» (م-38).
 class MTSaveQueueButton extends StatelessWidget {
   const MTSaveQueueButton({
     super.key,

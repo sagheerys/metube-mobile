@@ -230,5 +230,58 @@ void main() {
       await sub.cancel();
       expect(seen, contains(closeTo(0.453, 0.0001)));
     });
+
+    // **حارس خنق بثّ التقدّم** (بلاغ المالك 2026-09-04: «سبعة تحميلات
+    // ⇒ التطبيق ثقيل»، و«عدّاد الإشعارات لا يتحرك»). Dio ينادي
+    // `onReceiveProgress` مع **كل قطعة**؛ بلا مرشّح كانت كل قطعة تصير
+    // عنصراً في `updates` ⇒ إعادة بناء المكتبة ونشرَ إشعار لكل مهمة.
+    // ألف نبضة يجب ألا تتجاوز 101 بثّة (نسبة صحيحة واحدة لكل قيمة).
+    test('ألف نبضة سحب ⇒ بثّ واحد لكل نسبة صحيحة لا أكثر', () async {
+      final api = FakeApi(historyScript: [
+        historyWith(),
+        historyWith(done: [doneItem()]),
+      ])
+        ..fineProgressTicks = 1000;
+      final engine = makeEngine(api);
+      final pulls = <double>[];
+      final sub = engine.updates
+          .where((t) => t.phase == TaskPhase.pulling)
+          .listen((t) => pulls.add(t.progress));
+      final task = engine.submit(inputUrl, Quality.best);
+      await awaitFinished(engine, task.id);
+      await sub.cancel();
+
+      // 101 نسبة صحيحة + بثّتان ليستا تقدّماً: بداية الطور
+      // (`progress: 0`) وتسجيل `localPath` بعد نجاح النقل.
+      expect(pulls.length, lessThanOrEqualTo(103),
+          reason: 'التقدّم يُبَثّ عند تغيّر النسبة الصحيحة فقط');
+      // ولا يُخنق حتى يختفي: التقدّم وصل فعلاً من أوله لآخره.
+      expect(pulls.length, greaterThan(50));
+      expect(pulls.last, closeTo(1.0, 0.0001));
+    });
+
+    /// النسبة تُصفَّر مع كل طور، فلا يبتلع المرشّحُ **تقدّمَ طورٍ جديد**
+    /// لمجرد أن الطور السابق بلغ النسبة نفسها.
+    test('المرشّح لا يمنع تقدّم طور جديد بنفس النسبة', () async {
+      final api = FakeApi(historyScript: [
+        historyWith(),
+        historyWith(queue: [
+          {'url': canonical, 'status': 'downloading', 'percent': 100.0}
+        ]),
+        historyWith(done: [doneItem()]),
+      ])
+        ..fineProgressTicks = 200;
+      final engine = makeEngine(api);
+      final pulling = <double>[];
+      final sub = engine.updates
+          .where((t) => t.phase == TaskPhase.pulling)
+          .listen((t) => pulling.add(t.progress));
+      final task = engine.submit(inputUrl, Quality.best);
+      await awaitFinished(engine, task.id);
+      await sub.cancel();
+      // بلغ الاستطلاع 100٪ قبل السحب — ومع ذلك السحب بثّ تقدّمه كاملاً.
+      expect(pulling.last, closeTo(1.0, 0.0001));
+      expect(pulling.length, greaterThan(50));
+    });
   });
 }

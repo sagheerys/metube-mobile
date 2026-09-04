@@ -54,6 +54,9 @@ class MTLocalizationsEn extends MTLocalizations {
   String get addToFavorites => 'Add to favorites';
 
   @override
+  String get addTo => 'Add to…';
+
+  @override
   String get addToPlaylist => 'Add to Playlist';
 
   @override
@@ -712,6 +715,9 @@ class MTLocalizationsEn extends MTLocalizations {
 
   @override
   String get importKeyTitle => 'Import backup key';
+
+  @override
+  String get inPlaylists => 'In playlists';
 
   @override
   String get invalidUrl => 'Enter a valid link';

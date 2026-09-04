@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart' show Clipboard, ClipboardData;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mt_ui/mt_ui.dart';
 
@@ -9,6 +8,7 @@ import '../../tags/item_tags_sheet.dart';
 import '../library_models.dart';
 import '../library_actions.dart';
 import '../library_providers.dart';
+import 'item_details_sheet.dart';
 
 /// ورقة إجراءات العنصر حسب حالته (ر-5) — الحذف أخيراً معزولاً بفاصل
 /// وبلون الخطأ (قاعدة تنقل عامة).
@@ -92,7 +92,7 @@ class _ItemActionsSheet extends ConsumerWidget {
                     successText: l10n.madeOffline)),
           tile(Icons.info_outline_rounded, l10n.details, () {
             Navigator.pop(context);
-            _showDetails(host, l10n, item);
+            showItemDetailsSheet(host, item);
           }),
           tile(Icons.share_rounded, l10n.share,
               () => run(() => actions.smartShare(item))),
@@ -155,96 +155,6 @@ class _ItemActionsSheet extends ConsumerWidget {
     );
   }
 
-  /// ورقة التفاصيل (م-16): الاسم والحجم والتاريخ والمنصة والرابط بنسخ بلمسة.
-  void _showDetails(
-      BuildContext context, MTLocalizations l10n, LibraryItem item) {
-    showModalBottomSheet<void>(
-      context: context,
-      // **على ملّاح الجذر** (بلاغ المالك 2026-09-02: «زر إضافة رابط
-      // لا يزال يحجب الرابط في معلومات الفيديو»). الافتراضي
-      // `useRootNavigator: false` يفتح الورقة على ملّاح **فرع الغلاف**،
-      // فلا يراها مراقب المسارات المسجَّل على الجذر ويبقى الزر العائم
-      // مرسوماً فوقها. مطبَّق على كل أوراق التطبيقين (18 موضعاً).
-      useRootNavigator: true,
-      builder: (_) => _DetailsSheet(item: item),
-    );
-  }
-}
-
-class _DetailsSheet extends StatelessWidget {
-  const _DetailsSheet({required this.item});
-
-  final LibraryItem item;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.mtl;
-    final text = Theme.of(context).textTheme;
-    final p = MTThemeX.of(context).palette;
-
-    Widget row(String label, String value) => Padding(
-          padding: const EdgeInsets.symmetric(vertical: MTSpace.xs),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(
-                width: 110,
-                child: Text(label,
-                    style: text.bodySmall!.copyWith(color: p.ink3)),
-              ),
-              Expanded(child: Text(value, style: text.bodyMedium)),
-            ],
-          ),
-        );
-
-    final sizeMb = item.sizeBytes == null
-        ? null
-        : (item.sizeBytes! / (1024 * 1024)).toStringAsFixed(1);
-
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(
-            MTSpace.xl, MTSpace.lg, MTSpace.xl, MTSpace.xl),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            MTSectionHeader(title: l10n.details),
-            const SizedBox(height: MTSpace.sm),
-            // **تسميات الصفوف** (فحص شامل 2026-09-02): كانت «التفاصيل»
-            // عنواناً لصف العنوان و«MB» عنواناً لصف الحجم — نصّ
-            // مثبت ومعنى خاطئ معاً (القاعدة 5).
-            row(l10n.titleLabel, item.title),
-            if (sizeMb != null) row(l10n.fileSize, '$sizeMb MB'),
-            if (item.timestamp != null)
-              row(l10n.downloadDate, mtTimeAgo(context, item.timestamp!)),
-            row(l10n.availability, [
-              if (item.isOffline) l10n.availabilityOffline,
-              if (item.onServer) l10n.availabilityServer,
-            ].join(' + ')),
-            const SizedBox(height: MTSpace.sm),
-            // الرابط الأصلي — نسخ بلمسة (م-16).
-            OutlinedButton.icon(
-              onPressed: () async {
-                await Clipboard.setData(
-                    ClipboardData(text: item.canonicalUrl));
-                if (context.mounted) {
-                  showMTSnack(context, l10n.settingsSaved);
-                }
-              },
-              icon: const Icon(Icons.copy_rounded, size: 16),
-              label: Text(
-                item.canonicalUrl,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                textDirection: TextDirection.ltr,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }
 
 /// تأكيد الحذف الجماعي (ر-6) — حذف من السيرفر بالمُقنون.

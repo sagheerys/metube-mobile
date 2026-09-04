@@ -17,6 +17,7 @@ class MTVideoTopBar extends StatelessWidget {
     required this.fullscreen,
     this.onLock,
     this.playlistName,
+    this.membershipLine,
   });
 
   final MTVideoSession session;
@@ -25,6 +26,11 @@ class MTVideoTopBar extends StatelessWidget {
   final bool fullscreen;
   final VoidCallback? onLock;
   final String? playlistName;
+
+  /// **انتماء المقطع** (بلاغ المالك 2026-09-04): «في أي وسم يتبع أو في
+  /// أي قائمة مضاف» — يُبنى في التطبيق ويُعرض تحت العنوان في الوضع
+  /// العرضي حيث لا ورقة معلومات أصلاً.
+  final String? membershipLine;
 
   @override
   Widget build(BuildContext context) {
@@ -35,6 +41,7 @@ class MTVideoTopBar extends StatelessWidget {
       if (playlistName != null) '«$playlistName»',
       if (session.items.length > 1)
         l10n.playlistOf(session.currentIndex + 1, session.items.length),
+      ?membershipLine,
     ];
 
     return Row(

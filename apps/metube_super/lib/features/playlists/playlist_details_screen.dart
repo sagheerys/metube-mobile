@@ -146,15 +146,28 @@ class _ReorderableItems extends ConsumerWidget {
     // متغيرة — أي قراءة لمرة واحدة متنكرة في هيئة مراقبة. الصواب
     // الموجود في الحزمة نفسها: بثّ `handler.mediaItem` (ومعرفه هو
     // canonicalUrl).
+    // **الحالي شيء، والعازف شيء آخر**: مؤشر التوازن كان يرقص على مقطع
+    // موقوف مؤقتاً لأن الشاشة لا تعرف إلا «أيّ عنصر هو الحالي»
+    // (بلاغ المالك 2026-09-04). التياران معاً يفصلان الحالتين.
+    final handler = ref.read(audioHandlerProvider);
     return StreamBuilder<String?>(
-      stream: ref.read(audioHandlerProvider).currentKey,
-      builder: (context, snapshot) =>
-          _list(context, ref, headers, snapshot.data),
+      stream: handler.currentKey,
+      builder: (context, keySnapshot) => StreamBuilder<bool>(
+        stream: handler.playingStream,
+        initialData: true,
+        builder: (context, playingSnapshot) => _list(
+          context,
+          ref,
+          headers,
+          keySnapshot.data,
+          playingSnapshot.data ?? true,
+        ),
+      ),
     );
   }
 
   Widget _list(BuildContext context, WidgetRef ref,
-      Map<String, String>? headers, String? playingUrl) {
+      Map<String, String>? headers, String? playingUrl, bool isPlaying) {
     return ReorderableListView.builder(
       padding: const EdgeInsets.fromLTRB(
           MTSpace.pagePad, 0, MTSpace.pagePad, 140),
@@ -178,6 +191,7 @@ class _ReorderableItems extends ConsumerWidget {
             title: item.title,
             subtitle: item.uploader,
             playing: item.canonicalUrl == playingUrl,
+            paused: !isPlaying,
             thumbnail: artworkFor(item.artworkUrl, headers: headers),
             platform: platformKindOf(
                 MediaPlatform.detect(item.canonicalUrl)),

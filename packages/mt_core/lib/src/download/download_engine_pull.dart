@@ -9,6 +9,9 @@ extension DownloadEnginePull on DownloadEngine {
   /// السحب ثم الحذف — مشترك بين المسار العادي والمستأنف بعد الركن.
   Future<void> _pullPhase(String taskId, HistoryItem done) async {
     _throwIfCancelRequested(taskId);
+    // النسبة تُصفَّر مع الطور: مرشّح [_emitProgress] يقارن بآخر نسبة،
+    // فبقاء نسبة الاستطلاع كان يبتلع أول بثّة سحب توافقها رقماً.
+    _lastPercent.remove(taskId);
     _emit(_tasks[taskId]!.copyWith(phase: TaskPhase.pulling, progress: 0));
     final savePath = savePathBuilder(_tasks[taskId]!, done.filename!);
     final token = CancelToken();
@@ -19,7 +22,7 @@ extension DownloadEnginePull on DownloadEngine {
       serverFilename: done.filename!,
       savePath: savePath,
       cancelToken: token,
-      onProgress: (p) => _emit(_tasks[taskId]!.copyWith(progress: p)),
+      onProgress: (p) => _emitProgress(taskId, p),
     );
     _emit(_tasks[taskId]!.copyWith(localPath: finalPath));
 

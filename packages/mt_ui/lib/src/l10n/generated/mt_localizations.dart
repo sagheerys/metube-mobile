@@ -164,6 +164,12 @@ abstract class MTLocalizations {
   /// **'Add to favorites'**
   String get addToFavorites;
 
+  /// No description provided for @addTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to…'**
+  String get addTo;
+
   /// No description provided for @addToPlaylist.
   ///
   /// In en, this message translates to:
@@ -1357,6 +1363,12 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'Import backup key'**
   String get importKeyTitle;
+
+  /// No description provided for @inPlaylists.
+  ///
+  /// In en, this message translates to:
+  /// **'In playlists'**
+  String get inPlaylists;
 
   /// No description provided for @invalidUrl.
   ///

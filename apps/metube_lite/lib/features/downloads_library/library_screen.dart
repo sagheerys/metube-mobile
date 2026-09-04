@@ -10,12 +10,12 @@ import '../../di.dart';
 import '../home/add_flow.dart';
 import '../player/playback_providers.dart';
 import '../playlists/add_to_playlist_sheet.dart';
-import 'artwork_view.dart';
 import 'library_actions.dart';
 import 'library_providers.dart';
 import 'local_item.dart';
 import 'widgets/downloads_sheet.dart';
 import 'widgets/item_actions_sheet.dart';
+import 'widgets/library_cards.dart';
 import 'widgets/library_chips.dart';
 import 'widgets/sort_sheet.dart';
 
@@ -201,11 +201,26 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
               SliverPadding(
                 padding:
                     const EdgeInsets.symmetric(horizontal: MTSpace.pagePad),
-                sliver: SliverList.builder(
-                  itemCount: value.length,
-                  itemBuilder: (context, index) =>
-                      _itemCard(l10n, options, value[index]),
-                ),
+                sliver: options.grid
+                    // الشبكة كسولة أيضاً — `SliverGrid.builder` لا يبني
+                    // إلا المرئي. النسبة نفسها المقيسة في Super.
+                    ? SliverGrid.builder(
+                        gridDelegate:
+                            const SliverGridDelegateWithMaxCrossAxisExtent(
+                          maxCrossAxisExtent: 210,
+                          mainAxisSpacing: MTSpace.md,
+                          crossAxisSpacing: MTSpace.md,
+                          childAspectRatio: 1.02,
+                        ),
+                        itemCount: value.length,
+                        itemBuilder: (context, index) =>
+                            _itemCard(options, value[index]),
+                      )
+                    : SliverList.builder(
+                        itemCount: value.length,
+                        itemBuilder: (context, index) =>
+                            _itemCard(options, value[index]),
+                      ),
               ),
             ],
           AsyncLoading() => [
@@ -312,44 +327,11 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     context.push(tapped.isShortForm ? '/reels' : '/player');
   }
 
-  Widget _itemCard(
-      MTLocalizations l10n, LibraryViewOptions options, LocalItem item) {
-    final controller = ref.read(libraryViewProvider.notifier);
-    final actions = ref.read(libraryActionsProvider);
-    final highlighted = ref.watch(highlightedItemProvider) == item.key;
-    return MTMediaCard(
-      title: item.title,
-      subtitle: [
-        mtTimeAgo(context, item.modified),
-        '${(item.sizeBytes / (1024 * 1024)).toStringAsFixed(1)} MB',
-      ].join(' · '),
-      thumbnail:
-          item.thumbnail == null ? null : artworkFor(item.thumbnail),
-      platform: platformKindOf(item.platform),
-      // **لا شارة موقع في Lite** (بلاغ المالك 2026-09-02): كل عنصر في
-      // هذه المكتبة ملف على الجهاز بحكم بنائها من مسح المجلد، فـ«بلا
-      // اتصال» على كل بطاقة معلومة صفرية وضجيج بصري. الشارة تبقى في
-      // Super حيث يتعايش المحلي والسيرفري.
-      compact: options.compact,
-      favorite: item.favorite,
-      selected: options.selection.contains(item.key),
-      highlighted: highlighted,
-      onFavoriteToggle: () async {
-        final added = await actions.toggleFavorite(item.key);
-        if (!mounted) return;
-        showMTSnack(context,
-            added ? l10n.addedToFavorites : l10n.removedFromFavorites);
-      },
-      onTap: options.selecting
-          ? () => controller.toggleSelected(item.key)
-          : () {
-              // الإبراز مؤقت بطبعه: أي نقرة تُطفئه فوراً وإلا بقي
-              // العنصر «محدداً» للأبد (بلاغ المالك 2026-09-02).
-              if (highlighted) _clearHighlight();
-              _play(item);
-            },
-      onLongPress: () => controller.toggleSelected(item.key),
-      onMore: () => showItemActionsSheet(context, ref, item),
-    );
-  }
+  Widget _itemCard(LibraryViewOptions options, LocalItem item) =>
+      LibraryItemCard(
+        item: item,
+        grid: options.grid,
+        onPlay: () => _play(item),
+        onClearHighlight: _clearHighlight,
+      );
 }

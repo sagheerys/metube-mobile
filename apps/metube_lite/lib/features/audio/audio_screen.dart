@@ -18,6 +18,9 @@ class AudioScreen extends ConsumerWidget {
     return MTAudioScreen(
       handler: handler,
       artwork: artworkBuilderFor(ref),
+      // **بلا رقاقة مصدر في Lite** (بلاغ المالك 2026-09-04): «تشغيل من
+      // جهازك» معلومة صفرية هنا — لا يوجد في مكتبة Lite غير الجهاز.
+      showSourceChip: false,
       onSaveQueueAsPlaylist: () => _saveQueue(context, ref, handler),
     );
   }
