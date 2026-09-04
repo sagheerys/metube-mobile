@@ -124,10 +124,6 @@ class MTLocalizationsAr extends MTLocalizations {
       'تشغيل المقطع الصوتي في الخلفية عند النقر على زر الرجوع';
 
   @override
-  String get autoBackupNote =>
-      'تُكتب نسخة تلقائياً بعد كل تغيير — ويُحتفظ بآخر ٧ نسخ';
-
-  @override
   String get autoBuilt => 'تلقائية';
 
   @override
@@ -189,22 +185,6 @@ class MTLocalizationsAr extends MTLocalizations {
   @override
   String get backupNote =>
       'يشمل القوائم والوسوم وفهرس عدم الاتصال وروابط الأغلفة والإعدادات. لا تُنسخ كلمة المرور ولا اسم المستخدم أبداً، ولا تُنسخ ملفات الوسائط. النسخة نصّية غير مشفّرة — من يفتح الملف يقرأه.';
-
-  @override
-  String get backupNow => 'انسخ الآن';
-
-  @override
-  String get backupNowSubtitle => 'حفظ نسخة احتياطية مشفّرة في مجلد التنزيلات';
-
-  @override
-  String get backupOrphaned => 'ملف النسخة الاحتياطية غير قابل للقراءة';
-
-  @override
-  String get backupOrphanedMessage =>
-      'هذا الـ backup أُنشئ بمفتاح تثبيت مختلف. بعد مسح البيانات أو إعادة التثبيت، اختفى مفتاح التشفير ولا يمكن استرجاع هذا الملف.\n\nهل تريد حذفه والبدء من جديد؟';
-
-  @override
-  String get backupReset => 'تم حذف الـ backup القديم';
 
   @override
   String get backupRestore => 'النسخ الاحتياطي والاستعادة';
@@ -583,18 +563,8 @@ class MTLocalizationsAr extends MTLocalizations {
   String get exitFullscreen => 'خروج من ملء الشاشة';
 
   @override
-  String get exportBackupKey => 'تصدير مفتاح النسخ الاحتياطي';
-
-  @override
-  String get exportBackupKeySubtitle =>
-      'مطلوب لاستعادة النسخة الاحتياطية على هاتف جديد أو بعد مسح البيانات';
-
-  @override
   String get exportKeySubtitle =>
       'لازم للاستعادة على هاتف جديد أو بعد إعادة التثبيت';
-
-  @override
-  String get exportKeyTitle => 'تصدير مفتاح النسخ';
 
   @override
   String get externalNetworkDesc =>
@@ -702,19 +672,6 @@ class MTLocalizationsAr extends MTLocalizations {
   String get importBackup => 'استيراد نسخة';
 
   @override
-  String get importBackupKey => 'استيراد مفتاح النسخ الاحتياطي';
-
-  @override
-  String get importBackupKeySubtitle =>
-      'قراءة ملف المفتاح من مجلد تنزيلات التطبيق';
-
-  @override
-  String get importKeySubtitle => 'حمّل مفتاحاً صُدِّر سابقاً قبل الاستعادة';
-
-  @override
-  String get importKeyTitle => 'استيراد مفتاح النسخ';
-
-  @override
   String get inPlaylists => 'في قوائم التشغيل';
 
   @override
@@ -747,16 +704,6 @@ class MTLocalizationsAr extends MTLocalizations {
   String get pickAnotherFileSubtitle => 'نسخة من هاتف آخر أو من إصدار سابق';
 
   @override
-  String get migrationSection => 'الهجرة';
-
-  @override
-  String get importLegacyKey => 'استيراد مفتاح نسخة قديمة';
-
-  @override
-  String get importLegacyKeySubtitle =>
-      'لازم فقط لفتح نسخة مشفّرة من إصدار سابق';
-
-  @override
   String get invalidUrl => 'أدخل رابطاً صالحاً';
 
   @override
@@ -767,11 +714,6 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get keyExportFailed => 'فشل تصدير مفتاح النسخ الاحتياطي';
-
-  @override
-  String keyExported(Object path) {
-    return 'حُفظ المفتاح في:\n$path\n\nاحفظه في مكان آمن (مثل Google Drive).';
-  }
 
   @override
   String keyExportedMessage(Object path) {
@@ -799,18 +741,11 @@ class MTLocalizationsAr extends MTLocalizations {
       'ملف المفتاح غير موجود في Downloads/MeTube_Super/metube_super_backup_key.txt';
 
   @override
-  String get keyImported => 'تم استيراد المفتاح. يمكنك الآن استخدام الاستعادة.';
-
-  @override
   String get keyImportedMessage =>
       'تم استعادة مفتاح التشفير. يمكنك الآن استخدام \\\"استعادة جميع البيانات\\\" لاسترداد نسختك الاحتياطية.';
 
   @override
   String get keyImportedTitle => 'تم استيراد المفتاح';
-
-  @override
-  String get keySecurityWarning =>
-      'تعامل مع هذا الملف ككلمة مرور — من يملكه مع نسختك الاحتياطية يستطيع قراءة بياناتك.';
 
   @override
   String get language => 'اللغة';
@@ -1262,9 +1197,6 @@ class MTLocalizationsAr extends MTLocalizations {
   String get reportBug => 'الابلاغ عن مشكلة';
 
   @override
-  String get resetBackup => 'حذف وبدء من جديد';
-
-  @override
   String get restoreCancelled => 'لم يُعثر على ملف النسخة في مجلد التنزيلات';
 
   @override
@@ -1273,10 +1205,6 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get restoreData => 'استعادة';
-
-  @override
-  String get restoreDataSubtitle =>
-      'استيراد النسخة المشفّرة من مجلد تنزيلات التطبيق';
 
   @override
   String get restoreFailed => 'فشلت الاستعادة — ملف نسخة غير صالح';

@@ -290,12 +290,6 @@ abstract class MTLocalizations {
   /// **'Play audio in background when pressing back button'**
   String get autoBackgroundAudioSubtitle;
 
-  /// No description provided for @autoBackupNote.
-  ///
-  /// In en, this message translates to:
-  /// **'A backup is written automatically after every change — the last 7 are kept'**
-  String get autoBackupNote;
-
   /// No description provided for @autoBuilt.
   ///
   /// In en, this message translates to:
@@ -409,36 +403,6 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'Includes playlists, tags, the offline index, artwork links and settings. Passwords and usernames are never backed up, and media files are not included. Backups are plain text — anyone who opens the file can read it.'**
   String get backupNote;
-
-  /// No description provided for @backupNow.
-  ///
-  /// In en, this message translates to:
-  /// **'Back up now'**
-  String get backupNow;
-
-  /// No description provided for @backupNowSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Save an encrypted backup to the Downloads folder'**
-  String get backupNowSubtitle;
-
-  /// No description provided for @backupOrphaned.
-  ///
-  /// In en, this message translates to:
-  /// **'Backup file unreadable'**
-  String get backupOrphaned;
-
-  /// No description provided for @backupOrphanedMessage.
-  ///
-  /// In en, this message translates to:
-  /// **'This backup was created with a different installation key. After Clear Data or reinstall, the encryption key is gone and this file can\'t be recovered.\n\nDelete it and start fresh?'**
-  String get backupOrphanedMessage;
-
-  /// No description provided for @backupReset.
-  ///
-  /// In en, this message translates to:
-  /// **'Old backup deleted'**
-  String get backupReset;
 
   /// No description provided for @backupRestore.
   ///
@@ -1124,29 +1088,11 @@ abstract class MTLocalizations {
   /// **'Exit fullscreen'**
   String get exitFullscreen;
 
-  /// No description provided for @exportBackupKey.
-  ///
-  /// In en, this message translates to:
-  /// **'Export Backup Key'**
-  String get exportBackupKey;
-
-  /// No description provided for @exportBackupKeySubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Required to restore backup on a new phone or after Clear Data'**
-  String get exportBackupKeySubtitle;
-
   /// No description provided for @exportKeySubtitle.
   ///
   /// In en, this message translates to:
   /// **'Required to restore on a new phone or after reinstall'**
   String get exportKeySubtitle;
-
-  /// No description provided for @exportKeyTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Export backup key'**
-  String get exportKeyTitle;
 
   /// No description provided for @externalNetworkDesc.
   ///
@@ -1340,30 +1286,6 @@ abstract class MTLocalizations {
   /// **'Import a backup'**
   String get importBackup;
 
-  /// No description provided for @importBackupKey.
-  ///
-  /// In en, this message translates to:
-  /// **'Import Backup Key'**
-  String get importBackupKey;
-
-  /// No description provided for @importBackupKeySubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Read the key file from the app\'s Downloads folder'**
-  String get importBackupKeySubtitle;
-
-  /// No description provided for @importKeySubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Load a previously exported key before restoring'**
-  String get importKeySubtitle;
-
-  /// No description provided for @importKeyTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Import backup key'**
-  String get importKeyTitle;
-
   /// No description provided for @inPlaylists.
   ///
   /// In en, this message translates to:
@@ -1418,24 +1340,6 @@ abstract class MTLocalizations {
   /// **'A backup from another phone or an older version'**
   String get pickAnotherFileSubtitle;
 
-  /// No description provided for @migrationSection.
-  ///
-  /// In en, this message translates to:
-  /// **'Migration'**
-  String get migrationSection;
-
-  /// No description provided for @importLegacyKey.
-  ///
-  /// In en, this message translates to:
-  /// **'Import an old backup key'**
-  String get importLegacyKey;
-
-  /// No description provided for @importLegacyKeySubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Only needed to open an encrypted backup from an older version'**
-  String get importLegacyKeySubtitle;
-
   /// No description provided for @invalidUrl.
   ///
   /// In en, this message translates to:
@@ -1459,12 +1363,6 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'Failed to export backup key'**
   String get keyExportFailed;
-
-  /// No description provided for @keyExported.
-  ///
-  /// In en, this message translates to:
-  /// **'Key saved to:\n{path}\n\nStore it somewhere safe (e.g. Google Drive).'**
-  String keyExported(Object path);
 
   /// No description provided for @keyExportedMessage.
   ///
@@ -1508,12 +1406,6 @@ abstract class MTLocalizations {
   /// **'Key file not found at Downloads/MeTube_Super/metube_super_backup_key.txt'**
   String get keyImportNotFound;
 
-  /// No description provided for @keyImported.
-  ///
-  /// In en, this message translates to:
-  /// **'Key imported. You can now use Restore.'**
-  String get keyImported;
-
   /// No description provided for @keyImportedMessage.
   ///
   /// In en, this message translates to:
@@ -1525,12 +1417,6 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'Key imported'**
   String get keyImportedTitle;
-
-  /// No description provided for @keySecurityWarning.
-  ///
-  /// In en, this message translates to:
-  /// **'Treat this file like a password — anyone with it AND your backup can read your data.'**
-  String get keySecurityWarning;
 
   /// No description provided for @language.
   ///
@@ -2348,12 +2234,6 @@ abstract class MTLocalizations {
   /// **'Report a Bug'**
   String get reportBug;
 
-  /// No description provided for @resetBackup.
-  ///
-  /// In en, this message translates to:
-  /// **'Reset backup'**
-  String get resetBackup;
-
   /// No description provided for @restoreCancelled.
   ///
   /// In en, this message translates to:
@@ -2371,12 +2251,6 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'Restore'**
   String get restoreData;
-
-  /// No description provided for @restoreDataSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Import the encrypted backup from the app\'s Downloads folder'**
-  String get restoreDataSubtitle;
 
   /// No description provided for @restoreFailed.
   ///

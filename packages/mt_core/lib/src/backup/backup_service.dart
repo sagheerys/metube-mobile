@@ -63,12 +63,18 @@ class BackupService {
     return uri.replace(userInfo: '').toString();
   }
 
-  Future<String> _getOrCreateKey() async {
+  /// مفتاح فكّ النسخ القديمة **إن وُجد** — لا يُولَّد.
+  ///
+  /// كان يُولِّد مفتاحاً حين لا يجد، وهذا صحيح يوم كانت الكتابة مشفّرة.
+  /// بعد إزالة التشفير (2026-09-04) صار التوليد عبثاً محضاً: مفتاح جديد
+  /// لن يفكّ شيئاً، ثم يفشل الفكّ برسالة أبعد عن السبب. الغياب نفسه هو
+  /// الجواب: [BackupKeyMismatchException].
+  Future<String> _decryptionKey() async {
     final stored = await secrets.read(SecretKeys.backupAesKey);
-    if (stored != null && stored.isNotEmpty) return stored;
-    final key = BackupCrypto.generateKeyBase64();
-    await secrets.write(SecretKeys.backupAesKey, key);
-    return key;
+    if (stored == null || stored.isEmpty) {
+      throw const BackupKeyMismatchException();
+    }
+    return stored;
   }
 
   /// **تصدير نصّي غير مشفَّر — وبلا أي سرّ** (قرار المالك 2026-09-04).
@@ -113,7 +119,7 @@ class BackupService {
     }
     final plaintext = BackupCrypto.decrypt(
       contents: contents,
-      keyBase64: await _getOrCreateKey(),
+      keyBase64: await _decryptionKey(),
     );
     final decoded = json.decode(plaintext);
     if (decoded is! Map) throw const BackupFormatException('not a map');
@@ -236,20 +242,6 @@ class BackupService {
       default:
         return false;
     }
-    return true;
-  }
-
-  // ── مفتاح التشفير: تصدير/استيراد للاستعادة على جهاز آخر ──
-
-  Future<String> exportKeyFile() async =>
-      BackupCrypto.encodeKeyFile(await _getOrCreateKey());
-
-  /// استيراد مفتاح (بأي ترويسة معروفة) — يستبدل مفتاح الجهاز؛ يُستدعى
-  /// **قبل** استيراد نسخة من جهاز آخر. false = ملف غير صالح.
-  Future<bool> importKeyFile(String contents) async {
-    final keyBase64 = BackupCrypto.decodeKeyFile(contents);
-    if (keyBase64 == null) return false;
-    await secrets.write(SecretKeys.backupAesKey, keyBase64);
     return true;
   }
 }

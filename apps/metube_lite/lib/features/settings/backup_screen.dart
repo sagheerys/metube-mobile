@@ -19,7 +19,11 @@ import 'widgets/backup_picker.dart';
 
 /// النسخ الاحتياطي (م-31 · ر-8) — **نصّي دوّار بلا مفتاح** (قرار المالك
 /// 2026-09-04): سبع نسخ مؤرَّخة تتجدد وحدها، واستعادة من أيّها، وتصدير
-/// للمشاركة. قراءة النسخ المشفّرة القديمة تبقى للهجرة.
+/// للمشاركة.
+///
+/// **مفهوم «مفتاح النسخ» أُزيل من المنتج كله** (قرار المالك في نفس
+/// اليوم): لا تصدير ولا استيراد ولا تحذير «احفظه ككلمة مرور» — فالنسخة
+/// لم تعد مشفّرة، وما لا يوجد لا يُنسى ولا يضيع.
 class BackupScreen extends ConsumerStatefulWidget {
   const BackupScreen({super.key});
 
@@ -103,15 +107,6 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
     return '${l10n.restoreSuccess} · ${result.keysRestored}';
   }
 
-  Future<String> _importKey(MTLocalizations l10n) async {
-    final contents = await _pickFileContents();
-    if (contents == null) throw const BackupCancelledException();
-    if (!await _service.importKeyFile(contents)) {
-      throw const BackupFormatException('bad key file');
-    }
-    return l10n.keyImported;
-  }
-
   /// كل ما قد تكون النسخة غيّرته يُعاد تحميله (ر-8 خطوة 1).
   Future<void> _refreshEverything() async {
     await ref.read(settingsProvider.notifier).reloadFromStore();
@@ -159,11 +154,6 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
               l10n.restoreFromBackupSubtitle, _openRestoreSheet),
           tile(Icons.ios_share_rounded, l10n.exportShare,
               l10n.exportShareSubtitle, () => _run(_exportAndShare)),
-          const SizedBox(height: MTSpace.xl),
-          MTSectionHeader(title: l10n.migrationSection),
-          const SizedBox(height: MTSpace.sm),
-          tile(Icons.vpn_key_outlined, l10n.importLegacyKey,
-              l10n.importLegacyKeySubtitle, () => _run(_importKey)),
           const SizedBox(height: MTSpace.lg),
           Text(l10n.backupNote,
               style: Theme.of(context)

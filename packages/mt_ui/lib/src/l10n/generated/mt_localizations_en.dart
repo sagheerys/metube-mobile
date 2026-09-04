@@ -122,10 +122,6 @@ class MTLocalizationsEn extends MTLocalizations {
       'Play audio in background when pressing back button';
 
   @override
-  String get autoBackupNote =>
-      'A backup is written automatically after every change — the last 7 are kept';
-
-  @override
   String get autoBuilt => 'Automatic';
 
   @override
@@ -186,23 +182,6 @@ class MTLocalizationsEn extends MTLocalizations {
   @override
   String get backupNote =>
       'Includes playlists, tags, the offline index, artwork links and settings. Passwords and usernames are never backed up, and media files are not included. Backups are plain text — anyone who opens the file can read it.';
-
-  @override
-  String get backupNow => 'Back up now';
-
-  @override
-  String get backupNowSubtitle =>
-      'Save an encrypted backup to the Downloads folder';
-
-  @override
-  String get backupOrphaned => 'Backup file unreadable';
-
-  @override
-  String get backupOrphanedMessage =>
-      'This backup was created with a different installation key. After Clear Data or reinstall, the encryption key is gone and this file can\'t be recovered.\n\nDelete it and start fresh?';
-
-  @override
-  String get backupReset => 'Old backup deleted';
 
   @override
   String get backupRestore => 'Backup & Restore';
@@ -583,18 +562,8 @@ class MTLocalizationsEn extends MTLocalizations {
   String get exitFullscreen => 'Exit fullscreen';
 
   @override
-  String get exportBackupKey => 'Export Backup Key';
-
-  @override
-  String get exportBackupKeySubtitle =>
-      'Required to restore backup on a new phone or after Clear Data';
-
-  @override
   String get exportKeySubtitle =>
       'Required to restore on a new phone or after reinstall';
-
-  @override
-  String get exportKeyTitle => 'Export backup key';
 
   @override
   String get externalNetworkDesc =>
@@ -703,20 +672,6 @@ class MTLocalizationsEn extends MTLocalizations {
   String get importBackup => 'Import a backup';
 
   @override
-  String get importBackupKey => 'Import Backup Key';
-
-  @override
-  String get importBackupKeySubtitle =>
-      'Read the key file from the app\'s Downloads folder';
-
-  @override
-  String get importKeySubtitle =>
-      'Load a previously exported key before restoring';
-
-  @override
-  String get importKeyTitle => 'Import backup key';
-
-  @override
   String get inPlaylists => 'In playlists';
 
   @override
@@ -750,16 +705,6 @@ class MTLocalizationsEn extends MTLocalizations {
       'A backup from another phone or an older version';
 
   @override
-  String get migrationSection => 'Migration';
-
-  @override
-  String get importLegacyKey => 'Import an old backup key';
-
-  @override
-  String get importLegacyKeySubtitle =>
-      'Only needed to open an encrypted backup from an older version';
-
-  @override
   String get invalidUrl => 'Enter a valid link';
 
   @override
@@ -770,11 +715,6 @@ class MTLocalizationsEn extends MTLocalizations {
 
   @override
   String get keyExportFailed => 'Failed to export backup key';
-
-  @override
-  String keyExported(Object path) {
-    return 'Key saved to:\n$path\n\nStore it somewhere safe (e.g. Google Drive).';
-  }
 
   @override
   String keyExportedMessage(Object path) {
@@ -802,18 +742,11 @@ class MTLocalizationsEn extends MTLocalizations {
       'Key file not found at Downloads/MeTube_Super/metube_super_backup_key.txt';
 
   @override
-  String get keyImported => 'Key imported. You can now use Restore.';
-
-  @override
   String get keyImportedMessage =>
       'Encryption key restored. You can now use Restore All Data to recover your backup.';
 
   @override
   String get keyImportedTitle => 'Key imported';
-
-  @override
-  String get keySecurityWarning =>
-      'Treat this file like a password — anyone with it AND your backup can read your data.';
 
   @override
   String get language => 'Language';
@@ -1263,9 +1196,6 @@ class MTLocalizationsEn extends MTLocalizations {
   String get reportBug => 'Report a Bug';
 
   @override
-  String get resetBackup => 'Reset backup';
-
-  @override
   String get restoreCancelled => 'Backup file not found in Downloads folder';
 
   @override
@@ -1274,10 +1204,6 @@ class MTLocalizationsEn extends MTLocalizations {
 
   @override
   String get restoreData => 'Restore';
-
-  @override
-  String get restoreDataSubtitle =>
-      'Import the encrypted backup from the app\'s Downloads folder';
 
   @override
   String get restoreFailed => 'Restore failed — invalid backup file';

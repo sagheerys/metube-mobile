@@ -35,10 +35,14 @@ Future<void> main(List<String> args) async {
   print('الترويسة: ${BackupCrypto.headerOf(contents)}');
 
   // المفتاح أولاً — نسخة من جهاز آخر لا تُفك بمفتاح هذا الجهاز.
-  if (!await service.importKeyFile(keyFile.readAsStringSync())) {
+  // (`importKeyFile` أُزيل من الخدمة مع مفهوم المفتاح — 2026-09-04 —
+  // وهذه أداة تحقق يدوية تبذر المفتاح مباشرة في مخزن أسرار الذاكرة.)
+  final keyBase64 = BackupCrypto.decodeKeyFile(keyFile.readAsStringSync());
+  if (keyBase64 == null) {
     print('ملف مفتاح غير صالح');
     exit(65);
   }
+  await secrets.write(SecretKeys.backupAesKey, keyBase64);
 
   final ImportResult result;
   try {

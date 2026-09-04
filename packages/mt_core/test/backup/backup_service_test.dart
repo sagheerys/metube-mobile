@@ -152,7 +152,7 @@ void main() {
       );
 
       // استيراد مفتاح Lite القديم (MTKEY1) ثم الملف
-      expect(await service.importKeyFile('MTKEY1\n$legacyKey\n'), isTrue);
+      await secrets.write(SecretKeys.backupAesKey, legacyKey);
       final result = await service.importFromString(legacyFile);
 
       expect(result.format, BackupFormat.legacyLite);
@@ -179,7 +179,7 @@ void main() {
     test('مواضع Lite القديمة تُهاجَر لمفاتيح §5.1 والوضع الرقمي يُزال',
         () async {
       final key = BackupCrypto.generateKeyBase64();
-      await service.importKeyFile('MTKEY1\n$key\n');
+      await secrets.write(SecretKeys.backupAesKey, key);
       await service.importFromString(BackupCrypto.encrypt(
         plaintext: json.encode({
           'app': 'MeTube Lite',
@@ -201,7 +201,7 @@ void main() {
 
     test('جودة قديمة غير صالحة تُجبر على best', () async {
       final key = BackupCrypto.generateKeyBase64();
-      await service.importKeyFile('MTKEY1\n$key\n');
+      await secrets.write(SecretKeys.backupAesKey, key);
       final file = BackupCrypto.encrypt(
         plaintext: json.encode({
           'app': 'MeTube Lite',
@@ -218,7 +218,7 @@ void main() {
   group('استيراد MTSBACKUP1 (Super القديم — قراءة فقط)', () {
     test('حمولة prefs المصنفة تُطبق كما هي', () async {
       final key = BackupCrypto.generateKeyBase64();
-      await service.importKeyFile('MTSKEY1\n$key\n');
+      await secrets.write(SecretKeys.backupAesKey, key);
       final file = BackupCrypto.encrypt(
         plaintext: json.encode({
           'app': 'MeTube Super',
@@ -253,7 +253,7 @@ void main() {
     group('هجرة الأشكال القديمة', () {
       Future<void> importLegacySuper(Map<String, dynamic> prefs) async {
         final key = BackupCrypto.generateKeyBase64();
-        await service.importKeyFile('MTSKEY1\n$key\n');
+        await secrets.write(SecretKeys.backupAesKey, key);
         await service.importFromString(BackupCrypto.encrypt(
           plaintext: json.encode({'app': 'MeTube Super', 'prefs': prefs}),
           keyBase64: key,
@@ -349,16 +349,19 @@ void main() {
         throwsA(isA<BackupFormatException>()));
   });
 
-  test('exportKeyFile/importKeyFile roundtrip', () async {
-    final keyFile = await service.exportKeyFile();
-    expect(keyFile, startsWith('MTFKEY1\n'));
-    final other = BackupService(
-      store: MemoryKeyValueStore(),
-      secrets: MemorySecretStore(),
-      mutex: PrefsMutex(),
-      variant: 'lite',
+  /// **مفهوم المفتاح أُزيل من المنتج** (قرار المالك 2026-09-04): لا
+  /// تصدير ولا استيراد. وبلا مفتاح محفوظ لا تُفكّ نسخة مشفّرة قديمة —
+  /// وهذا يُقال صراحةً بـ[BackupKeyMismatchException] لا بمفتاح جديد
+  /// يُولَّد عبثاً ثم يفشل الفكّ برسالة أبعد عن السبب.
+  test('نسخة مشفّرة بلا مفتاح محفوظ ⇒ BackupKeyMismatchException', () async {
+    final file = BackupCrypto.encrypt(
+      plaintext: json.encode({'app': 'MTF', 'version': 2, 'prefs': {}}),
+      keyBase64: BackupCrypto.generateKeyBase64(),
     );
-    expect(await other.importKeyFile(keyFile), isTrue);
-    expect(await other.importKeyFile('garbage'), isFalse);
+    expect(await secrets.read(SecretKeys.backupAesKey), isNull);
+    await expectLater(service.importFromString(file),
+        throwsA(isA<BackupKeyMismatchException>()));
+    expect(await secrets.read(SecretKeys.backupAesKey), isNull,
+        reason: 'ولا يُولَّد مفتاح لا يفكّ شيئاً');
   });
 }

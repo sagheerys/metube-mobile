@@ -146,13 +146,6 @@
       }
     }
   },
-  "@keyExported": {
-    "placeholders": {
-      "path": {
-        "type": "Object"
-      }
-    }
-  },
   "@keyExportedMessage": {
     "placeholders": {
       "path": {
@@ -337,7 +330,6 @@
   "authentication": "Authentication (Optional)",
   "autoBackgroundAudio": "Auto Background Audio",
   "autoBackgroundAudioSubtitle": "Play audio in background when pressing back button",
-  "autoBackupNote": "A backup is written automatically after every change — the last 7 are kept",
   "autoBuilt": "Automatic",
   "autoPlayNext": "Auto-play next: ON",
   "autoPlayOff": "Auto-play next: OFF",
@@ -357,11 +349,6 @@
   "backupFileSaved": "Encrypted backup saved",
   "backupKeyMismatch": "This backup is encrypted with a different key. Import the matching backup key first.",
   "backupNote": "Includes playlists, tags, the offline index, artwork links and settings. Passwords and usernames are never backed up, and media files are not included. Backups are plain text — anyone who opens the file can read it.",
-  "backupNow": "Back up now",
-  "backupNowSubtitle": "Save an encrypted backup to the Downloads folder",
-  "backupOrphaned": "Backup file unreadable",
-  "backupOrphanedMessage": "This backup was created with a different installation key. After Clear Data or reinstall, the encryption key is gone and this file can't be recovered.\n\nDelete it and start fresh?",
-  "backupReset": "Old backup deleted",
   "backupRestore": "Backup & Restore",
   "backupSettings": "Backup All Data",
   "backupSettingsSubtitle": "Export settings & video data to Downloads folder",
@@ -476,10 +463,7 @@
   "errorLogs": "Error Logs",
   "errorLogsSubtitle": "View app logs for diagnostics",
   "exitFullscreen": "Exit fullscreen",
-  "exportBackupKey": "Export Backup Key",
-  "exportBackupKeySubtitle": "Required to restore backup on a new phone or after Clear Data",
   "exportKeySubtitle": "Required to restore on a new phone or after reinstall",
-  "exportKeyTitle": "Export backup key",
   "externalNetworkDesc": "When the local URL can't be reached, the app connects through the first reachable URL below, from top to bottom.",
   "externalNetworkSection": "External network",
   "failed": "Failed",
@@ -512,18 +496,22 @@
   "helpAboutField": "About this field",
   "howItWorks": "How it works",
   "importBackup": "Import a backup",
-  "importBackupKey": "Import Backup Key",
-  "importBackupKeySubtitle": "Read the key file from the app's Downloads folder",
-  "importKeySubtitle": "Load a previously exported key before restoring",
-  "importKeyTitle": "Import backup key",
   "inPlaylists": "In playlists",
   "backupsKept": "{count} backups kept",
   "@backupsKept": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "lastBackup": "Last backup {when}",
   "@lastBackup": {
-    "placeholders": { "when": { "type": "String" } }
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
   },
   "noBackupsYet": "No backups yet",
   "restoreFromBackupSubtitle": "Pick one of the saved backups, or a file",
@@ -531,14 +519,10 @@
   "exportShareSubtitle": "A dated copy to send or keep elsewhere",
   "pickAnotherFile": "From another file…",
   "pickAnotherFileSubtitle": "A backup from another phone or an older version",
-  "migrationSection": "Migration",
-  "importLegacyKey": "Import an old backup key",
-  "importLegacyKeySubtitle": "Only needed to open an encrypted backup from an older version",
   "invalidUrl": "Enter a valid link",
   "itemOptions": "Item options",
   "itemUnavailable": "No longer available",
   "keyExportFailed": "Failed to export backup key",
-  "keyExported": "Key saved to:\n{path}\n\nStore it somewhere safe (e.g. Google Drive).",
   "keyExportedMessage": "Saved to:\n{path}\n\nUpload this file to Google Drive (or another safe place). You'll need it to restore your backup after Clear Data or on a new phone.",
   "keyExportedTitle": "Backup key saved",
   "keyImportConfirm": "Replace key",
@@ -546,10 +530,8 @@
   "keyImportConfirmTitle": "Replace current key?",
   "keyImportInvalid": "Invalid key file",
   "keyImportNotFound": "Key file not found at Downloads/MeTube_Super/metube_super_backup_key.txt",
-  "keyImported": "Key imported. You can now use Restore.",
   "keyImportedMessage": "Encryption key restored. You can now use Restore All Data to recover your backup.",
   "keyImportedTitle": "Key imported",
-  "keySecurityWarning": "Treat this file like a password — anyone with it AND your backup can read your data.",
   "language": "Language",
   "languageArabic": "العربية",
   "languageEnglish": "English",
@@ -675,7 +657,11 @@
   "remove": "Remove",
   "removeUnavailable": "Remove {count} unavailable",
   "@removeUnavailable": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "removeFromFavorites": "Remove from favorites",
   "removeFromPlaylist": "Remove from playlist",
@@ -689,11 +675,9 @@
   "renameTag": "Rename tag",
   "reorderHint": "Drag to reorder",
   "reportBug": "Report a Bug",
-  "resetBackup": "Reset backup",
   "restoreCancelled": "Backup file not found in Downloads folder",
   "restoreConfirm": "Restore data from the backup file? This overwrites current playlists, tags and settings.",
   "restoreData": "Restore",
-  "restoreDataSubtitle": "Import the encrypted backup from the app's Downloads folder",
   "restoreFailed": "Restore failed — invalid backup file",
   "restoreNotFound": "No backup file found in Downloads/MeTube_Super",
   "restoreSettings": "Restore All Data",
