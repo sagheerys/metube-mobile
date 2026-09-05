@@ -11,7 +11,11 @@ void main() {
 
   setUp(() async {
     temp = await Directory.systemTemp.createTemp('mtf_rotation_');
-    rotation = BackupRotation(directory: temp.path, prefix: 'metube_lite');
+    // **التباعد معطَّل هنا عمداً**: هذه الحرّاس تختبر آلية الحدّ
+    // والذرّية والبادئة، وأزمنتها دقائق. التباعد له حرّاسه أدناه.
+    rotation = BackupRotation(
+        directory: temp.path, prefix: 'metube_lite',
+        minSpacing: Duration.zero);
   });
   tearDown(() => temp.delete(recursive: true));
 
@@ -85,8 +89,9 @@ void main() {
 
   test('البادئة تفصل التطبيقين في مجلد واحد', () async {
     await rotation.write('{"lite":1}', at: at(1));
-    final superRotation =
-        BackupRotation(directory: temp.path, prefix: 'metube_super');
+    final superRotation = BackupRotation(
+        directory: temp.path, prefix: 'metube_super',
+        minSpacing: Duration.zero);
     await superRotation.write('{"super":1}', at: at(1));
 
     expect(await rotation.list(), hasLength(1));
@@ -95,11 +100,81 @@ void main() {
   });
 
   test('keep مخصص يُحترم', () async {
-    final three =
-        BackupRotation(directory: temp.path, prefix: 'metube_lite', keep: 3);
+    final three = BackupRotation(
+        directory: temp.path,
+        prefix: 'metube_lite',
+        keep: 3,
+        minSpacing: Duration.zero);
     for (var i = 0; i < 6; i++) {
       await three.write('{"n":$i}', at: at(i));
     }
     expect(await three.list(), hasLength(3));
+  });
+
+  group('التباعد الزمني — عطل مقيس على جهاز المالك 2026-09-05', () {
+    late BackupRotation spaced;
+
+    setUp(() {
+      spaced = BackupRotation(directory: temp.path, prefix: 'metube_lite');
+    });
+
+    test('الافتراضي ساعة', () {
+      expect(BackupRotation.defaultSpacing, const Duration(hours: 1));
+      expect(spaced.minSpacing, const Duration(hours: 1));
+    });
+
+    test('دفعة تحميل كاملة تبقى خانة واحدة تحمل آخر حالة', () async {
+      // الحالة الحقيقية: سبعة تغييرات في ست دقائق التهمت الخانات
+      // السبع، فصارت كل الذاكرة الاحتياطية تغطي ست دقائق.
+      for (var i = 0; i < 7; i++) {
+        await spaced.write('{"n":$i}', at: at(i));
+      }
+      final all = await spaced.list();
+      expect(all, hasLength(1), reason: 'الدفعة خانة واحدة لا سبع');
+      expect(await spaced.read(all.single), '{"n":6}',
+          reason: 'وأحدث حالة هي المحفوظة — لا الأولى');
+    });
+
+    test('بعد انقضاء الفاصل تُفتح خانة جديدة', () async {
+      await spaced.write('{"a":1}', at: DateTime(2026, 9, 5, 10));
+      await spaced.write('{"a":2}', at: DateTime(2026, 9, 5, 10, 30));
+      expect(await spaced.list(), hasLength(1));
+
+      // شبكة ثابتة: ساعة تقويمية جديدة ⇒ خانة جديدة، ولو لم يمضِ
+      // ستون دقيقة على آخر كتابة (10:30 ⇒ 11:01).
+      await spaced.write('{"a":3}', at: DateTime(2026, 9, 5, 11, 1));
+      expect(await spaced.list(), hasLength(2));
+
+      // نشاط متصل كل نصف ساعة يبقى تاريخاً لا خانة زاحفة.
+      await spaced.write('{"a":5}', at: DateTime(2026, 9, 5, 11, 40));
+      await spaced.write('{"a":6}', at: DateTime(2026, 9, 5, 12, 10));
+      expect(await spaced.list(), hasLength(3));
+
+      await spaced.write('{"a":4}', at: DateTime(2026, 9, 6, 9));
+      final all = await spaced.list();
+      expect(all, hasLength(4));
+      expect(all.first.at.day, 6, reason: 'الأحدث أولاً');
+    });
+
+    test('سبع خانات متباعدة تغطي سبع ساعات لا ست دقائق', () async {
+      for (var hour = 0; hour < 10; hour++) {
+        await spaced.write('{"h":$hour}', at: DateTime(2026, 9, 5, hour));
+      }
+      final all = await spaced.list();
+      expect(all, hasLength(7));
+      expect(all.first.at.difference(all.last.at), const Duration(hours: 6),
+          reason: 'المدى الحقيقي للذاكرة الاحتياطية');
+    });
+
+    test('الاستبدال لا يترك المستخدم بلا نسخة لحظةً واحدة', () async {
+      await spaced.write('{"a":1}', at: at(1));
+      // النسخة القديمة تُحذف **بعد** نجاح كتابة البديل: الملفات
+      // المرئية لا تنقص أبداً عن واحدة.
+      final result = await spaced.write('{"a":2}', at: at(2));
+      expect(result, isNotNull);
+      final files = temp.listSync().map((e) => e.path).toList();
+      expect(files, hasLength(1));
+      expect(await spaced.read((await spaced.list()).single), '{"a":2}');
+    });
   });
 }

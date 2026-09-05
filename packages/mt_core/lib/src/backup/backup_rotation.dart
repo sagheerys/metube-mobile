@@ -33,16 +33,33 @@ class BackupFile {
 /// 3. **لا تُكتب نسخة مطابقة لأحدث نسخة.** بلا هذا تصير السبع «سبع
 ///    لحظات متتالية» لا سبعة تغييرات — فتُطرد نسخة الأمس بنسخ اليوم
 ///    المتطابقة.
+///
+/// 4. **تباعد زمني بين الخانات** ([minSpacing]) — أُضيف بعد فحص جهاز
+///    المالك (2026-09-05): النسخ السبع في Super كانت كلها بين 00:39
+///    و00:45، **ست دقائق تغطيها كل الذاكرة الاحتياطية**. الحدّ «٧»
+///    كان يعمل تماماً، لكن كل تغيير في قائمة أو وسم يطلب نسخة، وتحميل
+///    دفعة من يوتيوب تغييرٌ لكل مقطع — فتلتهم الدفعة الواحدة الخانات
+///    السبع وتطرد كل ما قبلها. الفرق الثالث لا يكفي هنا: كل نسخة
+///    **مختلفة** فعلاً عن سابقتها.
+///
+///    فالنسخة الأحدث من [minSpacing] **تحلّ محلّ** التي قبلها في نفس
+///    الخانة بدل أن تفتح خانة جديدة: أحدث حالة محفوظة دائماً، والسبع
+///    تمتد ساعات أو أياماً بحسب استعمالك.
 class BackupRotation {
   BackupRotation({
     required this.directory,
     required this.prefix,
     this.keep = defaultKeep,
+    this.minSpacing = defaultSpacing,
   }) : assert(keep > 0, 'الاحتفاظ بصفر نسخة يعني حذف كل شيء');
 
   /// العدد المعتمد (طلب المالك) — الملف كيلوبايتات، والعدد الثابت
   /// أوضح للمستخدم من تدرّج زمني.
   static const int defaultKeep = 7;
+
+  /// ساعة: تحميل دفعة كاملة يبقى خانةً واحدة، ويوم استعمال عادي يترك
+  /// عدة خانات — والسبع تصير تاريخاً لا لقطةً مكرَّرة.
+  static const Duration defaultSpacing = Duration(hours: 1);
 
   static const String extension = '.json';
   static const String _tempExtension = '.tmp';
@@ -54,6 +71,9 @@ class BackupRotation {
   final String prefix;
 
   final int keep;
+
+  /// أقل فاصل زمني بين خانتين. `Duration.zero` يعطّل التباعد.
+  final Duration minSpacing;
 
   /// `prefix_2026-09-04_094233.json` — يُرتَّب أبجدياً فيُرتَّب زمنياً.
   String fileNameFor(DateTime at) => '${prefix}_${stampOf(at)}$extension';
@@ -109,13 +129,23 @@ class BackupRotation {
     final dir = Directory(directory);
     await dir.create(recursive: true);
 
+    final stamp = at ?? DateTime.now();
     final newest = await latest();
     if (newest != null) {
       final previous = await File(newest.path).readAsString();
       if (previous == contents) return null;
     }
 
-    final stamp = at ?? DateTime.now();
+    // **الاستبدال لا الإضافة** داخل نفس الخانة الزمنية: تُحذف القديمة
+    // بعد نجاح كتابة البديل لا قبله، فانقطاعٌ في المنتصف يترك القديمة
+    // سليمة بدل أن يترك المستخدم بلا نسخة أصلاً.
+    //
+    // الخانة تُحسب على **شبكة ثابتة** لا بفارق عن آخر كتابة: «أحدث من
+    // ساعة» كان يجعل نشاطاً كل نصف ساعة يزحف بالخانة الوحيدة إلى
+    // الأبد فلا يُفتح تاريخ أصلاً.
+    final replace = newest != null &&
+        minSpacing > Duration.zero &&
+        _slotOf(stamp) == _slotOf(newest.at);
     final name = fileNameFor(stamp);
     final target = '$directory/$name';
     final temp = File('$target$_tempExtension');
@@ -123,6 +153,13 @@ class BackupRotation {
     // النقلة الذرّية: من هنا فقط يراها القارئ.
     final file = await temp.rename(target);
 
+    if (replace && newest.path != file.path) {
+      try {
+        await File(newest.path).delete();
+      } on FileSystemException {
+        // ملف يملكه تثبيت سابق — يُترك، وprune يتكفّل بالحدّ.
+      }
+    }
     await prune();
     return BackupFile(
       path: file.path,
@@ -131,6 +168,10 @@ class BackupRotation {
       sizeBytes: await file.length(),
     );
   }
+
+  /// رقم الخانة على شبكة [minSpacing] الثابتة — ساعةُ التقويم عملياً.
+  int _slotOf(DateTime at) =>
+      at.millisecondsSinceEpoch ~/ minSpacing.inMilliseconds;
 
   /// يحذف الأقدم حتى يبقى [keep] — ويعيد عدد المحذوف.
   Future<int> prune() async {
