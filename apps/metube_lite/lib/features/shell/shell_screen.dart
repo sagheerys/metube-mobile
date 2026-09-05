@@ -19,6 +19,7 @@ import '../home/network_gate.dart';
 import '../home/reception.dart';
 import '../player/playback_providers.dart';
 import '../settings/restore_prompt.dart';
+import '../settings/status_refresh.dart';
 
 /// غلاف النموذج أ: 3 وجهات سفلية + الطبقة العائمة (زر الإضافة الذكي) —
 /// الزر يظهر في المكتبة والقوائم ويختفي في الإعدادات.
@@ -174,6 +175,8 @@ class _ShellScreenState extends ConsumerState<ShellScreen>
     // لا تفوته عودة وقعت والمستخدم في شاشة أخرى.
     ref.watch(autoRetryProvider);
     ref.watch(batchDropWatcherProvider);
+    // العودة للتطبيق تعيد سؤال السيرفر — البطاقة لا تصدق بلا هذا.
+    ref.watch(statusRefreshProvider);
     _watchEnrichment();
 
     return Scaffold(

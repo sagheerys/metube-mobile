@@ -7,6 +7,7 @@ import 'package:mt_media/mt_media.dart';
 import 'features/batch/batch_offline_saver.dart';
 import 'features/settings/auto_backup.dart';
 import 'features/settings/settings_state.dart';
+import 'features/shared/error_report.dart';
 import 'features/shared/stores.dart';
 
 /// حقن Riverpod (TRD §3.1): تغيّر الإعدادات يعيد بناء العميل والمحرك
@@ -155,7 +156,17 @@ final failedTasksProvider = Provider<List<DownloadTask>>((ref) {
 final historyProvider = FutureProvider<HistoryResponse?>((ref) async {
   final api = ref.watch(apiClientProvider);
   if (api == null) return null;
-  return api.fetchHistory();
+  try {
+    final history = await api.fetchHistory();
+    clearErrorSignature('history');
+    return history;
+  } on MTApiException catch (e) {
+    // **مصدر كل أعطال المكتبة** وكان لا يُسجَّل: انهيار 2026-09-05
+    // (رفض الاعتماد) مرّ بلا سطر واحد في السجل. ومرة لكل توقيع لأن
+    // الاستطلاع الحي كل ثانيتين يعيد العطل ثلاثين مرة في الدقيقة.
+    unawaited(logErrorOnce(ref.read(loggerProvider), 'history', e));
+    rethrow;
+  }
 });
 
 /// النسخ الاحتياطي (م-31) — يكتب v2 ويقرأ التنسيقات الثلاثة.

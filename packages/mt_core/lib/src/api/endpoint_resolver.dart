@@ -17,6 +17,10 @@ enum MTEndpointStatus {
   /// 401/403 — الرابط حيّ لكن الاعتماد ناقص أو خاطئ.
   unauthorized,
 
+  /// العنوان يستجيب لكنه **ليس MeTube**: صفحة HTML، أو JSON بلا
+  /// `done`/`queue`، أو 404 على المسار. اعتماده يفشل بكل عملية بعده.
+  notMeTube,
+
   /// انقطاع، مهلة، DNS، أو عنوان ليس عليه MeTube.
   unreachable;
 
@@ -48,6 +52,11 @@ class EndpointResolver {
           return MTEndpointStatus.ok;
         } on AuthFailureException {
           return MTEndpointStatus.unauthorized;
+        } on NotMeTubeServerException {
+          return MTEndpointStatus.notMeTube;
+        } on NoApiException {
+          // 404: خادم HTTP حيّ بلا واجهة MeTube — خطأ عنوان لا خطأ شبكة.
+          return MTEndpointStatus.notMeTube;
         } on MTApiException {
           return MTEndpointStatus.unreachable;
         } finally {

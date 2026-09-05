@@ -13,7 +13,7 @@ import 'package:share_plus/share_plus.dart';
 import '../../di.dart';
 import '../downloads_library/library_providers.dart';
 import '../playlists/playlists_providers.dart';
-import '../shared/error_text.dart';
+import '../shared/error_report.dart';
 import 'auto_backup.dart';
 import 'widgets/backup_picker.dart';
 
@@ -59,7 +59,7 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
       // إلغاء المستخدم ليس خطأ.
     } catch (e) {
       if (mounted) {
-        showMTSnack(context, errorText(l10n, e), type: MTSnackType.error);
+        showErrorSnack(context, ref, e, tag: 'backup');
       }
     } finally {
       await _refreshList();

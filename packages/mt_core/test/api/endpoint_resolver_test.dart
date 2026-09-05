@@ -105,11 +105,13 @@ void main() {
   /// كل رابط «أحمر» بلا سبب معلن — و«لا يستجيب» و«يرفض اعتمادك»
   /// علاجان مختلفان تماماً.
   group('القفل ليس انقطاعاً', () {
-    EndpointResolver clientResolver(Map<String, int> statusByHost) {
+    EndpointResolver clientResolver(Map<String, int> statusByHost,
+        {Set<String> html = const {}}) {
       return EndpointResolver.withClientFactory((baseUrl) {
+        final host = Uri.parse(baseUrl).host;
         final dio = Dio()
-          ..httpClientAdapter = _StatusAdapter(
-              statusByHost[Uri.parse(baseUrl).host] ?? 200);
+          ..httpClientAdapter = _StatusAdapter(statusByHost[host] ?? 200,
+              html: html.contains(host));
         return MeTubeApiClient(
           config: ServerConfig(baseUrl: baseUrl, username: 'u', password: 'p'),
           dio: dio,
@@ -135,6 +137,34 @@ void main() {
       );
     });
 
+    test('عنوان ليس MeTube ⇒ notMeTube لا unreachable', () async {
+      // 200 لكن الجسم HTML (خدمة أخرى على العنوان): «العنوان خطأ» علاجه
+      // تصحيح العنوان، و«لا يستجيب» علاجه انتظار الشبكة — ولا يجوز
+      // خلطهما في نقطة حمراء واحدة (قياس جهاز المالك 2026-09-06).
+      final resolver = clientResolver({'wrong.example.com': 200},
+          html: {'wrong.example.com'});
+      expect(await resolver.probeAll(['https://wrong.example.com']),
+          {'https://wrong.example.com': MTEndpointStatus.notMeTube});
+    });
+
+    test('404 على المسار ⇒ notMeTube (خادم حيّ بلا واجهة MeTube)', () async {
+      final resolver = clientResolver({'bare.example.com': 404});
+      expect(await resolver.probeAll(['https://bare.example.com']),
+          {'https://bare.example.com': MTEndpointStatus.notMeTube});
+    });
+
+    test('عنوان ليس MeTube لا يُعتمد نشطاً', () async {
+      final resolver = clientResolver({'wrong.example.com': 200},
+          html: {'wrong.example.com'});
+      expect(
+        await resolver.resolveActive(
+          localUrl: 'https://wrong.example.com',
+          externalUrls: ['https://open.example.com'],
+        ),
+        'https://open.example.com',
+      );
+    });
+
     test('كل الروابط مقفلة ⇒ null (ولا يُدّعى نجاح)', () async {
       final resolver = clientResolver({
         'a.example.com': 401,
@@ -153,19 +183,26 @@ void main() {
 
 /// محوّل يعيد حالة HTTP واحدة — لفحص تصنيف الرفض دون شبكة.
 class _StatusAdapter implements HttpClientAdapter {
-  _StatusAdapter(this.status);
+  _StatusAdapter(this.status, {this.html = false});
 
   final int status;
+
+  /// جسم HTML بحالة 200 — خدمة أخرى تعيش على العنوان.
+  final bool html;
 
   @override
   Future<ResponseBody> fetch(RequestOptions options,
       Stream<Uint8List>? requestStream, Future<void>? cancelFuture) async {
-    final body = status == 200 ? '{"done":[],"queue":[]}' : 'denied';
+    final body = switch ((status, html)) {
+      (200, true) => '<html><body>TrueNAS</body></html>',
+      (200, false) => '{"done":[],"queue":[]}',
+      _ => 'denied',
+    };
     return ResponseBody.fromBytes(
       utf8.encode(body),
       status,
       headers: {
-        't': [status == 200 ? 'application/json' : 'text/plain'],
+        't': [status == 200 && !html ? 'application/json' : 'text/plain'],
       },
     );
   }

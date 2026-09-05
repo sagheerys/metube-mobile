@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -44,6 +46,10 @@ void main() {
           initialSettingsProvider.overrideWithValue(const SuperSettings()),
           playbackResolverProvider.overrideWithValue(handler.resolver),
           audioHandlerProvider.overrideWithValue(handler),
+          // الغلاف صار يقود إشعارات التحميل (2026-09-06) وهي تسجّل
+          // إخفاقاتها — فالسجل صار جزءاً من إقلاع التطبيق.
+          loggerProvider.overrideWithValue(
+              MTLogger(filePath: '${Directory.systemTemp.path}/mtf_ui.log')),
         ],
         child: const SuperApp(),
       );

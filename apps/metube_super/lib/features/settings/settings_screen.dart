@@ -5,7 +5,7 @@ import 'package:mt_core/mt_core.dart';
 import 'package:mt_ui/mt_ui.dart';
 
 import '../../di.dart';
-import '../shared/error_text.dart';
+import '../shared/error_report.dart';
 import 'widgets/help_button.dart';
 import 'widgets/server_status_card.dart';
 
@@ -57,7 +57,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       }
     } on MTApiException catch (e) {
       if (mounted) {
-        showMTSnack(context, errorText(l10n, e), type: MTSnackType.error);
+        showErrorSnack(context, ref, e, tag: 'server');
       }
     } finally {
       if (mounted) setState(() => _testing = false);

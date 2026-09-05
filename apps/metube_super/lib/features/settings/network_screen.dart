@@ -38,6 +38,9 @@ class NetworkScreen extends ConsumerWidget {
       if (status == MTEndpointStatus.unauthorized) {
         return Icon(Icons.lock_outline_rounded, size: 14, color: p.accent);
       }
+      if (status == MTEndpointStatus.notMeTube) {
+        return Icon(Icons.link_off_rounded, size: 14, color: p.accent);
+      }
       final color = switch (status) {
         MTEndpointStatus.ok => p.ok,
         MTEndpointStatus.unreachable => p.err,
@@ -50,23 +53,32 @@ class NetworkScreen extends ConsumerWidget {
       );
     }
 
-    /// سطر يشرح الرفض ويأخذ المستخدم إلى الحقلين اللذين يصلحانه.
-    Widget? authHint(String url) =>
-        statusOf(url) != MTEndpointStatus.unauthorized
-            ? null
-            : InkWell(
-                onTap: () => context.go('/settings'),
-                child: Padding(
-                  padding: const EdgeInsets.only(top: MTSpace.xs),
-                  child: Text(
-                    '${l10n.signInRequired} — ${l10n.updateCredentials}',
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodySmall
-                        ?.copyWith(color: p.accent),
-                  ),
-                ),
-              );
+    /// **سطر يقول ما العطل ويقود إلى علاجه.** كانت الحالتان (رفض
+    /// اعتماد · عنوان ليس MeTube) نقطةً حمراء واحدة لا تفرّق بينهما
+    /// ولا عن سيرفر متوقف — قياس على جهاز المالك 2026-09-06.
+    Widget? statusHint(String url) {
+      final status = statusOf(url);
+      final message = switch (status) {
+        MTEndpointStatus.unauthorized =>
+          '${l10n.signInRequired} — ${l10n.updateCredentials}',
+        MTEndpointStatus.notMeTube => l10n.errNotMeTube,
+        _ => null,
+      };
+      if (message == null) return null;
+      final text = Padding(
+        padding: const EdgeInsets.only(top: MTSpace.xs),
+        child: Text(
+          message,
+          style:
+              Theme.of(context).textTheme.bodySmall?.copyWith(color: p.accent),
+        ),
+      );
+      // الاعتماد يُصلَح في شاشة أخرى ⇒ ننقل إليها. أما العنوان الخطأ
+      // فيُصلَح هنا في هذه القائمة، فالنقل إلى الإعدادات تشتيت.
+      return status == MTEndpointStatus.unauthorized
+          ? InkWell(onTap: () => context.go('/settings'), child: text)
+          : text;
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -123,7 +135,7 @@ class NetworkScreen extends ConsumerWidget {
               ),
             ),
           ]),
-          if (authHint(settings.localUrl) case final Widget hint) hint,
+          if (statusHint(settings.localUrl) case final Widget hint) hint,
           const SizedBox(height: MTSpace.xl),
 
           MTSectionHeader(
@@ -142,7 +154,7 @@ class NetworkScreen extends ConsumerWidget {
                   overflow: TextOverflow.ellipsis,
                   textDirection: TextDirection.ltr,
                   style: Theme.of(context).textTheme.bodyMedium),
-              subtitle: authHint(url),
+              subtitle: statusHint(url),
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [

@@ -209,11 +209,24 @@ final downloadWatcherProvider = Provider<void>((ref) {
 });
 
 /// تهيئة الإشعارات مرة واحدة + ربط نقرة الاكتمال بإبراز العنصر.
+/// **لا يُخرج عطلاً إلى سلسلة الإقلاع** (نفس علاج Super): نداء المنصة
+/// يرمي في بيئة بلا قناة، وما بعده في `initState` لا علاقة له بالإشعارات.
 Future<void> initDownloadNotifications(WidgetRef ref) async {
   final notifications = ref.read(notificationsProvider);
-  await notifications.init(
-    onOpenItem: (key) =>
-        ref.read(highlightedItemProvider.notifier).state = key,
-  );
-  await notifications.requestPermission();
+  try {
+    await notifications.init(
+      onOpenItem: (key) =>
+          ref.read(highlightedItemProvider.notifier).state = key,
+    );
+    await notifications.requestPermission();
+  } on Object catch (e) {
+    // التسجيل نفسه دفاعي: السجل قد لا يكون محقوناً في بيئة الاختبار.
+    try {
+      unawaited(ref
+          .read(loggerProvider)
+          .error('notifications init failed', cause: e, tag: 'download'));
+    } on Object {
+      // بيئة بلا سجل — الإشعارات وحدها تغيب والتحميل يعمل.
+    }
+  }
 }

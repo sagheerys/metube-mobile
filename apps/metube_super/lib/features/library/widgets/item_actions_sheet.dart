@@ -4,7 +4,7 @@ import 'package:mt_ui/mt_ui.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../playlists/add_to_playlist_sheet.dart';
-import '../../shared/error_text.dart';
+import '../../shared/error_report.dart';
 import '../../shared/external_player.dart';
 import '../../tags/item_tags_sheet.dart';
 import '../library_models.dart';
@@ -50,7 +50,7 @@ class _ItemActionsSheet extends ConsumerWidget {
         }
       } catch (e) {
         if (context.mounted) {
-          showMTSnack(context, errorText(l10n, e), type: MTSnackType.error);
+          showErrorSnack(context, ref, e, tag: 'library');
         }
       }
     }
@@ -206,8 +206,7 @@ void confirmBulkDelete(
               }
             } catch (e) {
               if (context.mounted) {
-                showMTSnack(context, errorText(l10n, e),
-                    type: MTSnackType.error);
+                showErrorSnack(context, ref, e, tag: 'library');
               }
             }
           },

@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mt_core/mt_core.dart';
 import 'package:mt_ui/mt_ui.dart';
 
 import '../../../di.dart';
+import '../../shared/error_report.dart';
 
 /// حالة السيرفر النشط. null ⇔ غير مهيأ. وإلا حالة مصنفة: **«يرفض
 /// اعتمادك» ليس «تعذّر الوصول»** — الأول يُصلَح بالحقلين أسفل هذه
@@ -13,11 +16,18 @@ final serverStatusProvider = FutureProvider<MTEndpointStatus?>((ref) async {
   if (api == null) return null;
   try {
     await api.testConnection();
+    clearErrorSignature('server-status');
     return MTEndpointStatus.ok;
-  } on AuthFailureException {
-    return MTEndpointStatus.unauthorized;
-  } on MTApiException {
-    return MTEndpointStatus.unreachable;
+  } on MTApiException catch (e) {
+    unawaited(logErrorOnce(ref.read(loggerProvider), 'server-status', e));
+    return switch (e) {
+      AuthFailureException() => MTEndpointStatus.unauthorized,
+      // العنوان حيّ لكنه ليس MeTube — خطأ عنوان لا خطأ شبكة.
+      NotMeTubeServerException() ||
+      NoApiException() =>
+        MTEndpointStatus.notMeTube,
+      _ => MTEndpointStatus.unreachable,
+    };
   }
 });
 
@@ -44,6 +54,13 @@ class ServerStatusCard extends ConsumerWidget {
           Icons.lock_outline_rounded,
           MTPalette.serverCardInk,
           l10n.signInRequired
+        ),
+      // «ليس MeTube» ليس انقطاعاً: العنوان حيّ ويردّ — والعلاج تصحيح
+      // العنوان لا انتظار الشبكة.
+      AsyncData(value: MTEndpointStatus.notMeTube) => (
+          Icons.link_off_rounded,
+          MTPalette.serverCardInk,
+          l10n.errNotMeTube
         ),
       AsyncData(value: MTEndpointStatus.unreachable) => (
           Icons.cloud_off_rounded,

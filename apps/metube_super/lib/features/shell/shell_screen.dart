@@ -10,6 +10,7 @@ import 'package:mt_ui/mt_ui.dart';
 import '../../di.dart';
 import '../home/add_flow.dart';
 import '../home/app_shortcuts.dart';
+import '../home/download_watcher.dart';
 import '../home/network_gate.dart';
 import '../home/quick_download.dart';
 import '../home/reception.dart';
@@ -18,6 +19,7 @@ import '../library/library_models.dart' show MediaTypeFilter;
 import '../library/library_providers.dart'
     show completionGlowProvider, libraryViewProvider;
 import '../player/playback_providers.dart';
+import '../settings/status_refresh.dart';
 import '../shared/notification_permission.dart';
 
 /// غلاف النموذج أ: 3 وجهات سفلية + الطبقة العائمة (زر الإضافة الذكي) —
@@ -41,7 +43,7 @@ class _ShellScreenState extends ConsumerState<ShellScreen>
     WidgetsBinding.instance.addObserver(this);
     _shareReceiver = ShareReceiver(onUrls: _onSharedUrls);
     _shareReceiver!.start();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       ref.read(clipboardRefresherProvider)();
       // م-21: إحياء جلسة الصوت المحفوظة (بلا تشغيل تلقائي) بعد أن يضبط
       // playbackWiringProvider رابط السيرفر الحالي.
@@ -49,7 +51,10 @@ class _ShellScreenState extends ConsumerState<ShellScreen>
       ref.read(audioHandlerProvider).restoreSession();
       // 33+: بلا هذا الطلب لا يظهر إشعار الوسائط إطلاقاً (خلل مصطاد).
       const NotificationPermission().request();
-      unawaited(_handleShortcut());
+      // إشعارات التحميل (قرار المالك 2026-09-06) — قناتاها مستقلتان عن
+      // قناة الوسائط أعلاه.
+      await initDownloadNotifications(ref);
+      if (mounted) unawaited(_handleShortcut());
     });
   }
 
@@ -177,6 +182,10 @@ class _ShellScreenState extends ConsumerState<ShellScreen>
     // م-43: يستمع لعودة الشبكة فيعيد ما فشل بسببها.
     ref.watch(autoRetryProvider);
     ref.watch(batchDropWatcherProvider);
+    // يبقى محقوناً حياً ليقود إشعارات التحميل.
+    ref.watch(downloadWatcherProvider);
+    // العودة للتطبيق تعيد سؤال السيرفر — البطاقة لا تصدق بلا هذا.
+    ref.watch(statusRefreshProvider);
 
     return Scaffold(
       body: widget.navigationShell,

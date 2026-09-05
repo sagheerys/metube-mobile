@@ -7,7 +7,7 @@ import 'package:mt_ui/mt_ui.dart';
 import '../downloads_library/artwork_view.dart';
 import '../downloads_library/library_providers.dart';
 import '../player/playback_providers.dart';
-import '../shared/error_text.dart';
+import '../shared/error_report.dart';
 import 'playlist_dialogs.dart';
 import 'playlists_providers.dart';
 import 'widgets/playlist_cards.dart';
@@ -167,8 +167,7 @@ class _Grid extends ConsumerWidget {
       if (visual && context.mounted) context.push('/player');
     } on MTApiException catch (e) {
       if (context.mounted) {
-        showMTSnack(context, errorText(context.mtl, e),
-            type: MTSnackType.error);
+        showErrorSnack(context, ref, e, tag: 'playlist');
       }
     }
   }
