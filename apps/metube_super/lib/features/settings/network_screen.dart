@@ -51,21 +51,22 @@ class NetworkScreen extends ConsumerWidget {
     }
 
     /// سطر يشرح الرفض ويأخذ المستخدم إلى الحقلين اللذين يصلحانه.
-    Widget? authHint(String url) => statusOf(url) != MTEndpointStatus.unauthorized
-        ? null
-        : InkWell(
-            onTap: () => context.go('/settings'),
-            child: Padding(
-              padding: const EdgeInsets.only(top: MTSpace.xs),
-              child: Text(
-                '${l10n.signInRequired} — ${l10n.updateCredentials}',
-                style: Theme.of(context)
-                    .textTheme
-                    .bodySmall
-                    ?.copyWith(color: p.accent),
-              ),
-            ),
-          );
+    Widget? authHint(String url) =>
+        statusOf(url) != MTEndpointStatus.unauthorized
+            ? null
+            : InkWell(
+                onTap: () => context.go('/settings'),
+                child: Padding(
+                  padding: const EdgeInsets.only(top: MTSpace.xs),
+                  child: Text(
+                    '${l10n.signInRequired} — ${l10n.updateCredentials}',
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodySmall
+                        ?.copyWith(color: p.accent),
+                  ),
+                ),
+              );
 
     return Scaffold(
       appBar: AppBar(
