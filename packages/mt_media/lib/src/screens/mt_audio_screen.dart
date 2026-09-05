@@ -19,16 +19,20 @@ class MTAudioScreen extends StatelessWidget {
     super.key,
     required this.handler,
     this.artwork,
-    this.onSaveQueueAsPlaylist,
     this.onShowPlaylist,
+    this.onDetails,
     this.playlistName,
     this.showSourceChip = true,
   });
 
   final MTAudioHandler handler;
   final MTArtworkBuilder? artwork;
-  final VoidCallback? onSaveQueueAsPlaylist;
   final VoidCallback? onShowPlaylist;
+
+  /// **تفاصيل المقطع** — حلّت محلّ زر قائمة الانتظار في الترويسة
+  /// (بلاغ المالك 2026-09-05): القائمة لها زرها الظاهر أسفل الشاشة،
+  /// وزرٌّ ثانٍ لها في الأعلى تكرارٌ لا يضيف شيئاً.
+  final VoidCallback? onDetails;
   final String? playlistName;
 
   /// **رقاقة المصدر «بث من السيرفر / تشغيل من جهازك»** — معلومة تفرّق
@@ -60,7 +64,7 @@ class MTAudioScreen extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: MTSpace.xl),
               child: Column(
                 children: [
-                  _Header(handler: handler, onQueue: () => _openQueue(context)),
+                  _Header(handler: handler, onDetails: onDetails),
                   const Spacer(flex: 2),
                   MTTiltedArtwork(
                     item: item,
@@ -111,7 +115,6 @@ class MTAudioScreen extends StatelessWidget {
       playlistName: playlistName,
       liveness: handler.playingNotifier,
       paused: () => !handler.playingNotifier.value,
-      onSaveAsPlaylist: onSaveQueueAsPlaylist,
       onShowAll: onShowPlaylist,
       onSelect: (index) =>
           handler.skipToQueueItem(handler.items.indexOf(ordered[index])),
@@ -134,10 +137,10 @@ class _EmptyPlayer extends StatelessWidget {
 }
 
 class _Header extends StatelessWidget {
-  const _Header({required this.handler, required this.onQueue});
+  const _Header({required this.handler, this.onDetails});
 
   final MTAudioHandler handler;
-  final VoidCallback onQueue;
+  final VoidCallback? onDetails;
 
   @override
   Widget build(BuildContext context) {
@@ -158,11 +161,14 @@ class _Header extends StatelessWidget {
                 .copyWith(color: p.ink3, letterSpacing: 1.6),
           ),
         ),
-        IconButton(
-          onPressed: onQueue,
-          tooltip: l10n.queueLabel,
-          icon: Icon(Icons.queue_music_rounded, color: p.ink2),
-        ),
+        if (onDetails case final VoidCallback show)
+          IconButton(
+            onPressed: show,
+            tooltip: l10n.details,
+            icon: Icon(Icons.info_outline_rounded, color: p.ink2),
+          )
+        else
+          const SizedBox(width: 48),
       ],
     );
   }

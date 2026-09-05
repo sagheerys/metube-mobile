@@ -37,7 +37,6 @@ class MTVideoScreen extends StatelessWidget {
     this.actions = const [],
     this.artwork,
     this.subtitleBuilder,
-    this.onSaveQueueAsPlaylist,
     this.onShowPlaylist,
     this.onContinueAsAudio,
     this.shouldOfferContinueAsAudio,
@@ -52,7 +51,6 @@ class MTVideoScreen extends StatelessWidget {
   /// سطر البيانات تحت العنوان (المنصة · الناشر) — من التطبيق.
   final String Function(BuildContext context, PlaylistItem item)?
       subtitleBuilder;
-  final VoidCallback? onSaveQueueAsPlaylist;
   final VoidCallback? onShowPlaylist;
 
   /// م-23: المزامنة الذكية — متابعة نفس العنصر صوتاً من نفس الثانية.
@@ -137,7 +135,6 @@ class MTVideoScreen extends StatelessWidget {
                     subtitleBuilder: subtitleBuilder,
                     playlistName: playlistName,
                     onShowPlaylist: onShowPlaylist,
-                    onSaveQueueAsPlaylist: onSaveQueueAsPlaylist,
                   ),
                 ),
               ],
@@ -155,7 +152,6 @@ class MTVideoScreen extends StatelessWidget {
             artwork: artwork,
             playlistName: playlistName,
             membershipLine: membershipLine,
-            onSaveQueueAsPlaylist: onSaveQueueAsPlaylist,
             onShowPlaylist: onShowPlaylist,
           ),
         ),
@@ -173,7 +169,6 @@ class MTVideoScreen extends StatelessWidget {
       // الجلسة تُخطر عند كل نبضة، فالورقة تعرف متى توقّف التشغيل.
       liveness: session,
       paused: () => !session.isPlaying,
-      onSaveAsPlaylist: onSaveQueueAsPlaylist,
       onShowAll: onShowPlaylist,
       onSelect: (index) =>
           session.jumpTo(session.items.indexOf(ordered[index])),

@@ -8,7 +8,6 @@ import '../../di.dart';
 import '../downloads_library/artwork_view.dart';
 import '../downloads_library/library_providers.dart';
 import '../downloads_library/local_item.dart';
-import '../playlists/playlists_providers.dart';
 
 /// طلب تشغيل معلّق: القائمة المعروضة وقت النقر بترتيبها وتصفيتها (ر-4).
 class PlaybackRequest {
@@ -76,27 +75,6 @@ PlaylistItem toPlaylistItem(LocalItem item) => PlaylistItem(
       aspectRatio: item.aspectRatio,
     );
 
-/// م-38: تحويل جلسة التشغيل الحالية لقائمة دائمة.
-Future<bool> saveQueueAsPlaylist(
-  WidgetRef ref,
-  String name,
-  List<PlaylistItem> items,
-) async {
-  if (name.isEmpty || items.isEmpty) return false;
-  await ref.read(playlistsStoreProvider).create(
-        name,
-        items: [
-          for (final item in items)
-            PlaylistEntry(
-              canonicalUrl: item.canonicalUrl,
-              cachedTitle: item.title,
-              cachedThumb: item.artworkUrl,
-            ),
-        ],
-      );
-  ref.invalidate(playlistsProvider);
-  return true;
-}
 
 /// باني المصغرات للمشغلات (م-18): أغلفة المنصات المحفوظة في فهرس
 /// الأغلفة — بلا ترويسات مصادقة (لا شيء منها من سيرفر العائلة).

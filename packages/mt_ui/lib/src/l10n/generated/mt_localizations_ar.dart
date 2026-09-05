@@ -14,6 +14,9 @@ class MTLocalizationsAr extends MTLocalizations {
       'النسخة المحلية فقط — لا يُسلَّم رابط السيرفر لتطبيق آخر';
 
   @override
+  String get externalPlayerShort => 'مشغل خارجي';
+
+  @override
   String get noExternalPlayer => 'لا يوجد مشغل خارجي على الجهاز';
 
   @override
@@ -1117,9 +1120,6 @@ class MTLocalizationsAr extends MTLocalizations {
   }
 
   @override
-  String get queueSavedAsPlaylist => 'حُفظت كقائمة تشغيل';
-
-  @override
   String get queued => 'في الانتظار';
 
   @override
@@ -1245,9 +1245,6 @@ class MTLocalizationsAr extends MTLocalizations {
   String retryingAttempt(int attempt, int max) {
     return 'إعادة المحاولة $attempt/$max…';
   }
-
-  @override
-  String get saveQueueAsPlaylist => 'احفظ هذه القائمة كقائمة تشغيل';
 
   @override
   String get saveSettings => 'حفظ الإعدادات';

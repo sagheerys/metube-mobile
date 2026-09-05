@@ -14,6 +14,9 @@ class MTLocalizationsEn extends MTLocalizations {
       'Local copy only — the server link is never handed to another app';
 
   @override
+  String get externalPlayerShort => 'Another player';
+
+  @override
   String get noExternalPlayer => 'No external player on this device';
 
   @override
@@ -1116,9 +1119,6 @@ class MTLocalizationsEn extends MTLocalizations {
   }
 
   @override
-  String get queueSavedAsPlaylist => 'Saved as a playlist';
-
-  @override
   String get queued => 'Queued';
 
   @override
@@ -1242,9 +1242,6 @@ class MTLocalizationsEn extends MTLocalizations {
   String retryingAttempt(int attempt, int max) {
     return 'Retry $attempt/$max…';
   }
-
-  @override
-  String get saveQueueAsPlaylist => 'Save this queue as a playlist';
 
   @override
   String get saveSettings => 'Save Settings';

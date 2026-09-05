@@ -109,6 +109,7 @@
     }
   },
   "externalPlayerLocalOnly": "Local copy only — the server link is never handed to another app",
+  "externalPlayerShort": "Another player",
   "@fileSizeBytes": {
     "placeholders": {
       "value": {
@@ -633,7 +634,6 @@
   "queueItemsCount": "{count, plural, =0{No items} =1{1 item} other{{count} items}}",
   "queueLabel": "Queue",
   "queuePosition": "Queue position: {position}",
-  "queueSavedAsPlaylist": "Saved as a playlist",
   "queued": "Queued",
   "queuedSection": "Waiting",
   "quickDownload": "Quick download",
@@ -677,7 +677,6 @@
   "resultsFound": "{count, plural, =1{1 result} other{{count} results}}",
   "retry": "Retry",
   "retryingAttempt": "Retry {attempt}/{max}…",
-  "saveQueueAsPlaylist": "Save this queue as a playlist",
   "saveSettings": "Save Settings",
   "saveToDevice": "Save to device",
   "savedOnDevice": "Saved on device",

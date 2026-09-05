@@ -17,7 +17,6 @@ class MTVideoFullscreenPage extends StatefulWidget {
     super.key,
     required this.session,
     this.artwork,
-    this.onSaveQueueAsPlaylist,
     this.onShowPlaylist,
     this.playlistName,
     this.membershipLine,
@@ -26,7 +25,6 @@ class MTVideoFullscreenPage extends StatefulWidget {
 
   final MTVideoSession session;
   final MTArtworkBuilder? artwork;
-  final VoidCallback? onSaveQueueAsPlaylist;
   final VoidCallback? onShowPlaylist;
   final String? playlistName;
 
@@ -109,7 +107,6 @@ class _MTVideoFullscreenPageState extends State<MTVideoFullscreenPage> {
                   session: session,
                   artwork: widget.artwork,
                   playlistName: widget.playlistName,
-                  onSaveAsPlaylist: widget.onSaveQueueAsPlaylist,
                   onShowAll: widget.onShowPlaylist,
                   onClose: () => setState(() => _queueOpen = false),
                 ),
@@ -127,7 +124,6 @@ class _SidePanel extends StatelessWidget {
     required this.session,
     required this.onClose,
     this.artwork,
-    this.onSaveAsPlaylist,
     this.onShowAll,
     this.playlistName,
   });
@@ -135,7 +131,6 @@ class _SidePanel extends StatelessWidget {
   final MTVideoSession session;
   final VoidCallback onClose;
   final MTArtworkBuilder? artwork;
-  final VoidCallback? onSaveAsPlaylist;
   final VoidCallback? onShowAll;
   final String? playlistName;
 
@@ -176,7 +171,6 @@ class _SidePanel extends StatelessWidget {
               artwork: artwork,
               playlistName: playlistName,
               paused: !session.isPlaying,
-              onSaveAsPlaylist: onSaveAsPlaylist,
               onShowAll: onShowAll,
               onSelect: (index) {
                 onClose();
@@ -196,7 +190,6 @@ class _PanelBody extends StatelessWidget {
     required this.currentIndex,
     required this.onSelect,
     this.artwork,
-    this.onSaveAsPlaylist,
     this.onShowAll,
     this.playlistName,
     this.paused = false,
@@ -206,7 +199,6 @@ class _PanelBody extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int> onSelect;
   final MTArtworkBuilder? artwork;
-  final VoidCallback? onSaveAsPlaylist;
   final VoidCallback? onShowAll;
   final String? playlistName;
   final bool paused;
@@ -231,7 +223,6 @@ class _PanelBody extends StatelessWidget {
             artwork: artwork,
             playlistName: playlistName,
             paused: paused,
-            onSaveAsPlaylist: onSaveAsPlaylist,
             onShowAll: onShowAll,
             onSelect: onSelect,
             dark: true,

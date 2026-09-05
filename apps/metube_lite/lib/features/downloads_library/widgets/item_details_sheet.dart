@@ -99,7 +99,9 @@ class _DetailsSheet extends ConsumerWidget {
                       }
                     },
                     icon: const Icon(Icons.open_with_rounded, size: 16),
-                    label: Text(l10n.openInExternalPlayer,
+                    // نصّ قصير: زرّان جنباً إلى جنب لا يتسع لهما
+                    // النصّ الطويل على هاتف (رئي على الجهاز).
+                    label: Text(l10n.externalPlayerShort,
                         maxLines: 1, overflow: TextOverflow.ellipsis),
                   ),
                 ),

@@ -104,6 +104,12 @@ abstract class MTLocalizations {
   /// **'Local copy only — the server link is never handed to another app'**
   String get externalPlayerLocalOnly;
 
+  /// No description provided for @externalPlayerShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Another player'**
+  String get externalPlayerShort;
+
   /// No description provided for @noExternalPlayer.
   ///
   /// In en, this message translates to:
@@ -2084,12 +2090,6 @@ abstract class MTLocalizations {
   /// **'Queue position: {position}'**
   String queuePosition(int position);
 
-  /// No description provided for @queueSavedAsPlaylist.
-  ///
-  /// In en, this message translates to:
-  /// **'Saved as a playlist'**
-  String get queueSavedAsPlaylist;
-
   /// No description provided for @queued.
   ///
   /// In en, this message translates to:
@@ -2305,12 +2305,6 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'Retry {attempt}/{max}…'**
   String retryingAttempt(int attempt, int max);
-
-  /// No description provided for @saveQueueAsPlaylist.
-  ///
-  /// In en, this message translates to:
-  /// **'Save this queue as a playlist'**
-  String get saveQueueAsPlaylist;
 
   /// No description provided for @saveSettings.
   ///

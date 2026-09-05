@@ -19,7 +19,6 @@ class MTVideoInfoSheet extends StatelessWidget {
     this.artwork,
     this.subtitleBuilder,
     this.onShowPlaylist,
-    this.onSaveQueueAsPlaylist,
     this.playlistName,
   });
 
@@ -29,7 +28,6 @@ class MTVideoInfoSheet extends StatelessWidget {
   final String Function(BuildContext context, PlaylistItem item)?
       subtitleBuilder;
   final VoidCallback? onShowPlaylist;
-  final VoidCallback? onSaveQueueAsPlaylist;
   final String? playlistName;
 
   @override
@@ -95,7 +93,6 @@ class MTVideoInfoSheet extends StatelessWidget {
               playlistName: playlistName,
               paused: !session.isPlaying,
               onShowAll: onShowPlaylist,
-              onSaveAsPlaylist: onSaveQueueAsPlaylist,
               onSelect: (index) =>
                   session.jumpTo(session.items.indexOf(ordered[index])),
             ),

@@ -15,7 +15,6 @@ class MTQueuePanel extends StatelessWidget {
     required this.currentIndex,
     required this.onSelect,
     this.artwork,
-    this.onSaveAsPlaylist,
     this.onShowAll,
     this.playlistName,
     this.dark = false,
@@ -32,7 +31,6 @@ class MTQueuePanel extends StatelessWidget {
   final MTArtworkBuilder? artwork;
 
   /// م-38: تحويل جلسة التشغيل الحالية لقائمة دائمة.
-  final VoidCallback? onSaveAsPlaylist;
 
   /// م-38: القفز لتفاصيل القائمة في تبويبها.
   final VoidCallback? onShowAll;
@@ -101,65 +99,11 @@ class MTQueuePanel extends StatelessWidget {
             onTap: onSelect,
           ),
         ),
-        // **لا يُعرض والقائمة قائمةٌ محفوظة أصلاً** (بلاغ المالك
-        // 2026-09-04: «الزر موجود في كل مكان حتى في قائمة التشغيل»).
-        // [playlistName] غير فارغ ⇔ التشغيل انطلق من قائمة محفوظة،
-        // فحفظها «كقائمة تشغيل» يصنع نسخة ثانية بلا معنى.
-        if (onSaveAsPlaylist != null && playlistName == null) ...[
-          const SizedBox(height: MTSpace.sm),
-          MTSaveQueueButton(
-            onTap: onSaveAsPlaylist!,
-            label: l10n.saveQueueAsPlaylist,
-          ),
-        ],
       ],
     );
   }
 }
 
-/// «احفظ هذه القائمة كقائمة تشغيل» (م-38).
-class MTSaveQueueButton extends StatelessWidget {
-  const MTSaveQueueButton({
-    super.key,
-    required this.onTap,
-    required this.label,
-  });
-
-  final VoidCallback onTap;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    final p = MTThemeX.of(context).palette;
-    return Material(
-      color: p.accentSoft,
-      borderRadius: BorderRadius.circular(MTRadius.field),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(MTRadius.field),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: MTSpace.sm),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(MTRadius.field),
-            border: Border.all(color: p.accent.withValues(alpha: 0.4)),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.playlist_add_rounded, size: 17, color: p.accentInk),
-              const SizedBox(width: MTSpace.xs),
-              Text(
-                label,
-                style: Theme.of(context).textTheme.labelMedium!
-                    .copyWith(color: p.accentInk, fontWeight: FontWeight.w700),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
 
 /// يفتح ورقة قائمة الانتظار السفلية (شاشة الصوت والمشغل العمودي).
 Future<void> showMTQueueSheet(
@@ -168,7 +112,6 @@ Future<void> showMTQueueSheet(
   required int currentIndex,
   required ValueChanged<int> onSelect,
   MTArtworkBuilder? artwork,
-  VoidCallback? onSaveAsPlaylist,
   VoidCallback? onShowAll,
   String? playlistName,
   Listenable? liveness,
@@ -195,7 +138,6 @@ Future<void> showMTQueueSheet(
             artwork: artwork,
             playlistName: playlistName,
             paused: paused?.call() ?? false,
-            onSaveAsPlaylist: onSaveAsPlaylist,
             onShowAll: onShowAll,
             onSelect: (index) {
               Navigator.of(sheetContext).pop();

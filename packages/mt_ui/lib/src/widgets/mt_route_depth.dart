@@ -42,39 +42,35 @@ class MTRouteDepth extends NavigatorObserver {
   }
 }
 
-/// يُظهر [child] فقط حين لا شيء مكدّس فوق الغلاف، بتلاشٍ قصير بدل
-/// اختفاء مفاجئ.
+/// يُظهر [child] فقط حين لا شيء مكدّس فوق الغلاف — **تلاشٍ خالص**.
 ///
-/// **الظهور مرآة الاختفاء** (بلاغ المالك 2026-09-04: «حركة ظهور زر
-/// إضافة رابط أريدها مثل حركة اختفائه لا مثل الباوربوينت»). كان الزر
-/// ينكمش إلى **صفر** فيُقرأ اختفاؤه تلاشياً سريعاً، لكن عودته من الصفر
-/// تُقرأ «تكبيراً من نقطة». الآن الانكماش خفيف ([_hiddenScale]) فيبقى
-/// الاتجاهان تلاشياً واحداً بنفس المدة.
+/// ثلاث محاولات وصلت إلى هذا (بلاغات المالك 2026-09-02 ثم 09-04 ثم
+/// 09-05):
+///
+/// 1. انكماش إلى **صفر**: الاختفاء يُقرأ تلاشياً، لكن العودة من الصفر
+///    «تكبيرٌ من نقطة» — حركة بوربوينت.
+/// 2. انكماش خفيف (0.92) بمنحنيَين مختلفين للدخول والخروج: أهدأ، لكن
+///    القفزة تبقى محسوسة ومنحنى الدخول القوي يعطيها «نبضة».
+/// 3. **تلاشٍ وحده بمنحنى واحد في الاتجاهين** — لا حجم يتغير ولا فرق
+///    بين الظهور والاختفاء إلا اتجاه الشفافية. أبسط ما يمكن، وهو ما
+///    طلبه المالك: «أكثر سلاسة وبساطة».
 class MTHiddenUnderRoutes extends StatelessWidget {
   const MTHiddenUnderRoutes({super.key, required this.child});
 
   final Widget child;
-
-  static const double _hiddenScale = 0.92;
 
   @override
   Widget build(BuildContext context) => ValueListenableBuilder<int>(
         valueListenable: MTRouteDepth.depth,
         builder: (context, depth, _) {
           final visible = depth == 0;
-          final curve = visible ? MTMotion.entrance : MTMotion.exit;
           return IgnorePointer(
             ignoring: !visible,
-            child: AnimatedScale(
-              scale: visible ? 1 : _hiddenScale,
-              duration: MTMotion.tap,
-              curve: curve,
-              child: AnimatedOpacity(
-                opacity: visible ? 1 : 0,
-                duration: MTMotion.tap,
-                curve: curve,
-                child: child,
-              ),
+            child: AnimatedOpacity(
+              opacity: visible ? 1 : 0,
+              duration: MTMotion.reveal,
+              curve: MTMotion.ease,
+              child: child,
             ),
           );
         },

@@ -11,7 +11,6 @@ import '../../di.dart';
 import '../downloads_library/library_actions.dart';
 import '../downloads_library/library_providers.dart';
 import '../downloads_library/local_item.dart';
-import '../playlists/playlist_dialogs.dart';
 import '../shared/membership.dart';
 import 'playback_providers.dart';
 
@@ -80,7 +79,6 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
       // **لا يُسأل مرتين** (بلاغ المالك 2026-09-02): من نقل المقطع
       // للصوت فعلاً ثم ضغط رجوع كان يُسأل عن مقطع يسمعه بالفعل.
       shouldOfferContinueAsAudio: _shouldOfferAudio,
-      onSaveQueueAsPlaylist: () => _saveQueue(session.orderedItems),
       onShowPlaylist: request.playlistId == null
           ? null
           : () => context.push('/playlists/${request.playlistId}'),
@@ -126,14 +124,6 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
     return null;
   }
 
-  Future<void> _saveQueue(List<PlaylistItem> items) async {
-    final name = await promptPlaylistName(context);
-    if (name == null || !mounted) return;
-    if (await saveQueueAsPlaylist(ref, name, items) && mounted) {
-      showMTSnack(context, context.mtl.queueSavedAsPlaylist,
-          type: MTSnackType.success);
-    }
-  }
 
   Future<void> _share(PlaylistItem item) async {
     final match = _libraryItemOf(item);

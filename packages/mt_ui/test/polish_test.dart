@@ -103,4 +103,42 @@ void main() {
     expect(MTMotion.tap.inMilliseconds, lessThanOrEqualTo(320));
     expect(MTMotion.reveal.inMilliseconds, lessThanOrEqualTo(320));
   });
+
+  group('MTHiddenUnderRoutes', () {
+    testWidgets('تلاشٍ خالص: لا حجم يتغيّر ولا اختلاف بين الاتجاهين', (
+      tester,
+    ) async {
+      addTearDown(() => MTRouteDepth.depth.value = 0);
+      MTRouteDepth.depth.value = 0;
+      await tester.pumpWidget(host(
+        const MTHiddenUnderRoutes(
+          child: SizedBox(width: 100, height: 40, child: Text('أضف رابطاً')),
+        ),
+      ));
+
+      Finder inside(Type type) => find.descendant(
+            of: find.byType(MTHiddenUnderRoutes),
+            matching: find.byType(type),
+          );
+      AnimatedOpacity fade() =>
+          tester.widget<AnimatedOpacity>(inside(AnimatedOpacity));
+      expect(fade().opacity, 1);
+      final showCurve = fade().curve;
+
+      // **الحارس**: لا `AnimatedScale` في المسار — القفزة الحجمية هي
+      // ما وصفه المالك بـ«الغريب وغير المريح» (2026-09-05).
+      expect(inside(AnimatedScale), findsNothing);
+
+      MTRouteDepth.depth.value = 1;
+      await tester.pump();
+      expect(fade().opacity, 0);
+      expect(fade().curve, showCurve, reason: 'منحنى واحد في الاتجاهين');
+
+      // ولا يبتلع اللمسات وهو مخفي.
+      expect(
+        tester.widget<IgnorePointer>(inside(IgnorePointer)).ignoring,
+        isTrue,
+      );
+    });
+  });
 }
