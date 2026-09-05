@@ -101,7 +101,7 @@ final libraryEnricherProvider =
 /// يشتغل تلقائياً كلما تغيّرت المكتبة — يُراقَب من غلاف التطبيق مرة.
 /// يتوقف وحده: الدورة التالية لا تجد ما ينقصه فلا تُبطل شيئاً.
 final libraryEnrichmentProvider = Provider<void>((ref) {
-  final items = ref.watch(localMediaProvider).value;
+  final items = ref.watch(localMediaProvider).valueOrNull;
   if (items == null || items.isEmpty) return;
   unawaited(ref.read(libraryEnricherProvider).enrich(items));
 });

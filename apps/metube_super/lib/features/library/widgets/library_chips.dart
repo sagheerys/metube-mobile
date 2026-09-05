@@ -94,7 +94,7 @@ class _TagFilterRow extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final counts = ref.watch(tagCountsProvider).value ?? const <String, int>{};
+    final counts = ref.watch(tagCountsProvider).valueOrNull ?? const <String, int>{};
     if (counts.isEmpty) return const SizedBox.shrink();
 
     final l10n = context.mtl;

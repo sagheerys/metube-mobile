@@ -128,7 +128,7 @@ final engineTasksProvider = StreamProvider<List<DownloadTask>>((ref) async* {
 final batchDropWatcherProvider = Provider<void>((ref) {
   final collector = ref.watch(batchCollectorProvider);
   ref.listen<AsyncValue<List<DownloadTask>>>(engineTasksProvider, (_, next) {
-    for (final task in next.value ?? const <DownloadTask>[]) {
+    for (final task in next.valueOrNull ?? const <DownloadTask>[]) {
       if (!task.isBatchMember) continue;
       if (task.phase == TaskPhase.failed ||
           task.phase == TaskPhase.cancelled) {
@@ -141,13 +141,13 @@ final batchDropWatcherProvider = Provider<void>((ref) {
 
 /// المهام غير المنتهية (بطاقات المكتبة الحية + شارة الرأس — النموذج أ).
 final activeTasksProvider = Provider<List<DownloadTask>>((ref) {
-  final tasks = ref.watch(engineTasksProvider).value ?? const [];
+  final tasks = ref.watch(engineTasksProvider).valueOrNull ?? const [];
   return tasks.where((t) => !t.isFinished).toList();
 });
 
 /// المهام الفاشلة («تحتاج انتباهك» في ورقة الإدارة).
 final failedTasksProvider = Provider<List<DownloadTask>>((ref) {
-  final tasks = ref.watch(engineTasksProvider).value ?? const [];
+  final tasks = ref.watch(engineTasksProvider).valueOrNull ?? const [];
   return tasks.where((t) => t.phase == TaskPhase.failed).toList();
 });
 

@@ -199,7 +199,7 @@ final downloadWatcherProvider = Provider<void>((ref) {
   ref.listen<AsyncValue<List<DownloadTask>>>(
     engineTasksProvider,
     (_, next) {
-      final tasks = next.value ?? const <DownloadTask>[];
+      final tasks = next.valueOrNull ?? const <DownloadTask>[];
       chain = chain.then((_) => handle(tasks)).catchError((Object e) {
         unawaited(logger.error('notification failed',
             cause: e, tag: 'download'));

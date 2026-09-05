@@ -1386,6 +1386,13 @@ class MTLocalizationsAr extends MTLocalizations {
   String get shuffle => 'تبديل عشوائي';
 
   @override
+  String get signInRequired => 'يلزم تسجيل الدخول';
+
+  @override
+  String get signInRequiredHint =>
+      'رفض السيرفر الاعتماد المحفوظ. حدّث اسم المستخدم وكلمة المرور في الإعدادات.';
+
+  @override
   String get size => 'الحجم';
 
   @override
@@ -1544,6 +1551,9 @@ class MTLocalizationsAr extends MTLocalizations {
   String upNextIn(String name) {
     return 'التالي في «$name»';
   }
+
+  @override
+  String get updateCredentials => 'تحديث الاعتماد';
 
   @override
   String get urlMustStartWith => 'يجب أن يبدأ الرابط بـ http:// أو https://';

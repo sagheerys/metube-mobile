@@ -31,7 +31,7 @@ class AudioScreen extends ConsumerWidget {
       BuildContext context, WidgetRef ref, MTAudioHandler handler) {
     final key = handler.currentItem?.canonicalUrl;
     if (key == null) return;
-    final items = ref.read(localMediaProvider).value ?? const [];
+    final items = ref.read(localMediaProvider).valueOrNull ?? const [];
     for (final candidate in items) {
       if (candidate.key == key) {
         showItemDetailsSheet(context, candidate);

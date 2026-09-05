@@ -260,7 +260,7 @@ final highlightedItemProvider = StateProvider<String?>((ref) => null);
 final completionGlowProvider = Provider<void>((ref) {
   final seen = <String>{};
   ref.listen<AsyncValue<List<DownloadTask>>>(engineTasksProvider, (_, next) {
-    for (final task in next.value ?? const <DownloadTask>[]) {
+    for (final task in next.valueOrNull ?? const <DownloadTask>[]) {
       if (task.phase != TaskPhase.completed || !seen.add(task.id)) continue;
       final arrived = task.canonicalUrl;
       if (arrived != null) {

@@ -93,7 +93,7 @@ void showPlaylistActionsSheet(
           // حُذف من خارج التطبيق.
           // `read` لا `watch`: هذه دالةٌ لا `build`، و`WidgetRef.watch`
           // خارج البناء يرمي وقت التشغيل ولا يمسكه المحلل.
-          if (ref.read(playlistViewProvider(playlist.id)).value
+          if (ref.read(playlistViewProvider(playlist.id)).valueOrNull
               case final PlaylistView view when view.missing.isNotEmpty)
             ListTile(
               leading: Icon(Icons.playlist_remove_rounded, color: p.ink2),

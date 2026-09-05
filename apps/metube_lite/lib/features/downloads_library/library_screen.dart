@@ -8,6 +8,7 @@ import 'package:mt_ui/mt_ui.dart';
 
 import '../../di.dart';
 import '../home/add_flow.dart';
+import '../shared/error_text.dart';
 import '../player/playback_providers.dart';
 import '../playlists/add_to_playlist_sheet.dart';
 import 'library_actions.dart';
@@ -64,7 +65,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
 
     // المكتبة محلية: تعمل بلا سيرفر — الحالة الفارغة تدعو للإعداد فقط
     // حين لا يوجد سيرفر **ولا ملفات**.
-    final items = ref.watch(localMediaProvider).value ?? const [];
+    final items = ref.watch(localMediaProvider).valueOrNull ?? const [];
     final needsSetup = !settings.isConfigured && items.isEmpty;
 
     return Scaffold(
@@ -81,8 +82,14 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
             )
           : RefreshIndicator(
               onRefresh: () async {
+                // فشل التحديث تعرضه المكتبة نفسها بحالتها الفارغة —
+                // ورميه من هنا يفلت خارج `RefreshIndicator` بلا مستقبِل.
                 ref.invalidate(localMediaProvider);
-                await ref.read(localMediaProvider.future);
+                try {
+                  await ref.read(localMediaProvider.future);
+                } on MTApiException {
+                  // معروضة في الحالة الفارغة
+                }
               },
               // ظهور واحد هادئ للمحتوى عند أول بناء — لا حركة لكل
               // بطاقة (كانت تُنطّ القائمة طوال التمرير).
@@ -130,7 +137,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
         IconButton(
           tooltip: l10n.selectAll,
           onPressed: () {
-            final items = ref.read(visibleLibraryProvider).value ?? [];
+            final items = ref.read(visibleLibraryProvider).valueOrNull ?? [];
             controller.selectAll(items.map((i) => i.key));
           },
           icon: const Icon(Icons.select_all_rounded),
@@ -160,7 +167,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
 
   /// عناصر المكتبة المقابلة للتحديد الحالي (ر-6).
   List<LocalItem> _selectedItems(Set<String> selection) {
-    final visible = ref.read(visibleLibraryProvider).value ?? const [];
+    final visible = ref.read(visibleLibraryProvider).valueOrNull ?? const [];
     return [
       for (final item in visible)
         if (selection.contains(item.key)) item,
@@ -197,7 +204,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
         // «وميض» متواصل أثناء التحميل حيث تتجدد المكتبة مراراً.
         // البيانات الموجودة تفوز دائماً، ولا دوّارة إلا في أول تحميل.
         ...switch (itemsAsync) {
-          AsyncValue(:final value?) when value.isNotEmpty => [
+          AsyncValue(valueOrNull: final value?) when value.isNotEmpty => [
               SliverPadding(
                 padding:
                     const EdgeInsets.symmetric(horizontal: MTSpace.pagePad),
@@ -231,18 +238,19 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                 ),
               ),
             ],
-          AsyncError() => [
+          // الرسالة من الخطأ نفسه لا من نصّ مثبت (نفس علاج Super).
+          AsyncError(:final error) => [
               SliverToBoxAdapter(
                 child: MTEmptyState(
                   icon: Icons.error_outline_rounded,
                   title: l10n.tryAgain,
-                  message: l10n.noDownloadsMessage,
+                  message: errorText(l10n, error),
                   actionLabel: l10n.retry,
                   onAction: () => ref.invalidate(localMediaProvider),
                 ),
               ),
             ],
-          AsyncValue(:final value?) when value.isEmpty => [
+          AsyncValue(valueOrNull: final value?) when value.isEmpty => [
               SliverToBoxAdapter(
                 child: MTEmptyState(
                   icon: options.query.isEmpty
@@ -312,7 +320,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
   /// (والعمودي القصير ⇒ الريلز م-35). قائمة التشغيل الداخلية =
   /// **المكتبة المعروضة** وقت النقر بنفس فرزها وتصفيتها.
   Future<void> _play(LocalItem tapped) async {
-    final visible = ref.read(visibleLibraryProvider).value ?? const [];
+    final visible = ref.read(visibleLibraryProvider).valueOrNull ?? const [];
     final items = [for (final item in visible) toPlaylistItem(item)];
     final index = visible.indexWhere((i) => i.key == tapped.key);
     if (items.isEmpty || index < 0) return;

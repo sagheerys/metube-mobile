@@ -1383,6 +1383,13 @@ class MTLocalizationsEn extends MTLocalizations {
   String get shuffle => 'Shuffle';
 
   @override
+  String get signInRequired => 'Sign-in required';
+
+  @override
+  String get signInRequiredHint =>
+      'The server rejected the saved credentials. Update the username and password in settings.';
+
+  @override
   String get size => 'Size';
 
   @override
@@ -1541,6 +1548,9 @@ class MTLocalizationsEn extends MTLocalizations {
   String upNextIn(String name) {
     return 'Up next in «$name»';
   }
+
+  @override
+  String get updateCredentials => 'Update credentials';
 
   @override
   String get urlMustStartWith => 'URL must start with http:// or https://';

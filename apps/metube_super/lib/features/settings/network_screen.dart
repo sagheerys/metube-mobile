@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:mt_core/mt_core.dart';
 import 'package:mt_ui/mt_ui.dart';
 
 import '../../di.dart';
@@ -8,7 +10,7 @@ import 'widgets/server_status_card.dart';
 
 /// حالة وصول كل رابط (نقاط حية) — فحص متوازٍ 4s.
 final endpointsStatusProvider =
-    FutureProvider<Map<String, bool>>((ref) async {
+    FutureProvider<Map<String, MTEndpointStatus>>((ref) async {
   final settings = ref.watch(settingsProvider);
   final resolver = ref.watch(endpointResolverProvider);
   if (settings.candidateUrls.isEmpty) return {};
@@ -27,12 +29,19 @@ class NetworkScreen extends ConsumerWidget {
     final statuses = ref.watch(endpointsStatusProvider);
     final p = MTThemeX.of(context).palette;
 
+    MTEndpointStatus? statusOf(String url) => statuses.valueOrNull?[url];
+
+    // **القفل ليس نقطة حمراء**: «لا يستجيب» يطارده المستخدم في راوتره،
+    // و«يرفض اعتمادك» يصلحه بحقلين. اللون وحده لا يفرّق بينهما.
     Widget statusDot(String url) {
-      final reachable = statuses.value?[url];
-      final color = switch (reachable) {
-        true => p.ok,
-        false => p.err,
-        null => p.ink3,
+      final status = statusOf(url);
+      if (status == MTEndpointStatus.unauthorized) {
+        return Icon(Icons.lock_outline_rounded, size: 14, color: p.accent);
+      }
+      final color = switch (status) {
+        MTEndpointStatus.ok => p.ok,
+        MTEndpointStatus.unreachable => p.err,
+        _ => p.ink3,
       };
       return Container(
         width: 10,
@@ -40,6 +49,23 @@ class NetworkScreen extends ConsumerWidget {
         decoration: BoxDecoration(color: color, shape: BoxShape.circle),
       );
     }
+
+    /// سطر يشرح الرفض ويأخذ المستخدم إلى الحقلين اللذين يصلحانه.
+    Widget? authHint(String url) => statusOf(url) != MTEndpointStatus.unauthorized
+        ? null
+        : InkWell(
+            onTap: () => context.go('/settings'),
+            child: Padding(
+              padding: const EdgeInsets.only(top: MTSpace.xs),
+              child: Text(
+                '${l10n.signInRequired} — ${l10n.updateCredentials}',
+                style: Theme.of(context)
+                    .textTheme
+                    .bodySmall
+                    ?.copyWith(color: p.accent),
+              ),
+            ),
+          );
 
     return Scaffold(
       appBar: AppBar(
@@ -96,6 +122,7 @@ class NetworkScreen extends ConsumerWidget {
               ),
             ),
           ]),
+          if (authHint(settings.localUrl) case final Widget hint) hint,
           const SizedBox(height: MTSpace.xl),
 
           MTSectionHeader(
@@ -114,6 +141,7 @@ class NetworkScreen extends ConsumerWidget {
                   overflow: TextOverflow.ellipsis,
                   textDirection: TextDirection.ltr,
                   style: Theme.of(context).textTheme.bodyMedium),
+              subtitle: authHint(url),
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [

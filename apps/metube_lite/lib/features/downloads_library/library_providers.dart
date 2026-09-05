@@ -199,7 +199,7 @@ final visibleLibraryProvider = Provider<AsyncValue<List<LocalItem>>>((ref) {
 /// كي لا تختفي الرقاقة التي تنقر عليها.
 final platformCountsProvider =
     Provider<List<MapEntry<MediaPlatform, int>>>((ref) {
-  final items = ref.watch(localMediaProvider).value ?? const [];
+  final items = ref.watch(localMediaProvider).valueOrNull ?? const [];
   return platformCounts(items);
 });
 

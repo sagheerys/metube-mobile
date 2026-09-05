@@ -21,7 +21,7 @@ class PlaylistDetailsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.mtl;
-    final playlists = ref.watch(playlistsProvider).value ?? const [];
+    final playlists = ref.watch(playlistsProvider).valueOrNull ?? const [];
     final playlist =
         playlists.where((p) => p.id == playlistId).firstOrNull;
     final itemsAsync = ref.watch(playlistViewProvider(playlistId));
@@ -217,7 +217,7 @@ class _ReorderableItems extends ConsumerWidget {
   Future<void> _playFrom(
       BuildContext context, WidgetRef ref, PlaylistItem item) async {
     final playlist =
-        (ref.read(playlistsProvider).value ?? const <SavedPlaylist>[])
+        (ref.read(playlistsProvider).valueOrNull ?? const <SavedPlaylist>[])
             .where((p) => p.id == playlistId)
             .firstOrNull;
     final playable = view.playable;

@@ -69,7 +69,7 @@ class _BatchScreenState extends ConsumerState<BatchScreen> {
             ),
         ],
       ),
-      floatingActionButton: preview.value == null
+      floatingActionButton: preview.valueOrNull == null
           ? null
           : FloatingActionButton.extended(
               onPressed: _submit,

@@ -104,13 +104,27 @@ class AutoSwitchService {
     }
     _running = true;
     try {
-      final best = await _ref.read(endpointResolverProvider).resolveActive(
+      final probe = await _ref.read(endpointResolverProvider).resolveDetailed(
             localUrl: settings.localUrl,
             externalUrls: settings.externalUrls,
           );
+      final best = probe.url;
       // لا شيء يستجيب ⇒ **نُبقي المعتمد كما هو**: الشبكة قد تكون في
       // منتصف التبديل، وتصفير الرابط يفرّغ المكتبة أمام المستخدم.
-      if (best == null) return;
+      if (best == null) {
+        // **السبب يُسجَّل** (بلاغ المالك 2026-09-05): قفل السيرفر
+        // بكلاودفلير أوقف التبديل، ولم يكن في السجل ما يميّز «مقفل»
+        // عن «مقطوع» — فبدا العطل بلا سبب.
+        final locked = probe.statuses.values
+            .where((s) => s == MTEndpointStatus.unauthorized)
+            .length;
+        unawaited(_ref.read(loggerProvider).log(
+            locked > 0
+                ? 'no usable endpoint — $locked rejected credentials (401)'
+                : 'no usable endpoint — none reachable',
+            tag: 'network'));
+        return;
+      }
       if (best == settings.activeUrl && !activeIsStale) return;
       lastAdopted = best;
       // م-32: تبديل السيرفر أهم حدث تشخيصي في Super — وكان لا يُسجَّل.

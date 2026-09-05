@@ -126,7 +126,7 @@ final libraryEnricherProvider =
 
 /// يشتغل كلما تغيّرت المكتبة ويتوقف وحده حين لا يبقى ما ينقصه.
 final libraryEnrichmentProvider = Provider<void>((ref) {
-  final items = ref.watch(libraryItemsProvider).value;
+  final items = ref.watch(libraryItemsProvider).valueOrNull;
   if (items == null || items.isEmpty) return;
   unawaited(ref.read(libraryEnricherProvider).enrich(items));
 });

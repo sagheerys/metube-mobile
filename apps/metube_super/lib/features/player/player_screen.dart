@@ -63,7 +63,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
     }
     // **يُقرأ في `build` لا داخل `subtitleBuilder`**: البنّاء يُنفَّذ
     // أثناء بناء ودجت **ابن**، و`ref.watch` هناك خارج نطاقه المسموح.
-    final membership = ref.watch(membershipIndexProvider).value ?? const {};
+    final membership = ref.watch(membershipIndexProvider).valueOrNull ?? const {};
 
     return MTVideoScreen(
       session: session,
@@ -106,7 +106,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
     // **الحالة من المكتبة الحيّة لا من عنصر التشغيل** — `PlaylistItem`
     // لقطة وقت فتح المشغل، فكانت الأيقونة تبقى «حفظ للجهاز» بعد اكتمال
     // الحفظ. (أُصلح في الريلز أولاً، وبقي هنا — فحص شامل 2026-09-02.)
-    final live = ref.watch(visibleLibraryProvider).value?.where(
+    final live = ref.watch(visibleLibraryProvider).valueOrNull?.where(
         (candidate) => candidate.canonicalUrl == item.canonicalUrl);
     final offline = (live?.isNotEmpty ?? false)
         ? live!.first.isOffline
@@ -145,7 +145,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
 
   /// العنصر المقابل في المكتبة — الأفعال تحتاج بياناته الكاملة.
   LibraryItem? _libraryItemOf(PlaylistItem item) {
-    final items = ref.read(visibleLibraryProvider).value ?? const [];
+    final items = ref.read(visibleLibraryProvider).valueOrNull ?? const [];
     for (final candidate in items) {
       if (candidate.canonicalUrl == item.canonicalUrl) return candidate;
     }

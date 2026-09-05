@@ -8,6 +8,7 @@ import 'package:mt_ui/mt_ui.dart';
 
 import '../../di.dart';
 import '../home/add_flow.dart';
+import '../shared/error_text.dart';
 import '../player/playback_providers.dart';
 import '../playlists/add_to_playlist_sheet.dart';
 import '../tags/item_tags_sheet.dart';
@@ -87,8 +88,14 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
             )
           : RefreshIndicator(
               onRefresh: () async {
+                // فشل التحديث تعرضه المكتبة نفسها بحالتها الفارغة —
+                // ورميه من هنا يفلت خارج `RefreshIndicator` بلا مستقبِل.
                 ref.invalidate(historyProvider);
-                await ref.read(libraryItemsProvider.future);
+                try {
+                  await ref.read(libraryItemsProvider.future);
+                } on MTApiException {
+                  // معروضة في الحالة الفارغة
+                }
               },
               // ظهور واحد هادئ للمحتوى عند أول بناء — لا حركة لكل
               // بطاقة (كانت تُنطّ القائمة طوال التمرير).
@@ -137,7 +144,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
         IconButton(
           tooltip: l10n.selectAll,
           onPressed: () {
-            final items = ref.read(visibleLibraryProvider).value ?? [];
+            final items = ref.read(visibleLibraryProvider).valueOrNull ?? [];
             controller.selectAll(items.map((i) => i.canonicalUrl));
           },
           icon: const Icon(Icons.select_all_rounded),
@@ -166,7 +173,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
 
   /// عناصر المكتبة المقابلة للتحديد الحالي (ر-6).
   List<LibraryItem> _selectedItems(Set<String> selection) {
-    final visible = ref.read(visibleLibraryProvider).value ?? const [];
+    final visible = ref.read(visibleLibraryProvider).valueOrNull ?? const [];
     return [
       for (final item in visible)
         if (selection.contains(item.canonicalUrl)) item,
@@ -198,7 +205,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                 Padding(
                   padding: const EdgeInsets.only(top: MTSpace.xs),
                   child: Text(
-                    l10n.resultsFound(itemsAsync.value?.length ?? 0),
+                    l10n.resultsFound(itemsAsync.valueOrNull?.length ?? 0),
                     style: Theme.of(context).textTheme.labelSmall,
                   ),
                 ),
@@ -213,7 +220,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
         // بـ `AsyncLoading` محتفظاً ببياناته — مطابقتها أولاً كانت
         // تستبدل المكتبة بدوّارة مرتين في الثانية أثناء أي تحميل.
         ...switch (itemsAsync) {
-          AsyncValue(:final value?) when value.isNotEmpty => [
+          AsyncValue(valueOrNull: final value?) when value.isNotEmpty => [
               SliverPadding(
                 padding:
                     const EdgeInsets.symmetric(horizontal: MTSpace.pagePad),
@@ -251,18 +258,29 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                 ),
               ),
             ],
-          AsyncError() => [
+          // **الخطأ يقول سببه**: كانت الرسالة `errNetwork` مثبتة مهما
+          // كان العطل، فرفضُ الاعتماد (401) يُقرأ «تعذّر الوصول
+          // للشبكة» — تشخيص خاطئ يرسل المالك يطارد راوتره.
+          AsyncError(:final error) => [
               SliverToBoxAdapter(
-                child: MTEmptyState(
-                  icon: Icons.error_outline_rounded,
-                  title: l10n.connectionFailed,
-                  message: l10n.errNetwork,
-                  actionLabel: l10n.retry,
-                  onAction: () => ref.invalidate(historyProvider),
-                ),
+                child: error is AuthFailureException
+                    ? MTEmptyState(
+                        icon: Icons.lock_outline_rounded,
+                        title: l10n.signInRequired,
+                        message: l10n.signInRequiredHint,
+                        actionLabel: l10n.updateCredentials,
+                        onAction: () => context.go('/settings'),
+                      )
+                    : MTEmptyState(
+                        icon: Icons.error_outline_rounded,
+                        title: l10n.connectionFailed,
+                        message: errorText(l10n, error),
+                        actionLabel: l10n.retry,
+                        onAction: () => ref.invalidate(historyProvider),
+                      ),
               ),
             ],
-          AsyncValue(:final value?) when value.isEmpty => [
+          AsyncValue(valueOrNull: final value?) when value.isEmpty => [
               SliverToBoxAdapter(
                 child: MTEmptyState(
                   icon: options.query.isEmpty
@@ -330,7 +348,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
   /// مرئي ⇒ `/player`. قائمة التشغيل الداخلية = **المكتبة المعروضة**
   /// وقت النقر بنفس فرزها وتصفيتها.
   Future<void> _play(LibraryItem tapped) async {
-    final visible = ref.read(visibleLibraryProvider).value ?? const [];
+    final visible = ref.read(visibleLibraryProvider).valueOrNull ?? const [];
     final items = [for (final item in visible) toPlaylistItem(item)];
     final index =
         visible.indexWhere((i) => i.canonicalUrl == tapped.canonicalUrl);

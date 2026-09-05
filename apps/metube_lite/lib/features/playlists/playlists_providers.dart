@@ -58,7 +58,7 @@ final playlistsProvider = FutureProvider<List<SavedPlaylist>>((ref) async {
 });
 
 final smartListsProvider = Provider<List<SmartList>>((ref) =>
-    buildSmartLists(ref.watch(localMediaProvider).value ?? const []));
+    buildSmartLists(ref.watch(localMediaProvider).valueOrNull ?? const []));
 
 /// عناصر قائمة محفوظة بعد ربطها بالمكتبة.
 ///

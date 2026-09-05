@@ -37,7 +37,10 @@ void main() {
         themeMode: ThemeMode.system,
       )),
       endpointResolverProvider.overrideWithValue(
-        EndpointResolver(probe: (url) async => reachable.contains(url)),
+        EndpointResolver(
+            probe: (url) async => reachable.contains(url)
+                ? MTEndpointStatus.ok
+                : MTEndpointStatus.unreachable),
       ),
       // الفحص صار يسأل المحرك «هل من عمل جارٍ؟» قبل التبديل (ع-1)،
       // والمحرك يحتاج السجل — يُتجاوز في main، فيُتجاوز هنا كذلك.

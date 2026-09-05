@@ -27,7 +27,7 @@ class _DownloadsSheet extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.mtl;
-    final tasks = ref.watch(engineTasksProvider).value ?? const [];
+    final tasks = ref.watch(engineTasksProvider).valueOrNull ?? const [];
     final engine = ref.read(downloadEngineProvider);
 
     final running = tasks

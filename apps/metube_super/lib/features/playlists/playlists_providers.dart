@@ -67,7 +67,7 @@ final tagCountsProvider = FutureProvider<Map<String, int>>(
 
 /// القوائم الذكية الثلاث من المكتبة الحالية.
 final smartListsProvider = Provider<List<SmartList>>((ref) => buildSmartLists(
-    ref.watch(libraryItemsProvider).value ?? const <LibraryItem>[]));
+    ref.watch(libraryItemsProvider).valueOrNull ?? const <LibraryItem>[]));
 
 /// عناصر قائمة محفوظة بعد ربطها بالمكتبة — العنصر الذي لم يعد موجوداً
 /// يُبنى من البيانات المخبأة في المدخل نفسه فلا يختفي بصمت.

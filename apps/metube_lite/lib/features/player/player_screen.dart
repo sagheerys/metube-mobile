@@ -62,7 +62,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
     }
     // **يُقرأ في `build` لا داخل `subtitleBuilder`**: البنّاء يُنفَّذ
     // أثناء بناء ودجت **ابن**، و`ref.watch` هناك خارج نطاقه المسموح.
-    final membership = ref.watch(membershipIndexProvider).value ?? const {};
+    final membership = ref.watch(membershipIndexProvider).valueOrNull ?? const {};
 
     return MTVideoScreen(
       session: session,
@@ -117,7 +117,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
   }
 
   LocalItem? _libraryItemOf(PlaylistItem item) {
-    final items = ref.read(localMediaProvider).value ?? const [];
+    final items = ref.read(localMediaProvider).valueOrNull ?? const [];
     for (final candidate in items) {
       if (candidate.key == item.canonicalUrl) return candidate;
     }

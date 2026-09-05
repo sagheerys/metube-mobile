@@ -72,7 +72,7 @@ class _DetailsSheet extends ConsumerWidget {
             // أي وسوم. المعلومة كانت في المخزن ولا تعرضها أي شاشة.
             ...switch (ref
                 .watch(membershipIndexProvider)
-                .value?[item.canonicalUrl]) {
+                .valueOrNull?[item.canonicalUrl]) {
               final ItemMembership m when !m.isEmpty => [
                   if (m.playlists.isNotEmpty)
                     row(l10n.inPlaylists, m.playlists.join('، ')),

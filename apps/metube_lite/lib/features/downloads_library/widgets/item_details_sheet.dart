@@ -64,7 +64,7 @@ class _DetailsSheet extends ConsumerWidget {
             // المقطع؟ المعلومة كانت في المخزن ولا تعرضها أي شاشة.
             ...switch (ref
                 .watch(membershipIndexProvider)
-                .value?[item.key]) {
+                .valueOrNull?[item.key]) {
               final ItemMembership m when m.playlists.isNotEmpty => [
                   row(l10n.inPlaylists, m.playlists.join('، ')),
                 ],

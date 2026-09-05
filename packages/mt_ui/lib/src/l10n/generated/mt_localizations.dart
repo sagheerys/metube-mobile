@@ -2564,6 +2564,18 @@ abstract class MTLocalizations {
   /// **'Shuffle'**
   String get shuffle;
 
+  /// No description provided for @signInRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign-in required'**
+  String get signInRequired;
+
+  /// No description provided for @signInRequiredHint.
+  ///
+  /// In en, this message translates to:
+  /// **'The server rejected the saved credentials. Update the username and password in settings.'**
+  String get signInRequiredHint;
+
   /// No description provided for @size.
   ///
   /// In en, this message translates to:
@@ -2869,6 +2881,12 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'Up next in «{name}»'**
   String upNextIn(String name);
+
+  /// No description provided for @updateCredentials.
+  ///
+  /// In en, this message translates to:
+  /// **'Update credentials'**
+  String get updateCredentials;
 
   /// No description provided for @urlMustStartWith.
   ///

@@ -62,13 +62,13 @@ class _ReelsScreenState extends ConsumerState<ReelsScreen> {
 
     // تُقرأ هنا لا داخل المُنشئات: `ref.watch` مسموح في `build` وحده،
     // وهي التي تُعيد بناء الأفعال حين تتغير المكتبة أو يتقدم السحب.
-    final library = ref.watch(visibleLibraryProvider).value ?? const [];
+    final library = ref.watch(visibleLibraryProvider).valueOrNull ?? const [];
     final byUrl = {for (final item in library) item.canonicalUrl: item};
     final pulls = ref.watch(offlinePullProgressProvider);
     // **يُقرأ في `build` لا داخل `subtitleBuilder`**: البنّاء يُنفَّذ
     // أثناء بناء ودجت **ابن**، و`ref.watch` هناك خارج نطاقه المسموح.
     final membership =
-        ref.watch(membershipIndexProvider).value ?? const {};
+        ref.watch(membershipIndexProvider).valueOrNull ?? const {};
 
     final lane = ShortsLane.from(request.items);
     final startUrl = request.items[request.startIndex].canonicalUrl;
@@ -166,7 +166,7 @@ class _ReelsScreenState extends ConsumerState<ReelsScreen> {
   }
 
   LibraryItem? _libraryItemOf(PlaylistItem item) {
-    final items = ref.read(visibleLibraryProvider).value ?? const [];
+    final items = ref.read(visibleLibraryProvider).valueOrNull ?? const [];
     for (final candidate in items) {
       if (candidate.canonicalUrl == item.canonicalUrl) return candidate;
     }

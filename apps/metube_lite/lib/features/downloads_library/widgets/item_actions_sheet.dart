@@ -163,7 +163,7 @@ void confirmBulkDelete(
         FilledButton(
           onPressed: () async {
             Navigator.pop(dialogContext);
-            final all = ref.read(localMediaProvider).value ?? const [];
+            final all = ref.read(localMediaProvider).valueOrNull ?? const [];
             final targets = [
               for (final item in all)
                 if (selection.contains(item.key)) item,
