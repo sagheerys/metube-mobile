@@ -6,6 +6,7 @@ import 'package:video_player/video_player.dart';
 import '../models/playlist_item.dart';
 import '../widgets/mt_queue_panel.dart';
 import '../widgets/mt_up_next_list.dart';
+import 'mt_orientation.dart';
 import 'mt_video_controls.dart';
 import 'mt_video_session.dart';
 
@@ -20,6 +21,7 @@ class MTVideoFullscreenPage extends StatefulWidget {
     this.onShowPlaylist,
     this.playlistName,
     this.membershipLine,
+    this.byRotation = false,
   });
 
   final MTVideoSession session;
@@ -30,6 +32,11 @@ class MTVideoFullscreenPage extends StatefulWidget {
 
   /// انتماء المقطع (وسوم/قوائم) — يُعرض تحت العنوان في الوضع العرضي.
   final String? membershipLine;
+
+  /// **دخلنا بإمالة الجهاز لا بالزر.** الفرق سلوكي: الداخل بالإمالة
+  /// يخرج بالإمالة العكسية (يوتيوب)، والداخل بالزر يبقى عرضياً حتى
+  /// يضغط الخروج — لأن قافل التدوير لا يستطيع أن يميل أصلاً.
+  final bool byRotation;
 
   @override
   State<MTVideoFullscreenPage> createState() => _MTVideoFullscreenPageState();
@@ -42,24 +49,34 @@ class _MTVideoFullscreenPageState extends State<MTVideoFullscreenPage> {
   void initState() {
     super.initState();
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
-    SystemChrome.setPreferredOrientations(const [
-      DeviceOrientation.landscapeLeft,
-      DeviceOrientation.landscapeRight,
-    ]);
+    if (widget.byRotation) {
+      MTOrientation.allow();
+    } else {
+      MTOrientation.lockLandscape();
+    }
   }
 
   @override
   void dispose() {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-    SystemChrome.setPreferredOrientations(const [
-      DeviceOrientation.portraitUp,
-    ]);
+    // **لا نقفل الطولي هنا**: المشغل العمودي تحتنا ما زال قائماً وهو
+    // صاحب السياسة — قفلُنا كان يثبّت التطبيق كله على الطولي للأبد.
+    MTOrientation.allow();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final session = widget.session;
+    // الخروج بالإمالة العكسية — لمن دخل بها.
+    if (widget.byRotation &&
+        MediaQuery.orientationOf(context) == Orientation.portrait) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && (ModalRoute.of(context)?.isCurrent ?? false)) {
+          Navigator.of(context).maybePop();
+        }
+      });
+    }
     return Scaffold(
       backgroundColor: Colors.black,
       body: ListenableBuilder(

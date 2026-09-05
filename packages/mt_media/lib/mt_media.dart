@@ -15,6 +15,7 @@ export 'src/screens/mt_audio_screen.dart';
 export 'src/screens/mt_reels_player.dart';
 export 'src/screens/mt_video_screen.dart';
 export 'src/screens/video_info_sheet.dart';
+export 'src/video/mt_orientation.dart';
 export 'src/video/mt_video_controls.dart';
 export 'src/video/mt_video_fullscreen.dart';
 export 'src/video/mt_video_session.dart';

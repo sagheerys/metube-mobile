@@ -57,12 +57,22 @@ void main() {
     }
   }
 
+  /// **سطح الاختبار طولي كالهاتف.** الافتراضي 800×600 أي *عرضي*،
+  /// ومنذ 2026-09-05 صار المشغل يفتح الملء التام عند الإمالة — فكانت
+  /// هذه الاختبارات تبدأ داخل الملء التام بلا أن تقصده.
+  void usePhonePortrait(WidgetTester tester) {
+    tester.view.physicalSize = const Size(1200, 2400);
+    tester.view.devicePixelRatio = 3;
+    addTearDown(tester.view.reset);
+  }
+
   Future<void> openPlayer(
     WidgetTester tester,
     GlobalKey<NavigatorState> navKey,
     MTVideoSession session,
     Future<void> Function(PlaylistItem, Duration) onContinueAsAudio,
   ) async {
+    usePhonePortrait(tester);
     await tester.pumpWidget(MaterialApp(
       navigatorKey: navKey,
       localizationsDelegates: MTLocalizations.localizationsDelegates,

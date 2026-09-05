@@ -17,6 +17,9 @@ import 'features/shared/stores.dart';
 /// bootstrap فقط: التخزين، لقطة الإعدادات، مشغل الصوت الخلفي، runApp.
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // **التطبيق طولي والمشغل وحده يدور** (قرار المالك 2026-09-05) —
+  // `MTRotationScope` يفكّ هذا القفل ما دام مشغل الفيديو مفتوحاً.
+  unawaited(MTOrientation.lockPortrait());
   initMTL10n();
 
   final prefs = await SharedPreferences.getInstance();

@@ -3,6 +3,7 @@ import 'package:mt_ui/mt_ui.dart';
 import 'package:video_player/video_player.dart';
 
 import '../models/playlist_item.dart';
+import '../video/mt_orientation.dart';
 import '../video/mt_video_controls.dart';
 import '../video/mt_video_fullscreen.dart';
 import '../video/mt_video_session.dart';
@@ -80,8 +81,15 @@ class MTVideoScreen extends StatelessWidget {
       onContinueAsAudio != null &&
       (shouldOfferContinueAsAudio?.call() ?? true);
 
+  /// **الإمالة تفتح الملء التام والإمالة العكسية تغلقه** (قرار المالك
+  /// 2026-09-05) — والزر يبقى لمن أقفل التدوير في نظامه.
   @override
-  Widget build(BuildContext context) => PopScope(
+  Widget build(BuildContext context) => MTRotationScope(
+        open: (byRotation) => _openFullscreen(context, byRotation),
+        builder: (context, openFullscreen) => _body(context, openFullscreen),
+      );
+
+  Widget _body(BuildContext context, VoidCallback openFullscreen) => PopScope(
         canPop: !_offersAudio,
         onPopInvokedWithResult: (didPop, _) {
           if (!didPop) _askContinueAsAudio(context);
@@ -97,7 +105,7 @@ class MTVideoScreen extends StatelessWidget {
                   playlistName: playlistName,
                   membershipLine: membershipLine,
                   onBack: () => Navigator.of(context).maybePop(),
-                  onFullscreen: () => _openFullscreen(context),
+                  onFullscreen: openFullscreen,
                   onQueue: () => _openQueue(context),
                 ),
                 Expanded(
@@ -117,11 +125,12 @@ class MTVideoScreen extends StatelessWidget {
         ),
       );
 
-  Future<void> _openFullscreen(BuildContext context) =>
+  Future<void> _openFullscreen(BuildContext context, bool byRotation) =>
       Navigator.of(context).push(
         MaterialPageRoute<void>(
           builder: (_) => MTVideoFullscreenPage(
             session: session,
+            byRotation: byRotation,
             artwork: artwork,
             playlistName: playlistName,
             membershipLine: membershipLine,

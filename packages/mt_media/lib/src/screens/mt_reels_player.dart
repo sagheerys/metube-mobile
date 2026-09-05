@@ -9,6 +9,7 @@ import 'package:wakelock_plus/wakelock_plus.dart';
 
 import '../models/playback_source.dart';
 import '../models/playlist_item.dart';
+import '../video/mt_orientation.dart';
 import '../video/reels_overlay.dart';
 import '../video/reels_progress.dart';
 import '../video/reels_stage.dart';
@@ -120,6 +121,11 @@ class _MTReelsPlayerState extends State<MTReelsPlayer> {
     // لون أيقوناته يُضبط بـ `AnnotatedRegion` في `build` لا هنا — انظر
     // التعليق هناك، فالسبب مثبت بـ `dumpsys` لا مستنتج.
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    // **الريلز طولي دائماً ولا يتوقف بالإمالة** (قرار المالك
+    // 2026-09-05): المحتوى ٩:١٦، وتدويره يعطي شريطين أسودين ومقطعاً
+    // صغيراً في الوسط — تيك توك وشورتس يتجاهلان الدوران هنا. وإيقاف
+    // التشغيل عند الميل عقوبة على حركة لم يقصدها أحد.
+    MTOrientation.lockPortrait();
     _notifyLive(_pauseForAudioFocus);
     WidgetsBinding.instance.addPostFrameCallback((_) => _load(_index));
   }
