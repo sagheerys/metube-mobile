@@ -5,15 +5,19 @@ import 'package:mt_ui/mt_ui.dart';
 
 import '../../../di.dart';
 
-/// حالة السيرفر النشط: null=غير مهيأ · true=متصل · false=منقطع.
-final serverStatusProvider = FutureProvider<bool?>((ref) async {
+/// حالة السيرفر النشط. null ⇔ غير مهيأ. وإلا حالة مصنفة: **«يرفض
+/// اعتمادك» ليس «تعذّر الوصول»** — الأول يُصلَح بالحقلين أسفل هذه
+/// البطاقة، والثاني لا.
+final serverStatusProvider = FutureProvider<MTEndpointStatus?>((ref) async {
   final api = ref.watch(apiClientProvider);
   if (api == null) return null;
   try {
     await api.testConnection();
-    return true;
+    return MTEndpointStatus.ok;
+  } on AuthFailureException {
+    return MTEndpointStatus.unauthorized;
   } on MTApiException {
-    return false;
+    return MTEndpointStatus.unreachable;
   }
 });
 
@@ -29,12 +33,19 @@ class ServerStatusCard extends ConsumerWidget {
     final p = MTThemeX.of(context).palette;
 
     final (icon, tint, label) = switch (status) {
-      AsyncData(value: true) => (
+      AsyncData(value: MTEndpointStatus.ok) => (
           Icons.cloud_done_rounded,
           p.ok,
           l10n.serverStatusConnected
         ),
-      AsyncData(value: false) => (
+      // البطاقة **داكنة دائماً** (سجل §4)، ولون الفعل البترولي في Lite
+      // لا يُقرأ عليها — فالتمييز بالأيقونة والنص لا باللون.
+      AsyncData(value: MTEndpointStatus.unauthorized) => (
+          Icons.lock_outline_rounded,
+          MTPalette.serverCardInk,
+          l10n.signInRequired
+        ),
+      AsyncData(value: MTEndpointStatus.unreachable) => (
           Icons.cloud_off_rounded,
           p.err,
           l10n.serverStatusOffline
