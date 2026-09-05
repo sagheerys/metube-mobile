@@ -140,5 +140,29 @@ void main() {
         isTrue,
       );
     });
+
+    testWidgets('visible: false يخفيه ولا ينزعه من الشجرة', (tester) async {
+      addTearDown(() => MTRouteDepth.depth.value = 0);
+      MTRouteDepth.depth.value = 0;
+      await tester.pumpWidget(host(
+        const MTHiddenUnderRoutes(
+          visible: false,
+          child: SizedBox(width: 100, height: 40, child: Text('أضف رابطاً')),
+        ),
+      ));
+
+      // **الحارس**: نزعه من فتحة `Scaffold` (تمرير `null`) يوقظ محرّكه
+      // الافتراضي وفيه دورانٌ عند الظهور — وهو ما اشتكى منه المالك.
+      expect(find.text('أضف رابطاً', skipOffstage: false), findsOneWidget);
+      expect(
+        tester
+            .widget<AnimatedOpacity>(find.descendant(
+              of: find.byType(MTHiddenUnderRoutes),
+              matching: find.byType(AnimatedOpacity),
+            ))
+            .opacity,
+        0,
+      );
+    });
   });
 }

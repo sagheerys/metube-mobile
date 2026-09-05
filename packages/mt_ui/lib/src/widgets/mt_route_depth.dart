@@ -52,22 +52,39 @@ class MTRouteDepth extends NavigatorObserver {
 /// 2. انكماش خفيف (0.92) بمنحنيَين مختلفين للدخول والخروج: أهدأ، لكن
 ///    القفزة تبقى محسوسة ومنحنى الدخول القوي يعطيها «نبضة».
 /// 3. **تلاشٍ وحده بمنحنى واحد في الاتجاهين** — لا حجم يتغير ولا فرق
-///    بين الظهور والاختفاء إلا اتجاه الشفافية. أبسط ما يمكن، وهو ما
-///    طلبه المالك: «أكثر سلاسة وبساطة».
+///    بين الظهور والاختفاء إلا اتجاه الشفافية.
+///
+/// ولم تكفِ الثالثة (بلاغ المالك 2026-09-05) — **لأن الحركة المزعجة لم
+/// تكن حركتنا أصلاً**: `Scaffold` يحرّك فتحة الزر العائم بمحرّكه
+/// الافتراضي `_ScalingFabMotionAnimator`، وفيه بنصّ مصدر Flutter:
+/// «This rotation will turn on the way **in**, but not on the way out»
+/// — دورانٌ عند الظهور وحده. وهذا بالضبط وصف المالك: الظهور غريب
+/// والاختفاء عادي. الحلّ في الغلاف: `FloatingActionButtonAnimator
+/// .noAnimation` مع إبقاء الزر **مركّباً دائماً** في الفتحة، فلا يرى
+/// `Scaffold` تبديلاً يحرّكه، ويبقى التلاشي وحده. و[visible] هي ما
+/// يخفيه في تبويب الإعدادات بدل تمرير `null`.
 class MTHiddenUnderRoutes extends StatelessWidget {
-  const MTHiddenUnderRoutes({super.key, required this.child});
+  const MTHiddenUnderRoutes({
+    super.key,
+    required this.child,
+    this.visible = true,
+  });
 
   final Widget child;
+
+  /// شرط إضافي فوق «لا مسار فوق الغلاف» — تمرير `false` يخفيه بنفس
+  /// التلاشي بدل نزعه من الشجرة (فيدور محرّك `Scaffold`).
+  final bool visible;
 
   @override
   Widget build(BuildContext context) => ValueListenableBuilder<int>(
         valueListenable: MTRouteDepth.depth,
         builder: (context, depth, _) {
-          final visible = depth == 0;
+          final shown = depth == 0 && visible;
           return IgnorePointer(
-            ignoring: !visible,
+            ignoring: !shown,
             child: AnimatedOpacity(
-              opacity: visible ? 1 : 0,
+              opacity: shown ? 1 : 0,
               duration: MTMotion.reveal,
               curve: MTMotion.ease,
               child: child,

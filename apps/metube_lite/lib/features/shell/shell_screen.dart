@@ -131,10 +131,12 @@ class _ShellScreenState extends ConsumerState<ShellScreen>
         engine.submit(url, quality, isBatchMember: true);
       }
     }
-    showMTSnack(context, context.mtl.downloadStarted,
-        type: MTSnackType.success);
+    showMTSnack(
+      context,
+      context.mtl.downloadStarted,
+      type: MTSnackType.success,
+    );
   }
-
 
   /// قائمة **بذاتها** لا فيديو داخل قائمة.
   static bool _isPurePlaylistLink(String url) =>
@@ -176,19 +178,24 @@ class _ShellScreenState extends ConsumerState<ShellScreen>
 
     return Scaffold(
       body: widget.navigationShell,
-      floatingActionButton: branch == 2
-          ? null
-          // يختفي تحت أي ورقة أو حوار: كان يحجب رابط «حول المقطع»
-          // ويزاحم أفعال القوائم السفلية (بلاغ المالك 2026-09-02).
-          : MTHiddenUnderRoutes(
-              child: MTFab(
-                label: clipboardUrl == null
-                    ? l10n.addLinkFab
-                    : l10n.clipboardLinkReady,
-                highlighted: clipboardUrl != null,
-                onPressed: _onFabPressed,
-              ),
-            ),
+      // **الزر مركّب دائماً — لا `null`** (بلاغ المالك 2026-09-05:
+      // «حركة الظهور غريبة»). تبديل فتحة الزر العائم يوقظ محرّك
+      // `Scaffold` الافتراضي، وفيه دورانٌ **عند الظهور وحده** بنصّ
+      // مصدر Flutter. `noAnimation` أدناه يسكته، و`visible` يخفيه
+      // بتلاشينا نحن.
+      floatingActionButtonAnimator: FloatingActionButtonAnimator.noAnimation,
+      floatingActionButton: MTHiddenUnderRoutes(
+        // يختفي تحت أي ورقة أو حوار: كان يحجب رابط «حول المقطع»
+        // ويزاحم أفعال القوائم السفلية (بلاغ المالك 2026-09-02).
+        visible: branch != 2,
+        child: MTFab(
+          label: clipboardUrl == null
+              ? l10n.addLinkFab
+              : l10n.clipboardLinkReady,
+          highlighted: clipboardUrl != null,
+          onPressed: _onFabPressed,
+        ),
+      ),
       // م-22: المشغل المصغر شريط دائم **فوق** الشريط السفلي — داخل نفس
       // الفتحة ليحسب Scaffold مساحته ويرفع زر الإضافة فوقه (سجل §4).
       bottomNavigationBar: Column(
@@ -208,8 +215,12 @@ class _ShellScreenState extends ConsumerState<ShellScreen>
               onDownload: () {
                 // زر صريح مكتوب عليه «حمّل الآن» وبجانبه «اختر
                 // الخيارات» — لا يمرّ ببوابة الإعداد.
-                if (startQuickDownload(context, ref, clipboardUrl,
-                    explicit: true)) {
+                if (startQuickDownload(
+                  context,
+                  ref,
+                  clipboardUrl,
+                  explicit: true,
+                )) {
                   ref.read(clipboardUrlProvider.notifier).state = null;
                 } else {
                   openAddSheet(context, ref, initialUrl: clipboardUrl);
@@ -256,5 +267,7 @@ class _ShellScreenState extends ConsumerState<ShellScreen>
 }
 
 /// دالة فحص الحافظة قابلة للاستدعاء من الغلاف.
-final clipboardRefresherProvider =
-    Provider<Future<void> Function()>((ref) => () => refreshClipboardUrl(ref));
+final clipboardRefresherProvider = Provider<Future<void> Function()>(
+  (ref) =>
+      () => refreshClipboardUrl(ref),
+);
