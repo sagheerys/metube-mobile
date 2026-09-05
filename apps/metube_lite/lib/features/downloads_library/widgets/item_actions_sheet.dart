@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../playlists/add_to_playlist_sheet.dart';
 import '../../shared/error_text.dart';
+import '../../shared/external_player.dart';
 import '../library_actions.dart';
 import '../library_providers.dart';
 import '../local_item.dart';
@@ -85,6 +86,16 @@ class _ItemActionsSheet extends ConsumerWidget {
           }),
           tile(Icons.share_rounded, l10n.share,
               () => run(() => actions.share([item]))),
+          // **مشغل خارجي — بملف محلي وحده** (طلب المالك 2026-09-05).
+          tile(Icons.open_with_rounded, l10n.openInExternalPlayer,
+              () => run(() async {
+                    final opened = await const ExternalPlayer()
+                        .open(item.path, audio: item.isAudio);
+                    if (!opened && host.mounted) {
+                      showMTSnack(host, l10n.noExternalPlayer,
+                          type: MTSnackType.error);
+                    }
+                  })),
           tile(Icons.playlist_add_rounded, l10n.addToPlaylist, () {
             Navigator.pop(context);
             showAddToPlaylistSheet(host, ref, [item]);

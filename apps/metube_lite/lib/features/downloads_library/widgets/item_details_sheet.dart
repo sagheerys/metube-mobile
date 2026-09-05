@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show Clipboard, ClipboardData;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mt_ui/mt_ui.dart';
+import 'package:url_launcher/url_launcher.dart';
 
+import '../../shared/external_player.dart';
 import '../../shared/membership.dart';
 import '../local_item.dart';
 
@@ -69,6 +71,40 @@ class _DetailsSheet extends ConsumerWidget {
               _ => const <Widget>[],
             },
             const SizedBox(height: MTSpace.sm),
+            // **فعلان لا زر ثالث في الريلز** (قرار المالك 2026-09-05):
+            // شريط الريلز فيه ثلاثة أزرار وزيادةُ رابعٍ تزاحمه، وهذه
+            // الورقة تُفتح منه بزر «التفاصيل» أصلاً.
+            Row(
+              children: [
+                if (item.canonicalUrl case final String url)
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () => launchUrl(Uri.parse(url),
+                          mode: LaunchMode.externalApplication),
+                      icon: const Icon(Icons.open_in_new_rounded, size: 16),
+                      label: Text(l10n.openOriginalLink,
+                          maxLines: 1, overflow: TextOverflow.ellipsis),
+                    ),
+                  ),
+                if (item.canonicalUrl != null)
+                  const SizedBox(width: MTSpace.sm),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () async {
+                      final opened = await const ExternalPlayer()
+                          .open(item.path, audio: item.isAudio);
+                      if (!opened && context.mounted) {
+                        showMTSnack(context, l10n.noExternalPlayer,
+                            type: MTSnackType.error);
+                      }
+                    },
+                    icon: const Icon(Icons.open_with_rounded, size: 16),
+                    label: Text(l10n.openInExternalPlayer,
+                        maxLines: 1, overflow: TextOverflow.ellipsis),
+                  ),
+                ),
+              ],
+            ),
             // الرابط الأصلي — نسخ بلمسة (م-16). الملفات المهاجرة من
             // النسخة القديمة لا رابط لها فيُعرض مسارها بدله.
             OutlinedButton.icon(

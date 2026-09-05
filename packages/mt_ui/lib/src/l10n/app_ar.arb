@@ -24,6 +24,9 @@
       }
     }
   },
+  "externalPlayerLocalOnly": "النسخة المحلية فقط — لا يُسلَّم رابط السيرفر لتطبيق آخر",
+  "noExternalPlayer": "لا يوجد مشغل خارجي على الجهاز",
+  "openInExternalPlayer": "فتح في مشغل خارجي",
   "@queueItemsCount": {
     "placeholders": {
       "count": {

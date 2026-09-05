@@ -102,7 +102,24 @@ class MTVideoScreen extends StatelessWidget {
           backgroundColor: MTThemeX.of(context).palette.bg,
           body: ListenableBuilder(
             listenable: session,
-            builder: (context, _) => Column(
+            // **عرضياً: الفيديو وحده يملأ الشاشة** (بلاغ المالك
+            // 2026-09-05: «أخرج من الملء التام والجهاز عرضي فيظهر
+            // التطبيق بالعرض»). الخروج اليدوي يُنزع تسليح الإمالة
+            // فلا يُعاد فتح الملء التام — وكانت النتيجة ورقةً كريمية
+            // وفيديو مضغوط في شاشة عريضة. الآن الوضع العرضي **شكلٌ**
+            // من أشكال هذه الشاشة لا خطأً فيها.
+            builder: (context, _) =>
+                MediaQuery.orientationOf(context) == Orientation.landscape
+                    ? _VideoArea(
+                        session: session,
+                        fill: true,
+                        playlistName: playlistName,
+                        membershipLine: membershipLine,
+                        onBack: () => Navigator.of(context).maybePop(),
+                        onFullscreen: openFullscreen,
+                        onQueue: () => _openQueue(context),
+                      )
+                    : Column(
               children: [
                 _VideoArea(
                   session: session,
@@ -211,7 +228,11 @@ class _VideoArea extends StatelessWidget {
     required this.onQueue,
     this.playlistName,
     this.membershipLine,
+    this.fill = false,
   });
+
+  /// يملأ الشاشة (الوضع العرضي) بدل 32٪ من ارتفاعها.
+  final bool fill;
 
   final MTVideoSession session;
   final VoidCallback onBack;
@@ -227,7 +248,9 @@ class _VideoArea extends StatelessWidget {
     return SafeArea(
       bottom: false,
       child: SizedBox(
-        height: MediaQuery.sizeOf(context).height * 0.32,
+        height: fill
+            ? double.infinity
+            : MediaQuery.sizeOf(context).height * 0.32,
         child: Stack(
           fit: StackFit.expand,
           children: [

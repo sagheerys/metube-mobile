@@ -31,6 +31,7 @@ class MTPalette {
     required this.favorite,
     required this.favoriteSoft,
     required this.grainOpacity,
+    this.night = false,
   });
 
   final Color bg;
@@ -70,10 +71,18 @@ class MTPalette {
   /// حبيبات الفيلم.
   final double grainOpacity;
 
-  /// المشغل المصغر «قطعة معكوسة دائماً»: داكن نهاراً / كريمي ليلاً.
-  Color get miniBg => ink;
-  Color get miniInk => bg;
-  Color get miniInkMuted => bg.withValues(alpha: 0.55);
+  /// هل هذه لوحة ليل؟ — يقرؤها المشغل المصغر وحده اليوم.
+  final bool night;
+
+  /// **المشغل المصغر: معكوس نهاراً، متّسق ليلاً** (قرار المالك
+  /// 2026-09-05 بعد رؤيته على الجهاز).
+  ///
+  /// كان معكوساً في الوضعين: شريط داكن أنيق تحت واجهة كريمية نهاراً —
+  /// وشريط **فاتح ساطع** تحت شاشة سوداء ليلاً، وهجٌ في غرفة مظلمة.
+  /// العكس فكرةٌ نهارية بطبعها، فليلاً يتبع البطاقة.
+  Color get miniBg => night ? card : ink;
+  Color get miniInk => night ? ink : bg;
+  Color get miniInkMuted => (night ? ink : bg).withValues(alpha: 0.55);
 
   /// بطاقة حالة السيرفر إسبريسو داكنة دائماً (سجل §4).
   static const Color serverCardBg = Color(0xFF241B15);
@@ -152,6 +161,7 @@ class MTPalette {
     favorite: Color(0xFFFF9AA0),
     favoriteSoft: Color(0x24FF9AA0), // مشتق: soft ليلي بنمط البقية
     grainOpacity: 0.04,
+    night: true,
   );
 
   // ── Lite نهاراً: نفس الأساس + خليج بترولي ──
@@ -206,5 +216,6 @@ class MTPalette {
     favorite: Color(0xFFFF9AA0),
     favoriteSoft: Color(0x24FF9AA0),
     grainOpacity: 0.04,
+    night: true,
   );
 }

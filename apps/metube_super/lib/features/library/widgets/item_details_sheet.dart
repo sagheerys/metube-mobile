@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show Clipboard, ClipboardData;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mt_ui/mt_ui.dart';
+import 'package:url_launcher/url_launcher.dart';
 
+import '../../shared/external_player.dart';
 import '../../shared/membership.dart';
 import '../library_models.dart';
 
@@ -79,6 +81,43 @@ class _DetailsSheet extends ConsumerWidget {
               _ => const <Widget>[],
             },
             const SizedBox(height: MTSpace.sm),
+            // **فعلان لا زر ثالث في الريلز** (قرار المالك 2026-09-05):
+            // الشريط فيه ثلاثة أزرار وزيادةُ رابعٍ تزاحمه، وهذه الورقة
+            // تُفتح منه بزر «التفاصيل» أصلاً.
+            //
+            // والمشغل الخارجي يظهر **بنسخة محلية وحدها**: لا يُسلَّم
+            // رابط السيرفر لتطبيق آخر.
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () => launchUrl(Uri.parse(item.canonicalUrl),
+                        mode: LaunchMode.externalApplication),
+                    icon: const Icon(Icons.open_in_new_rounded, size: 16),
+                    label: Text(l10n.openOriginalLink,
+                        maxLines: 1, overflow: TextOverflow.ellipsis),
+                  ),
+                ),
+                if (item.localPath case final String path) ...[
+                  const SizedBox(width: MTSpace.sm),
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () async {
+                        final opened = await const ExternalPlayer()
+                            .open(path, audio: item.isAudio);
+                        if (!opened && context.mounted) {
+                          showMTSnack(context, l10n.noExternalPlayer,
+                              type: MTSnackType.error);
+                        }
+                      },
+                      icon: const Icon(Icons.open_with_rounded, size: 16),
+                      label: Text(l10n.openInExternalPlayer,
+                          maxLines: 1, overflow: TextOverflow.ellipsis),
+                    ),
+                  ),
+                ],
+              ],
+            ),
             // الرابط الأصلي — نسخ بلمسة (م-16).
             OutlinedButton.icon(
               onPressed: () async {

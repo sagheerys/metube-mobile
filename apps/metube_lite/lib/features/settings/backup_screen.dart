@@ -114,14 +114,7 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
     ref.invalidate(playlistsProvider);
   }
 
-  Future<void> _openRestoreSheet() async {
-    final chosen = await showBackupPickerSheet(context, _backups);
-    if (chosen == null || !mounted) return;
-    await switch (chosen) {
-      BackupPick(:final file?) => _run((l10n) => _restoreFrom(l10n, file)),
-      _ => _run(_importPicked),
-    };
-  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -146,14 +139,54 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
         padding: const EdgeInsets.fromLTRB(
             MTSpace.pagePad, 0, MTSpace.pagePad, MTSpace.xxl),
         children: [
-          MTSectionHeader(title: l10n.backupRestore),
-          const SizedBox(height: MTSpace.sm),
+          // **لا رأس قسم يكرر عنوان الشاشة** (فحص 2026-09-05): الشريط
+          // العلوي يقول «نسخ جميع البيانات احتياطياً» وكان تحته مباشرة
+          // «النسخ الاحتياطي والاستعادة» — سطران بمعنى واحد.
+          const SizedBox(height: MTSpace.md),
           BackupStatusLine(backups: _backups),
           const SizedBox(height: MTSpace.md),
-          tile(Icons.restore_rounded, l10n.restoreData,
-              l10n.restoreFromBackupSubtitle, _openRestoreSheet),
           tile(Icons.ios_share_rounded, l10n.exportShare,
               l10n.exportShareSubtitle, () => _run(_exportAndShare)),
+          tile(Icons.folder_open_rounded, l10n.pickAnotherFile,
+              l10n.pickAnotherFileSubtitle, () => _run(_importPicked)),
+          const SizedBox(height: MTSpace.lg),
+          // **النسخ معروضة لا مخبوءة خلف زر** (فحص 2026-09-05): الشاشة
+          // كانت فارغة في ثلثيها والمعلومة الوحيدة المفيدة — متى نُسخت
+          // وكم حجمها — خلف ورقة لا شيء يدلّ عليها.
+          MTSectionHeader(title: l10n.restoreData),
+          const SizedBox(height: MTSpace.sm),
+          if (_backups.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: MTSpace.md),
+              child: Text(l10n.noBackupsYet,
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodySmall!
+                      .copyWith(color: p.ink3)),
+            )
+          else
+            for (final (index, file) in _backups.indexed)
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                enabled: !_busy,
+                leading: Icon(
+                  index == 0
+                      ? Icons.history_toggle_off_rounded
+                      : Icons.history_rounded,
+                  color: index == 0 ? p.accent : p.ink3,
+                ),
+                title: Text(mtTimeAgo(context, file.at)),
+                subtitle: Text(
+                  '${(file.sizeBytes / 1024).toStringAsFixed(1)} KB',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+                trailing: TextButton(
+                  onPressed: _busy
+                      ? null
+                      : () => _run((l10n) => _restoreFrom(l10n, file)),
+                  child: Text(l10n.restoreData),
+                ),
+              ),
           const SizedBox(height: MTSpace.lg),
           Text(l10n.backupNote,
               style: Theme.of(context)

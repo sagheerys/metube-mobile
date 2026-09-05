@@ -98,6 +98,24 @@ abstract class MTLocalizations {
     Locale('en'),
   ];
 
+  /// No description provided for @externalPlayerLocalOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Local copy only — the server link is never handed to another app'**
+  String get externalPlayerLocalOnly;
+
+  /// No description provided for @noExternalPlayer.
+  ///
+  /// In en, this message translates to:
+  /// **'No external player on this device'**
+  String get noExternalPlayer;
+
+  /// No description provided for @openInExternalPlayer.
+  ///
+  /// In en, this message translates to:
+  /// **'Open in another player'**
+  String get openInExternalPlayer;
+
   /// No description provided for @about.
   ///
   /// In en, this message translates to:

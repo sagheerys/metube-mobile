@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mt_ui/mt_ui.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../playlists/add_to_playlist_sheet.dart';
 import '../../shared/error_text.dart';
+import '../../shared/external_player.dart';
 import '../../tags/item_tags_sheet.dart';
 import '../library_models.dart';
 import '../library_actions.dart';
@@ -96,6 +98,27 @@ class _ItemActionsSheet extends ConsumerWidget {
           }),
           tile(Icons.share_rounded, l10n.share,
               () => run(() => actions.smartShare(item))),
+          // **المشغل الخارجي للنسخة المحلية وحدها** (قرار المالك
+          // 2026-09-05): سيرفر Super بلا استيثاق، فتسليم رابط بثّ
+          // لتطبيق آخر يعني وصولاً مفتوحاً لمن يقرأ سجلّه. العنصر
+          // الذي لا نسخة له يرى «أتِح دون اتصال» أعلاه بدل هذا.
+          if (item.localPath case final String path)
+            tile(Icons.open_with_rounded, l10n.openInExternalPlayer,
+                () => run(() async {
+                      final opened = await const ExternalPlayer()
+                          .open(path, audio: item.isAudio);
+                      if (!opened && host.mounted) {
+                        showMTSnack(host, l10n.noExternalPlayer,
+                            type: MTSnackType.error);
+                      }
+                    })),
+          // **كان ناقصاً في Super** (بلاغ المالك 2026-09-05) — موجود
+          // في Lite منذ م-20.
+          tile(Icons.open_in_new_rounded, l10n.openOriginalLink, () {
+            Navigator.pop(context);
+            launchUrl(Uri.parse(item.canonicalUrl),
+                mode: LaunchMode.externalApplication);
+          }),
           tile(Icons.playlist_add_rounded, l10n.addToPlaylist, () {
             Navigator.pop(context);
             showAddToPlaylistSheet(host, ref, [item]);

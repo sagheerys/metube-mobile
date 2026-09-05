@@ -68,6 +68,15 @@ class LibraryFilterChips extends ConsumerWidget {
             onTap: () => controller.setScope(LocalScope.favorites),
           ),
           const SizedBox(width: MTSpace.md),
+          // **القِصار في المرأى لا خلف الحافة** (فحص جهاز المالك
+          // 2026-09-05): كان آخر الصف فلا يُرى إلا بتمرير أفقي لا
+          // شيء يدلّ عليه — ومسار كامل (م-35) خلفه.
+          _Chip(
+            label: '⚡ ${l10n.shortsFilter}',
+            selected: options.type == MediaTypeFilter.shorts,
+            onTap: () => toggleType(MediaTypeFilter.shorts),
+          ),
+          const SizedBox(width: MTSpace.xs),
           _Chip(
             label: l10n.filterVideo,
             selected: options.type == MediaTypeFilter.video,
@@ -78,12 +87,6 @@ class LibraryFilterChips extends ConsumerWidget {
             label: l10n.filterAudio,
             selected: options.type == MediaTypeFilter.audio,
             onTap: () => toggleType(MediaTypeFilter.audio),
-          ),
-          const SizedBox(width: MTSpace.xs),
-          _Chip(
-            label: '⚡ ${l10n.shortsFilter}',
-            selected: options.type == MediaTypeFilter.shorts,
-            onTap: () => toggleType(MediaTypeFilter.shorts),
           ),
         ],
       ),

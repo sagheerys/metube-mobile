@@ -10,6 +10,16 @@ class MTLocalizationsEn extends MTLocalizations {
   MTLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
+  String get externalPlayerLocalOnly =>
+      'Local copy only — the server link is never handed to another app';
+
+  @override
+  String get noExternalPlayer => 'No external player on this device';
+
+  @override
+  String get openInExternalPlayer => 'Open in another player';
+
+  @override
   String get about => 'About';
 
   @override

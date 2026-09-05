@@ -108,6 +108,7 @@
       }
     }
   },
+  "externalPlayerLocalOnly": "Local copy only — the server link is never handed to another app",
   "@fileSizeBytes": {
     "placeholders": {
       "value": {
@@ -150,6 +151,7 @@
       }
     }
   },
+  "noExternalPlayer": "No external player on this device",
   "@onServerProgress": {
     "placeholders": {
       "percent": {
@@ -157,6 +159,7 @@
       }
     }
   },
+  "openInExternalPlayer": "Open in another player",
   "@platformCount": {
     "placeholders": {
       "name": {

@@ -10,6 +10,16 @@ class MTLocalizationsAr extends MTLocalizations {
   MTLocalizationsAr([String locale = 'ar']) : super(locale);
 
   @override
+  String get externalPlayerLocalOnly =>
+      'النسخة المحلية فقط — لا يُسلَّم رابط السيرفر لتطبيق آخر';
+
+  @override
+  String get noExternalPlayer => 'لا يوجد مشغل خارجي على الجهاز';
+
+  @override
+  String get openInExternalPlayer => 'فتح في مشغل خارجي';
+
+  @override
   String get about => 'حول';
 
   @override

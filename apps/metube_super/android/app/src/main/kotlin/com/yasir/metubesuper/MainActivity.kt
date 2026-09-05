@@ -39,6 +39,39 @@ class MainActivity : AudioServiceActivity() {
                             runOnUiThread { result.success(data) }
                         }.start()
                     }
+                    // **فتح في مشغل خارجي (طلب المالك 2026-09-05)** — بـ
+                    // `content://` من `FileProvider` لا `file://`: أندرويد 7+
+                    // يرمي `FileUriExposedException` على الثاني، والأول يمنح
+                    // المشغل المختار **إذناً مؤقتاً لهذا الملف وحده** فلا يرى
+                    // شيئاً آخر ولا يعرف مساره.
+                    "openExternal" -> {
+                        val path = call.argument<String>("path")
+                        val mime = call.argument<String>("mime") ?: "video/*"
+                        val file = if (path.isNullOrEmpty()) null else java.io.File(path)
+                        if (file == null || !file.exists()) {
+                            result.error("missing", "الملف غير موجود", null)
+                        } else {
+                            val uri = androidx.core.content.FileProvider.getUriForFile(
+                                this,
+                                "$packageName.fileprovider",
+                                file,
+                            )
+                            val view = Intent(Intent.ACTION_VIEW).apply {
+                                setDataAndType(uri, mime)
+                                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                            }
+                            val chooser = Intent.createChooser(view, null).apply {
+                                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            }
+                            try {
+                                startActivity(chooser)
+                                result.success(true)
+                            } catch (e: android.content.ActivityNotFoundException) {
+                                result.success(false)
+                            }
+                        }
+                    }
                     // م-41: وجهة اختصار الأيقونة — **تُستهلك مرة واحدة**.
                     // إبقاؤها يعيد تنفيذ الاختصار عند كل عودة للتطبيق.
                     "consumeShortcut" -> {

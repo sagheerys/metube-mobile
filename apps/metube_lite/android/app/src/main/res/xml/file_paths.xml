@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- جذر التخزين المشترك: ملفات التطبيق في Download/MeTube_* وحدها هي
+     ما يُشارَك، ولا يُمنح الإذن إلا للملف المحدد في كل نداء. -->
+<paths>
+    <external-path name="shared" path="." />
+</paths>

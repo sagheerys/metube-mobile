@@ -53,6 +53,16 @@ class LibraryFilterChips extends ConsumerWidget {
               chip(l10n.filterServer, options.scope == LibraryScope.onServer,
                   () => controller.setScope(LibraryScope.onServer)),
               const SizedBox(width: MTSpace.md),
+              // **القِصار في المرأى لا خلف الحافة** (فحص جهاز المالك
+              // 2026-09-05): م-35 مسار كامل كان آخر صفٍّ يحتاج تمريراً
+              // أفقياً لا شيء يدلّ عليه.
+              chip('⚡ ${l10n.shortsFilter}',
+                  options.type == MediaTypeFilter.shorts,
+                  () => controller.setType(
+                      options.type == MediaTypeFilter.shorts
+                          ? MediaTypeFilter.all
+                          : MediaTypeFilter.shorts)),
+              const SizedBox(width: MTSpace.xs),
               chip(l10n.filterVideo, options.type == MediaTypeFilter.video,
                   () => controller.setType(
                       options.type == MediaTypeFilter.video
@@ -64,14 +74,6 @@ class LibraryFilterChips extends ConsumerWidget {
                       options.type == MediaTypeFilter.audio
                           ? MediaTypeFilter.all
                           : MediaTypeFilter.audio)),
-              const SizedBox(width: MTSpace.xs),
-              // م-35: رقاقة «⚡ قِصار» تجمع العمودية القصيرة.
-              chip('⚡ ${l10n.shortsFilter}',
-                  options.type == MediaTypeFilter.shorts,
-                  () => controller.setType(
-                      options.type == MediaTypeFilter.shorts
-                          ? MediaTypeFilter.all
-                          : MediaTypeFilter.shorts)),
             ],
           ),
         ),

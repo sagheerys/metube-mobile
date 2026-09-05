@@ -81,6 +81,16 @@
                 <action android:name="android.intent.action.MEDIA_BUTTON"/>
             </intent-filter>
         </receiver>
+        <!-- «فتح في مشغل خارجي»: يمنح المشغل إذناً مؤقتاً لملف واحد. -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data
@@ -93,6 +103,15 @@
 
          In particular, this is used by the Flutter engine in io.flutter.plugin.text.ProcessTextPlugin. -->
     <queries>
+        <!-- رؤية المشغلات الخارجية (أندرويد 11+) -->
+        <intent>
+            <action android:name="android.intent.action.VIEW"/>
+            <data android:mimeType="video/*"/>
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW"/>
+            <data android:mimeType="audio/*"/>
+        </intent>
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
