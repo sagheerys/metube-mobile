@@ -1,3 +1,5 @@
+import 'package:mt_ui/mt_ui.dart';
+
 import '../models/play_mode.dart';
 
 /// تنسيق الأزمنة في المشغلات — أرقام جدولية بلا ترجمة (نفس الشكل بكل لغة).
@@ -12,9 +14,12 @@ String mtFormatDuration(Duration d) {
 }
 
 /// المتبقي بصيغة `-12:30` كما في مرجع شاشة الصوت.
+///
+/// **معزول الاتجاه**: السالب محرف محايد، ففي فقرة عربية كان يتذيّل
+/// النص فيُقرأ «50:49-» (لقطة المالك 2026-09-05).
 String mtFormatRemaining(Duration position, Duration? total) {
   if (total == null || total <= Duration.zero) return '--:--';
-  return '-${mtFormatDuration(total - position)}';
+  return mtLtrRun('-${mtFormatDuration(total - position)}');
 }
 
 /// سرعة التشغيل: `1.0` لا `1`، و`1.25` لا `1.250` — يشترك فيها مشغلا

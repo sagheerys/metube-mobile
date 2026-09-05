@@ -6,7 +6,11 @@ import 'media_time.dart';
 
 /// المصغرة يبنيها التطبيق (cached_network_image أو ملف محلي) — mt_media
 /// لا يعرف حزمة الصور ولا السيرفر.
-typedef MTArtworkBuilder = Widget Function(
+/// **يعيد `null` حين لا غلاف** — لا `SizedBox` فارغة: البديل (أيقونة
+/// صوت أو فيلم) يُرسم عند العدم، وإعادة ودجت فارغة كانت تقتل ذلك
+/// البديل وتترك مربعاً أصمّ في مشغل الصوت والمشغل المصغر (فحص جهاز
+/// المالك 2026-09-05).
+typedef MTArtworkBuilder = Widget? Function(
     BuildContext context, PlaylistItem item);
 
 /// صفوف «التالي» — نفس المحتوى في الأشكال الثلاثة (م-38): قسم تحت

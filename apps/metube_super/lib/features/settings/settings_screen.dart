@@ -123,11 +123,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 title: l10n.serverUrlHelpTitle, body: l10n.serverUrlHelpBody),
           ]),
           const SizedBox(height: MTSpace.md),
-          TextField(
-            controller: _userController,
-            textDirection: TextDirection.ltr,
-            decoration: InputDecoration(labelText: l10n.username),
-          ),
+          // **الفراغ بعرض زر المساعدة** (فحص 2026-09-05): بدونه يمتد
+          // حقل اسم المستخدم وحده إلى الحافة، فتختلف حواف ثلاثة حقول
+          // متتالية.
+          Row(children: [
+            Expanded(
+              child: TextField(
+                controller: _userController,
+                textDirection: TextDirection.ltr,
+                decoration: InputDecoration(labelText: l10n.username),
+              ),
+            ),
+            const HelpButtonGap(),
+          ]),
           const SizedBox(height: MTSpace.md),
           Row(children: [
             Expanded(
@@ -262,7 +270,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           const SizedBox(height: MTSpace.xl),
           MTSectionHeader(title: l10n.about),
           _navTile(Icons.info_outline_rounded, l10n.aboutApp,
-              l10n.aboutDescription, '/settings/about'),
+              l10n.aboutDescriptionSuper, '/settings/about'),
         ],
       ),
     );

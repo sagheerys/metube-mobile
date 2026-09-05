@@ -104,15 +104,25 @@ class ReelsOverlayLayer extends StatelessWidget {
                 ),
               ),
             ),
+            // **تحت الشريط العلوي لا خلفه** (فحص جهاز المالك 2026-09-05):
+            // الشريط داخل `SafeArea` والتلميح كان على `top: 64` ثابتة،
+            // فيتداخل النصّان على جهاز بشريط حالة طويل. و`⌃` كان
+            // يُرسم بخط عربي فيبدو «٨».
             PositionedDirectional(
-              top: 64,
+              top: 0,
               start: 0,
               end: 0,
-              child: Center(
-                child: Text(
-                  '⌃ ${l10n.reelsSwipeHint}',
-                  style: Theme.of(context).textTheme.labelSmall!.copyWith(
-                      color: MTPalette.serverCardInk.withValues(alpha: 0.45)),
+              child: SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 46),
+                  child: Center(
+                    child: Text(
+                      '↑ ${l10n.reelsSwipeHint}',
+                      style: Theme.of(context).textTheme.labelSmall!.copyWith(
+                          color:
+                              MTPalette.serverCardInk.withValues(alpha: 0.45)),
+                    ),
+                  ),
                 ),
               ),
             ),

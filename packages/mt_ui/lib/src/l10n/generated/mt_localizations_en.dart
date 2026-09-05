@@ -16,10 +16,6 @@ class MTLocalizationsEn extends MTLocalizations {
   String get aboutApp => 'About App';
 
   @override
-  String get aboutDescription =>
-      'A lightweight and fast app for downloading videos from various platforms via MeTube server, with a built-in video player and playlist management.';
-
-  @override
   String get activeDownloads => 'Active Downloads';
 
   @override
@@ -191,7 +187,7 @@ class MTLocalizationsEn extends MTLocalizations {
 
   @override
   String get backupSettingsSubtitle =>
-      'Export settings & video data to Downloads folder';
+      'Seven dated copies that refresh themselves — restore any of them, or export one to share';
 
   @override
   String backupSuccess(Object path) {
@@ -478,11 +474,6 @@ class MTLocalizationsEn extends MTLocalizations {
 
   @override
   String get downloading => 'Downloading...';
-
-  @override
-  String downloadingSize(Object received, Object total) {
-    return 'Downloading… $received / $total MB';
-  }
 
   @override
   String get downloadingTitle => 'Downloading';
@@ -1091,7 +1082,8 @@ class MTLocalizationsEn extends MTLocalizations {
   String get qualityBest => 'Best';
 
   @override
-  String get qualityHelper => 'Sent to the server for new downloads';
+  String get qualityHelper =>
+      'Used by quick download, by whole-playlist downloads, and by \"Download now\" in the clipboard bar — and it is the preselected option in the add-link sheet. So it matters whether or not quick download is on.';
 
   @override
   String queueItemsCount(int count) {
@@ -1127,7 +1119,7 @@ class MTLocalizationsEn extends MTLocalizations {
 
   @override
   String get quickDownloadHelp =>
-      'A shared or pasted link starts downloading right away at the default quality, with no dialog. Numeric qualities apply to YouTube only — other platforms fall back to best, and an “audio only” default applies everywhere.';
+      'A shared or pasted link starts downloading immediately at the default quality, with no sheet. Numeric qualities are YouTube-only — anything else downloads at best quality, and an \"audio only\" default applies everywhere.';
 
   @override
   String get readyToShare => 'Ready to share!';
@@ -1617,4 +1609,12 @@ class MTLocalizationsEn extends MTLocalizations {
 
   @override
   String get youtubeDownloadStarting => 'Starting YouTube download...';
+
+  @override
+  String get aboutDescriptionLite =>
+      'A light, fast app that downloads videos from many platforms through your MeTube server, pulls them to your device and cleans the server afterwards — with a built-in player and playlists.';
+
+  @override
+  String get aboutDescriptionSuper =>
+      'The server owner\'s edition: one library across server and device, streaming, tags, offline availability, batch downloads and server address switching.';
 }

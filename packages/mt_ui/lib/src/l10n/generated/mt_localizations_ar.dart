@@ -16,10 +16,6 @@ class MTLocalizationsAr extends MTLocalizations {
   String get aboutApp => 'حول التطبيق';
 
   @override
-  String get aboutDescription =>
-      'تطبيق خفيف وسريع لتحميل الفيديوهات من مختلف المنصات عبر سيرفر MeTube مع مشغل فيديو مدمج وإدارة قوائم التشغيل.';
-
-  @override
   String get activeDownloads => 'التحميلات النشطة';
 
   @override
@@ -194,7 +190,7 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get backupSettingsSubtitle =>
-      'تصدير الإعدادات وبيانات الفيديوهات إلى مجلد التحميلات';
+      'سبع نسخ مؤرَّخة تتجدد وحدها — استعِد أيّها، أو صدّر نسخة للمشاركة';
 
   @override
   String backupSuccess(Object path) {
@@ -479,11 +475,6 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get downloading => 'جاري التحميل...';
-
-  @override
-  String downloadingSize(Object received, Object total) {
-    return 'جارٍ التنزيل… $received / $total م.ب';
-  }
 
   @override
   String get downloadingTitle => 'جارٍ التنزيل';
@@ -1090,7 +1081,8 @@ class MTLocalizationsAr extends MTLocalizations {
   String get qualityBest => 'الأفضل';
 
   @override
-  String get qualityHelper => 'تُرسَل إلى الخادم لعمليات التنزيل الجديدة';
+  String get qualityHelper =>
+      'تُستعمل في التحميل السريع، وفي تحميل قائمة كاملة، وفي «حمّل الآن» من شريط الحافظة — وتكون الخيار المُنتقى مسبقاً في نافذة إضافة الرابط. فهي مفيدة سواء كان التحميل السريع مفعَّلاً أم لا.';
 
   @override
   String queueItemsCount(int count) {
@@ -1620,4 +1612,12 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get youtubeDownloadStarting => 'جاري بدء تحميل يوتيوب...';
+
+  @override
+  String get aboutDescriptionLite =>
+      'تطبيق خفيف وسريع لتحميل الفيديوهات من مختلف المنصات عبر سيرفر MeTube، يسحبها إلى جهازك وينظّف السيرفر بعدها — مع مشغل مدمج وقوائم تشغيل.';
+
+  @override
+  String get aboutDescriptionSuper =>
+      'نسخة مالك السيرفر: مكتبة موحّدة من السيرفر وجهازك، بثّ مباشر ووسوم وإتاحة دون اتصال وتحميل دفعي وتبديل بين عناوين السيرفر.';
 }

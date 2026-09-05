@@ -40,7 +40,8 @@ class MTVideoTopBar extends StatelessWidget {
     final subtitleParts = [
       if (playlistName != null) '«$playlistName»',
       if (session.items.length > 1)
-        l10n.playlistOf(session.currentIndex + 1, session.items.length),
+        mtLtrRun(
+            l10n.playlistOf(session.currentIndex + 1, session.items.length)),
       ?membershipLine,
     ];
 

@@ -226,6 +226,12 @@ class _Cover extends StatelessWidget {
         ClipRRect(
           borderRadius: BorderRadius.circular(MTRadius.thumb),
           child: Row(
+            // **الافتراضي `center` لا `stretch`** (فحص جهاز المالك
+            // 2026-09-05): بدونه لا تتلقى الخليّتان ارتفاعاً مشدوداً،
+            // فتأخذ الصورة ارتفاعها الطبيعي وتتوسّط — شريطٌ رفيع وسط
+            // بطاقة فارغة، و`BoxFit.cover` لا ينفع لأن لا شيء يطلب
+            // منه ملء الارتفاع.
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               for (var i = 0; i < 2; i++)
                 Expanded(

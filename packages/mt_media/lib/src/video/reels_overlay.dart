@@ -43,7 +43,8 @@ class MTReelsTopBar extends StatelessWidget {
                 borderRadius: BorderRadius.circular(MTRadius.chip),
               ),
               child: Text(
-                '⚡ ${l10n.shortsFilter}   $position / $total',
+                // العدّاد معزول: «2 / 40» كانت تُعرض «40 / 2».
+                '⚡ ${l10n.shortsFilter}   ${mtLtrRun('$position / $total')}',
                 style: Theme.of(context).textTheme.labelSmall!
                     .copyWith(color: ink, fontWeight: FontWeight.w700),
               ),

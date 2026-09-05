@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/widgets.dart' show SizedBox;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mt_core/mt_core.dart';
 import 'package:mt_media/mt_media.dart';
@@ -111,5 +110,4 @@ Future<bool> saveQueueAsPlaylist(
 /// التلقائي، فتفشل الأغلفة بـ401 حتى إعادة بناء الشاشة.
 MTArtworkBuilder artworkBuilderFor(WidgetRef ref) => (context, item) =>
     artworkFor(item.artworkUrl,
-        headers: ref.read(apiClientProvider)?.streamingHeaders) ??
-    const SizedBox.shrink();
+        headers: ref.read(apiClientProvider)?.streamingHeaders);

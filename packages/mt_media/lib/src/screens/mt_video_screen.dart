@@ -95,7 +95,11 @@ class MTVideoScreen extends StatelessWidget {
           if (!didPop) _askContinueAsAudio(context);
         },
         child: Scaffold(
-          backgroundColor: MTPalette.serverCardBg,
+          // **شريط النظام يتبع الثيم** (بلاغ المالك 2026-09-05: «شريط
+          // الساعة داكن نهاراً فيبدو غريباً»). الفيديو نفسه يبقى على
+          // أرضية داكنة — لكن الشريط فوقه كان يأخذ لون الصفحة، وكانت
+          // «داكنة دائماً» فيظهر نهاراً شريطٌ ليلي فوق واجهة كريمية.
+          backgroundColor: MTThemeX.of(context).palette.bg,
           body: ListenableBuilder(
             listenable: session,
             builder: (context, _) => Column(

@@ -34,3 +34,23 @@ class HelpButton extends StatelessWidget {
     );
   }
 }
+
+/// **فراغ بعرض زر المساعدة تماماً.** الحقل الذي لا شرح له يبقى محاذياً
+/// لجيرانه: بدونه كان اسم المستخدم يمتد وحده إلى الحافة بين حقلين
+/// مزاحين (فحص جهاز المالك 2026-09-05).
+class HelpButtonGap extends StatelessWidget {
+  const HelpButtonGap({super.key});
+
+  @override
+  Widget build(BuildContext context) => const Visibility(
+        visible: false,
+        maintainSize: true,
+        maintainAnimation: true,
+        maintainState: true,
+        child: IconButton(
+          visualDensity: VisualDensity.compact,
+          onPressed: null,
+          icon: Icon(Icons.help_outline_rounded, size: 18),
+        ),
+      );
+}

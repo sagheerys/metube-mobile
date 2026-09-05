@@ -94,16 +94,6 @@
       }
     }
   },
-  "@downloadingSize": {
-    "placeholders": {
-      "received": {
-        "type": "Object"
-      },
-      "total": {
-        "type": "Object"
-      }
-    }
-  },
   "@errServer": {
     "placeholders": {
       "message": {
@@ -300,7 +290,6 @@
   },
   "about": "About",
   "aboutApp": "About App",
-  "aboutDescription": "A lightweight and fast app for downloading videos from various platforms via MeTube server, with a built-in video player and playlist management.",
   "activeDownloads": "Active Downloads",
   "activeDownloadsCount": "{count, plural, =1{1 download in progress} other{{count} downloads in progress}}",
   "activeDownloadsSheet": "Active downloads",
@@ -351,7 +340,7 @@
   "backupNote": "Includes playlists, tags, the offline index, artwork links and settings. Passwords and usernames are never backed up, and media files are not included.",
   "backupRestore": "Backup & Restore",
   "backupSettings": "Backup All Data",
-  "backupSettingsSubtitle": "Export settings & video data to Downloads folder",
+  "backupSettingsSubtitle": "Seven dated copies that refresh themselves — restore any of them, or export one to share",
   "backupSuccess": "Backup saved to: {path}",
   "batchDownloadSelected": "Download selected",
   "batchFromPlaylistNote": "This link came from inside a playlist",
@@ -438,7 +427,6 @@
   "downloadTracks": "Download {count} Tracks",
   "downloadUrlUnavailable": "Download URL not available",
   "downloading": "Downloading...",
-  "downloadingSize": "Downloading… {received} / {total} MB",
   "downloadingTitle": "Downloading",
   "downloadsTab": "Downloads",
   "email": "Email",
@@ -638,7 +626,7 @@
   "quality720": "720p",
   "qualityAudio": "Audio only",
   "qualityBest": "Best",
-  "qualityHelper": "Sent to the server for new downloads",
+  "qualityHelper": "Used by quick download, by whole-playlist downloads, and by \"Download now\" in the clipboard bar — and it is the preselected option in the add-link sheet. So it matters whether or not quick download is on.",
   "queueItemsCount": "{count, plural, =0{No items} =1{1 item} other{{count} items}}",
   "queueLabel": "Queue",
   "queuePosition": "Queue position: {position}",
@@ -646,7 +634,7 @@
   "queued": "Queued",
   "queuedSection": "Waiting",
   "quickDownload": "Quick download",
-  "quickDownloadHelp": "A shared or pasted link starts downloading right away at the default quality, with no dialog. Numeric qualities apply to YouTube only — other platforms fall back to best, and an “audio only” default applies everywhere.",
+  "quickDownloadHelp": "A shared or pasted link starts downloading immediately at the default quality, with no sheet. Numeric qualities are YouTube-only — anything else downloads at best quality, and an \"audio only\" default applies everywhere.",
   "readyToShare": "Ready to share!",
   "reelsEndBack": "Back to library",
   "reelsEndContinue": "Continue the rest of the list",
@@ -804,5 +792,7 @@
   "wifiOnlyHelp": "Stops pulling files to your device over mobile data. Tasks wait and resume automatically on Wi-Fi.",
   "yourPlaylists": "Your playlists",
   "yourTags": "Your tags",
-  "youtubeDownloadStarting": "Starting YouTube download..."
+  "youtubeDownloadStarting": "Starting YouTube download...",
+  "aboutDescriptionLite": "A light, fast app that downloads videos from many platforms through your MeTube server, pulls them to your device and cleans the server afterwards — with a built-in player and playlists.",
+  "aboutDescriptionSuper": "The server owner's edition: one library across server and device, streaming, tags, offline availability, batch downloads and server address switching."
 }

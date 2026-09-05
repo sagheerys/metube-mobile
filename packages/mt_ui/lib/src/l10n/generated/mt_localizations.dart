@@ -110,12 +110,6 @@ abstract class MTLocalizations {
   /// **'About App'**
   String get aboutApp;
 
-  /// No description provided for @aboutDescription.
-  ///
-  /// In en, this message translates to:
-  /// **'A lightweight and fast app for downloading videos from various platforms via MeTube server, with a built-in video player and playlist management.'**
-  String get aboutDescription;
-
   /// No description provided for @activeDownloads.
   ///
   /// In en, this message translates to:
@@ -419,7 +413,7 @@ abstract class MTLocalizations {
   /// No description provided for @backupSettingsSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Export settings & video data to Downloads folder'**
+  /// **'Seven dated copies that refresh themselves — restore any of them, or export one to share'**
   String get backupSettingsSubtitle;
 
   /// No description provided for @backupSuccess.
@@ -937,12 +931,6 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'Downloading...'**
   String get downloading;
-
-  /// No description provided for @downloadingSize.
-  ///
-  /// In en, this message translates to:
-  /// **'Downloading… {received} / {total} MB'**
-  String downloadingSize(Object received, Object total);
 
   /// No description provided for @downloadingTitle.
   ///
@@ -2057,7 +2045,7 @@ abstract class MTLocalizations {
   /// No description provided for @qualityHelper.
   ///
   /// In en, this message translates to:
-  /// **'Sent to the server for new downloads'**
+  /// **'Used by quick download, by whole-playlist downloads, and by \"Download now\" in the clipboard bar — and it is the preselected option in the add-link sheet. So it matters whether or not quick download is on.'**
   String get qualityHelper;
 
   /// No description provided for @queueItemsCount.
@@ -2105,7 +2093,7 @@ abstract class MTLocalizations {
   /// No description provided for @quickDownloadHelp.
   ///
   /// In en, this message translates to:
-  /// **'A shared or pasted link starts downloading right away at the default quality, with no dialog. Numeric qualities apply to YouTube only — other platforms fall back to best, and an “audio only” default applies everywhere.'**
+  /// **'A shared or pasted link starts downloading immediately at the default quality, with no sheet. Numeric qualities are YouTube-only — anything else downloads at best quality, and an \"audio only\" default applies everywhere.'**
   String get quickDownloadHelp;
 
   /// No description provided for @readyToShare.
@@ -3013,6 +3001,18 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'Starting YouTube download...'**
   String get youtubeDownloadStarting;
+
+  /// No description provided for @aboutDescriptionLite.
+  ///
+  /// In en, this message translates to:
+  /// **'A light, fast app that downloads videos from many platforms through your MeTube server, pulls them to your device and cleans the server afterwards — with a built-in player and playlists.'**
+  String get aboutDescriptionLite;
+
+  /// No description provided for @aboutDescriptionSuper.
+  ///
+  /// In en, this message translates to:
+  /// **'The server owner\'s edition: one library across server and device, streaming, tags, offline availability, batch downloads and server address switching.'**
+  String get aboutDescriptionSuper;
 }
 
 class _MTLocalizationsDelegate extends LocalizationsDelegate<MTLocalizations> {

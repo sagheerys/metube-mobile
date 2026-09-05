@@ -193,7 +193,7 @@ class _Titles extends StatelessWidget {
     final parts = [
       if (media.artist != null && media.artist!.isNotEmpty) media.artist!,
       if (playlistName != null) '«$playlistName»',
-      if (total > 1) l10n.playlistOf(index + 1, total),
+      if (total > 1) mtLtrRun(l10n.playlistOf(index + 1, total)),
     ];
     return Column(
       children: [

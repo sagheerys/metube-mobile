@@ -176,7 +176,8 @@ class _TagChip extends StatelessWidget {
           padding: const EdgeInsets.symmetric(
               horizontal: MTSpace.md, vertical: MTSpace.xs),
           child: Text(
-            '${excluded ? '− ' : '# '}$tag  $count',
+            // «# Ai 45» كانت تُعرض والرقم قبل الاسم — العزل يثبّتها.
+            mtLtrRun('${excluded ? '− ' : '# '}$tag  $count'),
             style: Theme.of(context).textTheme.labelMedium!.copyWith(
                   color: fg,
                   decoration:
