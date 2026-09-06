@@ -527,6 +527,7 @@
   "language": "Language",
   "languageArabic": "العربية",
   "languageEnglish": "English",
+  "languageSystem": "System",
   "latestAdditions": "Latest additions",
   "licenses": "Open-source licenses",
   "listenInBackground": "Listen in the background",

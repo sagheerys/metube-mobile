@@ -89,6 +89,8 @@ class SuperSettings {
     ThemeMode? themeMode,
     String? localeCode,
     bool clearCredentials = false,
+    /// م-50: تمييز «امسح اللغة» عن «لا تغيّرها» — `null` وحدها لا تكفي.
+    bool clearLocale = false,
   }) =>
       SuperSettings(
         localUrl: localUrl ?? this.localUrl,
@@ -104,7 +106,7 @@ class SuperSettings {
         autoRetry: autoRetry ?? this.autoRetry,
         compatiblePlayback: compatiblePlayback ?? this.compatiblePlayback,
         themeMode: themeMode ?? this.themeMode,
-        localeCode: localeCode ?? this.localeCode,
+        localeCode: clearLocale ? null : (localeCode ?? this.localeCode),
       );
 
   /// تحميل اللقطة الأولية قبل runApp.
@@ -218,9 +220,15 @@ class SettingsNotifier extends Notifier<SuperSettings> {
     state = state.copyWith(themeMode: mode);
   }
 
-  Future<void> setLocale(String code) async {
-    await _mutex.run(() => _store.setString('app_locale', code));
-    state = state.copyWith(localeCode: code);
+  /// **`null` ⇒ «اتبع لغة النظام»** (م-50): يُمحى المفتاح فيعود
+  /// `localeCode` فارغاً كما كان يوم التركيب. بدون هذا كان الخيار
+  /// **باباً يُغلق ولا يُفتح**: أول لمسة للمبدّل تثبّت لغةً إلى الأبد،
+  /// ولا رجعة إلا بحذف بيانات التطبيق (ومعها المكتبة والمفضلة).
+  Future<void> setLocale(String? code) async {
+    await _mutex.run(() => code == null
+        ? _store.remove('app_locale')
+        : _store.setString('app_locale', code));
+    state = state.copyWith(localeCode: code, clearLocale: code == null);
   }
 
   // ── الشبكة (م-28 / ر-9) ──

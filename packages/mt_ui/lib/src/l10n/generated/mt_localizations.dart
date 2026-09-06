@@ -1448,6 +1448,12 @@ abstract class MTLocalizations {
   /// **'English'**
   String get languageEnglish;
 
+  /// No description provided for @languageSystem.
+  ///
+  /// In en, this message translates to:
+  /// **'System'**
+  String get languageSystem;
+
   /// No description provided for @latestAdditions.
   ///
   /// In en, this message translates to:

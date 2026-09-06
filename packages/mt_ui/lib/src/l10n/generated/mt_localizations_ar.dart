@@ -761,6 +761,9 @@ class MTLocalizationsAr extends MTLocalizations {
   String get languageEnglish => 'English';
 
   @override
+  String get languageSystem => 'النظام';
+
+  @override
   String get latestAdditions => 'أحدث الإضافات';
 
   @override

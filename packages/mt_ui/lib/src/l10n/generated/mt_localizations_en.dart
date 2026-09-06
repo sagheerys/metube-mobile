@@ -762,6 +762,9 @@ class MTLocalizationsEn extends MTLocalizations {
   String get languageEnglish => 'English';
 
   @override
+  String get languageSystem => 'System';
+
+  @override
   String get latestAdditions => 'Latest additions';
 
   @override

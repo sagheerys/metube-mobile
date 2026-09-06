@@ -11,6 +11,9 @@ import 'widgets/server_status_card.dart';
 
 /// الإعدادات (م-27/م-29/م-30/م-34): بطاقة السيرفر أولاً، حول آخراً
 /// (النموذج أ). أقسام البيانات والتشخيص وحول تكتمل في المرحلة 6.
+/// قيمة الشريحة التي تعني «لا لغة محفوظة» — لا تُخزَّن أبداً (م-50).
+const _localeSystem = 'system';
+
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
 
@@ -249,15 +252,21 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           Text(l10n.language,
               style: Theme.of(context).textTheme.titleSmall),
           const SizedBox(height: MTSpace.xs),
+          // م-50: **«النظام» خيارٌ لا حالةٌ ضمنية.** كان الفراغ يعني
+          // «اتبع الهاتف» فعلاً، لكن المبدّل يعرضه «العربية» — فيقرأ
+          // صاحب الجهاز الإنجليزي واجهةً إنجليزية ومبدّلاً يقول عربية،
+          // وأول لمسة تثبّت لغةً بلا رجعة.
           SegmentedButton<String>(
-            segments: const [
-              ButtonSegment(value: 'ar', label: Text('العربية')),
-              ButtonSegment(value: 'en', label: Text('English')),
+            segments: [
+              ButtonSegment(value: _localeSystem, label: Text(l10n.languageSystem)),
+              ButtonSegment(value: 'ar', label: Text(l10n.languageArabic)),
+              ButtonSegment(value: 'en', label: Text(l10n.languageEnglish)),
             ],
-            selected: {settings.localeCode ?? 'ar'},
-            onSelectionChanged: (selection) => ref
-                .read(settingsProvider.notifier)
-                .setLocale(selection.first),
+            selected: {settings.localeCode ?? _localeSystem},
+            onSelectionChanged: (selection) =>
+                ref.read(settingsProvider.notifier).setLocale(
+                      selection.first == _localeSystem ? null : selection.first,
+                    ),
           ),
           const SizedBox(height: MTSpace.xl),
 
