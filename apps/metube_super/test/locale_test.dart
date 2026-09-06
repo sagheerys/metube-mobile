@@ -1,8 +1,10 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:metube_super/di.dart';
 import 'package:metube_super/features/settings/settings_state.dart';
 import 'package:mt_core/mt_core.dart';
+import 'package:mt_ui/mt_ui.dart';
 
 /// **حارس م-50 (قرار المالك 2026-09-06): «اتبع لغة النظام» بابٌ يُفتح.**
 ///
@@ -54,5 +56,47 @@ void main() {
     final settings =
         await SuperSettings.load(MemoryKeyValueStore(), MemorySecretStore());
     expect(settings.localeCode, isNull);
+  });
+
+  /// **الخطر الحقيقي في هذا التعديل ليس المنطق بل العرض**: شريحة ثالثة
+  /// في زرّ مقسّم على شاشة 360dp قد تفيض — والفيض في وضع الإصدار
+  /// شريطٌ أصفر لا يظهر، بل نصٌّ مقصوص.
+  testWidgets('المبدّل الثلاثي يسع شاشة ضيقة بالعربية', (tester) async {
+    tester.view.physicalSize = const Size(1080, 2400);
+    tester.view.devicePixelRatio = 3; // 360dp عرضاً
+    addTearDown(tester.view.reset);
+
+    final container = makeContainer(initialLocale: 'ar');
+    addTearDown(container.dispose);
+    final l10n = await MTLocalizations.delegate.load(const Locale('ar'));
+
+    await tester.pumpWidget(UncontrolledProviderScope(
+      container: container,
+      child: MaterialApp(
+        locale: const Locale('ar'),
+        localizationsDelegates: MTLocalizations.localizationsDelegates,
+        supportedLocales: MTLocalizations.supportedLocales,
+        theme: mtTheme(MTVariant.superApp, Brightness.light),
+        home: Scaffold(
+          body: Center(
+            child: SegmentedButton<String>(
+              segments: [
+                ButtonSegment(value: 'system', label: Text(l10n.languageSystem)),
+                ButtonSegment(value: 'ar', label: Text(l10n.languageArabic)),
+                ButtonSegment(value: 'en', label: Text(l10n.languageEnglish)),
+              ],
+              selected: const {'ar'},
+              onSelectionChanged: (_) {},
+            ),
+          ),
+        ),
+      ),
+    ));
+    await tester.pump();
+
+    expect(tester.takeException(), isNull);
+    expect(find.text(l10n.languageSystem), findsOneWidget);
+    expect(find.text(l10n.languageArabic), findsOneWidget);
+    expect(find.text(l10n.languageEnglish), findsOneWidget);
   });
 }
