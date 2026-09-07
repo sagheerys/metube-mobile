@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mt_core/mt_core.dart';
@@ -37,13 +38,18 @@ class LibraryEnricher {
     final endpoint = _ref.read(playbackResolverProvider).endpoint;
     final headers = _ref.read(apiClientProvider)?.streamingHeaders ?? const {};
 
+    // **غلافٌ في الفهرس لا يعني ملفاً على القرص**: المصغرات كانت تُكتب
+    // في `cacheDir` وأندرويد يمسحه تحت ضغط التخزين، فبقيت البطاقات
+    // فارغة **ولا تُعاد أبداً** لأن `_needsProbe` يرى غلافاً مسجّلاً.
+    final stale = await _forgetMissingThumbs();
+
     // **ترتيب السبر = ترتيب العرض** (مصطاد على المحاكي 2026-09-02):
     // كان يسبر بترتيب `/history` بينما تعرض المكتبة الأحدث أولاً، فمرّت
     // دقائق و٥٥ غلافاً جاهزاً ولا شيء منها في أول الشاشة. والمحلي قبل
     // الشبكي دائماً: قراءة ملف على القرص أرخص من رحلة للسيرفر.
     final candidates = [
       for (final item in items)
-        if (_needsProbe(item)) item,
+        if (_needsProbe(item) || stale.contains(item.canonicalUrl)) item,
     ]..sort((a, b) {
         final localFirst = (b.localPath != null ? 1 : 0) -
             (a.localPath != null ? 1 : 0);
@@ -58,6 +64,9 @@ class LibraryEnricher {
     final failures = _ref.read(probeFailureIndexProvider);
     final cooling = await failures.readAll();
 
+    // **غلافٌ في الفهرس لا يعني ملفاً على القرص**: المصغرات كانت تُكتب
+    // في `cacheDir` وأندرويد يمسحه تحت ضغط التخزين، فبقيت البطاقات
+    // فارغة **ولا تُعاد أبداً** لأن `_needsProbe` يرى غلافاً مسجّلاً.
     final pending = <ProbeRequest>[];
     for (final item in candidates) {
       if (failures.isCoolingDown(cooling, item.canonicalUrl)) continue;
@@ -72,6 +81,13 @@ class LibraryEnricher {
       }
       pending.add(request);
     }
+    // عدّاد الطابور في السجل: «لا مصغرات» له ثلاثة أسباب متشابهة في
+    // الشكل (لا مرشحين · كلها مبرَّدة · كلها بلا اسم ملف)، وبلا هذا
+    // السطر لا يفرّق بينها أحد.
+    unawaited(_ref.read(loggerProvider).log(
+        'probe queue: ${pending.length} of ${candidates.length} '
+        '(cooling ${cooling.length})',
+        tag: 'library'));
     if (pending.isEmpty) return;
 
     _running = true;
@@ -108,6 +124,28 @@ class LibraryEnricher {
       // القاعدة 9: اسم ملف خبيث لا يُبنى له رابط أبداً.
       return null;
     }
+  }
+
+  /// يمسح من فهرس الأغلفة كل مسارٍ لم يعد له ملف، ويعيد مفاتيحه كي
+  /// تُسبَر من جديد في نفس الجولة.
+  Future<Set<String>> _forgetMissingThumbs() async {
+    final artwork = _ref.read(artworkIndexProvider);
+    final all = await artwork.readAll();
+    final gone = <String>{
+      for (final entry in all.entries)
+        // روابط الشبكة (ytimg) ليست ملفات — تُترك كما هي.
+        if (!entry.value.startsWith('http') && !File(entry.value).existsSync())
+          entry.key,
+    };
+    for (final key in gone) {
+      await artwork.removeKey(key);
+    }
+    if (gone.isNotEmpty) {
+      unawaited(_ref.read(loggerProvider).log(
+          'thumbs vanished from disk: ${gone.length}',
+          tag: 'library'));
+    }
+    return gone;
   }
 
   /// بايت واحد بمهلة قصيرة — عبر عميل النواة وحده (القاعدة 1).

@@ -124,6 +124,34 @@ void main() {
     expect(index.isCoolingDown({'k': old}, 'k'), isFalse);
     expect(index.isCoolingDown({'k': DateTime.now()}, 'k'), isTrue);
   });
+
+  test('غلافٌ اختفى من القرص ⇒ يُنسى ويُعاد سبره', () async {
+    final artwork = ArtworkIndex(store: store, mutex: PrefsMutex());
+    // مسار في مجلد كاش مُسح — هذا ما فعله أندرويد بمصغرات المالك.
+    await artwork.put(item.canonicalUrl, '/data/cache/thumbs/gone.jpg');
+
+    final probe = _RecordingProbe();
+    final container = containerWith(206, probe);
+    addTearDown(container.dispose);
+
+    // العنصر يحمل غلافاً في نموذجه، فبلا التنظيف لا يُرشَّح للسبر أبداً.
+    const withThumb = LibraryItem(
+      canonicalUrl: 'https://instagram.com/reel/abc',
+      title: 'Video by someone',
+      serverFilename: 'Video by someone.mp4',
+      onServer: true,
+      thumbnail: '/data/cache/thumbs/gone.jpg',
+      duration: Duration(seconds: 30),
+      aspectRatio: 0.5625,
+    );
+    await LibraryEnricher(container.read(_refProvider), probe: probe)
+        .enrich(const [withThumb]);
+
+    expect(probe.calls, hasLength(1), reason: 'يُعاد سبره في نفس الجولة');
+    // المسار الميت زال، وحلّ محلّه ما أعطاه السبر الجديد.
+    expect((await artwork.readAll())[item.canonicalUrl],
+        isNot('/data/cache/thumbs/gone.jpg'));
+  });
 }
 
 /// وصول إلى `Ref` من داخل الحاوية — `LibraryEnricher` يأخذ `Ref` لا حاوية.
@@ -169,4 +197,5 @@ class _StatusAdapter implements HttpClientAdapter {
 
   @override
   void close({bool force = false}) {}
+
 }

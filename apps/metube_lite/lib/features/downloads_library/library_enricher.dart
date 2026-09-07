@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -35,9 +36,13 @@ class LibraryEnricher {
     if (_running) return;
     // ترتيب السبر = ترتيب العرض الافتراضي (الأحدث أولاً)، وإلا ظهرت
     // الأغلفة في آخر القائمة أولاً حيث لا ينظر أحد.
+    // **غلافٌ في الفهرس لا يعني ملفاً على القرص** (نفس علاج Super
+    // 2026-09-07): المصغرات كانت تُكتب في `cacheDir` وأندرويد يمسحه،
+    // فتبقى البطاقة فارغة ولا تُعاد لأن الفهرس يقول «لها غلاف».
+    final stale = await _forgetMissingThumbs();
     final pending = [
       for (final item in items)
-        if (_needsProbe(item)) item,
+        if (_needsProbe(item) || stale.contains(item.key)) item,
     ]..sort((a, b) => b.modified.compareTo(a.modified));
     if (pending.isEmpty) return;
 
@@ -56,6 +61,21 @@ class LibraryEnricher {
     } finally {
       _running = false;
     }
+  }
+
+  /// يمسح من فهرس الأغلفة كل مسار لم يعد له ملف ويعيد مفاتيحه.
+  Future<Set<String>> _forgetMissingThumbs() async {
+    final artwork = _ref.read(artworkIndexProvider);
+    final all = await artwork.readAll();
+    final gone = <String>{
+      for (final entry in all.entries)
+        if (!entry.value.startsWith('http') && !File(entry.value).existsSync())
+          entry.key,
+    };
+    for (final key in gone) {
+      await artwork.removeKey(key);
+    }
+    return gone;
   }
 
   bool _needsProbe(LocalItem item) =>

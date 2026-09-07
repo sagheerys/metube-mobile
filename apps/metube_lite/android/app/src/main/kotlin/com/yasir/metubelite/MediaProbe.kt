@@ -25,7 +25,11 @@ object MediaProbe {
     private const val MAX_EDGE = 480
 
     fun scan(context: Context, paths: List<String>): List<Map<String, Any?>> {
-        val dir = File(context.cacheDir, "thumbs").apply { mkdirs() }
+        // **`filesDir` لا `cacheDir`** (عطل المالك 2026-09-07): أندرويد
+        // يمسح الكاش تحت ضغط التخزين، فتبقى مسارات المصغرات في الفهرس
+        // تشير إلى ملفات مُزالة — بطاقات فارغة **لا تُعاد** لأن الفهرس
+        // يقول «لها غلاف». المصغرة 480px ≈ 30KB، ومئتان منها ≈ 6MB.
+        val dir = File(context.filesDir, "thumbs").apply { mkdirs() }
         return paths.map { probe(dir, it) }
     }
 

@@ -34,7 +34,11 @@ object MediaProbe {
         items: List<Map<String, Any?>>,
         headers: Map<String, String>,
     ): List<Map<String, Any?>> {
-        val dir = File(context.cacheDir, "thumbs").apply { mkdirs() }
+        // **`filesDir` لا `cacheDir`** (عطل المالك 2026-09-07): أندرويد
+        // يمسح الكاش تحت ضغط التخزين، فتبقى مسارات المصغرات في الفهرس
+        // تشير إلى ملفات مُزالة — بطاقات فارغة **لا تُعاد** لأن الفهرس
+        // يقول «لها غلاف». المصغرة 480px ≈ 30KB، ومئتان منها ≈ 6MB.
+        val dir = File(context.filesDir, "thumbs").apply { mkdirs() }
         return items.map { probe(dir, it, headers) }
     }
 
