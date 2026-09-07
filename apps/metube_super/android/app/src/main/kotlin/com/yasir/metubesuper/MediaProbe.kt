@@ -55,7 +55,10 @@ object MediaProbe {
             val target: File
             if (path != null) {
                 val file = File(path)
-                if (!file.exists()) return out
+                if (!file.exists()) {
+                    out["error"] = "local file missing"
+                    return out
+                }
                 retriever.setDataSource(path)
                 target = File(dir, "${file.path.hashCode()}_${file.lastModified()}.jpg")
             } else if (url != null) {
@@ -70,9 +73,12 @@ object MediaProbe {
                 ?.toLongOrNull()
             readSize(retriever, out)
             out["thumb"] = thumbnail(retriever, target)?.absolutePath
-        } catch (_: Throwable) {
-            // ترميز غير مدعوم، أو السيرفر غير متاح الآن — يُتجاوز بصمت
-            // ويُعاد المحاولة في جلسة لاحقة.
+        } catch (e: Throwable) {
+            // **لم يعد يُبتلع بصمت** (م-47): ترميز غير مدعوم أو ملف
+            // مفقود كان يمرّ بلا أثر في السجل ولا في الشاشة، فبقي عطل
+            // المصغرات شهراً بلا سبب معلن. الآن يصعد السبب إلى دارت.
+            out["error"] = e.javaClass.simpleName +
+                (e.message?.let { ": $it" } ?: "")
         } finally {
             try {
                 retriever.release()

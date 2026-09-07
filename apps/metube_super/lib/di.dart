@@ -58,6 +58,13 @@ final artworkIndexProvider = Provider((ref) => ArtworkIndex(
       mutex: ref.watch(prefsMutexProvider),
     ));
 
+/// إخفاقات السبر (عطل المصغرات 2026-09-07) — بلا هذه يُعاد سبر
+/// المستحيل عند كل إقلاع فيجمّد الطابور خلفه.
+final probeFailureIndexProvider = Provider((ref) => ProbeFailureIndex(
+      store: ref.watch(keyValueStoreProvider),
+      mutex: ref.watch(prefsMutexProvider),
+    ));
+
 final playlistsStoreProvider = Provider((ref) => PlaylistsStore(
       store: ref.watch(keyValueStoreProvider),
       mutex: ref.watch(prefsMutexProvider),

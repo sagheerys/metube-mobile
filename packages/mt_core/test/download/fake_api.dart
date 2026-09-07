@@ -62,6 +62,13 @@ class FakeApi implements MeTubeApi {
     if (deleteError != null) throw deleteError!;
   }
 
+  /// أسماء يُدّعى أنها مفقودة على السيرفر — لاختبار حارس السبر.
+  final Set<String> missingFiles = {};
+
+  @override
+  Future<bool> fileExists(String serverFilename, {Duration? timeout}) async =>
+      !missingFiles.contains(serverFilename);
+
   @override
   String downloadUrl(String serverFilename) {
     if (!UrlKit.isSafeServerFilename(serverFilename)) {

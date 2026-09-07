@@ -5,6 +5,7 @@ import 'package:mt_core/mt_core.dart';
 import 'package:mt_media/mt_media.dart' show ServerStreamEndpoint;
 
 import '../../di.dart';
+import '../shared/error_report.dart';
 import 'library_models.dart';
 import 'library_providers.dart';
 import 'media_probe.dart';
@@ -52,10 +53,24 @@ class LibraryEnricher {
         return bt.compareTo(at); // الأحدث أولاً
       });
 
+    // **ذاكرة الإخفاق** (عطل 2026-09-07): عنصر أخفق قريباً لا يُعاد
+    // سبره — سجلٌّ واحد ميت كان يستهلك ٨٠ ثانية من كل جلسة.
+    final failures = _ref.read(probeFailureIndexProvider);
+    final cooling = await failures.readAll();
+
     final pending = <ProbeRequest>[];
     for (final item in candidates) {
+      if (failures.isCoolingDown(cooling, item.canonicalUrl)) continue;
       final request = _requestFor(item, endpoint);
-      if (request != null) pending.add(request);
+      if (request == null) continue;
+      // **لا يُسلَّم للمنصة رابطٌ لم نتأكد من حياته**: `MediaMetadata‑
+      // Retriever` يعيد المحاولة عشراً بمهلة 8s على الرابط الميت
+      // ويجمّد الطابور، بينما بايت واحد منّا يحسمها بجزء من ثانية.
+      if (request.url != null && !await _serverHasFile(item)) {
+        await _recordFailure(item.canonicalUrl, 'file missing on server');
+        continue;
+      }
+      pending.add(request);
     }
     if (pending.isEmpty) return;
 
@@ -95,6 +110,27 @@ class LibraryEnricher {
     }
   }
 
+  /// بايت واحد بمهلة قصيرة — عبر عميل النواة وحده (القاعدة 1).
+  Future<bool> _serverHasFile(LibraryItem item) async {
+    final api = _ref.read(apiClientProvider);
+    final filename = item.serverFilename;
+    if (api == null || filename == null) return false;
+    return api.fileExists(filename);
+  }
+
+  /// يسجّل السبب في السجل التشخيصي **ويؤجّل** إعادة المحاولة يوماً.
+  Future<void> _recordFailure(String canonicalUrl, String reason) async {
+    // يُنتظر هنا (خلافاً للواجهة): الإثراء عمل خلفي لا يعطّل شاشة،
+    // وترتيب السجل أهم من ميلي ثانية.
+    await logErrorOnce(
+      _ref.read(loggerProvider),
+      'probe',
+      '$reason ($canonicalUrl)',
+      tag: 'library',
+    );
+    await _ref.read(probeFailureIndexProvider).put(canonicalUrl, DateTime.now());
+  }
+
   Future<bool> _apply(List<ProbedMedia> results) async {
     final shapes = _ref.read(mediaShapeIndexProvider);
     final artwork = _ref.read(artworkIndexProvider);
@@ -102,7 +138,16 @@ class LibraryEnricher {
     var changed = false;
 
     for (final probed in results) {
-      if (probed.isEmpty) continue;
+      if (probed.error != null) {
+        await _recordFailure(probed.key, probed.error!);
+      }
+      if (probed.isEmpty) {
+        // بلا خطأ صريح ولا بيانات: ترميز لم تفهمه المنصة — إخفاق كذلك.
+        if (probed.error == null) {
+          await _recordFailure(probed.key, 'probe returned nothing');
+        }
+        continue;
+      }
       if (probed.duration != null) {
         await shapes.remember(
           probed.key,

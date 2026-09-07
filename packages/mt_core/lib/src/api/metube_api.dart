@@ -14,6 +14,12 @@ abstract interface class MeTubeApi {
   Future<void> delete(List<String> canonicalUrls, {String where});
   String downloadUrl(String serverFilename);
 
+  /// **هل الملف موجود فعلاً على السيرفر الآن؟** (بايت واحد بمهلة قصيرة)
+  ///
+  /// سجلٌّ في `/history` لا يعني ملفاً على القرص: عنصر واحد ميت عند
+  /// المالك كان يكفي لتجميد سبر المصغرات كله (2026-09-07).
+  Future<bool> fileExists(String serverFilename, {Duration? timeout});
+
   /// سحب ملف إلى مسار محلي بتقدم حي وإلغاء — تنفيذ واحد بلا إعادة
   /// محاولة؛ منطق الإعادة في `Transfer`.
   Future<void> downloadTo(

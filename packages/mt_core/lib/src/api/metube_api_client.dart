@@ -168,6 +168,37 @@ class MeTubeApiClient implements MeTubeApi {
     return '${config.baseUrl}/download/${Uri.encodeComponent(serverFilename)}';
   }
 
+  /// **فحص وجود بايت واحد** — أرخص سؤال ممكن، وبمهلتنا نحن.
+  ///
+  /// السبب مقيس (2026-09-07): تسليم رابط ميت إلى `MediaMetadataRetriever`
+  /// يجعل منصة أندرويد تعيد المحاولة **عشر مرات بمهلة 8s** — أكثر من
+  /// ٨٠ ثانية تجمّد طابور السبر بأسره. الرفض هنا يستغرق جزءاً من ثانية.
+  @override
+  Future<bool> fileExists(String serverFilename, {Duration? timeout}) async {
+    final String url;
+    try {
+      url = downloadUrl(serverFilename);
+    } on UnsafeFilenameException {
+      return false;
+    }
+    try {
+      final response = await _dio.get<dynamic>(
+        url,
+        options: Options(
+          // نطاق بايت واحد: السيرفر يردّ 206 بلا إرسال الملف.
+          headers: const {'Range': 'bytes=0-0'},
+          responseType: ResponseType.bytes,
+          receiveTimeout: timeout ?? MTConstants.probeTimeout,
+          sendTimeout: timeout ?? MTConstants.probeTimeout,
+        ),
+      );
+      final status = response.statusCode ?? 0;
+      return status == 200 || status == 206;
+    } on DioException {
+      return false;
+    }
+  }
+
   /// §2.4 — السحب الفعلي إلى ملف. ⚠️ لا `responseType: bytes` مع
   /// `dio.download` (فخ §1). محاولة واحدة — الإعادة في `Transfer`.
   @override

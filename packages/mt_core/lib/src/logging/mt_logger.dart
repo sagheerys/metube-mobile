@@ -50,10 +50,13 @@ class MTLogger {
         tag: tag,
       );
 
-  Future<String> readAll() async {
-    final file = File(filePath);
-    return await file.exists() ? file.readAsString() : '';
-  }
+  /// **تحت القفل نفسه**: القصّ (`_trimIfNeeded`) يعيد كتابة الملف
+  /// كاملاً، وقراءةٌ تقع في تلك اللحظة ترى ملفاً فارغاً أو منقوصاً —
+  /// شاشة سجل تومض فارغة، واختبارٌ يسقط مرة كل عشر.
+  Future<String> readAll() => _lock.synchronized(() async {
+        final file = File(filePath);
+        return await file.exists() ? file.readAsString() : '';
+      });
 
   Future<void> clear() => _lock.synchronized(() async {
         final file = File(filePath);

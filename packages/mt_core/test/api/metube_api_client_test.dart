@@ -290,4 +290,25 @@ void main() {
       expect(File(out).readAsStringSync(), 'MEDIA');
     });
   });
+
+  group('fileExists — الحارس الرخيص قبل تسليم الرابط للمنصة', () {
+    test('206 على نطاق بايت واحد ⇒ موجود', () async {
+      final (client, adapter) = makeClient((_) => _json('x', status: 206));
+      expect(await client.fileExists('a.mp4'), isTrue);
+      expect(adapter.requests.single.headers['Range'], 'bytes=0-0');
+    });
+
+    test('404 ⇒ غير موجود (بلا رمي)', () async {
+      final (client, _) = makeClient((_) => _json('no', status: 404));
+      // الحارس: سجلٌّ ميت في `/history` كان يُسلَّم لـ
+      // MediaMetadataRetriever فيجمّد سبر المصغرات ٨٠ ثانية لكل جلسة.
+      expect(await client.fileExists('gone.mp4'), isFalse);
+    });
+
+    test('اسم ملف خبيث ⇒ false ولا يُبنى له رابط (القاعدة 9)', () async {
+      final (client, adapter) = makeClient((_) => _json('x', status: 206));
+      expect(await client.fileExists('../etc/passwd'), isFalse);
+      expect(adapter.requests, isEmpty);
+    });
+  });
 }

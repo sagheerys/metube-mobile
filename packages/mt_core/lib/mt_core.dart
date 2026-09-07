@@ -34,6 +34,7 @@ export 'src/storage/key_value_store.dart';
 export 'src/storage/memory_key_value_store.dart';
 export 'src/storage/offline_index.dart';
 export 'src/storage/playlists_store.dart';
+export 'src/storage/probe_failure_index.dart';
 export 'src/storage/secret_store.dart';
 export 'src/storage/tags_index.dart';
 export 'src/storage/title_index.dart';

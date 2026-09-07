@@ -19,6 +19,7 @@ class ProbedMedia {
     this.width,
     this.height,
     this.thumbPath,
+    this.error,
   });
 
   final String key;
@@ -28,6 +29,9 @@ class ProbedMedia {
 
   /// مسار المصغرة في كاش التطبيق (لا رابط شبكة).
   final String? thumbPath;
+
+  /// سبب الإخفاق كما رفعته المنصة — للسجل التشخيصي لا للعرض (م-47).
+  final String? error;
 
   double? get aspectRatio =>
       (width == null || height == null || height! <= 0)
@@ -42,8 +46,10 @@ class ProbedMedia {
     if (key == null || key.isEmpty) return null;
     final ms = (raw['durationMs'] as num?)?.toInt();
     final thumb = raw['thumb']?.toString();
+    final error = raw['error']?.toString();
     return ProbedMedia(
       key: key,
+      error: (error == null || error.isEmpty) ? null : error,
       duration: ms == null || ms <= 0 ? null : Duration(milliseconds: ms),
       width: (raw['width'] as num?)?.toInt(),
       height: (raw['height'] as num?)?.toInt(),
