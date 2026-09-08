@@ -26,20 +26,39 @@ final libraryItemsProvider = FutureProvider<List<LibraryItem>>((ref) async {
   final items = <LibraryItem>[];
   final matchedLocal = <String>{};
 
-  for (final entry in history?.done ?? const <HistoryItem>[]) {
-    if (!entry.isCompleted) continue;
-    String? localPath = offline[entry.canonicalUrl];
-    if (localPath == null) {
-      for (final MapEntry(:key, :value) in offline.entries) {
-        if (UrlKit.urlsMatch(key, entry.canonicalUrl)) {
-          localPath = value;
-          matchedLocal.add(key);
-          break;
-        }
+  final done = [
+    for (final entry in history?.done ?? const <HistoryItem>[])
+      if (entry.isCompleted) entry,
+  ];
+
+  // **تمريرتان لا واحدة** (عطل المالك 2026-09-08): المطابقة الحرفية
+  // أولاً **لكل** العناصر، ثم الضبابية على ما بقي. بتمريرة واحدة يسرق
+  // عنصرٌ سابق بمطابقة ضبابية مفتاحاً يملكه عنصر لاحق حرفياً.
+  final localOf = <String, String>{};
+  for (final entry in done) {
+    final exact = offline[entry.canonicalUrl];
+    if (exact == null) continue;
+    localOf[entry.canonicalUrl] = exact;
+    matchedLocal.add(entry.canonicalUrl);
+  }
+  for (final entry in done) {
+    if (localOf.containsKey(entry.canonicalUrl)) continue;
+    for (final MapEntry(:key, :value) in offline.entries) {
+      // **الملف الواحد لا يُمنح لعنصرين**: كانت روابط فيسبوك تتطابق
+      // كلها (أُصلح في `UrlKit`)، فيظهر ملف العنصر المُتاح دون اتصال
+      // تحت كل عناصر فيسبوك ويُفتح في المشغل الخارجي بدلاً عنها.
+      // الحدّ هنا يجعل العرَض مستحيلاً ولو تصادمت مطابقةٌ أخرى غداً.
+      if (matchedLocal.contains(key)) continue;
+      if (UrlKit.urlsMatch(key, entry.canonicalUrl)) {
+        localOf[entry.canonicalUrl] = value;
+        matchedLocal.add(key);
+        break;
       }
-    } else {
-      matchedLocal.add(entry.canonicalUrl);
     }
+  }
+
+  for (final entry in done) {
+    final localPath = localOf[entry.canonicalUrl];
     final shape = shapes[entry.canonicalUrl];
     items.add(LibraryItem.fromHistory(
       entry,

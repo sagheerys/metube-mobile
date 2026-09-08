@@ -176,4 +176,54 @@ void main() {
       expect(UrlKit.longestNumericId('https://vimeo.com/123456'), '');
     });
   });
+
+  /// **عطل المالك 2026-09-08 — تصادم روابط فيسبوك.**
+  ///
+  /// فيسبوك يضع المعرف في الاستعلام لا المسار، فكان `longestNumericId`
+  /// يعود فارغاً لكل روابطه وتسقط المطابقة إلى رتبة التطبيع — والتطبيع
+  /// يمسح الاستعلام فتنهار كل روابط `watch` إلى `facebook.com/watch`.
+  /// الأثر المقيس على جهاز المالك: عنصر واحد أُتيح دون اتصال أعطى ملفه
+  /// **لكل** عناصر فيسبوك، فيفتح الرابع في المشغل الخارجي مقطع الأول.
+  /// والأخطر أن نفس الدالة تطابق `/history` في Lite — أي سحب ملف بريء
+  /// **ثم حذف الأصل من السيرفر**.
+  group('urlsMatch — الهوية في الاستعلام (فيسبوك)', () {
+    const a = 'https://m.facebook.com/watch/?v=1619243166301797&_rdr';
+    const b = 'https://m.facebook.com/watch/?v=2657266731405287&_rdr';
+
+    test('مقطعان مختلفان لا يتطابقان', () {
+      expect(UrlKit.urlsMatch(a, b), isFalse);
+      expect(UrlKit.urlsMatch(b, a), isFalse, reason: 'والعكس كذلك');
+    });
+
+    test('المعرف يُقرأ من الاستعلام لا المسار وحده', () {
+      expect(UrlKit.longestNumericId(a), '1619243166301797');
+    });
+
+    test('نفس المقطع بصيغتين ما زال يتطابق', () {
+      expect(
+          UrlKit.urlsMatch(a,
+              'https://www.facebook.com/watch/?v=1619243166301797&fbclid=x'),
+          isTrue,
+          reason: 'المعرف الرقمي مرجع قبل رتبة الاستعلام');
+    });
+
+    test('الرابط نفسه حرفياً يتطابق', () {
+      expect(UrlKit.urlsMatch(a, a), isTrue);
+    });
+
+    /// الحارس العام: لا يقتصر على فيسبوك ولا على المعرفات الرقمية.
+    test('استعلامان مختلفان على نفس المسار ⇒ لا تطابق', () {
+      expect(
+          UrlKit.urlsMatch(
+              'https://site.com/watch?id=abc', 'https://site.com/watch?id=def'),
+          isFalse);
+    });
+
+    test('استعلام في طرف واحد لا يمنع المطابقة', () {
+      expect(
+          UrlKit.urlsMatch('https://vimeo.com/1234567890',
+              'https://vimeo.com/1234567890?share=1'),
+          isTrue);
+    });
+  });
 }

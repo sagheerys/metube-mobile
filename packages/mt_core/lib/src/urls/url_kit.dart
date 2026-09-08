@@ -65,9 +65,14 @@ abstract final class UrlKit {
     return null;
   }
 
-  /// أطول معرف رقمي ≥10 خانات في المسار (FB/IG/TikTok) أو '' إن غاب.
+  /// أطول معرف رقمي ≥10 خانات في المسار **أو الاستعلام** أو '' إن غاب.
+  ///
+  /// **`=` مع `/` (عطل المالك 2026-09-08):** فيسبوك يضع المعرف في
+  /// الاستعلام لا المسار (`m.facebook.com/watch/?v=1619243166301797`)،
+  /// فكان يعود فارغاً لكل روابطه — وتسقط المطابقة إلى رتبة التطبيع
+  /// التي تمسح الاستعلام فتسوّي كل `facebook.com/watch` ببعضها.
   static String longestNumericId(String url) {
-    final matches = RegExp(r'/(\d{10,})').allMatches(url);
+    final matches = RegExp(r'[/=](\d{10,})').allMatches(url);
     if (matches.isEmpty) return '';
     return matches
         .map((m) => m.group(1)!)
@@ -118,10 +123,32 @@ abstract final class UrlKit {
     if (numId1.isNotEmpty) return _containsIdAtBoundary(url2, numId1);
     if (numId2.isNotEmpty) return _containsIdAtBoundary(url1, numId2);
 
+    // **استعلامان مختلفان لا يسقطان إلى التطبيع** (عطل المالك
+    // 2026-09-08): التطبيع يمسح الاستعلام، ومنصةٌ تحمل الهوية فيه
+    // (فيسبوك `?v=…`) تنهار كلها إلى مسار واحد `facebook.com/watch`
+    // فيطابق **كل مقطع كلَّ مقطع**. الأثر مقيس: عنصر واحد أُتيح دون
+    // اتصال أعطى ملفه لبقية عناصر فيسبوك، ومطابقة `/history` في Lite
+    // كانت تسحب ملفاً بريئاً **ثم تحذف الأصل من السيرفر**. وهي نفس
+    // القاعدة المكتوبة أعلاه ليوتيوب، مُعمَّمةً على كل منصة.
+    final query1 = _queryOf(url1);
+    final query2 = _queryOf(url2);
+    if (query1.isNotEmpty && query2.isNotEmpty && query1 != query2) {
+      return false;
+    }
+
     final norm1 = normalize(url1);
     final norm2 = normalize(url2);
     if (norm1 == norm2) return true;
     return _isPathPrefix(norm1, norm2) || _isPathPrefix(norm2, norm1);
+  }
+
+  /// سلسلة الاستعلام وحدها (بلا `#fragment`) — '' إن غابت.
+  static String _queryOf(String url) {
+    final at = url.indexOf('?');
+    if (at < 0) return '';
+    final rest = url.substring(at + 1);
+    final hash = rest.indexOf('#');
+    return (hash < 0 ? rest : rest.substring(0, hash)).toLowerCase();
   }
 
   /// هل يحوي [url] الرقم [id] **غير ملتصق برقم آخر**؟ (`…/769798712`
