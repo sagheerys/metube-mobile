@@ -40,7 +40,7 @@ void main() {
   group('خ-2 — النسخ الاحتياطي', () {
     test('كلمة السر المضمّنة في الرابط لا تدخل النسخة', () async {
       final store = MemoryKeyValueStore();
-      await store.setString('server_url', 'https://yasir:s3cret@mtube.example');
+      await store.setString('server_url', 'https://user:s3cret@mtube.example');
       await store.setStringList(
           'external_urls', ['https://u:p@a.example', 'https://b.example']);
       final service = BackupService(
@@ -52,7 +52,7 @@ void main() {
 
       final exported = await service.exportToString();
       expect(exported, isNot(contains('s3cret')));
-      expect(exported, isNot(contains('yasir:')));
+      expect(exported, isNot(contains('user:')));
 
       // ويبقى الرابط نفسه صالحاً بعد التعقيم.
       expect(BackupService.stripUrlCredentials('https://u:p@a.example/x'),

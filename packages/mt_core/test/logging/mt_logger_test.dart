@@ -47,11 +47,11 @@ void main() {
 
   group('sanitizeForShare — التعقيم الإلزامي', () {
     test('يحجب المصادقة والروابط والمسارات وIP', () {
-      const raw = 'Authorization: Basic eWFzaXI6cEBzcw== fetching '
+      const raw = 'Authorization: Basic dXNlcjpwQHNz fetching '
           'https://metube.example.com/history from 192.168.1.10:8081 saved '
           '/storage/emulated/0/Download/MeTube_Lite/فيديو خاص.mp4 done';
       final clean = MTLogger.sanitizeForShare(raw);
-      expect(clean, isNot(contains('eWFzaXI6')));
+      expect(clean, isNot(contains('dXNlcjpw')));
       expect(clean, isNot(contains('metube.example.com')));
       expect(clean, isNot(contains('192.168.1.10')));
       expect(clean, isNot(contains('فيديو خاص')));

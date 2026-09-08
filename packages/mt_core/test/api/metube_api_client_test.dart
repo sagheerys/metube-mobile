@@ -55,9 +55,9 @@ void main() {
 
     test('basicAuthHeader يُبنى من الاعتمادات', () {
       final config = ServerConfig(baseUrl: 'https://s.com',
-          username: 'yasir', password: 'p@ss');
+          username: 'user', password: 'p@ss');
       expect(config.basicAuthHeader,
-          'Basic ${base64Encode(utf8.encode('yasir:p@ss'))}');
+          'Basic ${base64Encode(utf8.encode('user:p@ss'))}');
       expect(ServerConfig(baseUrl: 'https://s.com').basicAuthHeader, isNull);
     });
   });

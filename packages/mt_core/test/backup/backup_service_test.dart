@@ -26,7 +26,7 @@ void main() {
       await store.setInt('player_play_mode', 2);
       await store.setDouble('player_playback_speed', 1.5);
       await store.setStringList('external_urls', ['https://a', 'https://b']);
-      await secrets.write(SecretKeys.username, 'yasir');
+      await secrets.write(SecretKeys.username, 'user');
       await secrets.write(SecretKeys.password, 'sirri-jiddan');
 
       final exported = await service.exportToString();
@@ -34,7 +34,7 @@ void main() {
       expect(exported, startsWith('{'));
       expect(BackupCrypto.headerOf(exported), isNull);
       expect(exported, isNot(contains('sirri-jiddan')));
-      expect(exported, isNot(contains('yasir')),
+      expect(exported, isNot(contains('user')),
           reason: 'اسم المستخدم لم يعد يُنسخ — الملف بلا سرّ إطلاقاً');
 
       // جهاز جديد: **بلا استيراد أي مفتاح**، وهذا هو المكسب كله.
@@ -85,7 +85,7 @@ void main() {
             'variant': 'super',
             'version': 2,
             'prefs': prefs,
-            'secure': {'username': 'yasir'},
+            'secure': {'username': 'user'},
           }),
           keyBase64: keyBase64,
         );
@@ -100,7 +100,7 @@ void main() {
       final result = await service.importFromString(file);
       expect(result.format, BackupFormat.v2);
       expect(await store.getString('server_url'), 'https://old.example');
-      expect(await secrets.read(SecretKeys.username), 'yasir');
+      expect(await secrets.read(SecretKeys.username), 'user');
     });
 
     test('مفتاح آخر ⇒ BackupKeyMismatchException', () async {
@@ -231,7 +231,7 @@ void main() {
               'v': '{"https://youtu.be/dQw4w9WgXcQ":["أناشيد"]}',
             },
           },
-          'secure': {'username': 'yasir'},
+          'secure': {'username': 'user'},
         }),
         keyBase64: key,
         header: BackupCrypto.headerLegacySuper,
@@ -242,7 +242,7 @@ void main() {
       expect(await store.getString('server_url'),
           'https://truenas.local:8081');
       expect(await store.getBool('auto_switch_enabled'), isTrue);
-      expect(await secrets.read(SecretKeys.username), 'yasir');
+      expect(await secrets.read(SecretKeys.username), 'user');
 
       final tags = TagsIndex(store: store, mutex: PrefsMutex());
       expect(await tags.tagsOf('https://youtu.be/dQw4w9WgXcQ'), ['أناشيد']);
