@@ -366,7 +366,7 @@ class MTLocalizationsEn extends MTLocalizations {
 
   @override
   String deletePlaylistConfirm(Object name) {
-    return 'Delete \\\"$name\\\"?';
+    return 'Delete \"$name\"?';
   }
 
   @override
@@ -377,7 +377,7 @@ class MTLocalizationsEn extends MTLocalizations {
 
   @override
   String deleteTagConfirm(Object tag) {
-    return 'Delete the tag \\\"$tag\\\" from all items? The videos themselves are not deleted.';
+    return 'Delete the tag \"$tag\" from all items? The videos themselves are not deleted.';
   }
 
   @override
@@ -385,7 +385,7 @@ class MTLocalizationsEn extends MTLocalizations {
 
   @override
   String deleteVideoConfirm(Object title) {
-    return 'Delete \\\"$title\\\"?\n\nThis will remove the file from your device.';
+    return 'Delete \"$title\"?\n\nThis will remove the file from your device.';
   }
 
   @override

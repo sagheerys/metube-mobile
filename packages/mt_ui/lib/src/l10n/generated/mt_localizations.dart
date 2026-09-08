@@ -743,7 +743,7 @@ abstract class MTLocalizations {
   /// No description provided for @deletePlaylistConfirm.
   ///
   /// In en, this message translates to:
-  /// **'Delete \\\"{name}\\\"?'**
+  /// **'Delete \"{name}\"?'**
   String deletePlaylistConfirm(Object name);
 
   /// No description provided for @deleteSelected.
@@ -761,7 +761,7 @@ abstract class MTLocalizations {
   /// No description provided for @deleteTagConfirm.
   ///
   /// In en, this message translates to:
-  /// **'Delete the tag \\\"{tag}\\\" from all items? The videos themselves are not deleted.'**
+  /// **'Delete the tag \"{tag}\" from all items? The videos themselves are not deleted.'**
   String deleteTagConfirm(Object tag);
 
   /// No description provided for @deleteVideo.
@@ -773,7 +773,7 @@ abstract class MTLocalizations {
   /// No description provided for @deleteVideoConfirm.
   ///
   /// In en, this message translates to:
-  /// **'Delete \\\"{title}\\\"?\n\nThis will remove the file from your device.'**
+  /// **'Delete \"{title}\"?\n\nThis will remove the file from your device.'**
   String deleteVideoConfirm(Object title);
 
   /// No description provided for @deletedCount.

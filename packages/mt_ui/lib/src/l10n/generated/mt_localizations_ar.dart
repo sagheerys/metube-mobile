@@ -367,7 +367,7 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String deletePlaylistConfirm(Object name) {
-    return 'حذف \\\"$name\\\"؟';
+    return 'حذف «$name»؟';
   }
 
   @override
@@ -378,7 +378,7 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String deleteTagConfirm(Object tag) {
-    return 'حذف الوسم \\\"$tag\\\" من كل العناصر؟ لن تُحذف الفيديوهات نفسها.';
+    return 'حذف الوسم «$tag» من كل العناصر؟ لن تُحذف الفيديوهات نفسها.';
   }
 
   @override
@@ -386,7 +386,7 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String deleteVideoConfirm(Object title) {
-    return 'حذف \\\"$title\\\"؟\n\nسيؤدي هذا إلى إزالة الملف من جهازك.';
+    return 'حذف «$title»؟\n\nسيؤدي هذا إلى إزالة الملف من جهازك.';
   }
 
   @override
@@ -746,7 +746,7 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get keyImportedMessage =>
-      'تم استعادة مفتاح التشفير. يمكنك الآن استخدام \\\"استعادة جميع البيانات\\\" لاسترداد نسختك الاحتياطية.';
+      'تم استعادة مفتاح التشفير. يمكنك الآن استخدام \"استعادة جميع البيانات\" لاسترداد نسختك الاحتياطية.';
 
   @override
   String get keyImportedTitle => 'تم استيراد المفتاح';

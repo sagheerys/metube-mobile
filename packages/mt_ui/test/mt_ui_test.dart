@@ -117,5 +117,23 @@ void main() {
         containsAll(['ar', 'en']),
       );
     });
+
+    /// **مصطاد بالفحص اليدوي على الجهاز 2026-09-08**: حوار حذف القائمة
+    /// كان يعرض `حذف \"Single Releases\"؟` بشرطتين مائلتين ظاهرتين —
+    /// لأن الاقتباس في arb كُتب `\\\"` فيفكّه JSON إلى شرطة + اقتباس.
+    /// لا يكشفه `analyze` ولا حارس التكافؤ: الملف JSON سليم والمفتاح
+    /// مترجَم في اللغتين. **العين وحدها تراه** — وهذا الحارس يغني عنها.
+    test('لا شرطة مائلة ظاهرة في نصوص التأكيد', () async {
+      for (final code in ['ar', 'en']) {
+        final l10n = await MTLocalizations.delegate.load(Locale(code));
+        for (final text in [
+          l10n.deletePlaylistConfirm('س'),
+          l10n.deleteVideoConfirm('س'),
+          l10n.deleteTagConfirm('س'),
+        ]) {
+          expect(text, isNot(contains(r'\')), reason: '[$code] $text');
+        }
+      }
+    });
   });
 }
