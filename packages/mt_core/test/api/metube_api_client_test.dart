@@ -207,6 +207,44 @@ void main() {
       expect(calls, 1);
     });
 
+    /// **حرّاس «ما نظنّه مفرداً يبقى مفرداً»** (بلاغ المالك 2026-09-08):
+    /// رابط ألبوم لم يعرفه `PlaylistDetector` نزل على السيرفر **عشرين
+    /// مقطعاً** بلا شاشة اختيار، والتطبيق لا يعرف إلا مهمة واحدة —
+    /// وفي Lite تبقى التسعة عشر يتيمة بعد سحب واحد وحذفه.
+    test('رابط مفرد يحمل حدّ عنصر واحد', () async {
+      final (client, adapter) = makeClient((o) => _json('{"status": "ok"}'));
+      await client.add('https://soundcloud.com/artist/some-track', Quality.best);
+      final body = json.decode(adapter.requests.single.data as String) as Map;
+      expect(body['playlist_item_limit'], 1);
+    });
+
+    test('صفحة فنان غير مكتشَفة تُعامل مفرداً ⇒ الحدّ يحميها', () async {
+      final (client, adapter) = makeClient((o) => _json('{"status": "ok"}'));
+      await client.add('https://soundcloud.com/jazzhopcafe', Quality.best);
+      final body = json.decode(adapter.requests.single.data as String) as Map;
+      expect(body['playlist_item_limit'], 1,
+          reason: 'مقيس على سيرفر المالك: ألبوم من ٣ + حدّ 1 ⇒ نزل واحد');
+    });
+
+    /// `watch?v=…&list=…` **قائمة معروفة** عند `PlaylistDetector`، فتذهب
+    /// إلى شاشة الاختيار ولا تصل هنا مفردة — والحدّ لا يُفرض عليها.
+    test('watch مع list قائمة معروفة ⇒ بلا حدّ', () async {
+      final (client, adapter) = makeClient((o) => _json('{"status": "ok"}'));
+      await client.add(
+          'https://www.youtube.com/watch?v=dQw4w9WgXcQ&list=PLabc123',
+          Quality.best);
+      final body = json.decode(adapter.requests.single.data as String) as Map;
+      expect(body.containsKey('playlist_item_limit'), isFalse);
+    });
+
+    test('رابط قائمة صريح لا يُحدّ — الدفعي يرسل كل مقطع وحده', () async {
+      final (client, adapter) = makeClient((o) => _json('{"status": "ok"}'));
+      await client.add(
+          'https://soundcloud.com/artist/sets/album', Quality.best);
+      final body = json.decode(adapter.requests.single.data as String) as Map;
+      expect(body.containsKey('playlist_item_limit'), isFalse);
+    });
+
     test('توافق التشغيل لا يُرسل مع الصوت', () async {
       final (client, adapter) = makeClient((o) => _json('{"status": "ok"}'));
       await client.add('https://youtu.be/dQw4w9WgXcQ', Quality.audio,
@@ -218,11 +256,15 @@ void main() {
       expect(body['quality'], 'audio');
     });
 
-    test('بلا توافق التشغيل: الجسم كما كان بالضبط', () async {
+    /// **العقد تغيّر بقرار المالك 2026-09-08**: كان الجسم `{url, quality}`
+    /// حرفياً بلا توافق التشغيل. أُضيف `playlist_item_limit` لأن رابطاً
+    /// ظنّه التطبيق مفرداً نزل على السيرفر **عشرين مقطعاً**. الحقل يبقى
+    /// الوحيد المسموح بزيادته هنا — وهذا الحارس يمنع تسرّب غيره.
+    test('بلا توافق التشغيل: الجسم url+quality والحدّ لا غير', () async {
       final (client, adapter) = makeClient((o) => _json('{"status": "ok"}'));
       await client.add('https://youtu.be/dQw4w9WgXcQ', Quality.best);
       final body = json.decode(adapter.requests.single.data as String) as Map;
-      expect(body.keys.toSet(), {'url', 'quality'});
+      expect(body.keys.toSet(), {'url', 'quality', 'playlist_item_limit'});
     });
 
     test('يوتيوب يحتفظ بالرقمية', () async {

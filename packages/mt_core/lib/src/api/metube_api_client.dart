@@ -5,6 +5,7 @@ import 'package:dio/dio.dart';
 import '../constants/mt_constants.dart';
 import '../models/history_response.dart';
 import '../models/quality.dart';
+import '../urls/playlist_detector.dart';
 import '../urls/url_kit.dart';
 import 'api_exceptions.dart';
 import 'metube_api.dart';
@@ -174,6 +175,15 @@ class MeTubeApiClient implements MeTubeApi {
             'codec': 'h264',
           },
           if (preset) 'ytdl_options_presets': const [compatPreset],
+          // **ما نظنّه مفرداً يبقى مفرداً على السيرفر** (بلاغ المالك
+          // 2026-09-08). `PlaylistDetector` يعرف قوائم يوتيوب و`/sets/`
+          // ساوندكلاود فقط؛ أما صفحة فنان أو `/albums` أو قناة فيراها
+          // مقطعاً مفرداً — ويفكّها yt-dlp على السيرفر إلى عشرات.
+          // والضرر أشدّ في Lite: ينزل عشرون ويُسحب واحد، فتبقى تسعة
+          // عشر يتيمة على سيرفر العائلة لا أحد يحذفها.
+          //
+          // مقيس على سيرفر المالك: ألبوم من ٣ مقاطع + الحدّ ⇒ نزل واحد.
+          if (!PlaylistDetector.isPlaylist(url)) 'playlist_item_limit': 1,
         }),
         options: Options(contentType: 'application/json'),
       ),
