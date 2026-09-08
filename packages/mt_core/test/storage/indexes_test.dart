@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:mt_core/mt_core.dart';
 import 'package:test/test.dart';
 
@@ -41,6 +43,59 @@ void main() {
       await index.put(sc, 'https://i1.sndcdn.com/art-t500x500.jpg');
       expect(await index.artworkOf(sc), contains('t500x500'));
       expect(await index.artworkOf('https://other'), isNull);
+    });
+
+    /// **حرّاس تسريب المصغرات (عطل المالك 2026-09-08).** الحذف كان
+    /// يزيل السطر من الفهرس ويترك ملف JPG يتيماً — وبعد نقل المصغرات
+    /// إلى `filesDir` لم يبقَ من يكنسه: ٣٠KB تتراكم مع كل حذف.
+    group('removeKeysAndFiles', () {
+      late Directory dir;
+      setUp(() => dir = Directory.systemTemp.createTempSync('mtf_art_'));
+      tearDown(() {
+        if (dir.existsSync()) dir.deleteSync(recursive: true);
+      });
+
+      File thumbAt(String name) =>
+          File('${dir.path}/$name.jpg')..writeAsStringSync('jpeg');
+
+      test('يحذف الملف من القرص لا المدخلة وحدها', () async {
+        final index = ArtworkIndex(store: store, mutex: mutex);
+        final thumb = thumbAt('a');
+        await index.put(url, thumb.path);
+
+        await index.removeKeysAndFiles([url]);
+
+        expect(thumb.existsSync(), isFalse, reason: 'الملف نفسه يزول');
+        expect(await index.artworkOf(url), isNull);
+      });
+
+      test('رابط بعيد لا يُعامل معاملة المسار', () async {
+        final index = ArtworkIndex(store: store, mutex: mutex);
+        await index.put(url, 'https://i.ytimg.com/vi/x/hq.jpg');
+        // لا ملف ليُحذف — والمهم ألا ينهار على قيمة ليست مساراً.
+        await index.removeKeysAndFiles([url]);
+        expect(await index.artworkOf(url), isNull);
+      });
+
+      test('غلاف يشترك فيه مفتاح باقٍ لا يُحذف', () async {
+        final index = ArtworkIndex(store: store, mutex: mutex);
+        final shared = thumbAt('shared');
+        await index.put('u1', shared.path);
+        await index.put('u2', shared.path);
+
+        await index.removeKeysAndFiles(['u1']);
+
+        expect(shared.existsSync(), isTrue,
+            reason: 'وإلا فقد u2 غلافه لأن جاره حُذف');
+        expect(await index.artworkOf('u2'), shared.path);
+      });
+
+      test('ملف مفقود أصلاً ⇒ لا انهيار، والمدخلة تزول', () async {
+        final index = ArtworkIndex(store: store, mutex: mutex);
+        await index.put(url, '${dir.path}/gone.jpg');
+        await index.removeKeysAndFiles([url]);
+        expect(await index.readAll(), isEmpty);
+      });
     });
   });
 

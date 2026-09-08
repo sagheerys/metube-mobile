@@ -41,7 +41,6 @@ class LibraryActions {
       final url = item.canonicalUrl;
       if (url != null) await _ref.read(offlineIndexProvider).removeKey(url);
       await _ref.read(titleIndexProvider).removeKey(item.key);
-      await _ref.read(artworkIndexProvider).removeKey(item.key);
       // **تشذيب البقية (إصلاح خ-4):** الوسوم والمواضع والأبعاد كانت
       // تبقى للأبد في نفس ملف XML الذي يُعاد تسلسله مع كل كتابة،
       // وينسخه `exportToString` كاملاً — نسخ احتياطية تتضخم بجثث.
@@ -50,6 +49,11 @@ class LibraryActions {
       await _ref.read(playbackPositionsProvider).clear(item.key);
       await _ref.read(mediaStoreProvider).scanFile(item.path);
     }
+    // الغلاف يحذف **ملف المصغرة نفسه** مع المدخلة — دفعةً واحدة لأن
+    // الفحص «هل يستعمله مفتاح آخر؟» يلزمه المشهد كاملاً.
+    await _ref
+        .read(artworkIndexProvider)
+        .removeKeysAndFiles([for (final item in items) item.key]);
     // **والقوائم المحفوظة** (بلاغ المالك 2026-09-04): كل الفهارس كانت
     // تُشذَّب إلا القوائم، فيبقى مدخل ميت يشغّل غيره عند النقر.
     await _ref.read(playlistsStoreProvider).removeFromAll([

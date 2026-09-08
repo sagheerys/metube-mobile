@@ -128,9 +128,11 @@ class LibraryActions {
     final shapes = _ref.read(mediaShapeIndexProvider);
     final positions = _ref.read(playbackPositionsProvider);
     final offline = _ref.read(offlineIndexProvider);
+    // الغلاف أولاً: يحذف **ملف المصغرة نفسه** مع المدخلة، وإلا بقي
+    // يتيماً في `filesDir/thumbs` الذي لا يكنسه أندرويد.
+    await artwork.removeKeysAndFiles(canonicalUrls);
     for (final url in canonicalUrls) {
       await tags.removeKey(url);
-      await artwork.removeKey(url);
       await shapes.removeKey(url);
       await positions.clear(url);
       await offline.removeKey(url);
