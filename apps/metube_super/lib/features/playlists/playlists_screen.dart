@@ -109,7 +109,7 @@ class _Grid extends ConsumerWidget {
     final headers = ref.read(apiClientProvider)?.streamingHeaders;
 
     List<Widget> coversOf(SavedPlaylist playlist) => [
-          for (final entry in playlist.items.take(2))
+          for (final entry in playlist.items.take(4))
             if ((byUrl[entry.canonicalUrl]?.thumbnail ?? entry.cachedThumb)
                 case final String url)
               ?artworkFor(url, headers: headers),

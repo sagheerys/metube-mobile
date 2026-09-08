@@ -3,6 +3,7 @@ import 'package:mt_ui/mt_ui.dart';
 
 import 'features/audio/audio_screen.dart';
 import 'features/batch/batch_screen.dart';
+import 'features/settings/language_screen.dart';
 import 'features/library/library_screen.dart';
 import 'features/player/player_screen.dart';
 import 'features/player/reels_screen.dart';
@@ -49,6 +50,9 @@ final router = GoRouter(
               GoRoute(
                   path: 'network',
                   builder: (_, _) => const NetworkScreen()),
+              GoRoute(
+                  path: 'language',
+                  builder: (_, _) => const LanguageScreen()),
               GoRoute(path: 'logs', builder: (_, _) => const LogsScreen()),
               GoRoute(
                   path: 'backup', builder: (_, _) => const BackupScreen()),

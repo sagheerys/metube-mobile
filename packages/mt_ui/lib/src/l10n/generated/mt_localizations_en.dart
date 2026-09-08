@@ -765,6 +765,9 @@ class MTLocalizationsEn extends MTLocalizations {
   String get languageSystem => 'System';
 
   @override
+  String get languageSystemHint => 'Follows your phone\'s language';
+
+  @override
   String get latestAdditions => 'Latest additions';
 
   @override

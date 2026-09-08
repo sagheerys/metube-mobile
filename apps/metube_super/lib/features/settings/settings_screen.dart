@@ -12,7 +12,6 @@ import 'widgets/server_status_card.dart';
 /// الإعدادات (م-27/م-29/م-30/م-34): بطاقة السيرفر أولاً، حول آخراً
 /// (النموذج أ). أقسام البيانات والتشخيص وحول تكتمل في المرحلة 6.
 /// قيمة الشريحة التي تعني «لا لغة محفوظة» — لا تُخزَّن أبداً (م-50).
-const _localeSystem = 'system';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -256,17 +255,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           // «اتبع الهاتف» فعلاً، لكن المبدّل يعرضه «العربية» — فيقرأ
           // صاحب الجهاز الإنجليزي واجهةً إنجليزية ومبدّلاً يقول عربية،
           // وأول لمسة تثبّت لغةً بلا رجعة.
-          SegmentedButton<String>(
-            segments: [
-              ButtonSegment(value: _localeSystem, label: Text(l10n.languageSystem)),
-              ButtonSegment(value: 'ar', label: Text(l10n.languageArabic)),
-              ButtonSegment(value: 'en', label: Text(l10n.languageEnglish)),
-            ],
-            selected: {settings.localeCode ?? _localeSystem},
-            onSelectionChanged: (selection) =>
-                ref.read(settingsProvider.notifier).setLocale(
-                      selection.first == _localeSystem ? null : selection.first,
-                    ),
+          // **صفٌّ يفتح شاشة، لا زرٌّ مقسّم** (طلب المالك 2026-09-08):
+          // `SegmentedButton` يقسم العرض على عدد الخيارات، فثلاثةٌ تسع
+          // 360dp **وستةٌ تنكسر** — والخطة المعلنة دعم اللغات الشائعة.
+          _navTile(
+            Icons.translate_rounded,
+            l10n.language,
+            settings.localeCode == null
+                ? l10n.languageSystem
+                : mtLanguageName(settings.localeCode!),
+            '/settings/language',
           ),
           const SizedBox(height: MTSpace.xl),
 

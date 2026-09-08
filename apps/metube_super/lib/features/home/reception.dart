@@ -24,24 +24,40 @@ Future<void> refreshClipboardUrl(Ref ref) async {
 /// م-3: استقبال المشاركة من أندرويد — حتى cold start، وعدة روابط دفعة.
 /// يبث قوائم الروابط المستخرجة من أي نص مشارك.
 class ShareReceiver {
-  ShareReceiver({required this.onUrls});
+  ShareReceiver({required this.onUrls, this.onLog});
 
   final void Function(List<String> urls) onUrls;
+
+  /// أثرٌ في السجل التشخيصي عند كل استقبال — **مصدره بلاغ المالك
+  /// 2026-09-08**: «أحياناً لا تظهر ورقة التحميل إلا بإعادة المحاولة».
+  /// بلا هذا السطر لا يُعرف أضاع التطبيقُ الرابطَ أم لم يصل أصلاً.
+  final void Function(String message)? onLog;
+
   StreamSubscription<List<SharedMediaFile>>? _subscription;
 
   bool _disposed = false;
 
+  /// آخر دفعة سُلِّمت — الرابط الأولي قد يصل **مرتين**: من
+  /// `getInitialMedia` ومن البثّ معاً بعد أن صار الاشتراك أسبق.
+  List<String>? _lastDelivered;
+
+  /// **الاشتراك أولاً، ثم الرابط الأولي** (بلاغ المالك 2026-09-08).
+  ///
+  /// كان الترتيب معكوساً: `getInitialMedia` ← `reset` ← `listen`. وبين
+  /// الانتظارين نافذةٌ **بلا مستمع**؛ والتطبيق الساكن في الخلفية
+  /// يُسلَّم رابطه إلى البثّ مباشرة، فيسقط فيها بلا أثر — ثم تنجح
+  /// إعادة المحاولة لأن الاشتراك صار قائماً. وهو ما وصفه المالك حرفياً.
   Future<void> start() async {
-    final initial = await ReceiveSharingIntent.instance.getInitialMedia();
-    // **تفكيك مبكر أثناء الانتظارين (إصلاح م-1):** hot restart أو إغلاق
-    // سريع كان يترك مستمعاً حياً يمسك غلافاً ميتاً — والاشتراك يُسجَّل
-    // بعد `dispose()` فلا يلغيه أحد.
-    if (_disposed) return;
-    _handle(initial);
-    await ReceiveSharingIntent.instance.reset();
+    // **تفكيك مبكر أثناء الانتظار (إصلاح م-1):** hot restart أو إغلاق
+    // سريع كان يترك مستمعاً حياً يمسك غلافاً ميتاً.
     if (_disposed) return;
     _subscription =
         ReceiveSharingIntent.instance.getMediaStream().listen(_handle);
+
+    final initial = await ReceiveSharingIntent.instance.getInitialMedia();
+    if (_disposed) return;
+    _handle(initial);
+    await ReceiveSharingIntent.instance.reset();
   }
 
   void _handle(List<SharedMediaFile> shared) {
@@ -52,7 +68,18 @@ class ShareReceiver {
         urls.addAll(UrlKit.extractAllUrls(media.path));
       }
     }
-    if (urls.isNotEmpty && !_disposed) onUrls(urls);
+    if (urls.isEmpty || _disposed) return;
+    // نفس الدفعة مرتين ⇒ ورقتان فوق بعضهما أو تنزيلان لرابط واحد.
+    if (_lastDelivered != null &&
+        _lastDelivered!.length == urls.length &&
+        List.generate(urls.length, (i) => _lastDelivered![i] == urls[i])
+            .every((same) => same)) {
+      onLog?.call('share duplicate ignored (${urls.length})');
+      return;
+    }
+    _lastDelivered = urls;
+    onLog?.call('share received: ${urls.length}');
+    onUrls(urls);
   }
 
   void dispose() {

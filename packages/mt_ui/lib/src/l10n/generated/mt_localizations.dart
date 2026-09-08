@@ -1454,6 +1454,12 @@ abstract class MTLocalizations {
   /// **'System'**
   String get languageSystem;
 
+  /// No description provided for @languageSystemHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Follows your phone\'s language'**
+  String get languageSystemHint;
+
   /// No description provided for @latestAdditions.
   ///
   /// In en, this message translates to:

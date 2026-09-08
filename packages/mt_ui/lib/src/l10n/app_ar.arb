@@ -264,6 +264,7 @@
   "languageArabic": "العربية",
   "languageEnglish": "English",
   "languageSystem": "النظام",
+  "languageSystemHint": "يتبع لغة هاتفك",
   "latestAdditions": "أحدث الإضافات",
   "licenses": "تراخيص المصادر المفتوحة",
   "listenInBackground": "استماع بالخلفية",

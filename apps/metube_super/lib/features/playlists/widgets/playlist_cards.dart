@@ -126,7 +126,8 @@ class SmartPlaylistCard extends StatelessWidget {
   }
 }
 
-/// بطاقة قائمة يدوية (م-37/ب): غلاف نصفان + زر تشغيل + شارة تثبيت.
+/// بطاقة قائمة يدوية (م-37/ب): غلاف فسيفسائي حتى أربع مصغرات
+/// + زر تشغيل + شارة تثبيت.
 class PlaylistCard extends StatelessWidget {
   const PlaylistCard({
     super.key,
@@ -142,7 +143,7 @@ class PlaylistCard extends StatelessWidget {
   final VoidCallback onPlay;
   final VoidCallback onLongPress;
 
-  /// أول غلافين من عناصر القائمة (قد تكون فارغة).
+  /// حتى أربعة أغلفة من عناصر القائمة (قد تكون فارغة).
   final List<Widget> thumbnails;
 
   @override
@@ -222,6 +223,47 @@ class _Cover extends StatelessWidget {
   final String pinnedLabel;
   final VoidCallback onPlay;
 
+
+  /// **فسيفساء تتكيّف مع العدد** (طلب المالك 2026-09-08): كانت خليّتين
+  /// دائماً، فقائمة من عشرين عنصراً تُعرَّف بغلافين اثنين. الآن حتى
+  /// أربعة — والتدرّج مقصود: **الثلاثة كبيرةٌ واثنتان** لا شبكةٌ فيها
+  /// ربعٌ فارغ، والواحدة تملأ الغلاف بدل نصفٍ ميت.
+  ///
+  /// **و`stretch` إلزامي في كل صف وعمود** (فحص جهاز المالك 2026-09-05):
+  /// بدونه لا تتلقى الخليّة ارتفاعاً مشدوداً فتأخذ الصورة ارتفاعها
+  /// الطبيعي وتتوسّط — شريطٌ رفيع وسط بطاقة فارغة، و`BoxFit.cover`
+  /// لا ينفع لأن لا شيء يطلب منه ملء الارتفاع.
+  Widget _mosaic(BuildContext context, MTPalette p) {
+    Widget cell(Widget? child) => ColoredBox(
+          color: p.cardAlt,
+          child: child ??
+              Icon(Icons.queue_music_rounded, size: 18, color: p.ink3),
+        );
+    Widget stretchRow(List<Widget> children) => Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [for (final child in children) Expanded(child: child)],
+        );
+    Widget stretchColumn(List<Widget> children) => Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [for (final child in children) Expanded(child: child)],
+        );
+
+    final t = thumbnails;
+    return switch (t.length) {
+      0 => cell(null),
+      1 => cell(t[0]),
+      2 => stretchRow([cell(t[0]), cell(t[1])]),
+      3 => stretchRow([
+          cell(t[0]),
+          stretchColumn([cell(t[1]), cell(t[2])]),
+        ]),
+      _ => stretchColumn([
+          stretchRow([cell(t[0]), cell(t[1])]),
+          stretchRow([cell(t[2]), cell(t[3])]),
+        ]),
+    };
+  }
+
   @override
   Widget build(BuildContext context) {
     final p = MTThemeX.of(context).palette;
@@ -230,29 +272,7 @@ class _Cover extends StatelessWidget {
       children: [
         ClipRRect(
           borderRadius: BorderRadius.circular(MTRadius.thumb),
-          child: Row(
-            // **الافتراضي `center` لا `stretch`** (فحص جهاز المالك
-            // 2026-09-05): بدونه لا تتلقى الخليّتان ارتفاعاً مشدوداً،
-            // فتأخذ الصورة ارتفاعها الطبيعي وتتوسّط — شريطٌ رفيع وسط
-            // بطاقة فارغة، و`BoxFit.cover` لا ينفع لأن لا شيء يطلب
-            // منه ملء الارتفاع.
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              for (var i = 0; i < 2; i++)
-                Expanded(
-                  child: ColoredBox(
-                    color: p.cardAlt,
-                    child: i < thumbnails.length
-                        ? thumbnails[i]
-                        : Icon(
-                            Icons.queue_music_rounded,
-                            size: 18,
-                            color: p.ink3,
-                          ),
-                  ),
-                ),
-            ],
-          ),
+          child: _mosaic(context, p),
         ),
         if (pinned)
           PositionedDirectional(

@@ -95,7 +95,7 @@ class _Grid extends ConsumerWidget {
     final byKey = {for (final item in library) item.key: item};
 
     List<Widget> coversOf(SavedPlaylist playlist) => [
-          for (final entry in playlist.items.take(2))
+          for (final entry in playlist.items.take(4))
             if ((byKey[entry.canonicalUrl]?.thumbnail ?? entry.cachedThumb)
                 case final String url)
               ?artworkFor(url),

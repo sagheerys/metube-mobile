@@ -44,7 +44,11 @@ class _ShellScreenState extends ConsumerState<ShellScreen>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _shareReceiver = ShareReceiver(onUrls: (urls) => unawaited(_onSharedUrls(urls)));
+    _shareReceiver = ShareReceiver(
+      onUrls: (urls) => unawaited(_onSharedUrls(urls)),
+      onLog: (message) =>
+          unawaited(ref.read(loggerProvider).log(message, tag: 'share')),
+    );
     _shareReceiver!.start();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       ref.read(clipboardRefresherProvider)();

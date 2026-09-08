@@ -528,6 +528,7 @@
   "languageArabic": "العربية",
   "languageEnglish": "English",
   "languageSystem": "System",
+  "languageSystemHint": "Follows your phone's language",
   "latestAdditions": "Latest additions",
   "licenses": "Open-source licenses",
   "listenInBackground": "Listen in the background",
