@@ -6,13 +6,22 @@ import '../theme/mt_theme.dart';
 import '../tokens/tokens.dart';
 import 'mt_equalizer.dart';
 import 'mt_highlight_surface.dart';
+import 'mt_location_badge.dart';
 import 'mt_media_card.dart' show MTMediaLocation;
 import 'mt_platform_chip.dart';
 import 'mt_polish.dart';
 
-/// بطاقة المكتبة في **العرض الشبكي**: المصغرة تتصدر بنسبة 16:9 والعنوان
-/// تحتها سطران. الصف الواحد يعرض ضعف ما تعرضه القائمة، فالمسح البصري
-/// للفيديو أسرع بكثير — والقائمة تبقى الأنسب للصوتيات وللعناوين الطويلة.
+/// بطاقة المكتبة **بغلاف متصدّر**: المصغرة أولاً بنسبة 16:9 والعنوان
+/// تحتها سطران. تخدم وضعين:
+///
+/// - **الشبكي** (الافتراضي): عمودان، فالصف يعرض ضعف ما تعرضه القائمة
+///   والمسح البصري للفيديو أسرع بكثير.
+/// - **البطاقات** ([feed] — طلب المالك 2026-09-08، نمط يوتيوب): عمود
+///   واحد بغلاف عريض ونصٍّ أكبر، للتصفح المتأني.
+///
+/// **الوضعان يتشاركان الغلاف عمداً**: المدة والمفضلة و«المزيد» تعيش
+/// كلها فوق المصغرة، ونسختان من ذلك كانتا ستفترقان عند أول تعديل.
+/// الفرق بينهما مقاسات نصٍّ وحضور شارة المكان فقط.
 ///
 /// عرض بحت مثل [MTMediaCard] تماماً: لا تعرف سيرفراً ولا فهرساً.
 class MTMediaGridCard extends StatelessWidget {
@@ -30,6 +39,7 @@ class MTMediaGridCard extends StatelessWidget {
     this.playing = false,
     this.paused = false,
     this.favorite = false,
+    this.feed = false,
     this.onTap,
     this.onLongPress,
     this.onFavoriteToggle,
@@ -51,6 +61,9 @@ class MTMediaGridCard extends StatelessWidget {
   /// مؤقتاً — فيظهر المؤشر ساكناً بدل أن يرقص على مقطع لا يعمل.
   final bool paused;
   final bool favorite;
+
+  /// وضع «البطاقات»: عمود واحد — نصٌّ أكبر وشارة مكان، فالعرض يتّسع لهما.
+  final bool feed;
   final VoidCallback? onTap;
   final VoidCallback? onLongPress;
   final VoidCallback? onFavoriteToggle;
@@ -103,18 +116,18 @@ class MTMediaGridCard extends StatelessWidget {
                   onMore: onMore,
                   child: thumbnail,
                 ),
-                const SizedBox(height: MTSpace.xs),
+                SizedBox(height: feed ? MTSpace.sm : MTSpace.xs),
                 Text(
                   title,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: text.bodySmall!.copyWith(
+                  style: (feed ? text.bodyMedium! : text.bodySmall!).copyWith(
                     color: p.ink,
                     fontWeight: FontWeight.w700,
                     height: 1.35,
                   ),
                 ),
-                const SizedBox(height: 2),
+                const SizedBox(height: 3),
                 Row(
                   children: [
                     if (platform != MTPlatformKind.other) ...[
@@ -127,9 +140,18 @@ class MTMediaGridCard extends StatelessWidget {
                           subtitle!,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: text.labelSmall!.copyWith(color: p.ink3),
+                          style: (feed ? text.bodySmall! : text.labelSmall!)
+                              .copyWith(color: p.ink3),
                         ),
                       ),
+                    // شارة المكان في البطاقات وحدها: الشبكة عرضها
+                    // نصف الشاشة وقد ازدحمت بالرقاقة والسطر أصلاً.
+                    if (feed &&
+                        location != MTMediaLocation.none &&
+                        locationLabel != null) ...[
+                      const SizedBox(width: MTSpace.xs),
+                      MTLocationBadge(location: location, label: locationLabel!),
+                    ],
                   ],
                 ),
               ],

@@ -224,30 +224,39 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
               SliverPadding(
                 padding:
                     const EdgeInsets.symmetric(horizontal: MTSpace.pagePad),
-                sliver: options.grid
-                    // الشبكة كسولة أيضاً — `SliverGrid.builder` لا يبني
-                    // إلا المرئي، وهو شرط 251 عنصراً بلا تجميد.
-                    ? SliverGrid.builder(
-                        // **النسبة مقيسة لا مقدَّرة** (تحقق بلقطة على
-                        // المحاكي): 0.82 تركت ~50 نقطة فراغاً ميتاً تحت
-                        // كل بطاقة فبدت الشبكة مفكّكة. المحتوى الفعلي =
-                        // غلاف 16:9 + سطرا عنوان + سطر بيانات.
-                        gridDelegate:
-                            const SliverGridDelegateWithMaxCrossAxisExtent(
-                          maxCrossAxisExtent: 210,
-                          mainAxisSpacing: MTSpace.md,
-                          crossAxisSpacing: MTSpace.md,
-                          childAspectRatio: 1.02,
-                        ),
-                        itemCount: value.length,
-                        itemBuilder: (context, index) =>
-                            _gridCard(l10n, options, value[index]),
-                      )
-                    : SliverList.builder(
-                        itemCount: value.length,
-                        itemBuilder: (context, index) =>
-                            _itemCard(l10n, options, value[index]),
+                // كل الأوضاع كسولة — `builder` لا يبني إلا المرئي، وهو
+                // شرط 251 عنصراً بلا تجميد. الوضع الرابع (البطاقات)
+                // أثقلها لأن كل غلاف بعرض الشاشة، والكسل هو ما يجعله
+                // ممكناً أصلاً: المرئي منه ثلاث بطاقات لا أكثر.
+                sliver: switch (options.mode) {
+                  LibraryViewMode.grid => SliverGrid.builder(
+                      // **النسبة مقيسة لا مقدَّرة** (تحقق بلقطة على
+                      // المحاكي): 0.82 تركت ~50 نقطة فراغاً ميتاً تحت
+                      // كل بطاقة فبدت الشبكة مفكّكة. المحتوى الفعلي =
+                      // غلاف 16:9 + سطرا عنوان + سطر بيانات.
+                      gridDelegate:
+                          const SliverGridDelegateWithMaxCrossAxisExtent(
+                        maxCrossAxisExtent: 210,
+                        mainAxisSpacing: MTSpace.md,
+                        crossAxisSpacing: MTSpace.md,
+                        childAspectRatio: 1.02,
                       ),
+                      itemCount: value.length,
+                      itemBuilder: (context, index) => _card(value[index]),
+                    ),
+                  LibraryViewMode.cards => SliverList.builder(
+                      itemCount: value.length,
+                      itemBuilder: (context, index) => Padding(
+                        // البطاقات بلا خيط فاصل — الفراغ هو الفاصل.
+                        padding: const EdgeInsets.only(bottom: MTSpace.lg),
+                        child: _card(value[index]),
+                      ),
+                    ),
+                  _ => SliverList.builder(
+                      itemCount: value.length,
+                      itemBuilder: (context, index) => _card(value[index]),
+                    ),
+                },
               ),
             ],
           AsyncLoading() => [
@@ -365,11 +374,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     context.push(tapped.isShortForm ? '/reels' : '/player');
   }
 
-  Widget _itemCard(
-          MTLocalizations l10n, LibraryViewOptions options, LibraryItem item) =>
+  /// الوضع تقرؤه البطاقة نفسها من الخيارات — لا يُمرَّر مرتين.
+  Widget _card(LibraryItem item) =>
       LibraryItemCard(item: item, onPlay: () => _play(item));
-
-  Widget _gridCard(
-          MTLocalizations l10n, LibraryViewOptions options, LibraryItem item) =>
-      LibraryItemCard(item: item, onPlay: () => _play(item), grid: true);
 }

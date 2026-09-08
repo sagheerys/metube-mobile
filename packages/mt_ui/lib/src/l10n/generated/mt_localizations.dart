@@ -2984,6 +2984,12 @@ abstract class MTLocalizations {
   /// **'View all'**
   String get viewAllInPlaylists;
 
+  /// No description provided for @viewCards.
+  ///
+  /// In en, this message translates to:
+  /// **'Cards'**
+  String get viewCards;
+
   /// No description provided for @viewGrid.
   ///
   /// In en, this message translates to:

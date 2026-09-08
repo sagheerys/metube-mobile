@@ -6,6 +6,7 @@ import 'package:mt_ui/mt_ui.dart';
 import '../../playlists/playlists_providers.dart';
 import '../library_models.dart';
 import '../library_providers.dart';
+import 'sort_sheet.dart';
 
 /// صف مرشحات المكتبة (م-14/م-36/م-37): الكل ← المفضلة ← دون اتصال ←
 /// الخادم ← النوع ← ⚡ القِصار، ثم **صف الوسوم** تحته.
@@ -38,6 +39,26 @@ class LibraryFilterChips extends ConsumerWidget {
           scrollDirection: Axis.horizontal,
           child: Row(
             children: [
+              // **المنصة المختارة تُرى وتُزال من هنا** (طلب المالك
+              // 2026-09-08): الاختيار يقع في ورقة الفرز كي لا يظهر صف
+              // ثالث، لكن تصفيةً فعّالة مخبوءة خلف زر تجعل المكتبة تبدو
+              // ناقصة بلا سبب ظاهر. الرقاقة تظهر عند التفعيل وحده.
+              if (options.platform != null) ...[
+                InputChip(
+                  label: Text(options.platform!.label),
+                  selected: true,
+                  showCheckmark: false,
+                  onDeleted: () => controller.setPlatform(null),
+                  deleteIcon: const Icon(Icons.close_rounded, size: 16),
+                  deleteIconColor: x.palette.bg,
+                  onPressed: () => showSortSheet(context, ref),
+                  labelStyle: Theme.of(context)
+                      .textTheme
+                      .labelMedium!
+                      .copyWith(color: x.palette.bg),
+                ),
+                const SizedBox(width: MTSpace.xs),
+              ],
               chip(l10n.filterAll, options.scope == LibraryScope.all,
                   () => controller.setScope(LibraryScope.all)),
               const SizedBox(width: MTSpace.xs),

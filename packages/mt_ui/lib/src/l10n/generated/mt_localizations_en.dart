@@ -1603,6 +1603,9 @@ class MTLocalizationsEn extends MTLocalizations {
   String get viewAllInPlaylists => 'View all';
 
   @override
+  String get viewCards => 'Cards';
+
+  @override
   String get viewGrid => 'Grid';
 
   @override

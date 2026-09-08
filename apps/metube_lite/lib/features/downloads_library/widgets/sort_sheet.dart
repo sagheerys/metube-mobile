@@ -64,43 +64,30 @@ class _SortSheet extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: MTSpace.xl),
-          // **ثلاثة أوضاع بدل مفتاح واحد** (نفس ورقة Super بطلب المالك
-          // 2026-09-04): مفتاحان منفصلان «مضغوط» و«شبكي» كانا يسمحان
-          // بحالة لا معنى لها؛ الاختيار الواحد من ثلاثة يمنعها أصلاً.
+          // **أربعة أوضاع بدل أعلام متداخلة**: «مضغوط» و«شبكي» كانا
+          // مفتاحين يمكن تشغيلهما معاً بلا معنى، والرابع كان سيضاعف
+          // الحالات المستحيلة. الاختيار الواحد يمنعها من أصلها.
           MTSectionHeader(title: l10n.viewMode),
           const SizedBox(height: MTSpace.md),
           Wrap(
             spacing: MTSpace.xs,
             runSpacing: MTSpace.xs,
             children: [
-              for (final (label, isOn, apply) in <(String, bool, VoidCallback)>[
-                (
-                  l10n.viewList,
-                  !options.grid && !options.compact,
-                  () {
-                    controller.setGrid(false);
-                    controller.setCompact(false);
-                  }
-                ),
-                (
-                  l10n.compactView,
-                  !options.grid && options.compact,
-                  () {
-                    controller.setGrid(false);
-                    controller.setCompact(true);
-                  }
-                ),
-                (l10n.viewGrid, options.grid, () => controller.setGrid(true)),
+              for (final (label, mode) in <(String, LibraryViewMode)>[
+                (l10n.viewList, LibraryViewMode.list),
+                (l10n.compactView, LibraryViewMode.compact),
+                (l10n.viewGrid, LibraryViewMode.grid),
+                (l10n.viewCards, LibraryViewMode.cards),
               ])
                 ChoiceChip(
                   label: Text(label),
-                  selected: isOn,
+                  selected: options.mode == mode,
                   showCheckmark: false,
                   labelStyle: Theme.of(context).textTheme.labelMedium!.copyWith(
-                      color: isOn
+                      color: options.mode == mode
                           ? MTThemeX.of(context).palette.bg
                           : MTThemeX.of(context).palette.ink2),
-                  onSelected: (_) => apply(),
+                  onSelected: (_) => controller.setMode(mode),
                 ),
             ],
           ),

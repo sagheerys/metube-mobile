@@ -1606,6 +1606,9 @@ class MTLocalizationsAr extends MTLocalizations {
   String get viewAllInPlaylists => 'عرض الكل';
 
   @override
+  String get viewCards => 'بطاقات';
+
+  @override
   String get viewGrid => 'شبكة';
 
   @override

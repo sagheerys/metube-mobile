@@ -12,22 +12,23 @@ import '../library_models.dart';
 import '../library_providers.dart';
 import 'item_actions_sheet.dart';
 
-/// بطاقة عنصر المكتبة — **مصدر واحد للقائمة والشبكة**.
+/// بطاقة عنصر المكتبة — **مصدر واحد لأوضاع العرض الأربعة**.
 ///
 /// فُصلت عن `library_screen.dart` عند إضافة العرض الشبكي (القاعدة 4):
 /// نسختان من نفس المنطق كانتا ستفترقان عند أول تعديل، ولن يتذكر أحد أن
 /// شارة «دون اتصال» تُضبط في مكانين.
+///
+/// الوضع يُقرأ من الخيارات مباشرة لا من معامل: الشاشة كانت تمرّر
+/// `grid: true` والبطاقة تقرأ `compact` من المزوّد — مصدران لقرار واحد.
 class LibraryItemCard extends ConsumerWidget {
   const LibraryItemCard({
     super.key,
     required this.item,
     required this.onPlay,
-    this.grid = false,
   });
 
   final LibraryItem item;
   final VoidCallback onPlay;
-  final bool grid;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -55,8 +56,12 @@ class LibraryItemCard extends ConsumerWidget {
       MTMediaLocation.onServer => l10n.filterServer,
       MTMediaLocation.none => null,
     };
+    // **الفك عند حجم العرض لا حجم الأصل**: مصغرة 1280×720 في صندوق
+    // 98 نقطة كانت تحجز ~3.5MB لكل بطاقة مرئية في ذاكرة الصور.
+    final (thumbWidth, thumbHeight) = _thumbBox(context, options.mode);
     final thumbnail = artworkFor(item.thumbnail,
-        headers: ref.read(apiClientProvider)?.streamingHeaders);
+        headers: ref.read(apiClientProvider)?.streamingHeaders,
+        decodeWidth: mtDecodeWidth(context, thumbWidth, thumbHeight));
     final platform = platformKindOf(MediaPlatform.detect(item.canonicalUrl));
 
     Future<void> toggleFavorite() async {
@@ -74,8 +79,9 @@ class LibraryItemCard extends ConsumerWidget {
     void onLongPress() => controller.toggleSelected(item.canonicalUrl);
     void onMore() => showItemActionsSheet(context, ref, item);
 
-    if (grid) {
+    if (options.grid || options.cards) {
       return MTMediaGridCard(
+        feed: options.cards,
         title: item.title,
         subtitle: subtitle,
         thumbnail: thumbnail,
@@ -112,3 +118,17 @@ class LibraryItemCard extends ConsumerWidget {
     );
   }
 }
+
+/// مقاس صندوق المصغرة بالنقاط لكل وضع — مطابق لما ترسمه `mt_ui`
+/// (`MTMediaCard._Thumb` و`MTMediaGridCard._Cover`). الارتفاع `null`
+/// حيث الغلاف 16:9، فعرضه وحده يحدد الفك.
+(double, double?) _thumbBox(BuildContext context, LibraryViewMode mode) =>
+    switch (mode) {
+      LibraryViewMode.compact => (64, 40),
+      LibraryViewMode.list => (98, 62),
+      LibraryViewMode.grid => (210, null),
+      LibraryViewMode.cards => (
+          MediaQuery.sizeOf(context).width - MTSpace.pagePad * 2,
+          null,
+        ),
+    };

@@ -42,6 +42,9 @@ class LibraryItem {
 
   bool get isOffline => localPath != null;
 
+  /// المنصة من الرابط المعياري — كاشف واحد معتمد (م-4)، لا قائمة ثانية.
+  MediaPlatform get platform => MediaPlatform.detect(canonicalUrl);
+
   /// فيديو عمودي ≤٣ دقائق ⇒ «قِصار» (المجهول ليس قصيراً — لا تخمين).
   bool get isShortForm =>
       !isAudio &&
@@ -126,6 +129,26 @@ enum LibraryScope { all, favorites, offline, onServer }
 
 enum MediaTypeFilter { all, video, audio, shorts }
 
+/// **أوضاع العرض الأربعة — اختيار واحد حصري لا أعلام متداخلة.**
+///
+/// كانا علمين (`compact` و`grid`) يمكن تشغيلهما معاً بلا معنى، والوضع
+/// الرابع (البطاقات) كان سيجعلها ثلاثة أعلام بثماني حالات نصفها
+/// مستحيل. القيمة الواحدة تُلغي الحالة المستحيلة من أصلها.
+enum LibraryViewMode {
+  /// صفٌّ بمصغرة جانبية — الافتراضي، الأنسب للعناوين الطويلة والصوت.
+  list,
+
+  /// نفس الصف بمصغرة أصغر وسطر عنوان واحد — أكثر عناصر في الشاشة.
+  compact,
+
+  /// عمودان بغلاف 16:9 — مسح بصري سريع.
+  grid,
+
+  /// **عمود واحد بغلاف عريض** (طلب المالك 2026-09-08، نمط يوتيوب):
+  /// أكبر غلاف ممكن لأقل عدد عناصر — للتصفح المتأني لا للبحث.
+  cards,
+}
+
 /// خيارات الفرز المحفوظة (video_sort_option §5.1).
 enum LibrarySort { newest, oldest, nameAZ, nameZA, largest, smallest }
 
@@ -137,6 +160,7 @@ List<LibraryItem> buildLibraryView(
   String query = '',
   Set<String> tags = const {},
   Set<String> excludedTags = const {},
+  MediaPlatform? platform,
   LibrarySort sort = LibrarySort.newest,
 }) {
   final q = query.trim().toLowerCase();
@@ -156,6 +180,7 @@ List<LibraryItem> buildLibraryView(
       MediaTypeFilter.shorts => item.isShortForm,
     };
     if (!typeOk) return false;
+    if (platform != null && item.platform != platform) return false;
     // **تصفية وسوم مركبة**: المضمَّنة تُجمع بـ«أو» (توسيع: أرني tech
     // أو science)، والمستثناة تُطرح دائماً وتغلب التضمين — الاستثناء
     // نية صريحة لا يجوز أن يبطلها وسم آخر على نفس العنصر.
@@ -181,4 +206,22 @@ List<LibraryItem> buildLibraryView(
     LibrarySort.smallest => bySize,
   });
   return filtered;
+}
+
+/// عدّادات المنصات الحية (م-14) بترتيب الأكثر أولاً، والمجهولة أخيراً.
+///
+/// **نظير `apps/metube_lite/.../local_item.dart`**: نفس الترتيب ونفس
+/// قاعدة «المجهولة لا تتصدر» — أي تعديل هنا يُنظر في نظيره.
+List<MapEntry<MediaPlatform, int>> platformCounts(List<LibraryItem> items) {
+  final counts = <MediaPlatform, int>{};
+  for (final item in items) {
+    counts[item.platform] = (counts[item.platform] ?? 0) + 1;
+  }
+  return counts.entries.toList()
+    ..sort((a, b) {
+      if ((a.key == MediaPlatform.other) != (b.key == MediaPlatform.other)) {
+        return a.key == MediaPlatform.other ? 1 : -1;
+      }
+      return b.value.compareTo(a.value);
+    });
 }

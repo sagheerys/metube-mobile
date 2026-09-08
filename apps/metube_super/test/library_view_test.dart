@@ -115,6 +115,49 @@ void main() {
       expect(item.onServer, isTrue);
     });
 
+    test('المنصة تُشتق من الرابط المعياري', () {
+      expect(items[0].platform, MediaPlatform.youtube);
+      expect(items[2].platform, MediaPlatform.vimeo);
+    });
+  });
+
+  /// **مرشح المنصة في Super** (طلب المالك 2026-09-08): نفس منطق Lite،
+  /// والاختيار في ورقة الفرز لا في صف رقائق ثالث.
+  group('تصفية المنصة', () {
+    test('المنصة المختارة وحدها تبقى', () {
+      final result =
+          buildLibraryView(items, platform: MediaPlatform.youtube);
+      expect(result, hasLength(2));
+      expect(result.every((i) => i.platform == MediaPlatform.youtube), isTrue);
+    });
+
+    test('بلا منصة ⇒ الكل (null ليست منصة مجهولة)', () {
+      expect(buildLibraryView(items, platform: null), hasLength(3));
+      expect(buildLibraryView(items, platform: MediaPlatform.other), isEmpty);
+    });
+
+    test('المنصة تتركب مع بقية المرشحات لا تلغيها', () {
+      final result = buildLibraryView(items,
+          platform: MediaPlatform.youtube, scope: LibraryScope.favorites);
+      expect(result.map((i) => i.title), ['أنشودة الصباح']);
+    });
+
+    test('العدّادات: الأكثر أولاً والمجهولة أخيراً', () {
+      final counts = platformCounts([
+        ...items,
+        LibraryItem(canonicalUrl: 'file:///x/y.mp4', title: 'مجهول'),
+        LibraryItem(canonicalUrl: 'file:///x/z.mp4', title: 'مجهول ٢'),
+        LibraryItem(canonicalUrl: 'file:///x/w.mp4', title: 'مجهول ٣'),
+      ]);
+      expect(counts.first.key, MediaPlatform.youtube);
+      expect(counts.first.value, 2);
+      // ثلاثة عناصر مجهولة ⇒ الأكثر عدداً، ومع ذلك تبقى أخيراً.
+      expect(counts.last.key, MediaPlatform.other);
+      expect(counts.last.value, 3);
+    });
+  });
+
+  group('عوامل مساعدة', () {
     test('fromOfflineOnly يستمد العنوان من اسم الملف', () {
       final item = LibraryItem.fromOfflineOnly(
           'https://youtu.be/ccccccccccc',

@@ -208,26 +208,33 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
               SliverPadding(
                 padding:
                     const EdgeInsets.symmetric(horizontal: MTSpace.pagePad),
-                sliver: options.grid
-                    // الشبكة كسولة أيضاً — `SliverGrid.builder` لا يبني
-                    // إلا المرئي. النسبة نفسها المقيسة في Super.
-                    ? SliverGrid.builder(
-                        gridDelegate:
-                            const SliverGridDelegateWithMaxCrossAxisExtent(
-                          maxCrossAxisExtent: 210,
-                          mainAxisSpacing: MTSpace.md,
-                          crossAxisSpacing: MTSpace.md,
-                          childAspectRatio: 1.02,
-                        ),
-                        itemCount: value.length,
-                        itemBuilder: (context, index) =>
-                            _itemCard(options, value[index]),
-                      )
-                    : SliverList.builder(
-                        itemCount: value.length,
-                        itemBuilder: (context, index) =>
-                            _itemCard(options, value[index]),
+                // كل الأوضاع كسولة — `builder` لا يبني إلا المرئي.
+                // النسبة والمقاسات نفسها المقيسة في Super.
+                sliver: switch (options.mode) {
+                  LibraryViewMode.grid => SliverGrid.builder(
+                      gridDelegate:
+                          const SliverGridDelegateWithMaxCrossAxisExtent(
+                        maxCrossAxisExtent: 210,
+                        mainAxisSpacing: MTSpace.md,
+                        crossAxisSpacing: MTSpace.md,
+                        childAspectRatio: 1.02,
                       ),
+                      itemCount: value.length,
+                      itemBuilder: (context, index) => _itemCard(value[index]),
+                    ),
+                  LibraryViewMode.cards => SliverList.builder(
+                      itemCount: value.length,
+                      itemBuilder: (context, index) => Padding(
+                        // البطاقات بلا خيط فاصل — الفراغ هو الفاصل.
+                        padding: const EdgeInsets.only(bottom: MTSpace.lg),
+                        child: _itemCard(value[index]),
+                      ),
+                    ),
+                  _ => SliverList.builder(
+                      itemCount: value.length,
+                      itemBuilder: (context, index) => _itemCard(value[index]),
+                    ),
+                },
               ),
             ],
           AsyncLoading() => [
@@ -335,10 +342,9 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     context.push(tapped.isShortForm ? '/reels' : '/player');
   }
 
-  Widget _itemCard(LibraryViewOptions options, LocalItem item) =>
-      LibraryItemCard(
+  /// الوضع تقرؤه البطاقة نفسها من الخيارات — لا يُمرَّر مرتين.
+  Widget _itemCard(LocalItem item) => LibraryItemCard(
         item: item,
-        grid: options.grid,
         onPlay: () => _play(item),
         onClearHighlight: _clearHighlight,
       );

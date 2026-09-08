@@ -95,9 +95,9 @@ class LibraryViewOptions {
     this.query = '',
     this.tags = const {},
     this.excludedTags = const {},
+    this.platform,
     this.sort = LibrarySort.newest,
-    this.compact = false,
-    this.grid = false,
+    this.mode = LibraryViewMode.list,
     this.selection = const {},
   });
 
@@ -108,11 +108,20 @@ class LibraryViewOptions {
   /// وسوم التضمين (أو بينها) والاستثناء — تصفية مركبة بلا شاشة جديدة.
   final Set<String> tags;
   final Set<String> excludedTags;
-  final LibrarySort sort;
-  final bool compact;
 
-  /// عرض شبكي بعمودين — أنسب للمسح البصري السريع للفيديو.
-  final bool grid;
+  /// **مرشح المنصة** (طلب المالك 2026-09-08 — مثل Lite): يعيش في ورقة
+  /// الفرز لا في صفٍّ ثالث من الرقائق، فالمكتبة هنا فوقها صف مرشحات
+  /// وصف وسوم أصلاً وثالثٌ كان سيدفع أول بطاقة خارج الشاشة. المنصة
+  /// المختارة تظهر رقاقةً قابلة للإزالة في **الصف الأول**.
+  final MediaPlatform? platform;
+  final LibrarySort sort;
+
+  /// وضع العرض المحفوظ — واحد من أربعة، لا أعلام متداخلة.
+  final LibraryViewMode mode;
+
+  bool get compact => mode == LibraryViewMode.compact;
+  bool get grid => mode == LibraryViewMode.grid;
+  bool get cards => mode == LibraryViewMode.cards;
 
   /// canonicalUrl المحددة — غير فارغة = وضع التحديد (ر-6).
   final Set<String> selection;
@@ -123,6 +132,7 @@ class LibraryViewOptions {
   int get activeFilters =>
       (scope == LibraryScope.all ? 0 : 1) +
       (type == MediaTypeFilter.all ? 0 : 1) +
+      (platform == null ? 0 : 1) +
       tags.length +
       excludedTags.length;
 
@@ -132,9 +142,9 @@ class LibraryViewOptions {
     String? query,
     Set<String>? tags,
     Set<String>? excludedTags,
+    MediaPlatform? Function()? platform,
     LibrarySort? sort,
-    bool? compact,
-    bool? grid,
+    LibraryViewMode? mode,
     Set<String>? selection,
   }) =>
       LibraryViewOptions(
@@ -143,9 +153,11 @@ class LibraryViewOptions {
         query: query ?? this.query,
         tags: tags ?? this.tags,
         excludedTags: excludedTags ?? this.excludedTags,
+        // دالة لا قيمة: `null` تعني «لا تغيير» في كل حقل آخر، وهنا
+        // `null` قيمةٌ صالحة تعني «كل المنصات».
+        platform: platform == null ? this.platform : platform(),
         sort: sort ?? this.sort,
-        compact: compact ?? this.compact,
-        grid: grid ?? this.grid,
+        mode: mode ?? this.mode,
         selection: selection ?? this.selection,
       );
 }
@@ -160,21 +172,37 @@ class LibraryViewNotifier extends Notifier<LibraryViewOptions> {
   Future<void> _restore() async {
     final store = ref.read(keyValueStoreProvider);
     final sortName = await store.getString('video_sort_option');
-    final compact = await store.getBool('library_compact_view') ?? false;
-    final grid = await store.getBool('library_grid_view') ?? false;
     state = state.copyWith(
       sort: LibrarySort.values
           .where((s) => s.name == sortName)
           .firstOrNull ??
           LibrarySort.newest,
-      compact: compact,
-      grid: grid,
+      mode: await _restoreMode(store),
     );
+  }
+
+  /// **هجرة صامتة من المفتاحين القديمين**: من يحدّث التطبيق وهو على
+  /// «مضغوط» أو «شبكي» يجب أن يجد وضعه كما تركه — لا أن يرتد للقائمة.
+  /// المفتاح الجديد يُكتب عند أول تغيير، والقديمان يُقرآن ما لم يوجد.
+  Future<LibraryViewMode> _restoreMode(KeyValueStore store) async {
+    final name = await store.getString('library_view_mode');
+    final saved =
+        LibraryViewMode.values.where((m) => m.name == name).firstOrNull;
+    if (saved != null) return saved;
+    if (await store.getBool('library_grid_view') ?? false) {
+      return LibraryViewMode.grid;
+    }
+    if (await store.getBool('library_compact_view') ?? false) {
+      return LibraryViewMode.compact;
+    }
+    return LibraryViewMode.list;
   }
 
   void setScope(LibraryScope scope) => state = state.copyWith(scope: scope);
   void setType(MediaTypeFilter type) => state = state.copyWith(type: type);
   void setQuery(String query) => state = state.copyWith(query: query);
+  void setPlatform(MediaPlatform? platform) =>
+      state = state.copyWith(platform: () => platform);
 
   /// وسم واحد يحل محل كل شيء — قدوم من تبويب «وسومك» (م-37/ج).
   void setTag(String? tag) => state = state.copyWith(
@@ -205,19 +233,12 @@ class LibraryViewNotifier extends Notifier<LibraryViewOptions> {
         ref.read(keyValueStoreProvider).setString('video_sort_option', sort.name));
   }
 
-  Future<void> setCompact(bool compact) async {
-    state = state.copyWith(compact: compact);
+  Future<void> setMode(LibraryViewMode mode) async {
+    state = state.copyWith(mode: mode);
     final mutex = ref.read(prefsMutexProvider);
     await mutex.run(() => ref
         .read(keyValueStoreProvider)
-        .setBool('library_compact_view', compact));
-  }
-
-  Future<void> setGrid(bool grid) async {
-    state = state.copyWith(grid: grid);
-    final mutex = ref.read(prefsMutexProvider);
-    await mutex.run(
-        () => ref.read(keyValueStoreProvider).setBool('library_grid_view', grid));
+        .setString('library_view_mode', mode.name));
   }
 
   void toggleSelected(String canonicalUrl) {
@@ -265,9 +286,18 @@ final visibleLibraryProvider = Provider<AsyncValue<List<LibraryItem>>>((ref) {
       query: options.query,
       tags: options.tags,
       excludedTags: options.excludedTags,
+      platform: options.platform,
       sort: options.sort,
     ),
   );
+});
+
+/// عدّادات رقائق المنصات — تُحسب على المكتبة كاملة لا على المعروض،
+/// كي لا تختفي المنصة التي تنقر عليها من القائمة بعد النقر.
+final platformCountsProvider =
+    Provider<List<MapEntry<MediaPlatform, int>>>((ref) {
+  final items = ref.watch(libraryItemsProvider).valueOrNull ?? const [];
+  return platformCounts(items);
 });
 
 /// العنصر الذي يتوهّج الآن: نقرة إشعار أو اكتمال تحميل — يُطفأ من نفسه.

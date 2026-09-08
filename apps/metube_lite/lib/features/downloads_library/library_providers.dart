@@ -62,8 +62,7 @@ class LibraryViewOptions {
     this.query = '',
     this.platform,
     this.sort = LibrarySort.newest,
-    this.compact = false,
-    this.grid = false,
+    this.mode = LibraryViewMode.list,
     this.selection = const {},
   });
 
@@ -74,12 +73,14 @@ class LibraryViewOptions {
   /// مرشح المنصة بعدادات حية (م-14 — خاص بـ Lite).
   final MediaPlatform? platform;
   final LibrarySort sort;
-  final bool compact;
 
-  /// **العرض الشبكي** (نُقل من Super بطلب المالك 2026-09-04): صفٌّ يعرض
-  /// ضعف ما تعرضه القائمة، فالمسح البصري للفيديو أسرع. الأوضاع الثلاثة
-  /// حصرية: قائمة · مضغوط · شبكة — لا حالة «مضغوط وشبكي» المستحيلة.
-  final bool grid;
+  /// وضع العرض المحفوظ — واحد من أربعة، لا أعلام متداخلة (نُقل الشبكي
+  /// من Super بطلب المالك 2026-09-04، والبطاقات 2026-09-08).
+  final LibraryViewMode mode;
+
+  bool get compact => mode == LibraryViewMode.compact;
+  bool get grid => mode == LibraryViewMode.grid;
+  bool get cards => mode == LibraryViewMode.cards;
 
   /// مفاتيح العناصر المحددة — غير فارغة = وضع التحديد (ر-6).
   final Set<String> selection;
@@ -92,8 +93,7 @@ class LibraryViewOptions {
     String? query,
     MediaPlatform? Function()? platform,
     LibrarySort? sort,
-    bool? compact,
-    bool? grid,
+    LibraryViewMode? mode,
     Set<String>? selection,
   }) =>
       LibraryViewOptions(
@@ -102,8 +102,7 @@ class LibraryViewOptions {
         query: query ?? this.query,
         platform: platform == null ? this.platform : platform(),
         sort: sort ?? this.sort,
-        compact: compact ?? this.compact,
-        grid: grid ?? this.grid,
+        mode: mode ?? this.mode,
         selection: selection ?? this.selection,
       );
 }
@@ -118,14 +117,28 @@ class LibraryViewNotifier extends Notifier<LibraryViewOptions> {
   Future<void> _restore() async {
     final store = ref.read(keyValueStoreProvider);
     final sortName = await store.getString('video_sort_option');
-    final compact = await store.getBool('library_compact_view') ?? false;
-    final grid = await store.getBool('library_grid_view') ?? false;
     state = state.copyWith(
       sort: LibrarySort.values.where((s) => s.name == sortName).firstOrNull ??
           LibrarySort.newest,
-      compact: compact,
-      grid: grid,
+      mode: await _restoreMode(store),
     );
+  }
+
+  /// **هجرة صامتة من المفتاحين القديمين**: من يحدّث التطبيق وهو على
+  /// «مضغوط» أو «شبكي» يجب أن يجد وضعه كما تركه — لا أن يرتد للقائمة.
+  /// المفتاح الجديد يُكتب عند أول تغيير، والقديمان يُقرآن ما لم يوجد.
+  Future<LibraryViewMode> _restoreMode(KeyValueStore store) async {
+    final name = await store.getString('library_view_mode');
+    final saved =
+        LibraryViewMode.values.where((m) => m.name == name).firstOrNull;
+    if (saved != null) return saved;
+    if (await store.getBool('library_grid_view') ?? false) {
+      return LibraryViewMode.grid;
+    }
+    if (await store.getBool('library_compact_view') ?? false) {
+      return LibraryViewMode.compact;
+    }
+    return LibraryViewMode.list;
   }
 
   void setScope(LocalScope scope) => state = state.copyWith(scope: scope);
@@ -140,17 +153,11 @@ class LibraryViewNotifier extends Notifier<LibraryViewOptions> {
         ref.read(keyValueStoreProvider).setString('video_sort_option', sort.name));
   }
 
-  Future<void> setCompact(bool compact) async {
-    state = state.copyWith(compact: compact);
+  Future<void> setMode(LibraryViewMode mode) async {
+    state = state.copyWith(mode: mode);
     await ref.read(prefsMutexProvider).run(() => ref
         .read(keyValueStoreProvider)
-        .setBool('library_compact_view', compact));
-  }
-
-  Future<void> setGrid(bool grid) async {
-    state = state.copyWith(grid: grid);
-    await ref.read(prefsMutexProvider).run(() =>
-        ref.read(keyValueStoreProvider).setBool('library_grid_view', grid));
+        .setString('library_view_mode', mode.name));
   }
 
   void toggleSelected(String key) {
