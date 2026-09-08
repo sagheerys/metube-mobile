@@ -12,6 +12,11 @@ abstract final class MTConstants {
   /// probe سريع لتبديل الروابط (EndpointResolver).
   static const Duration probeTimeout = Duration(seconds: 4);
 
+  /// **سقف حلّ الرابط القصير قبل قرار التوجيه** (بلاغ المالك
+  /// 2026-09-08): القرار «قائمة أم مفرد» ينتظر شبكةً، والمستخدم ينتظر
+  /// معه — فبعد هذا الحد يُمضى بالرابط كما هو بدل تجميد الواجهة.
+  static const Duration routingResolveTimeout = Duration(seconds: 5);
+
   // ── إيقاع الاستطلاع (§2.3) ──
   static const Duration pollInterval = Duration(seconds: 5);
 

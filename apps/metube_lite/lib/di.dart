@@ -91,6 +91,12 @@ final batchCollectorProvider = Provider((ref) => BatchPlaylistCollector(
 /// (مثبت على المحاكي 2026-09-03: الملف على القرص صحيح والشاشة فارغة).
 final playlistsRevisionProvider = StateProvider<int>((ref) => 0);
 
+/// **حلّ الروابط القصيرة قبل قرار التوجيه** (بلاغ المالك 2026-09-08):
+/// `on.soundcloud.com/…` ألبومٌ لا يحوي `/sets/`، فكان يمرّ كمقطع مفرد
+/// ويفكّه السيرفر إلى عشرين. المحرك يحلّ لنفسه لاحقاً، وحلُّ المحلول
+/// لا يكلّف شيئاً (`needsResolution` تردّ false فوراً).
+final shortLinkResolverProvider = Provider((ref) => ShortLinkResolver());
+
 /// محرك Lite: الخط الرباعي كاملاً — يسحب للجهاز ثم **يحذف من السيرفر
 /// تلقائياً** (م-6/4) فيبقى سيرفر العائلة نظيفاً.
 final downloadEngineProvider = Provider<DownloadEngine?>((ref) {

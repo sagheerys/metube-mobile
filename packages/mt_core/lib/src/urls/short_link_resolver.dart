@@ -35,6 +35,20 @@ class ShortLinkResolver {
     if (origIsHttps && !resolvedIsHttps) return url;
     return current;
   }
+
+  /// **حلٌّ بسقف زمني، لقرار التوجيه قبل التنزيل** (بلاغ المالك
+  /// 2026-09-08).
+  ///
+  /// `on.soundcloud.com/…` — وهو ما يعطيه زرّ المشاركة في تطبيق
+  /// ساوندكلاود — لا يحوي `/sets/`، فكان `PlaylistDetector` يراه مقطعاً
+  /// مفرداً ويمرّره للسيرفر، فيفكّه yt-dlp هناك إلى **ألبوم كامل**:
+  /// عشرون مقطعاً نزلت بلا شاشة اختيار، والتطبيق لا يعرف إلا مهمة
+  /// واحدة. القرار يجب أن يقع على الرابط **النهائي** لا المُدخل.
+  ///
+  /// والسقف ضروري: القرار هنا يقع والمستخدم ينتظر — بخلاف الحلّ داخل
+  /// المحرك الذي يجري بعد أن بدأت المهمة.
+  Future<String> resolveForRouting(String url) => resolve(url)
+      .timeout(MTConstants.routingResolveTimeout, onTimeout: () => url);
 }
 
 /// التنفيذ الافتراضي بـ dart:io — طلب GET بلا تتبع تلقائي، يقرأ ترويسة

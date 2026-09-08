@@ -44,7 +44,7 @@ class _ShellScreenState extends ConsumerState<ShellScreen>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _shareReceiver = ShareReceiver(onUrls: _onSharedUrls);
+    _shareReceiver = ShareReceiver(onUrls: (urls) => unawaited(_onSharedUrls(urls)));
     _shareReceiver!.start();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       ref.read(clipboardRefresherProvider)();
@@ -103,8 +103,17 @@ class _ShellScreenState extends ConsumerState<ShellScreen>
   }
 
   /// م-3: مشاركة خارجية ⇒ فتح `/` وبدء ر-2 (عدة روابط = إرسال متتابع).
-  void _onSharedUrls(List<String> urls) {
-    if (!mounted || urls.isEmpty) return;
+  Future<void> _onSharedUrls(List<String> shared) async {
+    if (!mounted || shared.isEmpty) return;
+    // **القرار على الرابط النهائي لا المُشارَك** (بلاغ المالك
+    // 2026-09-08): زرّ المشاركة في ساوندكلاود يعطي `on.soundcloud.com/…`
+    // بلا `/sets/`، فكان الألبوم يُعدّ مقطعاً مفرداً ويفكّه السيرفر إلى
+    // عشرين بلا شاشة اختيار. غير القصير لا يكلّف انتظاراً.
+    final resolver = ref.read(shortLinkResolverProvider);
+    final urls = [
+      for (final url in shared) await resolver.resolveForRouting(url),
+    ];
+    if (!mounted) return;
     widget.navigationShell.goBranch(0);
     if (urls.length == 1) {
       // **رابط قائمة صريح ⇒ شاشة الدفعي مباشرة** (م-5). مشاركة ألبوم

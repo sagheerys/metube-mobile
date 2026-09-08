@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -108,18 +110,26 @@ class _AddSheetState extends ConsumerState<_AddSheet> {
       selectedQuality: _quality,
       onQualitySelected: (value) => setState(() => _quality = value),
       startLabel: l10n.startDownload,
-      onStart: _submit,
+      onStart: () => unawaited(_submit()),
     );
   }
 
-  void _submit() {
+  Future<void> _submit() async {
     final l10n = widget.l10n;
-    final url = UrlKit.extractUrl(_controller.text);
-    if (!url.startsWith('http')) {
+    final input = UrlKit.extractUrl(_controller.text);
+    if (!input.startsWith('http')) {
       showMTSnack(context, l10n.invalidUrl, type: MTSnackType.error);
       return;
     }
     Navigator.pop(context);
+
+    // **القرار على الرابط النهائي لا المُدخل** (بلاغ المالك 2026-09-08):
+    // `on.soundcloud.com/…` ألبومٌ بلا `/sets/`، فكان يُعدّ مقطعاً مفرداً
+    // ويفكّه السيرفر إلى عشرين بلا شاشة اختيار. للروابط غير القصيرة
+    // `needsResolution` تردّ false فوراً فلا تأخير إطلاقاً.
+    final url =
+        await ref.read(shortLinkResolverProvider).resolveForRouting(input);
+    if (!mounted) return;
 
     // م-5: رابط قائمة ⇒ شاشة الدفعي.
     if (PlaylistDetector.isPlaylist(url)) {
