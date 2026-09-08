@@ -141,6 +141,72 @@ void main() {
       expect(body['download_type'], 'video');
     });
 
+    /// **حرّاس فيسبوك (قياس ffprobe + yt-dlp 2026-09-08).** `codec:h264`
+    /// كان يصل ويُسجَّل ثم تلتقطه خطوة MeTube الوسطى **بلا مرشّح ترميز**
+    /// فينزل av1 1440×2560، بينما `hd` وهي h264 720×1280 موجودة خلفها.
+    /// الـpreset يتخطّى تلك الخطوة.
+    test('توافق التشغيل + best ⇒ يرسل preset التوافق', () async {
+      final (client, adapter) = makeClient((o) => _json('{"status": "ok"}'));
+      await client.add('https://m.facebook.com/watch/?v=161924316', Quality.best,
+          compatibleVideo: true);
+      final body = json.decode(adapter.requests.single.data as String) as Map;
+      expect(body['ytdl_options_presets'], [MeTubeApiClient.compatPreset]);
+    });
+
+    test('جودة رقمية ⇒ لا preset (المُحدِّد الثابت يبتلع سقف الارتفاع)',
+        () async {
+      final (client, adapter) = makeClient((o) => _json('{"status": "ok"}'));
+      await client.add('https://youtu.be/dQw4w9WgXcQ', Quality.q720,
+          compatibleVideo: true);
+      final body = json.decode(adapter.requests.single.data as String) as Map;
+      expect(body.containsKey('ytdl_options_presets'), isFalse,
+          reason: 'وإلا نزل 1080p لمن طلب 720p');
+      expect(body['quality'], '720');
+    });
+
+    test('الصوت لا preset له', () async {
+      final (client, adapter) = makeClient((o) => _json('{"status": "ok"}'));
+      await client.add('https://youtu.be/dQw4w9WgXcQ', Quality.audio,
+          compatibleVideo: true);
+      final body = json.decode(adapter.requests.single.data as String) as Map;
+      expect(body.containsKey('ytdl_options_presets'), isFalse);
+    });
+
+    /// سيرفر لم يُضبَط فيه الـpreset يردّ 400 — والتطبيق مفتوح المصدر
+    /// يُشغَّل على حاويات غير حاويته. بلا هذا الرجوع يفشل **كل تنزيل**.
+    test('سيرفر يرفض الـpreset ⇒ إعادة المحاولة بلا preset لا فشل',
+        () async {
+      var calls = 0;
+      final (client, adapter) = makeClient((o) {
+        calls++;
+        final body = json.decode(o.data as String) as Map;
+        return body.containsKey('ytdl_options_presets')
+            ? _json('preset not configured', status: 400)
+            : _json('{"status": "ok"}');
+      });
+
+      await client.add('https://m.facebook.com/watch/?v=1', Quality.best,
+          compatibleVideo: true);
+
+      expect(calls, 2, reason: 'محاولة ثم رجوع');
+      final second = json.decode(adapter.requests.last.data as String) as Map;
+      expect(second.containsKey('ytdl_options_presets'), isFalse);
+      expect(second['codec'], 'h264', reason: 'بقية التوافق تبقى');
+    });
+
+    test('فشل بلا preset لا يُعاد مرتين', () async {
+      var calls = 0;
+      final (client, _) = makeClient((o) {
+        calls++;
+        return _json('{"status": "error", "msg": "boom"}');
+      });
+      await expectLater(
+          client.add('https://youtu.be/dQw4w9WgXcQ', Quality.q720,
+              compatibleVideo: true),
+          throwsA(isA<ServerErrorException>()));
+      expect(calls, 1);
+    });
+
     test('توافق التشغيل لا يُرسل مع الصوت', () async {
       final (client, adapter) = makeClient((o) => _json('{"status": "ok"}'));
       await client.add('https://youtu.be/dQw4w9WgXcQ', Quality.audio,

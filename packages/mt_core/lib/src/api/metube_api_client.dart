@@ -100,6 +100,21 @@ class MeTubeApiClient implements MeTubeApi {
     return HistoryResponse.fromJson(Map<String, dynamic>.from(decoded as Map));
   }
 
+  /// **اسم preset التوافق على الحاوية** (قياس 2026-09-08).
+  ///
+  /// `codec:h264` وحده لا يكفي لفيسبوك: سلسلة MeTube ثلاث خطوات
+  /// وأوسطها **بلا مرشّح ترميز** — `bestvideo[h264]+ba` ←
+  /// `bestvideo+ba` ← `best`. وصيغ فيسبوك المنفصلة كلها av01، فتفشل
+  /// الأولى وتلتقط **الثانية av1 1440×2560** قبل أن تصل الثالثة إلى
+  /// `hd` وهي **h264 720×1280 موجودة فعلاً** (مقيسة بـffprobe). أي أن
+  /// H.264 متاح ويُتجاوَز.
+  ///
+  /// والعلاج تخطّي الخطوة الوسطى — وهو `format` لا يُبنى عندنا بل في
+  /// السيرفر، فيُعرَّف preset باسمه على الحاوية ويرسل التطبيق **اسمه
+  /// فقط**: لا خيارات yt-dlp حرة، فلا حاجة لفتح
+  /// `ALLOW_YTDL_OPTIONS_OVERRIDES`.
+  static const compatPreset = 'compat_h264';
+
   /// §2.2 — إضافة رابط. **قاعدة الجودة تُطبَّق هنا** فلا تفلت رقمية لغير
   /// YouTube مهما كان المنادي.
   ///
@@ -117,7 +132,7 @@ class MeTubeApiClient implements MeTubeApi {
   /// وهي نفس الحقول التي ترسلها واجهة MeTube نفسها.
   ///
   /// **لا يُرسل مع `audio` أبداً**: `format:mp4` على مسار صوتي يغيّر
-  /// وعاء الملف المطلوب.
+  /// وعاء الملف المطلوب. و[compatPreset] يكمل ما يعجز عنه `codec`.
   @override
   Future<void> add(
     String url,
@@ -125,6 +140,28 @@ class MeTubeApiClient implements MeTubeApi {
     bool compatibleVideo = false,
   }) async {
     final applied = quality.applyRule(url);
+    // **`best` حصراً**: المُحدِّد ثابت بلا `[height<=…]`، فإرساله مع
+    // جودة رقمية يبتلع سقف الارتفاع ويُنزل 1080p لمن طلب 720p.
+    final withPreset = compatibleVideo && applied == Quality.best;
+    try {
+      await _postAdd(url, applied,
+          compatibleVideo: compatibleVideo, preset: withPreset);
+    } on ServerErrorException {
+      if (!withPreset) rethrow;
+      // **سيرفر لا يعرف هذا الـpreset يردّ 400** — والتطبيق مفتوح
+      // المصدر يُشغَّل على حاويات لم يضبطها أحد. إعادة المحاولة بلا
+      // الـpreset تعيد سلوك الأمس بدل أن يفشل التنزيل رأساً.
+      await _postAdd(url, applied,
+          compatibleVideo: compatibleVideo, preset: false);
+    }
+  }
+
+  Future<void> _postAdd(
+    String url,
+    Quality applied, {
+    required bool compatibleVideo,
+    required bool preset,
+  }) async {
     final response = await _request(
       () => _dio.post<String>(
         '${config.baseUrl}/add',
@@ -136,6 +173,7 @@ class MeTubeApiClient implements MeTubeApi {
             'format': 'mp4',
             'codec': 'h264',
           },
+          if (preset) 'ytdl_options_presets': const [compatPreset],
         }),
         options: Options(contentType: 'application/json'),
       ),
