@@ -3,6 +3,7 @@
 [English](README.md) · **العربية**
 
 [![CI](https://github.com/sagheerys/metube-mobile/actions/workflows/ci.yml/badge.svg)](https://github.com/sagheerys/metube-mobile/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/sagheerys/metube-mobile?color=C25E2E&label=release)](https://github.com/sagheerys/metube-mobile/releases/latest)
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-Android-3DDC84.svg)](#المتطلبات)
 [![Flutter](https://img.shields.io/badge/Flutter-3.47.2-02569B.svg)](https://flutter.dev)
@@ -41,6 +42,10 @@
 [صفحة الإصدارات](https://github.com/sagheerys/metube-mobile/releases)، ملفٌ
 لكل تطبيق. سيطلب أندرويد إذنك بالتثبيت من هذا المصدر أول مرة؛ الإذن **لكل
 تطبيق على حدة** ويمكنك سحبه بعدها.
+
+الإصدار الحالي **[v2.0.0](https://github.com/sagheerys/metube-mobile/releases/latest)**:
+ملف `MeTube-Lite-2.0.0.apk` لنسخة العائلة، و`MeTube-Super-2.0.0.apk` لنسخة مالك
+السيرفر. التطبيقان منفصلان ويعملان معاً على نفس الجهاز.
 
 والتطبيقان يحدّثان نفسيهما: **الإعدادات ← حول ← البحث عن تحديث** يجلب أحدث
 إصدار ويسلّم الملف لمثبّت النظام. ولا يُثبَّت شيء إلا بتأكيدك.

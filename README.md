@@ -3,6 +3,7 @@
 **English** · [العربية](README.ar.md)
 
 [![CI](https://github.com/sagheerys/metube-mobile/actions/workflows/ci.yml/badge.svg)](https://github.com/sagheerys/metube-mobile/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/sagheerys/metube-mobile?color=C25E2E&label=release)](https://github.com/sagheerys/metube-mobile/releases/latest)
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-Android-3DDC84.svg)](#requirements)
 [![Flutter](https://img.shields.io/badge/Flutter-3.47.2-02569B.svg)](https://flutter.dev)
@@ -43,6 +44,11 @@ Signed APKs are published on the
 [releases page](https://github.com/sagheerys/metube-mobile/releases), one per
 app. Android will ask you to allow installing from this source the first time;
 that permission is per application, and you can withdraw it afterwards.
+
+The current release is **[v2.0.0](https://github.com/sagheerys/metube-mobile/releases/latest)**:
+`MeTube-Lite-2.0.0.apk` for the family build, `MeTube-Super-2.0.0.apk` for the
+server owner's. They are separate apps and install side by side. From this
+release on, each app checks for its own successor and can install it for you.
 
 Both apps can update themselves: **Settings → About → check for updates**
 fetches the newest release and hands the APK to the system installer. Nothing
