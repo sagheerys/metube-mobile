@@ -150,10 +150,55 @@ hostname in the app as the server URL.
 **A tunnel is reach, not protection.** On its own it publishes MeTube to
 anyone who learns the hostname. Add one of the two below.
 
-### The way that works: basic auth at the origin
+### The way that works: basic auth in front of MeTube
 
-Put a small reverse proxy between the tunnel and MeTube and let it ask for
-a username and password. With Caddy that is four lines:
+The apps carry a username and password on **every** request — the API
+calls, the file pulls, and the streaming requests the players make — so
+anything that checks `Authorization: Basic` protects the whole server
+without breaking either app. Two places to put that check.
+
+**A Cloudflare Worker on the hostname.** Nothing to install beside the
+tunnel, and the request is rejected at the edge before it ever travels
+down it:
+
+```js
+export default {
+  async fetch(request) {
+    const USERNAME = "family";
+    const PASSWORD = "put a real one here";
+
+    // The apps base64 the credentials as UTF-8. Plain btoa() is Latin-1:
+    // it throws outright on Arabic, and silently produces a different
+    // string for accented Latin, which reads as a wrong password forever.
+    const expected = "Basic " + btoa(
+      String.fromCharCode(...new TextEncoder().encode(`${USERNAME}:${PASSWORD}`)),
+    );
+    const got = request.headers.get("Authorization") ?? "";
+
+    // Compare every character rather than bailing at the first mismatch.
+    let diff = got.length ^ expected.length;
+    for (let i = 0; i < got.length; i++) {
+      diff |= got.charCodeAt(i) ^ expected.charCodeAt(i % expected.length);
+    }
+    if (diff !== 0) {
+      return new Response("Unauthorized", {
+        status: 401,
+        headers: { "WWW-Authenticate": 'Basic realm="MeTube"' },
+      });
+    }
+
+    return fetch(request);
+  },
+};
+```
+
+Bind it to **`metube.example.com/*`** — with the trailing `/*`. A route
+without it covers the root and nothing else, so `/history` and
+`/download/...` stay open to anyone: the whole library, reachable, while
+the front page asks politely for a password.
+
+**Or a reverse proxy at the origin**, if you would rather keep the check
+on your own hardware. With Caddy that is four lines:
 
 ```
 metube.example.com {
@@ -164,9 +209,16 @@ metube.example.com {
 }
 ```
 
-The apps carry those credentials on **every** request — the API calls, the
-file pulls, and the streaming requests the players make — so nothing in
-either app breaks. This is the combination the apps are tested against.
+Either way, prove it before you trust it — no credentials, and the answer
+must be 401:
+
+```bash
+curl -si https://metube.example.com/history | head -1
+curl -si https://metube.example.com/download/ | head -1
+```
+
+A 401 is also the one failure the apps name exactly: they report wrong
+credentials rather than a generic error.
 
 ### The way that does not work: Cloudflare Access
 
@@ -210,6 +262,14 @@ works from anywhere at the tunnel's speed.
   applies here — the apps send URLs, not files — and responses, which is
   what a download is, are not capped.
 
+- A Worker on the free plan is allowed 100,000 requests a day, and the
+  apps poll while work is in flight: `/history` every 5s per running task,
+  plus every 2s while the library screen is showing one (both timers stop
+  when nothing is active — an idle app is silent). That is roughly 400
+  requests for a ten-minute download watched on screen, so the ceiling is
+  around two hundred such downloads in a day. Worth knowing, not worth
+  worrying about.
+
 ### If you would rather nothing were public at all
 
 A private mesh — Tailscale, WireGuard, or your router's own VPN — leaves
@@ -247,6 +307,7 @@ server at all:
 | One platform always fails with a sign-in message | `COOKIES_FILE` |
 | Streaming fails in Super while downloading works | HTTPS, or cleartext allowed for that host |
 | From outside: "not a MeTube server"; at home it connects | a login page in front of the API (Cloudflare Access) — use basic auth, or a Bypass policy for that hostname |
+| The password is right and the app still says wrong credentials | a non-ASCII password hashed with `btoa()` in a Worker — encode it as UTF-8 (see above) or keep the password ASCII |
 | Works at home, works away, but is far slower away | fill in `local_url` too, in Super's **Settings → Network** |
 
 The full request-and-response contract, and the traps that were measured
