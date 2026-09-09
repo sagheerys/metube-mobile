@@ -8,8 +8,8 @@ import 'package:test/test.dart';
 /// The captures under `test/fixtures/real/` come from live sites (rule 8),
 /// and one of them arrived carrying credentials. The anonymisation pass
 /// neutralised the first `track_authorization` token in
-/// `soundcloud_set.html` and **missed the second**, which still held a real
-/// signature, a request id and `"geo":"SA"` — the maintainer's country.
+/// `soundcloud_set.html` and **missed the second**, which still held a live
+/// signature, a request id and a country code.
 ///
 /// Reading a capture is easy; noticing the third token in a 200KB line is
 /// not. So the rule is mechanical from here: any JWT that survives in a
