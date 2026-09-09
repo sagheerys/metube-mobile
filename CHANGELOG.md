@@ -22,8 +22,10 @@ core rather than duplicating it, so a defect fixed once is fixed in both.
   policy — with per-task progress, cancellation that leaves nothing behind, and
   errors classified rather than swallowed.
 - **MeTube Lite**: pulls each file to the device and then cleans the server, so
-  a family server does not fill up. Wi-Fi-only downloads, with tasks that wait
-  and resume by themselves.
+  a shared server does not fill up. It reaches that server wherever it is — on
+  the home network or through a tunnel — and downloads can be held to Wi-Fi by
+  a setting that is off unless you turn it on, with tasks that wait and resume
+  by themselves.
 - **MeTube Super**: `/history` and the local index merged into one library,
   streaming straight from the server, tags, batch downloads, "make available
   offline", and automatic switching between a local and an external server URL.

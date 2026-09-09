@@ -18,11 +18,11 @@ server, built as one Flutter monorepo.
 
 | | **MeTube Lite** | **MeTube Super** |
 |---|---|---|
-| Made for | family members who just want the file | the person who runs the server |
+| Made for | family and friends who just want the file | the person who runs the server |
 | After a download completes | pulls it to the device, then **deletes it from the server** | **keeps it on the server** |
 | Library | a scan of the local folder | `/history` + the local index, merged into one list |
 | Playback | local files | streaming from the server **and** local files |
-| Exclusive | Wi-Fi-only downloads, server cleanup | tags, batch downloads, "make available offline", server switching |
+| Exclusive | an optional Wi-Fi-only rule, server cleanup | tags, batch downloads, "make available offline", server switching |
 
 Both apps share the same core, media and design packages, and both ship in
 **Arabic and English** with a right-to-left-first layout.
@@ -46,7 +46,7 @@ app. Android will ask you to allow installing from this source the first time;
 that permission is per application, and you can withdraw it afterwards.
 
 The current release is **[v2.0.0](https://github.com/sagheerys/metube-mobile/releases/latest)**:
-`MeTube-Lite-2.0.0.apk` for the family build, `MeTube-Super-2.0.0.apk` for the
+`MeTube-Lite-2.0.0.apk` for family and friends, `MeTube-Super-2.0.0.apk` for the
 server owner's. They are separate apps and install side by side. From this
 release on, each app checks for its own successor and can install it for you.
 
@@ -93,7 +93,7 @@ packages/mt_media    playback: audio_service handler, playback sources, position
                      and state stores, mini player
 packages/mt_ui       the "Wahaj" design system: tokens, themes, shared widgets,
                      localization (ar/en)
-apps/metube_lite     the family edition
+apps/metube_lite     the edition for family and friends
 apps/metube_super    the server-owner edition
 docs/                the repository map, the server contract and the server setup
 ```

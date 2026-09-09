@@ -12,11 +12,11 @@ The Arabic version of this document follows the English one.
 
 | | **MeTube Lite** | **MeTube Super** |
 |---|---|---|
-| Audience | Family members | The person who runs the server |
+| Audience | Family and friends | The person who runs the server |
 | After a download finishes | Pulls the file to the phone, then **deletes it from the server** | **Keeps it on the server**, does not pull |
 | Library | A scan of the local folder | `/history` and the local index, merged |
 | Playback | Local files | Streams from the server, plus local |
-| Exclusive | Wi-Fi-only transfers, server cleanup | Tags, server switching, offline pinning, batch downloads |
+| Exclusive | An optional Wi-Fi-only rule, server cleanup | Tags, server switching, offline pinning, batch downloads |
 | Accent colour | Petrol bay `#2F6D74` | Ember `#C25E2E` |
 
 They are separate apps, not build flavours. They share three packages and
@@ -152,11 +152,11 @@ inferred from the server's own documentation.
 
 | | **MeTube Lite** | **MeTube Super** |
 |---|---|---|
-| لمن | العائلة | من يدير الخادم |
+| لمن | العائلة والأصدقاء | من يدير الخادم |
 | بعد اكتمال التحميل | يسحب الملف للهاتف ثم **يحذفه من الخادم** | **يبقيه على الخادم** ولا يسحب |
 | المكتبة | مسح المجلد المحلي | `/history` والفهرس المحلي موحَّدين |
 | التشغيل | ملفات محلية | بث من الخادم ومحلي |
-| الحصري | التحميل على Wi‑Fi فقط، تنظيف الخادم | الوسوم، تبديل الخادم، الإتاحة دون اتصال، الدفعي |
+| الحصري | خيار الاقتصار على Wi‑Fi، تنظيف الخادم | الوسوم، تبديل الخادم، الإتاحة دون اتصال، الدفعي |
 | لون الفعل | خليج بترولي `#2F6D74` | وهج `#C25E2E` |
 
 تطبيقان مستقلان لا نكهتا بناء. يتقاسمان ثلاث حزم ويفترقان في السلوك
