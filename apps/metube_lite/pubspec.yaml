@@ -57,8 +57,11 @@ flutter_launcher_icons:
   android: true
   ios: false
   image_path: assets/icons/icon.png
-  # الطبقة الأمامية رمز وحده: القناع الدائري في بعض المشغّلات يقصّ
-  # الشارة السفلية، والتمييز الحقيقي بين النسختين لونها ورمزها.
-  adaptive_icon_background: "#FBF6EE"
+  # الخلفية **لون الفعل صلباً** لا كريمي: التصميم إطار فيلم يملأ اللوحة،
+  # فما يظهر عند تأثير المنظور (parallax) يجب أن يكون امتداد لونه.
+  adaptive_icon_background: "#2F6D74"
   adaptive_icon_foreground: assets/icons/icon_foreground.png
+  # أندرويد 13+ «الأيقونات المتناسقة»: بلا هذه الطبقة يرسم النظام
+  # الأمامية كما هي فتظهر شاذّة بين أيقونات ملوّنة بلون الخلفية.
+  adaptive_icon_monochrome: assets/icons/icon_monochrome.png
   min_sdk_android: 23

@@ -1,123 +1,130 @@
-# توليد أيقونات المشغّل من الهوية المعتمدة (سجل §4 في
-# `docs/plan/04-UIUX-DESIGN-BRIEF.md`): «أيقونتان توأمان — Super مثلث
-# تشغيل وهج / Lite سهم تحميل بترولي — بشارة اسم سفلية».
-#
-# المخرجات في `assets/icons/` لكل تطبيق:
-#   icon.png            — الأيقونة القديمة الكاملة (بالشارة السفلية)
-#   icon_foreground.png — طبقة adaptive: الرمز وحده داخل المنطقة الآمنة
-#                         (66% من 108dp) وإلا قصّه القناع الدائري.
-#
-# التشغيل: python tool/make_icons.py   ثم  dart run flutter_launcher_icons
-from PIL import Image, ImageDraw, ImageFont
+# -*- coding: utf-8 -*-
+"""توليد أيقونات المشغّل — «الشريط» (قرار المالك 2026-09-09).
 
-SIZE = 1024
+الفكرة: إطار فيلم بثقوبه، ولوحة كريمية في وسطه **الرمز مقتطع منها**
+فيظهر لون الفعل من خلفه — سوبر مثلث تشغيل، لايت سهم هابط.
+
+ثلاث طبقات لكل تطبيق في `assets/icons/`:
+  icon.png             — الأيقونة القديمة كاملةً (مقصوصة بشكل سوبر-إهليلج
+                         لأن أندرويد ما قبل 8 يعرضها كما هي بلا قناع).
+  icon_foreground.png  — الطبقة الأمامية: التصميم كله عند 92٪ من الملف
+                         (راجع [FIT] — الأداة تضيف inset 16٪ فوقها).
+  icon_monochrome.png  — أندرويد 13+ «الأيقونات المتناسقة»: صورة ظليّة
+                         بيضاء يلوّنها النظام. كانت غائبة تماماً فكانت
+                         الأيقونة تظهر شاذّة عند تفعيل الخيار.
+الخلفية لونٌ صلب في pubspec لا صورة — فالتصميم لا يحتاج تفصيلاً خلفها.
+
+**تدوير الزوايا بفتحٍ مورفولوجي** (طمس ثم عتبة): تقليص المضلّع نحو مركزه
+يشوّه المثلثات غير المتساوية الأضلاع — نُتوءٌ في زاوية وقصٌّ في أخرى.
+
+التشغيل: python tool/make_icons.py   ثم  dart run flutter_launcher_icons
+"""
+import numpy as np
+from PIL import Image, ImageDraw, ImageFilter
+
+DESIGN = 512          # وحدات التصميم
+OUT = 1024            # مقاس الإخراج
+SS = 3                # الإفراط في العيّنات
+N = OUT * SS
+# **حسابان لا واحد**: `flutter_launcher_icons` يلفّ الطبقة الأمامية بـ
+# `inset 16%` بنفسه، فتصير 68٪ من اللوحة (≈73dp من 108) — أي أنها تغطي
+# المنطقة المرئية (72dp) تماماً. لكن القناع **دائري** في بعض المشغّلات،
+# وأبعد نقطة في التصميم هي زاوية الثقب العلوي: نصف قطرها 0.5245 من عرض
+# الرسم، فلا تدخل الدائرة إلا إذا صغّرناه إلى 92٪ داخل الملف. بلا هذا
+# تُقصّ أطراف الثقوب فتبدو كأنها عطل.
+FIT = 0.92
+
 CREAM = (251, 246, 238, 255)
-INK = (43, 33, 27, 255)
-
 APPS = {
-    'metube_lite': {
-        'accent': (47, 109, 116, 255),   # خليج بترولي #2F6D74
-        'soft': (223, 235, 234, 255),    # #DFEBEA
-        'glyph': 'download',
-        'badge': 'LITE',
-    },
-    'metube_super': {
-        'accent': (194, 94, 46, 255),    # وهج #C25E2E
-        'soft': (246, 228, 214, 255),    # #F6E4D6
-        'glyph': 'play',
-        'badge': 'SUPER',
-    },
+    'metube_lite': {'accent': (47, 109, 116, 255), 'glyph': 'download'},
+    'metube_super': {'accent': (194, 94, 46, 255), 'glyph': 'play'},
 }
 
-FONT = 'packages/mt_ui/assets/fonts/NotoKufiArabic-Bold.ttf'
+PERF_X = (36, 434)
+PERF_Y = (102, 223, 344)
+PERF = (42, 66, 15)                      # عرض · ارتفاع · تدوير
+PANEL = (104, 88, 408, 424, 46)
 
 
-def rounded(draw, box, radius, fill):
-    draw.rounded_rectangle(box, radius=radius, fill=fill)
+def u(v):
+    return int(round(v * (OUT / DESIGN) * SS))
 
 
-def draw_play(draw, cx, cy, r, color):
-    """مثلث تشغيل بزوايا مدوّرة — الهوية «هادئة مطبوعة» لا حادة:
-    يُرسم المضلع مقلَّصاً نحو مركزه ثم يُغلَّف بخط سميك بوصلات دائرية."""
-    radius = r * 0.16
-    raw = [
-        (cx - r * 0.52, cy - r * 0.72),
-        (cx + r * 0.78, cy),
-        (cx - r * 0.52, cy + r * 0.72),
-    ]
-    gx = sum(p[0] for p in raw) / 3
-    gy = sum(p[1] for p in raw) / 3
-    points = []
-    for x, y in raw:
-        dx, dy = x - gx, y - gy
-        length = (dx * dx + dy * dy) ** 0.5
-        k = (length - radius) / length
-        points.append((gx + dx * k, gy + dy * k))
-    draw.polygon(points, fill=color)
-    # تكرار النقطة الثانية يُغلق الحلقة فتكون **كل** الوصلات دائرية —
-    # بدونه يبقى طرف الخط الأول مسطحاً فيظهر نتوء في الزاوية العليا.
-    draw.line(points + [points[0], points[1]], fill=color,
-              width=int(radius * 2), joint='curve')
+def rrect(d, box, r, fill):
+    d.rounded_rectangle([u(box[0]), u(box[1]), u(box[2]), u(box[3])],
+                        radius=u(r), fill=fill)
 
 
-def draw_download(draw, cx, cy, r, color):
-    """سهم تحميل: عمود + رأس مثلث + خط قاعدة (نفس معنى «حمّل واحتفظ»)."""
-    stem_w = r * 0.30
-    draw.rounded_rectangle(
-        [cx - stem_w / 2, cy - r * 0.86, cx + stem_w / 2, cy + r * 0.10],
-        radius=stem_w / 2, fill=color)
-    draw.polygon([
-        (cx - r * 0.62, cy - r * 0.06),
-        (cx + r * 0.62, cy - r * 0.06),
-        (cx, cy + r * 0.62),
-    ], fill=color)
-    base_h = r * 0.20
-    draw.rounded_rectangle(
-        [cx - r * 0.78, cy + r * 0.80, cx + r * 0.78, cy + r * 0.80 + base_h],
-        radius=base_h / 2, fill=color)
+def round_corners(mask, radius):
+    m = mask.filter(ImageFilter.GaussianBlur(u(radius) * 0.62))
+    return m.point(lambda v: 255 if v >= 128 else 0)
 
 
-GLYPHS = {'play': draw_play, 'download': draw_download}
+def squircle(size, n=4.2):
+    y, x = np.mgrid[0:size, 0:size].astype(np.float32)
+    c = (size - 1) / 2
+    v = (np.abs(x - c) / c) ** n + (np.abs(y - c) / c) ** n
+    return Image.fromarray(
+        (np.clip((1 - v) * size * 0.35, 0, 1) * 255).astype(np.uint8), 'L')
 
 
-def build(app, spec):
-    # ── الأيقونة الكاملة (قديمة/احتياطية): لوح ناعم + رمز + شارة اسم ──
-    full = Image.new('RGBA', (SIZE, SIZE), CREAM)
-    d = ImageDraw.Draw(full)
-    pad = SIZE * 0.11
-    rounded(d, [pad, pad, SIZE - pad, SIZE - pad], SIZE * 0.20, spec['soft'])
-    GLYPHS[spec['glyph']](d, SIZE / 2, SIZE * 0.44, SIZE * 0.21,
-                          spec['accent'])
-
-    font = ImageFont.truetype(FONT, int(SIZE * 0.088))
-    text = spec['badge']
-    tw = d.textbbox((0, 0), text, font=font)
-    w, h = tw[2] - tw[0], tw[3] - tw[1]
-    bx, by = SIZE / 2, SIZE * 0.775
-    px, py = SIZE * 0.055, SIZE * 0.032
-    rounded(d, [bx - w / 2 - px, by - h / 2 - py,
-                bx + w / 2 + px, by + h / 2 + py],
-            (h + 2 * py) / 2, spec['accent'])
-    d.text((bx - w / 2 - tw[0], by - h / 2 - tw[1]), text, font=font,
-           fill=CREAM)
-
-    # ── طبقة adaptive الأمامية: الرمز وحده، أصغر ليصمد أمام أي قناع ──
-    # (الشارة تُترك للأيقونة القديمة: القناع الدائري يقصّ أسفل الأيقونة،
-    #  والتمييز الحقيقي بين النسختين هو اللون والرمز على أي حال.)
-    fg = Image.new('RGBA', (SIZE, SIZE), (0, 0, 0, 0))
-    fd = ImageDraw.Draw(fg)
-    # نصف القطر 0.23 من الحافة: الدائرة المرئية في الأيقونة التكيفية
-    # نصف قطرها 0.333، فيبقى هامش أمان مريح مع حضور بصري كافٍ.
-    GLYPHS[spec['glyph']](fd, SIZE / 2, SIZE / 2, SIZE * 0.23,
-                          spec['accent'])
-
-    out = f'apps/{app}/assets/icons'
-    import os
-    os.makedirs(out, exist_ok=True)
-    full.save(f'{out}/icon.png')
-    fg.save(f'{out}/icon_foreground.png')
-    print('wrote', out)
+def glyph_mask(kind):
+    m = Image.new('L', (N, N), 0)
+    d = ImageDraw.Draw(m)
+    if kind == 'play':
+        # مربّع الإحاطة مركزه 264 لا 256: كتلة المثلث يسار رأسه، فالتوسيط
+        # الحسابي يجعله يبدو مزاحاً لليسار (توسيط بصري).
+        d.polygon([(u(184), u(150)), (u(184), u(362)), (u(344), u(256))],
+                  fill=255)
+    else:
+        rrect(d, (228, 118, 284, 262), 28, 255)
+        d.polygon([(u(166), u(244)), (u(346), u(244)), (u(256), u(382))],
+                  fill=255)
+    return round_corners(m, 13)
 
 
-for app, spec in APPS.items():
-    build(app, spec)
+def artwork_mask(kind):
+    """الثقوب + اللوحة، ناقصاً الرمز — الصورة الظليّة للتصميم كله."""
+    m = Image.new('L', (N, N), 0)
+    d = ImageDraw.Draw(m)
+    for x in PERF_X:
+        for y in PERF_Y:
+            rrect(d, (x, y, x + PERF[0], y + PERF[1]), PERF[2], 255)
+    rrect(d, PANEL[:4], PANEL[4], 255)
+    return Image.fromarray(
+        np.minimum(np.array(m), 255 - np.array(glyph_mask(kind))), 'L')
+
+
+def tinted(mask, color):
+    img = Image.new('RGBA', (N, N), (0, 0, 0, 0))
+    img.paste(Image.new('RGBA', (N, N), color), (0, 0), mask)
+    return img.resize((OUT, OUT), Image.LANCZOS)
+
+
+def into_safe_zone(layer):
+    """التصميم داخل الدائرة المضمونة (راجع [FIT])."""
+    side = int(round(OUT * FIT))
+    out = Image.new('RGBA', (OUT, OUT), (0, 0, 0, 0))
+    out.paste(layer.resize((side, side), Image.LANCZOS),
+              ((OUT - side) // 2, (OUT - side) // 2))
+    return out
+
+
+def main():
+    for app, cfg in APPS.items():
+        mask = artwork_mask(cfg['glyph'])
+        art = tinted(mask, CREAM)
+
+        full = Image.new('RGBA', (OUT, OUT), cfg['accent'])
+        full.alpha_composite(art)
+        full.putalpha(squircle(OUT))
+        base = f'apps/{app}/assets/icons'
+        full.save(f'{base}/icon.png')
+        into_safe_zone(art).save(f'{base}/icon_foreground.png')
+        into_safe_zone(tinted(mask, (255, 255, 255, 255))).save(
+            f'{base}/icon_monochrome.png')
+        print(f'{app}: icon.png · icon_foreground.png · icon_monochrome.png')
+
+
+if __name__ == '__main__':
+    main()
