@@ -126,7 +126,15 @@ class _Actions extends ConsumerWidget {
         const SizedBox(height: MTSpace.sm),
         ClipRRect(
           borderRadius: BorderRadius.circular(MTRadius.pill),
-          child: LinearProgressIndicator(value: state.progress, minHeight: 7),
+          child: LinearProgressIndicator(
+            value: state.progress,
+            minHeight: 7,
+            // **اللونان من اللوحة صراحةً**: مسار Material الافتراضي
+            // يُشتقّ من `secondaryContainer` فيخرج مخضرّاً على كريمي
+            // «وهج» — لونٌ لا وجود له في الهوية (مقيس على المحاكي).
+            backgroundColor: p.accent.withValues(alpha: 0.16),
+            valueColor: AlwaysStoppedAnimation(p.accent),
+          ),
         ),
         const SizedBox(height: MTSpace.sm),
         TextButton(

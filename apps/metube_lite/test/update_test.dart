@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'dart:io';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -5,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:metube_lite/di.dart';
 import 'package:metube_lite/features/update/update_section.dart';
+import 'package:metube_lite/features/update/update_sheet.dart';
 import 'package:metube_lite/features/update/update_state.dart';
 import 'package:mt_core/mt_core.dart';
 import 'package:mt_ui/mt_ui.dart';
@@ -46,10 +49,15 @@ void main() {
   ProviderContainer container({
     String? body,
     Object? failWith,
+    ApkDownloader? downloader,
   }) {
     final c = ProviderContainer(overrides: [
       keyValueStoreProvider.overrideWithValue(store),
       prefsMutexProvider.overrideWithValue(PrefsMutex()),
+      // `path_provider` قناة أصلية لا تعمل في اختبار ودجات.
+      updateCacheDirProvider.overrideWith((ref) => Directory.systemTemp.path),
+      if (downloader != null)
+        apkDownloaderProvider.overrideWithValue(downloader),
       updateCheckerProvider.overrideWithValue(UpdateChecker(
         assetMarker: 'lite',
         fetch: (_) async {
@@ -203,4 +211,82 @@ void main() {
       expect(title.style!.color, MTThemeX.of(context).palette.accent);
     });
   });
+
+  group('ورقة التحديث', () {
+    Widget sheetHost(ProviderContainer c) => UncontrolledProviderScope(
+          container: c,
+          child: MaterialApp(
+            theme: mtTheme(MTVariant.lite, Brightness.light),
+            locale: const Locale('ar'),
+            localizationsDelegates: MTLocalizations.localizationsDelegates,
+            supportedLocales: MTLocalizations.supportedLocales,
+            home: const Scaffold(body: SingleChildScrollView(child: UpdateSheet())),
+          ),
+        );
+
+    testWidgets('تعرض الإصدار والحجم وما الجديد وثلاثة أفعال', (tester) async {
+      final c = container();
+      await c.read(updateControllerProvider.notifier).checkSilently();
+      await tester.pumpWidget(sheetHost(c));
+      await tester.pumpAndSettle();
+      final l10n = tester.element(find.byType(UpdateSheet)).mtl;
+
+      expect(find.text(l10n.updateVersionAvailable('9.9.9')), findsOneWidget);
+      // 12582912 بايت = 12.0 م.ب بالضبط — الحجم يُعرض لا يُخمَّن.
+      expect(find.text(l10n.updateSizeMb('12.0')), findsOneWidget);
+      expect(find.text('إصلاحات'), findsOneWidget);
+      expect(find.text(l10n.updateNow), findsOneWidget);
+      expect(find.text(l10n.updateLater), findsOneWidget);
+      expect(find.text(l10n.updateSkipVersion), findsOneWidget);
+    });
+
+    testWidgets('**الحارس**: التخطّي من الورقة يكتب المفتاح', (tester) async {
+      final c = container();
+      await c.read(updateControllerProvider.notifier).checkSilently();
+      await tester.pumpWidget(sheetHost(c));
+      await tester.pumpAndSettle();
+      final l10n = tester.element(find.byType(UpdateSheet)).mtl;
+
+      await tester.tap(find.text(l10n.updateSkipVersion));
+      await tester.pumpAndSettle();
+      expect(await store.getString(UpdatePrefs.skippedVersionKey), '9.9.9');
+    });
+
+    testWidgets('طور التنزيل: تقدّم وإلغاء بدل أزرار الفعل', (tester) async {
+      final c = container(downloader: _StuckDownloader());
+      await c.read(updateControllerProvider.notifier).checkSilently();
+      await tester.pumpWidget(sheetHost(c));
+      await tester.pumpAndSettle();
+      final context = tester.element(find.byType(UpdateSheet));
+      final l10n = context.mtl;
+
+      unawaited(c.read(updateControllerProvider.notifier).download());
+      await tester.pump();
+      await tester.pump();
+
+      final bar = tester.widget<LinearProgressIndicator>(
+          find.byType(LinearProgressIndicator));
+      expect(bar.value, 0.42);
+      // **الحارس**: اللون من اللوحة — مسار Material الافتراضي يخرج
+      // مخضرّاً على كريمي «وهج».
+      expect(bar.valueColor!.value, MTThemeX.of(context).palette.accent);
+      expect(find.text(l10n.cancel), findsOneWidget);
+      expect(find.text(l10n.updateNow), findsNothing);
+    });
+  });
+}
+
+/// منزّل لا يكتمل — يثبّت الطور عند «قيد التنزيل» لفحص الواجهة وحدها.
+class _StuckDownloader extends ApkDownloader {
+  @override
+  Future<String> download({
+    required String url,
+    required String savePath,
+    int expectedSize = 0,
+    void Function(double progress)? onProgress,
+    DownloadCancelToken? cancel,
+  }) {
+    onProgress?.call(0.42);
+    return Completer<String>().future;
+  }
 }
