@@ -11,18 +11,13 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  check:
-    name: Analyze, test, build
+  test:
+    name: Analyze and test
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 20
 
     steps:
       - uses: actions/checkout@v4
-
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
 
       - uses: subosito/flutter-action@v2
         with:
@@ -62,12 +57,40 @@ jobs:
         run: flutter test --no-pub
         working-directory: apps/metube_super
 
+  # One runner per app, deliberately. Both builds in a single job filled the
+  # hosted runner's disk and the second one died with "No space left on
+  # device" (measured 2026-09-09) — an Android SDK, a Gradle cache and two
+  # sets of build output do not fit in the ~14GB a standard runner has.
+  build:
+    name: Build ${{ matrix.app }}
+    runs-on: ubuntu-latest
+    needs: test
+    timeout-minutes: 30
+
+    strategy:
+      fail-fast: false
+      matrix:
+        app: [metube_lite, metube_super]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.47.2
+          channel: stable
+          cache: true
+
+      - name: Resolve dependencies
+        run: flutter pub get
+
       # Debug builds only: release signing needs a keystore that is not in
       # this repository.
-      - name: Build metube_lite
+      - name: Build ${{ matrix.app }}
         run: flutter build apk --debug
-        working-directory: apps/metube_lite
-
-      - name: Build metube_super
-        run: flutter build apk --debug
-        working-directory: apps/metube_super
+        working-directory: apps/${{ matrix.app }}
