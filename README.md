@@ -27,6 +27,94 @@ server, built as one Flutter monorepo.
 Both apps share the same core, media and design packages, and both ship in
 **Arabic and English** with a right-to-left-first layout.
 
+## Features
+
+### In both apps
+
+**Getting a link in.** Paste, or let the add button notice a link already on
+the clipboard; share to the app from YouTube, TikTok or anything else — it
+works from a cold start and takes several links at once. Links are recognised
+and normalised across YouTube, X, Instagram, TikTok, Facebook, Vimeo, Reddit,
+Twitch clips and SoundCloud, short links are followed (never downgrading HTTPS
+to HTTP), and a playlist link opens the batch screen instead of queueing one
+item.
+
+**Downloading.** Four stages — hand the link to the server, follow its
+progress, pull the file, then apply the app's delete policy — with live
+percentages, one download at a time so a small server is not swamped, clean
+cancellation that removes the partial file and tidies the server, three
+retries with backoff for a dropped connection, and errors named rather than
+swallowed (a platform asking for a login says so). Progress, completion and
+failure each get a notification.
+
+**Batch downloads.** A playlist arrives as a screen: every item with its
+duration, select some or all, the total of what you picked, video or audio,
+and one quality for the batch.
+
+**The library.** Search by title; sort by date, name or size and keep the
+choice; switch between rich cards and a compact list; pull to refresh; filter
+video against audio; long-press for multi-select to delete, share, or add to a
+playlist in one go. Thumbnails come from a disk and memory cache, are
+generated from local video, read from the cover embedded in audio files, or
+fetched for SoundCloud.
+
+**Playing.** Three shapes — immersive portrait, landscape with full controls,
+and an audio mode with artwork — plus an in-player queue, autoplay, repeat one
+or all, shuffle, a playback speed that is remembered, resume from where you
+stopped, and the screen kept awake. Audio keeps playing in the background with
+a media notification and lock-screen controls, a mini player sits above the
+main screens, and leaving the video player offers to continue the same item as
+audio **from the same second**.
+
+**Shorts.** Any portrait clip of three minutes or less opens in a swipeable
+full-screen lane that skips over everything that is not a short, with a tap to
+pause, a double tap to favourite, and its own chip in the library.
+
+**Favourites and playlists.** A heart on every card; playlists you create,
+reorder by dragging, play in order or shuffled; and smart playlists that keep
+themselves — favourites, latest additions, and (in Super) everything available
+offline.
+
+**Settings and safety.** Default quality, theme (system, light or dark), and
+language — Arabic or English, matched to the phone on first launch. Backups
+are plain text holding no secret, written by themselves after every change,
+keeping the last seven by date, restorable by picking a date, and exportable;
+the three older encrypted formats can still be read. A diagnostic log viewer
+can be shared only after URLs, IP addresses, credentials and storage paths are
+stripped out.
+
+**Updating itself.** Each app checks this repository for its own newer
+release, downloads the APK, and hands it to the system installer. Nothing
+installs without your confirmation, and a version can be skipped.
+
+### MeTube Lite only
+
+- **Pulls the file to the phone and then deletes it from the server**, so a
+  server shared with family and friends does not fill up.
+- **An optional Wi-Fi-only rule** — off unless you turn it on — that holds
+  transfers back on mobile data; the tasks wait and resume by themselves.
+- A library built by scanning the app's own download folder, with a platform
+  filter and live counts.
+- Finished files are registered with Android so they appear in the phone's
+  gallery.
+
+### MeTube Super only
+
+- **Keeps the file on the server** and merges `/history` with the local index
+  into one library keyed by canonical URL, with filters for everything,
+  what is offline, and what is only on the server.
+- **Streams from the server** with authentication, and always prefers a local
+  copy when one exists — the resume position is shared between the two.
+- **Tags** you create and attach to anything, as chips in the library and a
+  screen to rename or delete them.
+- **Make available offline**: keep a local copy while the original stays on
+  the server; remove just the local copy; share the local file if there is one
+  and download-then-share if there is not.
+- Batch operations, including tagging many items at once.
+- **A local address and external ones**, tried again on every network change
+  so the phone uses the fast path at home and the tunnel elsewhere, with a
+  live status dot for each and a server card in settings.
+
 ## Screenshots
 
 | MeTube Lite | MeTube Super |
