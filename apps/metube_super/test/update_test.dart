@@ -203,7 +203,11 @@ void main() {
 
       final c = container();
       c.read(updateControllerProvider);
-      await pumpEventQueue();
+      // The sweep hangs off an asynchronous provider, so a single
+      // `pumpEventQueue()` is a race rather than a wait: this test failed
+      // once in a loaded full-suite run on 2026-09-09 and passed alone.
+      // Waiting for the outcome keeps the guard and drops the flake.
+      await _until(() => !apkFile().existsSync());
 
       expect(apkFile().existsSync(), isFalse);
       expect(await store.getString(UpdatePrefs.downloadedVersionKey), isNull);
@@ -215,7 +219,9 @@ void main() {
 
       final c = container();
       c.read(updateControllerProvider);
-      await pumpEventQueue();
+      // Nothing to wait for here — the point is that nothing happens — so
+      // this pumps generously and then checks the file is still there.
+      await pumpEventQueue(times: 100);
 
       expect(apkFile().existsSync(), isTrue);
       expect(await store.getString(UpdatePrefs.downloadedVersionKey), '9.9.9');
@@ -376,5 +382,14 @@ class _StuckDownloader extends ApkDownloader {
   }) {
     onProgress?.call(0.42);
     return Completer<String>().future;
+  }
+}
+
+/// Pumps until [done] holds, or gives up and lets the assertion that
+/// follows report the failure. Used where the outcome is asynchronous and
+/// the machine may be busy.
+Future<void> _until(bool Function() done) async {
+  for (var i = 0; i < 50 && !done(); i++) {
+    await pumpEventQueue(times: 10);
   }
 }

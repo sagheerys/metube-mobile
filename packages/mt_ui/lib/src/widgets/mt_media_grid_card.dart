@@ -79,7 +79,7 @@ class MTMediaGridCard extends StatelessWidget {
     ?locationLabel,
     if (favorite) l10n.favorites,
     if (playing) l10n.nowPlaying,
-  ].join('، ');
+  ].join(l10n.listSeparator);
 
   @override
   Widget build(BuildContext context) {

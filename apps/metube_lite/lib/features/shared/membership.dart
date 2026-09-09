@@ -26,8 +26,9 @@ class ItemMembership {
   /// nowhere.
   String? line(MTLocalizations l10n) {
     final parts = [
-      if (playlists.isNotEmpty) '${l10n.inPlaylists}: ${playlists.join('، ')}',
-      if (tags.isNotEmpty) '${l10n.tags}: ${tags.join('، ')}',
+      if (playlists.isNotEmpty)
+        '${l10n.inPlaylists}: ${playlists.join(l10n.listSeparator)}',
+      if (tags.isNotEmpty) '${l10n.tags}: ${tags.join(l10n.listSeparator)}',
     ];
     return parts.isEmpty ? null : parts.join(' · ');
   }

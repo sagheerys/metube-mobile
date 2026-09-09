@@ -144,7 +144,7 @@ class _ReelsScreenState extends ConsumerState<ReelsScreen> {
           if (progress != null)
             MTPlayerAction(
               icon: Icons.downloading_rounded,
-              label: '${(progress * 100).round()}٪',
+              label: l10n.percentValue((progress * 100).round()),
               onTap: () {},
             )
           else if (!offline)

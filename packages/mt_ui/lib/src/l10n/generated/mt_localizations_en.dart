@@ -545,6 +545,9 @@ class MTLocalizationsEn extends MTLocalizations {
   String get licenses => 'Open-source licenses';
 
   @override
+  String get listSeparator => ', ';
+
+  @override
   String get listenInBackground => 'Listen in the background';
 
   @override
@@ -707,6 +710,11 @@ class MTLocalizationsEn extends MTLocalizations {
 
   @override
   String get pause => 'Pause';
+
+  @override
+  String percentValue(Object percent) {
+    return '$percent%';
+  }
 
   @override
   String get pickAnotherFile => 'From another file…';

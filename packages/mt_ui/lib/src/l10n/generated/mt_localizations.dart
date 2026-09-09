@@ -1058,6 +1058,12 @@ abstract class MTLocalizations {
   /// **'Open-source licenses'**
   String get licenses;
 
+  /// No description provided for @listSeparator.
+  ///
+  /// In en, this message translates to:
+  /// **', '**
+  String get listSeparator;
+
   /// No description provided for @listenInBackground.
   ///
   /// In en, this message translates to:
@@ -1369,6 +1375,12 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'Pause'**
   String get pause;
+
+  /// No description provided for @percentValue.
+  ///
+  /// In en, this message translates to:
+  /// **'{percent}%'**
+  String percentValue(Object percent);
 
   /// No description provided for @pickAnotherFile.
   ///

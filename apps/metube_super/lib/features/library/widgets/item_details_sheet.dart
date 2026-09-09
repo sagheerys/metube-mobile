@@ -83,8 +83,9 @@ class _DetailsSheet extends ConsumerWidget {
                 .valueOrNull?[item.canonicalUrl]) {
               final ItemMembership m when !m.isEmpty => [
                 if (m.playlists.isNotEmpty)
-                  row(l10n.inPlaylists, m.playlists.join('، ')),
-                if (m.tags.isNotEmpty) row(l10n.tags, m.tags.join('، ')),
+                  row(l10n.inPlaylists, m.playlists.join(l10n.listSeparator)),
+                if (m.tags.isNotEmpty)
+                  row(l10n.tags, m.tags.join(l10n.listSeparator)),
               ],
               _ => const <Widget>[],
             },

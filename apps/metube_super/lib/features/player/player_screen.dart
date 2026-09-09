@@ -130,7 +130,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
             ? Icons.downloading_rounded
             : (offline ? Icons.offline_pin_rounded : Icons.download_rounded),
         label: pulling != null
-            ? '${(pulling * 100).round()}٪'
+            ? l10n.percentValue((pulling * 100).round())
             : (offline ? l10n.savedOnDevice : l10n.saveToDevice),
         highlighted: offline,
         onTap: (offline || pulling != null) ? () {} : () => _makeOffline(item),

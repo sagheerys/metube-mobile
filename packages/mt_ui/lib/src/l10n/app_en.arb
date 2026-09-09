@@ -122,6 +122,13 @@
       }
     }
   },
+  "@percentValue": {
+    "placeholders": {
+      "percent": {
+        "type": "Object"
+      }
+    }
+  },
   "@platformCount": {
     "placeholders": {
       "name": {
@@ -372,6 +379,7 @@
   "latestAdditions": "Latest additions",
   "licensedUnder": "Licensed under GPL-3.0",
   "licenses": "Open-source licenses",
+  "listSeparator": ", ",
   "listenInBackground": "Listen in the background",
   "localCopyRemoved": "Local copy removed",
   "localNetworkDesc": "The app connects to the server through this URL when it can be reached.",
@@ -424,6 +432,7 @@
   "password": "Password",
   "pasteUrlHint": "Paste the link here…",
   "pause": "Pause",
+  "percentValue": "{percent}%",
   "pickAnotherFile": "From another file…",
   "pickAnotherFileSubtitle": "A backup from another phone or an older version",
   "pinPlaylist": "Pin to top",

@@ -42,7 +42,7 @@ class LibraryItemCard extends ConsumerWidget {
     final highlighted = ref.watch(highlightedItemProvider) == item.canonicalUrl;
 
     final subtitle = pulling != null
-        ? '${l10n.pullingToDevice} ${(pulling * 100).round()}٪'
+        ? '${l10n.pullingToDevice} ${l10n.percentValue((pulling * 100).round())}'
         : [
             if (item.uploader != null) item.uploader!,
             if (item.timestamp != null) mtTimeAgo(context, item.timestamp!),

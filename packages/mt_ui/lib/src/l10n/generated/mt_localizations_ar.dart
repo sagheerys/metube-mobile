@@ -548,6 +548,9 @@ class MTLocalizationsAr extends MTLocalizations {
   String get licenses => 'تراخيص المصادر المفتوحة';
 
   @override
+  String get listSeparator => '، ';
+
+  @override
   String get listenInBackground => 'استماع بالخلفية';
 
   @override
@@ -710,6 +713,11 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get pause => 'إيقاف مؤقت';
+
+  @override
+  String percentValue(Object percent) {
+    return '$percent٪';
+  }
 
   @override
   String get pickAnotherFile => 'من ملف آخر…';

@@ -75,7 +75,7 @@ class _DetailsSheet extends ConsumerWidget {
                 .watch(membershipIndexProvider)
                 .valueOrNull?[item.key]) {
               final ItemMembership m when m.playlists.isNotEmpty => [
-                row(l10n.inPlaylists, m.playlists.join('، ')),
+                row(l10n.inPlaylists, m.playlists.join(l10n.listSeparator)),
               ],
               _ => const <Widget>[],
             },

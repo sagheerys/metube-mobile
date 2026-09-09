@@ -105,7 +105,7 @@ cd apps/metube_lite  && flutter test           #  69
 cd apps/metube_super && flutter test           # 121
 ```
 
-**711 tests** at the time of writing, and `flutter analyze` is expected to be
+**712 tests** at the time of writing, and `flutter analyze` is expected to be
 clean. Fixtures come from real server JSON, and every fixed defect leaves behind
 a test that fails on the old code.
 
