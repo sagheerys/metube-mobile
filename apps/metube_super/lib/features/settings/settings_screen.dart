@@ -6,6 +6,7 @@ import 'package:mt_ui/mt_ui.dart';
 
 import '../../di.dart';
 import '../shared/error_report.dart';
+import '../update/update_section.dart';
 import 'widgets/help_button.dart';
 import 'widgets/server_status_card.dart';
 
@@ -274,6 +275,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               l10n.backupSettingsSubtitle, '/settings/backup'),
           _navTile(Icons.article_outlined, l10n.diagnosticLogs,
               l10n.diagnosticLogsSubtitle, '/settings/logs'),
+          const SizedBox(height: MTSpace.xl),
+          const UpdateSection(),
           const SizedBox(height: MTSpace.xl),
           MTSectionHeader(title: l10n.about),
           _navTile(Icons.info_outline_rounded, l10n.aboutApp,

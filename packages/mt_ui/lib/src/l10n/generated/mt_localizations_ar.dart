@@ -10,42 +10,18 @@ class MTLocalizationsAr extends MTLocalizations {
   MTLocalizationsAr([String locale = 'ar']) : super(locale);
 
   @override
-  String get builtWith => 'مبنيّ على';
-
-  @override
-  String get copyright => '© 2026 ياسر صغير';
-
-  @override
-  String get externalPlayerLocalOnly =>
-      'النسخة المحلية فقط — لا يُسلَّم رابط السيرفر لتطبيق آخر';
-
-  @override
-  String get externalPlayerShort => 'مشغل خارجي';
-
-  @override
-  String get licensedUnder => 'مرخَّص برخصة GPL-3.0';
-
-  @override
-  String get metubeCredit => 'الخادم ذاتي الاستضافة الذي يتصل به التطبيق';
-
-  @override
-  String get noExternalPlayer => 'لا يوجد مشغل خارجي على الجهاز';
-
-  @override
-  String get noWarranty => 'يُقدَّم كما هو، بلا أي ضمان.';
-
-  @override
-  String get notAffiliated =>
-      'عميل غير رسمي — لا يتبع مشروع MeTube ولا yt-dlp ولا يمثّلهما.';
-
-  @override
-  String get openInExternalPlayer => 'فتح في مشغل خارجي';
-
-  @override
   String get about => 'حول';
 
   @override
   String get aboutApp => 'حول التطبيق';
+
+  @override
+  String get aboutDescriptionLite =>
+      'تطبيق خفيف وسريع لتحميل الفيديوهات من مختلف المنصات عبر سيرفر MeTube، يسحبها إلى جهازك وينظّف السيرفر بعدها — مع مشغل مدمج وقوائم تشغيل.';
+
+  @override
+  String get aboutDescriptionSuper =>
+      'نسخة مالك السيرفر: مكتبة موحّدة من السيرفر وجهازك، بثّ مباشر ووسوم وإتاحة دون اتصال وتحميل دفعي وتبديل بين عناوين السيرفر.';
 
   @override
   String get activeDownloads => 'التحميلات النشطة';
@@ -81,10 +57,10 @@ class MTLocalizationsAr extends MTLocalizations {
   }
 
   @override
-  String get addToFavorites => 'أضف للمفضلة';
+  String get addTo => 'أضف إلى…';
 
   @override
-  String get addTo => 'أضف إلى…';
+  String get addToFavorites => 'أضف للمفضلة';
 
   @override
   String get addToPlaylist => 'إضافة إلى قائمة';
@@ -115,13 +91,13 @@ class MTLocalizationsAr extends MTLocalizations {
   String get allDownloadsFinished => 'اكتملت جميع التحميلات!';
 
   @override
-  String get alreadyInPlaylist => 'مضاف مسبقاً';
-
-  @override
   String get allPlatforms => 'كل المنصات';
 
   @override
   String get allTagsFilter => 'الكل';
+
+  @override
+  String get alreadyInPlaylist => 'مضاف مسبقاً';
 
   @override
   String get appFeatures => 'مميزات التطبيق';
@@ -150,6 +126,13 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get autoBuilt => 'تلقائية';
+
+  @override
+  String get autoCheckUpdates => 'التحقق تلقائياً';
+
+  @override
+  String get autoCheckUpdatesHelp =>
+      'يبحث عن إصدار جديد في الخلفية مرتين يومياً تقريباً.';
 
   @override
   String get autoPlayNext => 'التشغيل التلقائي: مفعل';
@@ -227,13 +210,15 @@ class MTLocalizationsAr extends MTLocalizations {
   }
 
   @override
+  String backupsKept(int count) {
+    return '$count نسخ محفوظة';
+  }
+
+  @override
   String get batchDownloadSelected => 'تحميل المحدد';
 
   @override
   String get batchFromPlaylistNote => 'هذا الرابط من داخل قائمة';
-
-  @override
-  String get batchThisVideoOnly => 'تحميل هذا المقطع فقط';
 
   @override
   String get batchLoading => 'قراءة القائمة…';
@@ -250,7 +235,13 @@ class MTLocalizationsAr extends MTLocalizations {
   }
 
   @override
+  String get batchThisVideoOnly => 'تحميل هذا المقطع فقط';
+
+  @override
   String get batchTitle => 'التحميل الدفعي';
+
+  @override
+  String get builtWith => 'مبنيّ على';
 
   @override
   String get cancel => 'إلغاء';
@@ -260,6 +251,9 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get changeQuality => 'تغيير الجودة';
+
+  @override
+  String get checkForUpdates => 'التحقق من التحديثات';
 
   @override
   String get chooseBackupFile => 'اختر ملف النسخة';
@@ -340,6 +334,9 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get copiedToClipboard => 'نُسِخ إلى الحافظة';
+
+  @override
+  String get copyright => '© 2026 ياسر صغير';
 
   @override
   String get couldNotLoadPlaylist =>
@@ -587,11 +584,25 @@ class MTLocalizationsAr extends MTLocalizations {
       'لازم للاستعادة على هاتف جديد أو بعد إعادة التثبيت';
 
   @override
+  String get exportShare => 'تصدير ومشاركة';
+
+  @override
+  String get exportShareSubtitle =>
+      'نسخة مؤرَّخة لإرسالها أو حفظها في مكان آخر';
+
+  @override
   String get externalNetworkDesc =>
       'عندما يتعذّر الوصول للعنوان المحلي، يتصل التطبيق بأول عنوان يمكن الوصول إليه أدناه، من الأعلى إلى الأسفل.';
 
   @override
   String get externalNetworkSection => 'شبكة خارجية';
+
+  @override
+  String get externalPlayerLocalOnly =>
+      'النسخة المحلية فقط — لا يُسلَّم رابط السيرفر لتطبيق آخر';
+
+  @override
+  String get externalPlayerShort => 'مشغل خارجي';
 
   @override
   String get failed => 'فشل';
@@ -695,35 +706,6 @@ class MTLocalizationsAr extends MTLocalizations {
   String get inPlaylists => 'في قوائم التشغيل';
 
   @override
-  String backupsKept(int count) {
-    return '$count نسخ محفوظة';
-  }
-
-  @override
-  String lastBackup(String when) {
-    return 'آخر نسخة $when';
-  }
-
-  @override
-  String get noBackupsYet => 'لا توجد نسخ بعد';
-
-  @override
-  String get restoreFromBackupSubtitle => 'اختر من النسخ المحفوظة، أو من ملف';
-
-  @override
-  String get exportShare => 'تصدير ومشاركة';
-
-  @override
-  String get exportShareSubtitle =>
-      'نسخة مؤرَّخة لإرسالها أو حفظها في مكان آخر';
-
-  @override
-  String get pickAnotherFile => 'من ملف آخر…';
-
-  @override
-  String get pickAnotherFileSubtitle => 'نسخة من هاتف آخر أو من إصدار سابق';
-
-  @override
   String get invalidUrl => 'أدخل رابطاً صالحاً';
 
   @override
@@ -783,7 +765,20 @@ class MTLocalizationsAr extends MTLocalizations {
   String get languageSystemHint => 'يتبع لغة هاتفك';
 
   @override
+  String lastBackup(String when) {
+    return 'آخر نسخة $when';
+  }
+
+  @override
+  String lastCheckedAt(String when) {
+    return 'آخر تحقق $when';
+  }
+
+  @override
   String get latestAdditions => 'أحدث الإضافات';
+
+  @override
+  String get licensedUnder => 'مرخَّص برخصة GPL-3.0';
 
   @override
   String get licenses => 'تراخيص المصادر المفتوحة';
@@ -846,6 +841,9 @@ class MTLocalizationsAr extends MTLocalizations {
   String get manageTags => 'إدارة الوسوم';
 
   @override
+  String get metubeCredit => 'الخادم ذاتي الاستضافة الذي يتصل به التطبيق';
+
+  @override
   String get modeAuto => 'تلقائي';
 
   @override
@@ -901,11 +899,17 @@ class MTLocalizationsAr extends MTLocalizations {
   String get next => 'التالي';
 
   @override
+  String get noBackupsYet => 'لا توجد نسخ بعد';
+
+  @override
   String get noDownloads => 'لا توجد تحميلات';
 
   @override
   String get noDownloadsMessage =>
       'ستظهر الفيديوهات المحملة هنا.\nشارك رابط فيديو أو استخدم زر إضافة رابط.';
+
+  @override
+  String get noExternalPlayer => 'لا يوجد مشغل خارجي على الجهاز';
 
   @override
   String get noLogsFound => 'لا توجد سجلّات';
@@ -950,8 +954,15 @@ class MTLocalizationsAr extends MTLocalizations {
       'شارك رابط فيديو من أي تطبيق، أو اضغط زر + لإضافة رابط';
 
   @override
+  String get noWarranty => 'يُقدَّم كما هو، بلا أي ضمان.';
+
+  @override
   String get nonYoutubeQualityNote =>
       'المنصّات غير اليوتيوب تدعم أفضل جودة أو الصوت فقط';
+
+  @override
+  String get notAffiliated =>
+      'عميل غير رسمي — لا يتبع مشروع MeTube ولا yt-dlp ولا يمثّلهما.';
 
   @override
   String get nothingHereYet => 'لا يوجد شيء بعد';
@@ -977,6 +988,9 @@ class MTLocalizationsAr extends MTLocalizations {
   String get openGithub => 'فتح MeTube على GitHub';
 
   @override
+  String get openInExternalPlayer => 'فتح في مشغل خارجي';
+
+  @override
   String get openOriginalLink => 'فتح الرابط الأصلي';
 
   @override
@@ -996,6 +1010,12 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get pause => 'إيقاف مؤقت';
+
+  @override
+  String get pickAnotherFile => 'من ملف آخر…';
+
+  @override
+  String get pickAnotherFileSubtitle => 'نسخة من هاتف آخر أو من إصدار سابق';
 
   @override
   String get pinPlaylist => 'تثبيت في الصدارة';
@@ -1179,11 +1199,6 @@ class MTLocalizationsAr extends MTLocalizations {
   String get remove => 'إزالة';
 
   @override
-  String removeUnavailable(int count) {
-    return 'إزالة $count غير متوفر';
-  }
-
-  @override
   String get removeFromFavorites => 'أزل من المفضلة';
 
   @override
@@ -1201,6 +1216,11 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get removeOfflineTitle => 'إزالة النسخة المحلية';
+
+  @override
+  String removeUnavailable(int count) {
+    return 'إزالة $count غير متوفر';
+  }
 
   @override
   String get removedFromFavorites => 'أُزيل من المفضلة';
@@ -1232,6 +1252,9 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get restoreFailed => 'فشلت الاستعادة — ملف نسخة غير صالح';
+
+  @override
+  String get restoreFromBackupSubtitle => 'اختر من النسخ المحفوظة، أو من ملف';
 
   @override
   String get restoreNotFound => 'لا يوجد ملف نسخة في Downloads/MeTube_Super';
@@ -1575,7 +1598,72 @@ class MTLocalizationsAr extends MTLocalizations {
   }
 
   @override
+  String get updateAllowInstallBody =>
+      'يطلب أندرويد إذنك قبل أن يثبّت التطبيق تحديثاته بنفسه. امنحه مرة واحدة من إعدادات النظام ثم عد واضغط تثبيت.';
+
+  @override
+  String get updateAllowInstallTitle => 'السماح بتثبيت التحديثات';
+
+  @override
+  String get updateAvailable => 'يتوفّر تحديث';
+
+  @override
+  String get updateCheckFailed => 'تعذّر التحقق من التحديثات';
+
+  @override
+  String get updateChecking => 'جارٍ التحقق…';
+
+  @override
   String get updateCredentials => 'تحديث الاعتماد';
+
+  @override
+  String get updateDownloadFailed => 'تعذّر تنزيل التحديث';
+
+  @override
+  String get updateDownloading => 'جارٍ تنزيل التحديث…';
+
+  @override
+  String get updateFailedToStart => 'تعذّر فتح شاشة التثبيت';
+
+  @override
+  String get updateInstall => 'تثبيت';
+
+  @override
+  String get updateLater => 'لاحقاً';
+
+  @override
+  String get updateNever => 'لم يحدث بعد';
+
+  @override
+  String get updateNow => 'تنزيل التحديث';
+
+  @override
+  String get updateOpenSystemSettings => 'فتح الإعدادات';
+
+  @override
+  String get updateReady => 'جاهز للتثبيت';
+
+  @override
+  String updateSizeMb(String size) {
+    return '$size م.ب';
+  }
+
+  @override
+  String get updateSkipVersion => 'تخطّي هذا الإصدار';
+
+  @override
+  String get updateUpToDate => 'أنت على أحدث إصدار';
+
+  @override
+  String updateVersionAvailable(String version) {
+    return 'الإصدار $version متاح';
+  }
+
+  @override
+  String get updateWhatsNew => 'ما الجديد';
+
+  @override
+  String get updates => 'التحديثات';
 
   @override
   String get urlMustStartWith => 'يجب أن يبدأ الرابط بـ http:// أو https://';
@@ -1654,14 +1742,6 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get youtubeDownloadStarting => 'جاري بدء تحميل يوتيوب...';
-
-  @override
-  String get aboutDescriptionLite =>
-      'تطبيق خفيف وسريع لتحميل الفيديوهات من مختلف المنصات عبر سيرفر MeTube، يسحبها إلى جهازك وينظّف السيرفر بعدها — مع مشغل مدمج وقوائم تشغيل.';
-
-  @override
-  String get aboutDescriptionSuper =>
-      'نسخة مالك السيرفر: مكتبة موحّدة من السيرفر وجهازك، بثّ مباشر ووسوم وإتاحة دون اتصال وتحميل دفعي وتبديل بين عناوين السيرفر.';
 
   @override
   String get ytdlpCredit => 'أداة التنزيل التي يشغّلها MeTube';

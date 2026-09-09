@@ -22,6 +22,7 @@ class MainActivity : AudioServiceActivity() {
 
     override fun configureFlutterEngine(engine: FlutterEngine) {
         super.configureFlutterEngine(engine)
+        UpdateInstaller.register(this, engine)
         MethodChannel(engine.dartExecutor.binaryMessenger, channel)
             .setMethodCallHandler { call, result ->
                 when (call.method) {

@@ -10,6 +10,10 @@
          الصوت يعمل بالخلفية ولا شيء يظهر في ستارة الإشعارات ولا على
          شاشة القفل. (فحص `dumpsys package`: Lite يملكه وSuper لا.) -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <!-- التحديث الذاتي (م-66): تسليم ملف APK لمثبّت الحزم. الإذن
+         **لكل تطبيق** منذ أندرويد 8 ويمنحه المستخدم يدوياً من إعدادات
+         النظام — التصريح وحده لا يمنح شيئاً، وبدونه يُرفض التثبيت بصمت. -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
     <!-- فخ §6.2: Dio يتجاوز قيد cleartext وExoPlayer لا — سيرفر المالك
          محلي بـ http، لذلك Super يسمح cleartext عاماً (Lite يقيّده
          بالنطاقات الخاصة في المرحلة 7). بدونه: التحميل يعمل والبث يفشل. -->
@@ -124,6 +128,11 @@
         <intent>
             <action android:name="android.intent.action.VIEW"/>
             <data android:scheme="http"/>
+        </intent>
+        <!-- رؤية مثبّت الحزم (أندرويد 11+) — م-66. -->
+        <intent>
+            <action android:name="android.intent.action.VIEW"/>
+            <data android:mimeType="application/vnd.android.package-archive"/>
         </intent>
     </queries>
 </manifest>

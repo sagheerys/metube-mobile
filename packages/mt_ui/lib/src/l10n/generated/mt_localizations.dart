@@ -98,66 +98,6 @@ abstract class MTLocalizations {
     Locale('en'),
   ];
 
-  /// No description provided for @builtWith.
-  ///
-  /// In en, this message translates to:
-  /// **'Built with'**
-  String get builtWith;
-
-  /// No description provided for @copyright.
-  ///
-  /// In en, this message translates to:
-  /// **'© 2026 Yasir Sagheer'**
-  String get copyright;
-
-  /// No description provided for @externalPlayerLocalOnly.
-  ///
-  /// In en, this message translates to:
-  /// **'Local copy only — the server link is never handed to another app'**
-  String get externalPlayerLocalOnly;
-
-  /// No description provided for @externalPlayerShort.
-  ///
-  /// In en, this message translates to:
-  /// **'Another player'**
-  String get externalPlayerShort;
-
-  /// No description provided for @licensedUnder.
-  ///
-  /// In en, this message translates to:
-  /// **'Licensed under GPL-3.0'**
-  String get licensedUnder;
-
-  /// No description provided for @metubeCredit.
-  ///
-  /// In en, this message translates to:
-  /// **'The self-hosted server this app is a client for'**
-  String get metubeCredit;
-
-  /// No description provided for @noExternalPlayer.
-  ///
-  /// In en, this message translates to:
-  /// **'No external player on this device'**
-  String get noExternalPlayer;
-
-  /// No description provided for @noWarranty.
-  ///
-  /// In en, this message translates to:
-  /// **'Provided as is, without any warranty.'**
-  String get noWarranty;
-
-  /// No description provided for @notAffiliated.
-  ///
-  /// In en, this message translates to:
-  /// **'Unofficial client — not affiliated with the MeTube project or yt-dlp, and not endorsed by them.'**
-  String get notAffiliated;
-
-  /// No description provided for @openInExternalPlayer.
-  ///
-  /// In en, this message translates to:
-  /// **'Open in another player'**
-  String get openInExternalPlayer;
-
   /// No description provided for @about.
   ///
   /// In en, this message translates to:
@@ -169,6 +109,18 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'About App'**
   String get aboutApp;
+
+  /// No description provided for @aboutDescriptionLite.
+  ///
+  /// In en, this message translates to:
+  /// **'A light, fast app that downloads videos from many platforms through your MeTube server, pulls them to your device and cleans the server afterwards — with a built-in player and playlists.'**
+  String get aboutDescriptionLite;
+
+  /// No description provided for @aboutDescriptionSuper.
+  ///
+  /// In en, this message translates to:
+  /// **'The server owner\'s edition: one library across server and device, streaming, tags, offline availability, batch downloads and server address switching.'**
+  String get aboutDescriptionSuper;
 
   /// No description provided for @activeDownloads.
   ///
@@ -212,17 +164,17 @@ abstract class MTLocalizations {
   /// **'Add {count} to server'**
   String addNToServer(int count);
 
-  /// No description provided for @addToFavorites.
-  ///
-  /// In en, this message translates to:
-  /// **'Add to favorites'**
-  String get addToFavorites;
-
   /// No description provided for @addTo.
   ///
   /// In en, this message translates to:
   /// **'Add to…'**
   String get addTo;
+
+  /// No description provided for @addToFavorites.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to favorites'**
+  String get addToFavorites;
 
   /// No description provided for @addToPlaylist.
   ///
@@ -272,12 +224,6 @@ abstract class MTLocalizations {
   /// **'All downloads finished!'**
   String get allDownloadsFinished;
 
-  /// No description provided for @alreadyInPlaylist.
-  ///
-  /// In en, this message translates to:
-  /// **'Already added'**
-  String get alreadyInPlaylist;
-
   /// No description provided for @allPlatforms.
   ///
   /// In en, this message translates to:
@@ -289,6 +235,12 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'All'**
   String get allTagsFilter;
+
+  /// No description provided for @alreadyInPlaylist.
+  ///
+  /// In en, this message translates to:
+  /// **'Already added'**
+  String get alreadyInPlaylist;
 
   /// No description provided for @appFeatures.
   ///
@@ -343,6 +295,18 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'Automatic'**
   String get autoBuilt;
+
+  /// No description provided for @autoCheckUpdates.
+  ///
+  /// In en, this message translates to:
+  /// **'Check automatically'**
+  String get autoCheckUpdates;
+
+  /// No description provided for @autoCheckUpdatesHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Looks for a new version in the background about twice a day.'**
+  String get autoCheckUpdatesHelp;
 
   /// No description provided for @autoPlayNext.
   ///
@@ -476,6 +440,12 @@ abstract class MTLocalizations {
   /// **'Backup saved to: {path}'**
   String backupSuccess(Object path);
 
+  /// No description provided for @backupsKept.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} backups kept'**
+  String backupsKept(int count);
+
   /// No description provided for @batchDownloadSelected.
   ///
   /// In en, this message translates to:
@@ -487,12 +457,6 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'This link came from inside a playlist'**
   String get batchFromPlaylistNote;
-
-  /// No description provided for @batchThisVideoOnly.
-  ///
-  /// In en, this message translates to:
-  /// **'Download this video only'**
-  String get batchThisVideoOnly;
 
   /// No description provided for @batchLoading.
   ///
@@ -518,11 +482,23 @@ abstract class MTLocalizations {
   /// **'{selected} of {total} selected'**
   String batchSelectedOf(int selected, int total);
 
+  /// No description provided for @batchThisVideoOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Download this video only'**
+  String get batchThisVideoOnly;
+
   /// No description provided for @batchTitle.
   ///
   /// In en, this message translates to:
   /// **'Batch download'**
   String get batchTitle;
+
+  /// No description provided for @builtWith.
+  ///
+  /// In en, this message translates to:
+  /// **'Built with'**
+  String get builtWith;
 
   /// No description provided for @cancel.
   ///
@@ -541,6 +517,12 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'Change quality'**
   String get changeQuality;
+
+  /// No description provided for @checkForUpdates.
+  ///
+  /// In en, this message translates to:
+  /// **'Check for updates'**
+  String get checkForUpdates;
 
   /// No description provided for @chooseBackupFile.
   ///
@@ -697,6 +679,12 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'Copied to clipboard'**
   String get copiedToClipboard;
+
+  /// No description provided for @copyright.
+  ///
+  /// In en, this message translates to:
+  /// **'© 2026 Yasir Sagheer'**
+  String get copyright;
 
   /// No description provided for @couldNotLoadPlaylist.
   ///
@@ -1136,6 +1124,18 @@ abstract class MTLocalizations {
   /// **'Required to restore on a new phone or after reinstall'**
   String get exportKeySubtitle;
 
+  /// No description provided for @exportShare.
+  ///
+  /// In en, this message translates to:
+  /// **'Export & share'**
+  String get exportShare;
+
+  /// No description provided for @exportShareSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'A dated copy to send or keep elsewhere'**
+  String get exportShareSubtitle;
+
   /// No description provided for @externalNetworkDesc.
   ///
   /// In en, this message translates to:
@@ -1147,6 +1147,18 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'External network'**
   String get externalNetworkSection;
+
+  /// No description provided for @externalPlayerLocalOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Local copy only — the server link is never handed to another app'**
+  String get externalPlayerLocalOnly;
+
+  /// No description provided for @externalPlayerShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Another player'**
+  String get externalPlayerShort;
 
   /// No description provided for @failed.
   ///
@@ -1334,54 +1346,6 @@ abstract class MTLocalizations {
   /// **'In playlists'**
   String get inPlaylists;
 
-  /// No description provided for @backupsKept.
-  ///
-  /// In en, this message translates to:
-  /// **'{count} backups kept'**
-  String backupsKept(int count);
-
-  /// No description provided for @lastBackup.
-  ///
-  /// In en, this message translates to:
-  /// **'Last backup {when}'**
-  String lastBackup(String when);
-
-  /// No description provided for @noBackupsYet.
-  ///
-  /// In en, this message translates to:
-  /// **'No backups yet'**
-  String get noBackupsYet;
-
-  /// No description provided for @restoreFromBackupSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Pick one of the saved backups, or a file'**
-  String get restoreFromBackupSubtitle;
-
-  /// No description provided for @exportShare.
-  ///
-  /// In en, this message translates to:
-  /// **'Export & share'**
-  String get exportShare;
-
-  /// No description provided for @exportShareSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'A dated copy to send or keep elsewhere'**
-  String get exportShareSubtitle;
-
-  /// No description provided for @pickAnotherFile.
-  ///
-  /// In en, this message translates to:
-  /// **'From another file…'**
-  String get pickAnotherFile;
-
-  /// No description provided for @pickAnotherFileSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'A backup from another phone or an older version'**
-  String get pickAnotherFileSubtitle;
-
   /// No description provided for @invalidUrl.
   ///
   /// In en, this message translates to:
@@ -1490,11 +1454,29 @@ abstract class MTLocalizations {
   /// **'Follows your phone\'s language'**
   String get languageSystemHint;
 
+  /// No description provided for @lastBackup.
+  ///
+  /// In en, this message translates to:
+  /// **'Last backup {when}'**
+  String lastBackup(String when);
+
+  /// No description provided for @lastCheckedAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Last checked {when}'**
+  String lastCheckedAt(String when);
+
   /// No description provided for @latestAdditions.
   ///
   /// In en, this message translates to:
   /// **'Latest additions'**
   String get latestAdditions;
+
+  /// No description provided for @licensedUnder.
+  ///
+  /// In en, this message translates to:
+  /// **'Licensed under GPL-3.0'**
+  String get licensedUnder;
 
   /// No description provided for @licenses.
   ///
@@ -1604,6 +1586,12 @@ abstract class MTLocalizations {
   /// **'Manage tags'**
   String get manageTags;
 
+  /// No description provided for @metubeCredit.
+  ///
+  /// In en, this message translates to:
+  /// **'The self-hosted server this app is a client for'**
+  String get metubeCredit;
+
   /// No description provided for @modeAuto.
   ///
   /// In en, this message translates to:
@@ -1712,6 +1700,12 @@ abstract class MTLocalizations {
   /// **'Next'**
   String get next;
 
+  /// No description provided for @noBackupsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No backups yet'**
+  String get noBackupsYet;
+
   /// No description provided for @noDownloads.
   ///
   /// In en, this message translates to:
@@ -1723,6 +1717,12 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'Downloaded videos will appear here.\nShare a video link or use the Add URL button.'**
   String get noDownloadsMessage;
+
+  /// No description provided for @noExternalPlayer.
+  ///
+  /// In en, this message translates to:
+  /// **'No external player on this device'**
+  String get noExternalPlayer;
 
   /// No description provided for @noLogsFound.
   ///
@@ -1802,11 +1802,23 @@ abstract class MTLocalizations {
   /// **'Share a video URL from any app, or tap the + button to add one'**
   String get noVideosHint;
 
+  /// No description provided for @noWarranty.
+  ///
+  /// In en, this message translates to:
+  /// **'Provided as is, without any warranty.'**
+  String get noWarranty;
+
   /// No description provided for @nonYoutubeQualityNote.
   ///
   /// In en, this message translates to:
   /// **'Non-YouTube platforms only support best quality or audio'**
   String get nonYoutubeQualityNote;
+
+  /// No description provided for @notAffiliated.
+  ///
+  /// In en, this message translates to:
+  /// **'Unofficial client — not affiliated with the MeTube project or yt-dlp, and not endorsed by them.'**
+  String get notAffiliated;
 
   /// No description provided for @nothingHereYet.
   ///
@@ -1850,6 +1862,12 @@ abstract class MTLocalizations {
   /// **'Open MeTube on GitHub'**
   String get openGithub;
 
+  /// No description provided for @openInExternalPlayer.
+  ///
+  /// In en, this message translates to:
+  /// **'Open in another player'**
+  String get openInExternalPlayer;
+
   /// No description provided for @openOriginalLink.
   ///
   /// In en, this message translates to:
@@ -1891,6 +1909,18 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'Pause'**
   String get pause;
+
+  /// No description provided for @pickAnotherFile.
+  ///
+  /// In en, this message translates to:
+  /// **'From another file…'**
+  String get pickAnotherFile;
+
+  /// No description provided for @pickAnotherFileSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'A backup from another phone or an older version'**
+  String get pickAnotherFileSubtitle;
 
   /// No description provided for @pinPlaylist.
   ///
@@ -2204,12 +2234,6 @@ abstract class MTLocalizations {
   /// **'Remove'**
   String get remove;
 
-  /// No description provided for @removeUnavailable.
-  ///
-  /// In en, this message translates to:
-  /// **'Remove {count} unavailable'**
-  String removeUnavailable(int count);
-
   /// No description provided for @removeFromFavorites.
   ///
   /// In en, this message translates to:
@@ -2245,6 +2269,12 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'Remove Offline Copy'**
   String get removeOfflineTitle;
+
+  /// No description provided for @removeUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove {count} unavailable'**
+  String removeUnavailable(int count);
 
   /// No description provided for @removedFromFavorites.
   ///
@@ -2305,6 +2335,12 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'Restore failed — invalid backup file'**
   String get restoreFailed;
+
+  /// No description provided for @restoreFromBackupSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick one of the saved backups, or a file'**
+  String get restoreFromBackupSubtitle;
 
   /// No description provided for @restoreNotFound.
   ///
@@ -2924,11 +2960,131 @@ abstract class MTLocalizations {
   /// **'Up next in «{name}»'**
   String upNextIn(String name);
 
+  /// No description provided for @updateAllowInstallBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Android needs your permission before the app can install its own updates. Grant it once in system settings, then tap Install again.'**
+  String get updateAllowInstallBody;
+
+  /// No description provided for @updateAllowInstallTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow installing updates'**
+  String get updateAllowInstallTitle;
+
+  /// No description provided for @updateAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Update available'**
+  String get updateAvailable;
+
+  /// No description provided for @updateCheckFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t check for updates'**
+  String get updateCheckFailed;
+
+  /// No description provided for @updateChecking.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking…'**
+  String get updateChecking;
+
   /// No description provided for @updateCredentials.
   ///
   /// In en, this message translates to:
   /// **'Update credentials'**
   String get updateCredentials;
+
+  /// No description provided for @updateDownloadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t download the update'**
+  String get updateDownloadFailed;
+
+  /// No description provided for @updateDownloading.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloading update…'**
+  String get updateDownloading;
+
+  /// No description provided for @updateFailedToStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t open the installer'**
+  String get updateFailedToStart;
+
+  /// No description provided for @updateInstall.
+  ///
+  /// In en, this message translates to:
+  /// **'Install'**
+  String get updateInstall;
+
+  /// No description provided for @updateLater.
+  ///
+  /// In en, this message translates to:
+  /// **'Later'**
+  String get updateLater;
+
+  /// No description provided for @updateNever.
+  ///
+  /// In en, this message translates to:
+  /// **'Not yet'**
+  String get updateNever;
+
+  /// No description provided for @updateNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Download update'**
+  String get updateNow;
+
+  /// No description provided for @updateOpenSystemSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Open settings'**
+  String get updateOpenSystemSettings;
+
+  /// No description provided for @updateReady.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready to install'**
+  String get updateReady;
+
+  /// No description provided for @updateSizeMb.
+  ///
+  /// In en, this message translates to:
+  /// **'{size} MB'**
+  String updateSizeMb(String size);
+
+  /// No description provided for @updateSkipVersion.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip this version'**
+  String get updateSkipVersion;
+
+  /// No description provided for @updateUpToDate.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re on the latest version'**
+  String get updateUpToDate;
+
+  /// No description provided for @updateVersionAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Version {version} is available'**
+  String updateVersionAvailable(String version);
+
+  /// No description provided for @updateWhatsNew.
+  ///
+  /// In en, this message translates to:
+  /// **'What\'s new'**
+  String get updateWhatsNew;
+
+  /// No description provided for @updates.
+  ///
+  /// In en, this message translates to:
+  /// **'Updates'**
+  String get updates;
 
   /// No description provided for @urlMustStartWith.
   ///
@@ -3079,18 +3235,6 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'Starting YouTube download...'**
   String get youtubeDownloadStarting;
-
-  /// No description provided for @aboutDescriptionLite.
-  ///
-  /// In en, this message translates to:
-  /// **'A light, fast app that downloads videos from many platforms through your MeTube server, pulls them to your device and cleans the server afterwards — with a built-in player and playlists.'**
-  String get aboutDescriptionLite;
-
-  /// No description provided for @aboutDescriptionSuper.
-  ///
-  /// In en, this message translates to:
-  /// **'The server owner\'s edition: one library across server and device, streaming, tags, offline availability, batch downloads and server address switching.'**
-  String get aboutDescriptionSuper;
 
   /// No description provided for @ytdlpCredit.
   ///

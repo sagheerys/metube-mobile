@@ -9,6 +9,10 @@
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
     <!-- م-9: إشعارات التقدم والاكتمال والخطأ (33+ تتطلب طلباً صريحاً). -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <!-- التحديث الذاتي (م-66): تسليم ملف APK لمثبّت الحزم. الإذن
+         **لكل تطبيق** منذ أندرويد 8 ويمنحه المستخدم يدوياً من إعدادات
+         النظام — التصريح وحده لا يمنح شيئاً، وبدونه يُرفض التثبيت بصمت. -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
     <uses-permission android:name="android.permission.VIBRATE"/>
     <!-- الوسائط: قراءة ما نزّلناه لعرضه في المكتبة (م-12). -->
     <uses-permission android:name="android.permission.READ_MEDIA_VIDEO"/>
@@ -131,6 +135,11 @@
         <intent>
             <action android:name="android.intent.action.VIEW"/>
             <data android:scheme="http"/>
+        </intent>
+        <!-- رؤية مثبّت الحزم (أندرويد 11+) — م-66. -->
+        <intent>
+            <action android:name="android.intent.action.VIEW"/>
+            <data android:mimeType="application/vnd.android.package-archive"/>
         </intent>
     </queries>
 </manifest>

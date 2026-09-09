@@ -19,6 +19,7 @@ import io.flutter.plugin.common.MethodChannel
 class MainActivity : AudioServiceActivity() {
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+        UpdateInstaller.register(this, flutterEngine)
         MethodChannel(
             flutterEngine.dartExecutor.binaryMessenger,
             "metube_lite/media",

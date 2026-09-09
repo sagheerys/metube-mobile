@@ -65,4 +65,21 @@ abstract final class MTConstants {
   /// م-36: المفضلة وسم نظامي مخفي في TagsIndex — يدخل النسخ الاحتياطي
   /// تلقائياً ولا يظهر بين وسوم المستخدم.
   static const String favoritesSystemTag = '__favorites__';
+
+  // ── التحديث الذاتي من GitHub (م-66) ──
+
+  /// `owner/name` لمستودع الإصدارات — **نقطة التبديل الوحيدة**.
+  ///
+  /// نقطة `releases/latest` تتطلب مستودعاً **عاماً**: ما دام خاصاً يردّ
+  /// GitHub 404 ويُعامل كـ«لا تحديث» بصمت (فاشل-آمن). لفصل الإصدارات
+  /// عن الكود يكفي تغيير هذا السطر إلى مستودع إصدارات عام مستقل.
+  static const String updateRepo = 'sagheerys/metube-mobile';
+
+  /// إيقاع الفحص التلقائي — فحصٌ عند كل إقلاع يُغرق GitHub بلا فائدة،
+  /// والإصدارات تصدر بالأسابيع لا بالساعات.
+  static const Duration updateCheckInterval = Duration(hours: 12);
+
+  /// اسم ملف التحديث في كاش التطبيق — ثابت كي تدهسه المرة التالية بدل
+  /// تكديس ملفات APK قديمة في الجهاز.
+  static const String updateApkFileName = 'update.apk';
 }

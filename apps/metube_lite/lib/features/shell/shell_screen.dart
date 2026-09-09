@@ -20,6 +20,8 @@ import '../home/reception.dart';
 import '../player/playback_providers.dart';
 import '../settings/restore_prompt.dart';
 import '../settings/status_refresh.dart';
+import '../update/update_sheet.dart';
+import '../update/update_state.dart';
 
 /// غلاف النموذج أ: 3 وجهات سفلية + الطبقة العائمة (زر الإضافة الذكي) —
 /// الزر يظهر في المكتبة والقوائم ويختفي في الإعدادات.
@@ -35,6 +37,26 @@ class ShellScreen extends ConsumerStatefulWidget {
 class _ShellScreenState extends ConsumerState<ShellScreen>
     with WidgetsBindingObserver {
   ShareReceiver? _shareReceiver;
+
+  /// **لا يُعرض إطلاقاً وشيء مفتوح فوق الغلاف** (م-66): ورقة المشاركة أو
+  /// حوار الاستعادة قد يكون على الشاشة لحظة انتهاء الفحص، وتكديس ورقة
+  /// فوق ورقة يبتلع لمسة المستخدم ويخفي ما كان يفعله.
+  ///
+  /// مرة واحدة لكل تشغيل: صفّ «التحديثات» في الإعدادات يبقى شاهداً
+  /// بلون الفعل لمن أغلق الورقة.
+  bool _updatePrompted = false;
+
+  Future<void> _maybeShowUpdate() async {
+    if (_updatePrompted) return;
+    await ref.read(updateControllerProvider.notifier).checkSilently();
+    if (!mounted || _updatePrompted) return;
+    if (ref.read(updateControllerProvider).phase != UpdatePhase.available) {
+      return;
+    }
+    if (MTRouteDepth.depth.value != 0) return;
+    _updatePrompted = true;
+    showUpdateSheet(context);
+  }
 
   /// م-18/م-35: سبر الملفات المهاجَرة (غلاف + أبعاد) بعمر التطبيق —
   /// يُراقَب هنا لا في شاشة المكتبة كي لا يتوقف عند مغادرتها.
@@ -57,6 +79,7 @@ class _ShellScreenState extends ConsumerState<ShellScreen>
       await initDownloadNotifications(ref);
       if (mounted) await maybeOfferAutoRestore(context, ref);
       if (mounted) await _handleShortcut();
+      if (mounted) unawaited(_maybeShowUpdate());
     });
   }
 
@@ -68,6 +91,7 @@ class _ShellScreenState extends ConsumerState<ShellScreen>
       ref.invalidate(localMediaProvider);
       // الاختصار يصل كنيّة جديدة على تطبيق يعمل — لا إقلاع جديد.
       unawaited(_handleShortcut());
+      unawaited(_maybeShowUpdate());
     }
   }
 

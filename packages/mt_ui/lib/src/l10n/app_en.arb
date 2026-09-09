@@ -35,6 +35,13 @@
       }
     }
   },
+  "@backupsKept": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "@batchSelectedOf": {
     "placeholders": {
       "selected": {
@@ -108,10 +115,6 @@
       }
     }
   },
-  "builtWith": "Built with",
-  "copyright": "© 2026 Yasir Sagheer",
-  "externalPlayerLocalOnly": "Local copy only — the server link is never handed to another app",
-  "externalPlayerShort": "Another player",
   "@fileSizeBytes": {
     "placeholders": {
       "value": {
@@ -147,6 +150,20 @@
       }
     }
   },
+  "@lastBackup": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "@lastCheckedAt": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
   "@localVideos": {
     "placeholders": {
       "count": {
@@ -154,9 +171,6 @@
       }
     }
   },
-  "licensedUnder": "Licensed under GPL-3.0",
-  "metubeCredit": "The self-hosted server this app is a client for",
-  "noExternalPlayer": "No external player on this device",
   "@onServerProgress": {
     "placeholders": {
       "percent": {
@@ -164,9 +178,6 @@
       }
     }
   },
-  "noWarranty": "Provided as is, without any warranty.",
-  "notAffiliated": "Unofficial client — not affiliated with the MeTube project or yt-dlp, and not endorsed by them.",
-  "openInExternalPlayer": "Open in another player",
   "@platformCount": {
     "placeholders": {
       "name": {
@@ -218,6 +229,13 @@
   "@queuePosition": {
     "placeholders": {
       "position": {
+        "type": "int"
+      }
+    }
+  },
+  "@removeUnavailable": {
+    "placeholders": {
+      "count": {
         "type": "int"
       }
     }
@@ -291,6 +309,20 @@
       }
     }
   },
+  "@updateSizeMb": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "@updateVersionAvailable": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
   "@videosCount": {
     "placeholders": {
       "count": {
@@ -300,6 +332,8 @@
   },
   "about": "About",
   "aboutApp": "About App",
+  "aboutDescriptionLite": "A light, fast app that downloads videos from many platforms through your MeTube server, pulls them to your device and cleans the server afterwards — with a built-in player and playlists.",
+  "aboutDescriptionSuper": "The server owner's edition: one library across server and device, streaming, tags, offline availability, batch downloads and server address switching.",
   "activeDownloads": "Active Downloads",
   "activeDownloadsCount": "{count, plural, =1{1 download in progress} other{{count} downloads in progress}}",
   "activeDownloadsSheet": "Active downloads",
@@ -307,8 +341,8 @@
   "addEndpoint": "Add endpoint",
   "addLinkFab": "Add link",
   "addNToServer": "Add {count} to server",
-  "addToFavorites": "Add to favorites",
   "addTo": "Add to…",
+  "addToFavorites": "Add to favorites",
   "addToPlaylist": "Add to Playlist",
   "addUrl": "Add URL",
   "addedNToServer": "Added {count} to server",
@@ -317,9 +351,9 @@
   "addedToQueue": "Added to download queue",
   "addingToServer": "Sending to the server…",
   "allDownloadsFinished": "All downloads finished!",
-  "alreadyInPlaylist": "Already added",
   "allPlatforms": "All platforms",
   "allTagsFilter": "All",
+  "alreadyInPlaylist": "Already added",
   "appFeatures": "App Features",
   "appTitle": "MeTube Super",
   "appearance": "Appearance",
@@ -329,6 +363,8 @@
   "autoBackgroundAudio": "Auto Background Audio",
   "autoBackgroundAudioSubtitle": "Play audio in background when pressing back button",
   "autoBuilt": "Automatic",
+  "autoCheckUpdates": "Check automatically",
+  "autoCheckUpdatesHelp": "Looks for a new version in the background about twice a day.",
   "autoPlayNext": "Auto-play next: ON",
   "autoPlayOff": "Auto-play next: OFF",
   "autoRestoreSuccess": "Data restored from backup successfully!",
@@ -351,17 +387,20 @@
   "backupSettings": "Backup All Data",
   "backupSettingsSubtitle": "Seven dated copies that refresh themselves — restore any of them, or export one to share",
   "backupSuccess": "Backup saved to: {path}",
+  "backupsKept": "{count} backups kept",
   "batchDownloadSelected": "Download selected",
   "batchFromPlaylistNote": "This link came from inside a playlist",
-  "batchThisVideoOnly": "Download this video only",
   "batchLoading": "Reading the playlist…",
   "batchNothingSelected": "Select at least one item",
   "batchSaveToDevice": "Save a copy on the device",
   "batchSelectedOf": "{selected} of {total} selected",
+  "batchThisVideoOnly": "Download this video only",
   "batchTitle": "Batch download",
+  "builtWith": "Built with",
   "cancel": "Cancel",
   "cardView": "Card view",
   "changeQuality": "Change quality",
+  "checkForUpdates": "Check for updates",
   "chooseBackupFile": "Choose the backup file",
   "chooseOptions": "Options",
   "cleaningServer": "Cleaning up the server...",
@@ -388,6 +427,7 @@
   "continueAsAudioNo": "No, stop",
   "continueAsAudioTitle": "Continue in the background?",
   "copiedToClipboard": "Copied to clipboard",
+  "copyright": "© 2026 Yasir Sagheer",
   "couldNotLoadPlaylist": "Couldn't load this playlist. Check the URL and your connection.",
   "create": "Create",
   "createPlaylist": "Create Playlist",
@@ -461,8 +501,12 @@
   "errorLogsSubtitle": "View app logs for diagnostics",
   "exitFullscreen": "Exit fullscreen",
   "exportKeySubtitle": "Required to restore on a new phone or after reinstall",
+  "exportShare": "Export & share",
+  "exportShareSubtitle": "A dated copy to send or keep elsewhere",
   "externalNetworkDesc": "When the local URL can't be reached, the app connects through the first reachable URL below, from top to bottom.",
   "externalNetworkSection": "External network",
+  "externalPlayerLocalOnly": "Local copy only — the server link is never handed to another app",
+  "externalPlayerShort": "Another player",
   "failed": "Failed",
   "failedToLoadPlaylist": "Failed to load playlist",
   "failedToLoadVideo": "Failed to load video",
@@ -494,28 +538,6 @@
   "howItWorks": "How it works",
   "importBackup": "Import a backup",
   "inPlaylists": "In playlists",
-  "backupsKept": "{count} backups kept",
-  "@backupsKept": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "lastBackup": "Last backup {when}",
-  "@lastBackup": {
-    "placeholders": {
-      "when": {
-        "type": "String"
-      }
-    }
-  },
-  "noBackupsYet": "No backups yet",
-  "restoreFromBackupSubtitle": "Pick one of the saved backups, or a file",
-  "exportShare": "Export & share",
-  "exportShareSubtitle": "A dated copy to send or keep elsewhere",
-  "pickAnotherFile": "From another file…",
-  "pickAnotherFileSubtitle": "A backup from another phone or an older version",
   "invalidUrl": "Enter a valid link",
   "itemOptions": "Item options",
   "itemUnavailable": "No longer available",
@@ -534,7 +556,10 @@
   "languageEnglish": "English",
   "languageSystem": "System",
   "languageSystemHint": "Follows your phone's language",
+  "lastBackup": "Last backup {when}",
+  "lastCheckedAt": "Last checked {when}",
   "latestAdditions": "Latest additions",
+  "licensedUnder": "Licensed under GPL-3.0",
   "licenses": "Open-source licenses",
   "listenInBackground": "Listen in the background",
   "loadingVideo": "Loading video...",
@@ -553,6 +578,7 @@
   "makeAvailableOffline": "Make available offline",
   "makeOffline": "Make available offline",
   "manageTags": "Manage tags",
+  "metubeCredit": "The self-hosted server this app is a client for",
   "modeAuto": "Auto",
   "modeAutoNext": "Auto",
   "modeOff": "Off",
@@ -571,8 +597,10 @@
   "newPlaylistAction": "New playlist",
   "newTagHint": "New tag",
   "next": "Next",
+  "noBackupsYet": "No backups yet",
   "noDownloads": "No Downloads",
   "noDownloadsMessage": "Downloaded videos will appear here.\nShare a video link or use the Add URL button.",
+  "noExternalPlayer": "No external player on this device",
   "noLogsFound": "No logs found",
   "noPasswordTip": "No password? Leave auth fields empty for open servers!",
   "noPlayableSource": "This item has no playable source",
@@ -586,7 +614,9 @@
   "noValidUrl": "No valid video URL found",
   "noVideosFound": "Your library is empty",
   "noVideosHint": "Share a video URL from any app, or tap the + button to add one",
+  "noWarranty": "Provided as is, without any warranty.",
   "nonYoutubeQualityNote": "Non-YouTube platforms only support best quality or audio",
+  "notAffiliated": "Unofficial client — not affiliated with the MeTube project or yt-dlp, and not endorsed by them.",
   "nothingHereYet": "Nothing here yet",
   "nowPlaying": "Now playing",
   "offlineSmartList": "Offline",
@@ -594,6 +624,7 @@
   "onServerPhase": "On the server",
   "onServerProgress": "On the server · {percent}%",
   "openGithub": "Open MeTube on GitHub",
+  "openInExternalPlayer": "Open in another player",
   "openOriginalLink": "Open Original Link",
   "originalUrl": "Original URL",
   "password": "Password",
@@ -601,6 +632,8 @@
   "pasteFromClipboard": "Paste",
   "pasteUrlHint": "Paste the link here…",
   "pause": "Pause",
+  "pickAnotherFile": "From another file…",
+  "pickAnotherFileSubtitle": "A backup from another phone or an older version",
   "pinPlaylist": "Pin to top",
   "platform": "Platform",
   "platformCount": "{name} · {count}",
@@ -653,20 +686,13 @@
   "reelsSwipeHint": "Swipe up for the next short",
   "refresh": "Refresh",
   "remove": "Remove",
-  "removeUnavailable": "Remove {count} unavailable",
-  "@removeUnavailable": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "removeFromFavorites": "Remove from favorites",
   "removeFromPlaylist": "Remove from playlist",
   "removeLocalCopy": "Remove local copy",
   "removeOfflineConfirm": "Delete the local copy from this device?\nThe video stays on the server and can be streamed again.",
   "removeOfflineCopy": "Remove offline copy",
   "removeOfflineTitle": "Remove Offline Copy",
+  "removeUnavailable": "Remove {count} unavailable",
   "removedFromFavorites": "Removed from favorites",
   "removedFromPlaylist": "Removed from the playlist",
   "rename": "Rename",
@@ -677,6 +703,7 @@
   "restoreConfirm": "Restore data from the backup file? This overwrites current playlists, tags and settings.",
   "restoreData": "Restore",
   "restoreFailed": "Restore failed — invalid backup file",
+  "restoreFromBackupSubtitle": "Pick one of the saved backups, or a file",
   "restoreNotFound": "No backup file found in Downloads/MeTube_Super",
   "restoreSettings": "Restore All Data",
   "restoreSettingsSubtitle": "Import from Downloads/metube_lite_backup.json",
@@ -741,7 +768,6 @@
   "sortedByLastPlayed": "By last played",
   "source": "Source",
   "sourceCode": "Source code",
-  "sourceCode": "Source code",
   "speedNormal": "Normal",
   "startDownload": "Start download",
   "startingDownload": "Starting download via server...",
@@ -781,7 +807,27 @@
   "unpinPlaylist": "Unpin",
   "upNext": "Up next",
   "upNextIn": "Up next in «{name}»",
+  "updateAllowInstallBody": "Android needs your permission before the app can install its own updates. Grant it once in system settings, then tap Install again.",
+  "updateAllowInstallTitle": "Allow installing updates",
+  "updateAvailable": "Update available",
+  "updateCheckFailed": "Couldn't check for updates",
+  "updateChecking": "Checking…",
   "updateCredentials": "Update credentials",
+  "updateDownloadFailed": "Couldn't download the update",
+  "updateDownloading": "Downloading update…",
+  "updateFailedToStart": "Couldn't open the installer",
+  "updateInstall": "Install",
+  "updateLater": "Later",
+  "updateNever": "Not yet",
+  "updateNow": "Download update",
+  "updateOpenSystemSettings": "Open settings",
+  "updateReady": "Ready to install",
+  "updateSizeMb": "{size} MB",
+  "updateSkipVersion": "Skip this version",
+  "updateUpToDate": "You're on the latest version",
+  "updateVersionAvailable": "Version {version} is available",
+  "updateWhatsNew": "What's new",
+  "updates": "Updates",
   "urlMustStartWith": "URL must start with http:// or https://",
   "urlRequiredField": "Enter a URL",
   "useCurrentConnection": "Use current connection",
@@ -807,7 +853,5 @@
   "yourPlaylists": "Your playlists",
   "yourTags": "Your tags",
   "youtubeDownloadStarting": "Starting YouTube download...",
-  "aboutDescriptionLite": "A light, fast app that downloads videos from many platforms through your MeTube server, pulls them to your device and cleans the server afterwards — with a built-in player and playlists.",
-  "aboutDescriptionSuper": "The server owner's edition: one library across server and device, streaming, tags, offline availability, batch downloads and server address switching.",
   "ytdlpCredit": "The downloader MeTube runs"
 }

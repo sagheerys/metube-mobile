@@ -31,12 +31,30 @@ class UpdateChecker {
   Uri get latestUri =>
       Uri.parse('https://api.github.com/repos/$repo/releases/latest');
 
-  /// يعيد الإصدار المتاح إن كان **أحدث فعلاً** من [currentVersion]،
-  /// وإلا `null`.
-  ///
-  /// [skippedVersion] هو ما اختار المستخدم تخطّيه؛ يُكتم ما دام هو
-  /// الأحدث، ويعود الظهور تلقائياً عند صدور ما بعده.
+  /// فاشل-آمن: يبتلع كل خطأ ويعيد `null` — **للفحص التلقائي** الذي
+  /// يجري بلا علم المستخدم فلا يجوز أن يقاطعه بخطأ.
   Future<UpdateRelease?> check({
+    required String currentVersion,
+    String? skippedVersion,
+  }) async {
+    try {
+      return await checkOrThrow(
+        currentVersion: currentVersion,
+        skippedVersion: skippedVersion,
+      );
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// يرمي عند تعذّر الوصول — **للفحص اليدوي** وحده: من ضغط الزر يستحق
+  /// أن يميّز «أنت على أحدث إصدار» عن «تعذّر الوصول إلى GitHub»، وهما
+  /// في [check] نتيجة واحدة.
+  ///
+  /// يعيد الإصدار المتاح إن كان **أحدث فعلاً** من [currentVersion]،
+  /// و`null` إن لم يوجد جديد. [skippedVersion] هو ما اختار المستخدم
+  /// تخطّيه؛ يُكتم ما دام هو الأحدث ويعود مع ما بعده.
+  Future<UpdateRelease?> checkOrThrow({
     required String currentVersion,
     String? skippedVersion,
   }) async {
@@ -45,13 +63,8 @@ class UpdateChecker {
     // «تحديثاً» إلى نسخة أقدم مما على الجهاز.
     if (current == null) return null;
 
-    final UpdateRelease? release;
-    try {
-      final body = await fetch(latestUri);
-      release = UpdateRelease.tryParse(body, assetMarker: assetMarker);
-    } catch (_) {
-      return null;
-    }
+    final body = await fetch(latestUri);
+    final release = UpdateRelease.tryParse(body, assetMarker: assetMarker);
     if (release == null) return null;
     if (release.version <= current) return null;
 
