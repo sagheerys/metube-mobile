@@ -20,8 +20,8 @@ PlaylistItem _item({String? localPath, String? filename}) => PlaylistItem(
 );
 
 void main() {
-  group('القاعدة الذهبية (م-19)', () {
-    test('الملف المحلي الموجود يفوز على البث', () {
+  group('the golden rule', () {
+    test('a local file that exists beats the stream', () {
       final resolver = PlaybackSourceResolver(
         endpoint: _endpoint,
         fileExists: (_) => true,
@@ -34,7 +34,7 @@ void main() {
       expect(source.headers, isEmpty);
     });
 
-    test('مسار مسجَّل لكن الملف محذوف من القرص ⇒ يسقط للبث', () {
+    test('a recorded path whose file was deleted falls back to streaming', () {
       final resolver = PlaybackSourceResolver(
         endpoint: _endpoint,
         fileExists: (_) => false,
@@ -46,7 +46,7 @@ void main() {
       expect(source.uri.toString(), 'https://srv/download/v.mp4');
     });
 
-    test('البث يحمل ترويسة المصادقة', () {
+    test('the stream carries the authentication header', () {
       final resolver = PlaybackSourceResolver(
         endpoint: _endpoint,
         fileExists: (_) => false,
@@ -55,7 +55,7 @@ void main() {
       expect(source.headers['Authorization'], 'Basic dGVzdA==');
     });
 
-    test('اسم الملف يُرمَّز في الرابط (مسافات وعربية)', () {
+    test('the filename is encoded into the URL, spaces and Arabic alike', () {
       final resolver = PlaybackSourceResolver(
         endpoint: _endpoint,
         fileExists: (_) => false,
@@ -66,8 +66,8 @@ void main() {
     });
   });
 
-  group('لا مصدر', () {
-    test('بلا ملف محلي ولا اسم على السيرفر', () {
+  group('no source', () {
+    test('no local file and no name on the server', () {
       final resolver = PlaybackSourceResolver(
         endpoint: _endpoint,
         fileExists: (_) => false,
@@ -75,7 +75,7 @@ void main() {
       expect(resolver.resolve(_item()), isNull);
     });
 
-    test('اسم ملف خبيث `../` لا يُبث أبداً (القاعدة 9)', () {
+    test('a malicious `../` filename is never streamed', () {
       final resolver = PlaybackSourceResolver(
         endpoint: _endpoint,
         fileExists: (_) => false,
@@ -83,7 +83,7 @@ void main() {
       expect(resolver.resolve(_item(filename: '../../etc/passwd')), isNull);
     });
 
-    test('بلا سيرفر مُعد: المحلي فقط', () {
+    test('with no server configured, local only', () {
       final resolver = PlaybackSourceResolver(
         endpoint: ServerStreamEndpoint.none,
         fileExists: (_) => false,
@@ -93,40 +93,43 @@ void main() {
   });
 
   group('PlaylistItem', () {
-    test('الهوية بالـ canonicalUrl لا بالعنوان', () {
+    test('identity is the canonicalUrl, not the title', () {
       const a = PlaylistItem(canonicalUrl: 'u', title: 'أ');
       const b = PlaylistItem(canonicalUrl: 'u', title: 'ب');
       expect(a, b);
       expect({a, b}.length, 1);
     });
 
-    test('القصير = عمودي و≤3 دقائق؛ المجهول ليس قصيراً (م-35)', () {
-      const short = PlaylistItem(
-        canonicalUrl: 'u',
-        title: 't',
-        duration: Duration(seconds: 40),
-        aspectRatio: 0.5625,
-      );
-      const longVideo = PlaylistItem(
-        canonicalUrl: 'u',
-        title: 't',
-        duration: Duration(minutes: 9),
-        aspectRatio: 0.5625,
-      );
-      const wide = PlaylistItem(
-        canonicalUrl: 'u',
-        title: 't',
-        duration: Duration(seconds: 40),
-        aspectRatio: 1.77,
-      );
-      const unknown = PlaylistItem(canonicalUrl: 'u', title: 't');
-      expect(short.isShortForm, isTrue);
-      expect(longVideo.isShortForm, isFalse);
-      expect(wide.isShortForm, isFalse);
-      expect(unknown.isShortForm, isFalse);
-    });
+    test(
+      'a short is portrait and at most 3 minutes; unknown is not a short',
+      () {
+        const short = PlaylistItem(
+          canonicalUrl: 'u',
+          title: 't',
+          duration: Duration(seconds: 40),
+          aspectRatio: 0.5625,
+        );
+        const longVideo = PlaylistItem(
+          canonicalUrl: 'u',
+          title: 't',
+          duration: Duration(minutes: 9),
+          aspectRatio: 0.5625,
+        );
+        const wide = PlaylistItem(
+          canonicalUrl: 'u',
+          title: 't',
+          duration: Duration(seconds: 40),
+          aspectRatio: 1.77,
+        );
+        const unknown = PlaylistItem(canonicalUrl: 'u', title: 't');
+        expect(short.isShortForm, isTrue);
+        expect(longVideo.isShortForm, isFalse);
+        expect(wide.isShortForm, isFalse);
+        expect(unknown.isShortForm, isFalse);
+      },
+    );
 
-    test('الصوت لا يدخل مسار القِصار مهما كانت مدته', () {
+    test('audio never enters the shorts lane, whatever its duration', () {
       const audio = PlaylistItem(
         canonicalUrl: 'u',
         title: 't',
@@ -137,7 +140,7 @@ void main() {
       expect(audio.isShortForm, isFalse);
     });
 
-    test('JSON ذهاباً وإياباً', () {
+    test('JSON there and back', () {
       const item = PlaylistItem(
         canonicalUrl: 'https://x/1',
         title: 'عنوان',
@@ -158,7 +161,7 @@ void main() {
       expect(back.aspectRatio, 1.5);
     });
 
-    test('عنصر بلا رابط يُهمل', () {
+    test('an item with no URL is dropped', () {
       expect(PlaylistItem.fromJson({'title': 'بلا رابط'}), isNull);
     });
   });

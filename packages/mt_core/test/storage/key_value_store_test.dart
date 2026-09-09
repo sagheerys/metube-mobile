@@ -3,7 +3,7 @@ import 'package:test/test.dart';
 
 void main() {
   group('MemoryKeyValueStore + TypedReads', () {
-    test('كتابة وقراءة مصنفة', () async {
+    test('typed writes and reads', () async {
       final store = MemoryKeyValueStore();
       await store.setString('s', 'نص');
       await store.setBool('b', true);
@@ -19,14 +19,14 @@ void main() {
       expect(await store.keys(), {'s', 'b', 'i', 'd', 'l'});
     });
 
-    test('قراءة مصنفة لنوع مخالف ⇒ null لا انهيار', () async {
+    test('a typed read of the wrong type gives null, not a crash', () async {
       final store = MemoryKeyValueStore();
       await store.setString('x', 'not-bool');
       expect(await store.getBool('x'), isNull);
       expect(await store.getInt('x'), isNull);
     });
 
-    test('remove يحذف', () async {
+    test('remove deletes', () async {
       final store = MemoryKeyValueStore();
       await store.setString('k', 'v');
       await store.remove('k');
@@ -35,7 +35,7 @@ void main() {
   });
 
   group('PrefsMutex', () {
-    test('يسلسل قراءة-تعديل-كتابة متزامنة (لا كتابة ضائعة)', () async {
+    test('it serialises concurrent read-modify-write: no lost write', () async {
       final store = MemoryKeyValueStore();
       final mutex = PrefsMutex();
 

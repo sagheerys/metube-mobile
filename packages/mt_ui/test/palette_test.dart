@@ -10,13 +10,13 @@ void main() {
     final day = MTPalette.of(variant, Brightness.light);
     final night = MTPalette.of(variant, Brightness.dark);
 
-    test('نهاراً معكوس — ${variant.name}', () {
+    test('inverted by day: ${variant.name}', () {
       expect(day.miniBg, day.ink);
       expect(day.miniInk, day.bg);
       expect(day.night, isFalse);
     });
 
-    test('ليلاً متّسق مع الثيم — ${variant.name}', () {
+    test('consistent with the theme at night: ${variant.name}', () {
       expect(night.night, isTrue);
       expect(night.miniBg, night.card, reason: 'لا انقلاب ليلي');
       expect(night.miniInk, night.ink);

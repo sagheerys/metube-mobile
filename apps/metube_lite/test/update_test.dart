@@ -83,8 +83,8 @@ void main() {
     return c;
   }
 
-  group('الفحص الصامت', () {
-    test('يجد الأحدث ويضبط الطور', () async {
+  group('the silent check', () {
+    test('finds the newest release and sets the phase', () async {
       final c = container();
       await c.read(updateControllerProvider.notifier).checkSilently();
       final state = c.read(updateControllerProvider);
@@ -93,7 +93,7 @@ void main() {
       expect(state.release!.apkUrl, 'https://example.invalid/app.apk');
     });
 
-    test('**الحارس**: عطل الشبكة لا يرمي ولا يترك أثراً في الواجهة', () async {
+    test('**the guard**: a network failure neither throws nor shows in the interface', () async {
       // The repository is private today, so GitHub answers 404 at every
       // launch. Any exception here reaches `initState` in the shell and
       // takes down the first frame.
@@ -105,7 +105,7 @@ void main() {
       expect(state.failure, isNull);
     });
 
-    test('**الحارس**: يحترم الإيقاع فلا يطلب عند كل إقلاع', () async {
+    test('**the guard**: it honours the interval rather than asking at every launch', () async {
       var calls = 0;
       final c = ProviderContainer(
         overrides: [
@@ -147,7 +147,7 @@ void main() {
       expect(calls, 1, reason: 'لا طلب ثانٍ قبل انقضاء المهلة');
     });
 
-    test('مطفأ من الإعدادات ⇒ لا طلب إطلاقاً', () async {
+    test('switched off in settings means no request at all', () async {
       await store.setBool(UpdatePrefs.autoCheckKey, false);
       final c = container(failWith: StateError('يجب ألا يُطلب'));
       await c.read(updateControllerProvider.notifier).checkSilently();
@@ -155,8 +155,8 @@ void main() {
     });
   });
 
-  group('الفحص اليدوي', () {
-    test('يميّز «لا جديد» عن «تعذّر الوصول»', () async {
+  group('the manual check', () {
+    test('it tells up to date apart from unreachable', () async {
       final upToDate = container(body: releaseJson(tag: 'v2.0.0'));
       await upToDate.read(updateControllerProvider.notifier).checkNow();
       expect(upToDate.read(updateControllerProvider).upToDate, isTrue);
@@ -171,7 +171,7 @@ void main() {
       expect(broken.read(updateControllerProvider).upToDate, isFalse);
     });
 
-    test('**الحارس**: لا يحترم التخطّي — من ضغط الزر يريد أن يعرف', () async {
+    test('**the guard**: it ignores a skipped version, because whoever pressed the button wants to know', () async {
       await store.setString(UpdatePrefs.skippedVersionKey, '9.9.9');
       final c = container();
       // The silent check mutes it…
@@ -183,7 +183,7 @@ void main() {
     });
   });
 
-  test('التخطّي يُكتب بالإصدار ويُخفي البطاقة', () async {
+  test('skipping is stored by version and hides the card', () async {
     final c = container();
     await c.read(updateControllerProvider.notifier).checkSilently();
     await c.read(updateControllerProvider.notifier).skipCurrent();
@@ -192,10 +192,10 @@ void main() {
     expect(c.read(updateControllerProvider).phase, UpdatePhase.idle);
   });
 
-  group('كنس ملف التحديث', () {
+  group('sweeping the update file', () {
     File apkFile() => File('${cacheDir.path}/${MTConstants.updateApkFileName}');
 
-    test('**الحارس**: يُمسح بعد أن يصير التطبيق هو الإصدار المنزَّل', () async {
+    test('**the guard**: it is deleted once the app is the version that was downloaded', () async {
       // Without this, about 40MB stays in the cache forever after the first
       // successful update.
       apkFile().writeAsBytesSync(const [1, 2, 3]);
@@ -209,7 +209,7 @@ void main() {
       expect(await store.getString(UpdatePrefs.downloadedVersionKey), isNull);
     });
 
-    test('تحديث نُزّل ولم يُثبَّت بعد يبقى كما تركه صاحبه', () async {
+    test('an update downloaded but not yet installed stays where its owner left it', () async {
       apkFile().writeAsBytesSync(const [1, 2, 3]);
       await store.setString(UpdatePrefs.downloadedVersionKey, '9.9.9');
 
@@ -222,7 +222,7 @@ void main() {
     });
   });
 
-  group('صفّ الإعدادات', () {
+  group('the settings row', () {
     Widget host(ProviderContainer c) => UncontrolledProviderScope(
       container: c,
       child: MaterialApp(
@@ -236,44 +236,50 @@ void main() {
       ),
     );
 
-    testWidgets('بلا تحديث: دعوة للفحص ومفتاح تلقائي مفعّل', (tester) async {
-      final c = container();
-      await tester.pumpWidget(host(c));
-      await tester.pumpAndSettle();
-      final l10n = tester.element(find.byType(UpdateSection)).mtl;
+    testWidgets(
+      'with no update: an invitation to check, and the automatic switch on',
+      (tester) async {
+        final c = container();
+        await tester.pumpWidget(host(c));
+        await tester.pumpAndSettle();
+        final l10n = tester.element(find.byType(UpdateSection)).mtl;
 
-      expect(find.text(l10n.checkForUpdates), findsOneWidget);
-      expect(find.text(l10n.updateAvailable), findsNothing);
-      expect(
-        tester.widget<SwitchListTile>(find.byType(SwitchListTile)).value,
-        isTrue,
-      );
-    });
+        expect(find.text(l10n.checkForUpdates), findsOneWidget);
+        expect(find.text(l10n.updateAvailable), findsNothing);
+        expect(
+          tester.widget<SwitchListTile>(find.byType(SwitchListTile)).value,
+          isTrue,
+        );
+      },
+    );
 
-    testWidgets('مع تحديث: عنوان بلون الفعل ورقم الإصدار', (tester) async {
-      final c = container();
-      await c.read(updateControllerProvider.notifier).checkSilently();
-      await tester.pumpWidget(host(c));
-      await tester.pumpAndSettle();
-      final context = tester.element(find.byType(UpdateSection));
-      final l10n = context.mtl;
+    testWidgets(
+      'with an update: a title in the accent colour, and the version number',
+      (tester) async {
+        final c = container();
+        await c.read(updateControllerProvider.notifier).checkSilently();
+        await tester.pumpWidget(host(c));
+        await tester.pumpAndSettle();
+        final context = tester.element(find.byType(UpdateSection));
+        final l10n = context.mtl;
 
-      expect(find.text(l10n.updateAvailable), findsOneWidget);
-      expect(find.text('9.9.9'), findsOneWidget);
-      // **The guard**: the colour comes from the palette rather than a
-      // literal, or one app's colour leaks into the other.
-      final title = tester.widget<Text>(find.text(l10n.updateAvailable));
-      expect(title.style!.color, MTThemeX.of(context).palette.accent);
-    });
+        expect(find.text(l10n.updateAvailable), findsOneWidget);
+        expect(find.text('9.9.9'), findsOneWidget);
+        // **The guard**: the colour comes from the palette rather than a
+        // literal, or one app's colour leaks into the other.
+        final title = tester.widget<Text>(find.text(l10n.updateAvailable));
+        expect(title.style!.color, MTThemeX.of(context).palette.accent);
+      },
+    );
 
-    testWidgets('**مصفوفة الأجهزة**: الصفّ بلا تجاوز إطار', (tester) async {
+    testWidgets('**device matrix**: the row does not overflow', (tester) async {
       final c = container();
       await c.read(updateControllerProvider.notifier).checkSilently();
       await expectNoOverflow(tester, () => host(c));
     });
   });
 
-  group('ورقة التحديث', () {
+  group('the update sheet', () {
     Widget sheetHost(ProviderContainer c) => UncontrolledProviderScope(
       container: c,
       child: MaterialApp(
@@ -286,7 +292,9 @@ void main() {
       ),
     );
 
-    testWidgets('تعرض الإصدار والحجم وما الجديد وثلاثة أفعال', (tester) async {
+    testWidgets('shows the version, the size, what is new, and three actions', (
+      tester,
+    ) async {
       final c = container();
       await c.read(updateControllerProvider.notifier).checkSilently();
       await tester.pumpWidget(sheetHost(c));
@@ -303,43 +311,49 @@ void main() {
       expect(find.text(l10n.updateSkipVersion), findsOneWidget);
     });
 
-    testWidgets('**الحارس**: التخطّي من الورقة يكتب المفتاح', (tester) async {
-      final c = container();
-      await c.read(updateControllerProvider.notifier).checkSilently();
-      await tester.pumpWidget(sheetHost(c));
-      await tester.pumpAndSettle();
-      final l10n = tester.element(find.byType(UpdateSheet)).mtl;
+    testWidgets(
+      '**the guard**: skipping from the sheet writes the preference',
+      (tester) async {
+        final c = container();
+        await c.read(updateControllerProvider.notifier).checkSilently();
+        await tester.pumpWidget(sheetHost(c));
+        await tester.pumpAndSettle();
+        final l10n = tester.element(find.byType(UpdateSheet)).mtl;
 
-      await tester.tap(find.text(l10n.updateSkipVersion));
-      await tester.pumpAndSettle();
-      expect(await store.getString(UpdatePrefs.skippedVersionKey), '9.9.9');
-    });
-
-    testWidgets('طور التنزيل: تقدّم وإلغاء بدل أزرار الفعل', (tester) async {
-      final c = container(downloader: _StuckDownloader());
-      await c.read(updateControllerProvider.notifier).checkSilently();
-      await tester.pumpWidget(sheetHost(c));
-      await tester.pumpAndSettle();
-      final context = tester.element(find.byType(UpdateSheet));
-      final l10n = context.mtl;
-
-      unawaited(c.read(updateControllerProvider.notifier).download());
-      await tester.pump();
-      await tester.pump();
-
-      final bar = tester.widget<LinearProgressIndicator>(
-        find.byType(LinearProgressIndicator),
-      );
-      expect(bar.value, 0.42);
-      // **The guard**: the colour comes from the palette; Material's
-      // default track comes out greenish over the Wahaj cream.
-      expect(bar.valueColor!.value, MTThemeX.of(context).palette.accent);
-      expect(find.text(l10n.cancel), findsOneWidget);
-      expect(find.text(l10n.updateNow), findsNothing);
-    });
+        await tester.tap(find.text(l10n.updateSkipVersion));
+        await tester.pumpAndSettle();
+        expect(await store.getString(UpdatePrefs.skippedVersionKey), '9.9.9');
+      },
+    );
 
     testWidgets(
-      '**مصفوفة الأجهزة**: لا تجاوز إطار على خمسة مقاسات × ثلاثة مقاييس خط',
+      'the downloading phase: progress and cancel in place of the action buttons',
+      (tester) async {
+        final c = container(downloader: _StuckDownloader());
+        await c.read(updateControllerProvider.notifier).checkSilently();
+        await tester.pumpWidget(sheetHost(c));
+        await tester.pumpAndSettle();
+        final context = tester.element(find.byType(UpdateSheet));
+        final l10n = context.mtl;
+
+        unawaited(c.read(updateControllerProvider.notifier).download());
+        await tester.pump();
+        await tester.pump();
+
+        final bar = tester.widget<LinearProgressIndicator>(
+          find.byType(LinearProgressIndicator),
+        );
+        expect(bar.value, 0.42);
+        // **The guard**: the colour comes from the palette; Material's
+        // default track comes out greenish over the Wahaj cream.
+        expect(bar.valueColor!.value, MTThemeX.of(context).palette.accent);
+        expect(find.text(l10n.cancel), findsOneWidget);
+        expect(find.text(l10n.updateNow), findsNothing);
+      },
+    );
+
+    testWidgets(
+      '**device matrix**: no overflow across five sizes and three text scales',
       (tester) async {
         final c = container();
         await c.read(updateControllerProvider.notifier).checkSilently();

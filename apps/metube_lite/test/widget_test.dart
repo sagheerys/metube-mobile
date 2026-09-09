@@ -46,7 +46,7 @@ void main() {
     localMediaProvider.overrideWith((ref) async => items),
   ];
 
-  testWidgets('رقائق المنصة تختفي حين المكتبة منصة واحدة (م-14)', (
+  testWidgets('the platform chips disappear when the library is one platform', (
     tester,
   ) async {
     await tester.pumpWidget(
@@ -59,23 +59,26 @@ void main() {
     expect(find.byType(ChoiceChip), findsNothing);
   });
 
-  testWidgets('رقائق المنصة تظهر بعدادات حية عند تعدد المنصات', (tester) async {
-    await tester.pumpWidget(
-      host(
-        const PlatformFilterChips(),
-        overrides: base([
-          sample('a'),
-          sample('b', platform: MediaPlatform.youtube),
-        ]),
-      ),
-    );
-    await tester.pumpAndSettle();
-    // "All platforms" plus one chip per platform actually present.
-    expect(find.byType(ChoiceChip), findsNWidgets(3));
-    expect(find.textContaining('1'), findsWidgets);
-  });
+  testWidgets(
+    'the platform chips appear with live counts when there are several',
+    (tester) async {
+      await tester.pumpWidget(
+        host(
+          const PlatformFilterChips(),
+          overrides: base([
+            sample('a'),
+            sample('b', platform: MediaPlatform.youtube),
+          ]),
+        ),
+      );
+      await tester.pumpAndSettle();
+      // "All platforms" plus one chip per platform actually present.
+      expect(find.byType(ChoiceChip), findsNWidgets(3));
+      expect(find.textContaining('1'), findsWidgets);
+    },
+  );
 
-  testWidgets('صف المرشحات يعرض المفضلة والقِصار (م-35/م-36)', (tester) async {
+  testWidgets('the filter row shows favourites and shorts', (tester) async {
     await tester.pumpWidget(
       host(const LibraryFilterChips(), overrides: base([sample('a')])),
     );

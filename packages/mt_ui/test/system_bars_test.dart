@@ -39,21 +39,22 @@ void main() {
   );
 
   group('mtSheetBottomPad', () {
-    testWidgets('زر «ابدأ التحميل» يبقى فوق شريط الأزرار لا تحته', (
-      tester,
-    ) async {
-      final controller = TextEditingController();
-      addTearDown(controller.dispose);
-      await tester.pumpWidget(host(urlSheet(controller)));
+    testWidgets(
+      'the start download button stays above the navigation bar, not under it',
+      (tester) async {
+        final controller = TextEditingController();
+        addTearDown(controller.dispose);
+        await tester.pumpWidget(host(urlSheet(controller)));
 
-      final screen = tester.getSize(find.byType(MaterialApp)).height;
-      final button = tester.getRect(find.text('ابدأ التحميل'));
-      // The guard: the bottom of the button never enters the navigation
-      // area.
-      expect(button.bottom, lessThanOrEqualTo(screen - navBar));
-    });
+        final screen = tester.getSize(find.byType(MaterialApp)).height;
+        final button = tester.getRect(find.text('ابدأ التحميل'));
+        // The guard: the bottom of the button never enters the navigation
+        // area.
+        expect(button.bottom, lessThanOrEqualTo(screen - navBar));
+      },
+    );
 
-    testWidgets('لوحة المفاتيح مفتوحة ⇒ لا تُجمع المسافتان مرتين', (
+    testWidgets('with the keyboard open, the two insets are not added twice', (
       tester,
     ) async {
       final controller = TextEditingController();
@@ -68,7 +69,9 @@ void main() {
       expect(button.bottom, greaterThan(screen - 300 - navBar));
     });
 
-    testWidgets('بلا أشرطة نظام ⇒ مسافة التصميم وحدها', (tester) async {
+    testWidgets("with no system bars, the design's own padding alone", (
+      tester,
+    ) async {
       final controller = TextEditingController();
       addTearDown(controller.dispose);
       await tester.pumpWidget(host(urlSheet(controller), bottom: 0));
@@ -86,25 +89,26 @@ void main() {
         )
         .value;
 
-    testWidgets('نهاراً: أيقونات داكنة وشريط شفاف بلا حجاب تباين', (
-      tester,
-    ) async {
-      await tester.pumpWidget(
-        MaterialApp(
-          theme: mtTheme(MTVariant.lite, Brightness.light),
-          home: const MTSystemBars(child: SizedBox.shrink()),
-        ),
-      );
-      final style = styleOf(tester);
-      expect(style.systemNavigationBarIconBrightness, Brightness.dark);
-      expect(style.systemNavigationBarColor, Colors.transparent);
-      // The most important guard: without this, Android 15+ draws a scrim
-      // behind the buttons, showing a band of a different colour from the
-      // app's own bar above it.
-      expect(style.systemNavigationBarContrastEnforced, isFalse);
-    });
+    testWidgets(
+      'by day: dark icons and a transparent bar, with no contrast scrim',
+      (tester) async {
+        await tester.pumpWidget(
+          MaterialApp(
+            theme: mtTheme(MTVariant.lite, Brightness.light),
+            home: const MTSystemBars(child: SizedBox.shrink()),
+          ),
+        );
+        final style = styleOf(tester);
+        expect(style.systemNavigationBarIconBrightness, Brightness.dark);
+        expect(style.systemNavigationBarColor, Colors.transparent);
+        // The most important guard: without this, Android 15+ draws a scrim
+        // behind the buttons, showing a band of a different colour from the
+        // app's own bar above it.
+        expect(style.systemNavigationBarContrastEnforced, isFalse);
+      },
+    );
 
-    testWidgets('ليلاً: أيقونات فاتحة', (tester) async {
+    testWidgets('at night: light icons', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           theme: mtTheme(MTVariant.superApp, Brightness.dark),

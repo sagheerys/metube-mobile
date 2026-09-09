@@ -3,7 +3,7 @@ import 'package:test/test.dart';
 
 void main() {
   group('ShortLinkResolver', () {
-    test('يتتبع سلسلة redirect حتى الوجهة', () async {
+    test('it follows a chain of redirects to the destination', () async {
       final hops = {
         'https://vt.tiktok.com/ZS8abc/': 'https://vm.tiktok.com/ZS8abc/redir',
         'https://vm.tiktok.com/ZS8abc/redir':
@@ -18,7 +18,7 @@ void main() {
       );
     });
 
-    test('Location نسبي يُحل على الرابط الحالي', () async {
+    test('a relative Location resolves against the current URL', () async {
       final resolver = ShortLinkResolver(
         redirectStep: (url) async =>
             url == 'https://fb.watch/abc/' ? '/watch/?v=9876543210987' : null,
@@ -29,31 +29,37 @@ void main() {
       );
     });
 
-    test('منع الهبوط HTTPS→HTTP ⇒ يعيد الأصلي', () async {
-      final resolver = ShortLinkResolver(
-        redirectStep: (url) async =>
-            url == 'https://on.soundcloud.com/x' ? 'http://evil.com/t' : null,
-      );
-      expect(
-        await resolver.resolve('https://on.soundcloud.com/x'),
-        'https://on.soundcloud.com/x',
-      );
-    });
+    test(
+      'an HTTPS to HTTP downgrade is refused, returning the original',
+      () async {
+        final resolver = ShortLinkResolver(
+          redirectStep: (url) async =>
+              url == 'https://on.soundcloud.com/x' ? 'http://evil.com/t' : null,
+        );
+        expect(
+          await resolver.resolve('https://on.soundcloud.com/x'),
+          'https://on.soundcloud.com/x',
+        );
+      },
+    );
 
-    test('غير القصير يمر دون أي طلب', () async {
-      var calls = 0;
-      final resolver = ShortLinkResolver(
-        redirectStep: (url) async {
-          calls++;
-          return null;
-        },
-      );
-      const full = 'https://www.tiktok.com/@user/video/1';
-      expect(await resolver.resolve(full), full);
-      expect(calls, 0);
-    });
+    test(
+      'anything that is not a short link passes with no request at all',
+      () async {
+        var calls = 0;
+        final resolver = ShortLinkResolver(
+          redirectStep: (url) async {
+            calls++;
+            return null;
+          },
+        );
+        const full = 'https://www.tiktok.com/@user/video/1';
+        expect(await resolver.resolve(full), full);
+        expect(calls, 0);
+      },
+    );
 
-    test('فشل الجلب ⇒ يعيد الأصلي كما هو', () async {
+    test('a failed fetch returns the original untouched', () async {
       final resolver = ShortLinkResolver(
         redirectStep: (url) async => throw Exception('network down'),
       );
@@ -63,7 +69,7 @@ void main() {
       );
     });
 
-    test('حلقة redirect لا نهائية تتوقف عند حد القفزات', () async {
+    test('an endless redirect loop stops at the hop limit', () async {
       var calls = 0;
       final resolver = ShortLinkResolver(
         redirectStep: (url) async {
@@ -84,11 +90,11 @@ void main() {
   /// the server, yt-dlp expanded it into **20 clips** and all of them
   /// downloaded, while the app knew of one task. The decision has to be
   /// made on the final URL.
-  group('resolveForRouting — القرار على الرابط النهائي', () {
+  group('resolveForRouting: the decision is made on the final URL', () {
     const short = 'https://on.soundcloud.com/AbCdEf';
     const album = 'https://soundcloud.com/artist/sets/my-album';
 
-    test('القصير وحده يبدو مفرداً، والمحلول يُكشف ألبوماً', () async {
+    test('the short link alone looks single; resolved, it turns out to be an album', () async {
       expect(
         PlaylistDetector.isPlaylist(short),
         isFalse,
@@ -108,7 +114,7 @@ void main() {
       );
     });
 
-    test('رابط عادي لا ينتظر شبكة إطلاقاً', () async {
+    test('an ordinary URL waits for no network at all', () async {
       var touched = false;
       final resolver = ShortLinkResolver(
         redirectStep: (url) async {
@@ -121,22 +127,26 @@ void main() {
       expect(touched, isFalse, reason: 'needsResolution تحسمها قبل الشبكة');
     });
 
-    test('شبكة بطيئة ⇒ يُمضى بالرابط كما هو بلا تجميد', () async {
-      final resolver = ShortLinkResolver(
-        redirectStep: (url) async {
-          await Future<void>.delayed(const Duration(minutes: 1));
-          return album;
-        },
-      );
-      final started = DateTime.now();
-      final out = await resolver.resolveForRouting(short);
-      expect(out, short);
-      expect(
-        DateTime.now().difference(started),
-        lessThan(
-          MTConstants.routingResolveTimeout + const Duration(seconds: 3),
-        ),
-      );
-    }, timeout: const Timeout(Duration(seconds: 30)));
+    test(
+      'a slow network passes the URL through unchanged rather than freezing',
+      () async {
+        final resolver = ShortLinkResolver(
+          redirectStep: (url) async {
+            await Future<void>.delayed(const Duration(minutes: 1));
+            return album;
+          },
+        );
+        final started = DateTime.now();
+        final out = await resolver.resolveForRouting(short);
+        expect(out, short);
+        expect(
+          DateTime.now().difference(started),
+          lessThan(
+            MTConstants.routingResolveTimeout + const Duration(seconds: 3),
+          ),
+        );
+      },
+      timeout: const Timeout(Duration(seconds: 30)),
+    );
   });
 }

@@ -37,14 +37,14 @@ void main() {
     return c.read(libraryViewProvider);
   }
 
-  group('وضع العرض — أربعة أوضاع بمفتاح واحد', () {
-    test('لا شيء محفوظ ⇒ القائمة', () async {
+  group('the view mode: four modes under one key', () {
+    test('nothing saved means the list', () async {
       expect((await restored(container())).mode, LibraryViewMode.list);
     });
 
     /// **The guard**: someone updating the app while on grid must find it
     /// as they left it.
-    test('هجرة من المفتاح القديم library_grid_view', () async {
+    test('migrating from the old library_grid_view key', () async {
       await store.setBool('library_grid_view', true);
       final options = await restored(container());
       expect(options.mode, LibraryViewMode.grid);
@@ -52,12 +52,12 @@ void main() {
       expect(options.compact, isFalse);
     });
 
-    test('هجرة من المفتاح القديم library_compact_view', () async {
+    test('migrating from the old library_compact_view key', () async {
       await store.setBool('library_compact_view', true);
       expect((await restored(container())).mode, LibraryViewMode.compact);
     });
 
-    test('المفتاح الجديد يغلب القديمين', () async {
+    test('the new key beats both old ones', () async {
       await store.setBool('library_grid_view', true);
       await store.setString('library_view_mode', 'cards');
       final options = await restored(container());
@@ -66,7 +66,7 @@ void main() {
       expect(options.grid, isFalse);
     });
 
-    test('التبديل يُحفظ بالاسم لا بعلم', () async {
+    test('switching is saved by name, not by a flag', () async {
       final c = container();
       await restored(c);
       await c.read(libraryViewProvider.notifier).setMode(LibraryViewMode.cards);
@@ -75,7 +75,7 @@ void main() {
     });
   });
 
-  group('عرض فكّ الترميز', () {
+  group('the decode width', () {
     late BuildContext ctx;
 
     Future<void> host(WidgetTester tester, double dpr) => tester.pumpWidget(
@@ -90,7 +90,7 @@ void main() {
       ),
     );
 
-    testWidgets('العرض المنطقي × كثافة الشاشة', (tester) async {
+    testWidgets('the logical width times the screen density', (tester) async {
       await host(tester, 3);
       expect(mtDecodeWidth(ctx, 210), 630);
     });
@@ -98,19 +98,23 @@ void main() {
     /// **The guard**: a 98x62 box is proportionally wider than 16:9, so
     /// `cover` derives its scale from the height. Decoding at 98 alone
     /// gives an image 55 tall stretched to 62, blur we added ourselves.
-    testWidgets('الارتفاع يرفع العرض حين يفرضه cover', (tester) async {
+    testWidgets('the height raises the width when cover demands it', (
+      tester,
+    ) async {
       await host(tester, 2);
       expect(mtDecodeWidth(ctx, 98, 62), (62 * 16 / 9 * 2).ceil());
       expect(mtDecodeWidth(ctx, 98, 62), greaterThan(98 * 2));
     });
 
-    testWidgets('صندوق أطول من 16:9 لا يُرفع عرضه', (tester) async {
+    testWidgets('a box taller than 16:9 does not have its width raised', (
+      tester,
+    ) async {
       await host(tester, 2);
       expect(mtDecodeWidth(ctx, 300, 62), 600);
     });
   });
 
-  group('رقاقة المنصة في الصف الأول', () {
+  group('the platform chip in the first row', () {
     Widget app(List<LibraryItem> items) => ProviderScope(
       overrides: [
         keyValueStoreProvider.overrideWithValue(store),
@@ -133,18 +137,21 @@ void main() {
       LibraryItem(canonicalUrl: 'https://vimeo.com/1', title: 'ب'),
     ];
 
-    testWidgets('بلا منصة مختارة ⇒ لا رقاقة إضافية (لا صف ثالث)', (
-      tester,
-    ) async {
-      await tester.pumpWidget(app(items));
-      await tester.pumpAndSettle();
-      expect(find.byType(InputChip), findsNothing);
-    });
+    testWidgets(
+      'with no platform selected there is no extra chip, and no third row',
+      (tester) async {
+        await tester.pumpWidget(app(items));
+        await tester.pumpAndSettle();
+        expect(find.byType(InputChip), findsNothing);
+      },
+    );
 
     /// **The guard**: an active filter hidden behind a button makes the
     /// library look incomplete for no visible reason. The chip is what
     /// makes it visible and cancellable.
-    testWidgets('المنصة المفعّلة تظهر رقاقةً تُزال بنقرة', (tester) async {
+    testWidgets('an active platform appears as a chip that one tap removes', (
+      tester,
+    ) async {
       await tester.pumpWidget(app(items));
       await tester.pumpAndSettle();
       final element = tester.element(find.byType(LibraryFilterChips));

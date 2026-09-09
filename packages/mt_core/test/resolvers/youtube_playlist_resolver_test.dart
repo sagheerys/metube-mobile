@@ -14,8 +14,8 @@ void main() {
   final raw = File('test/fixtures/real/youtube_browse.json').readAsStringSync();
   final browse = json.decode(raw);
 
-  group('InnertubeParser — بنية «نماذج العرض» الجديدة', () {
-    test('يستخرج المقاطع من lockupViewModel', () {
+  group('InnertubeParser: the new view-model structure', () {
+    test('it extracts the clips from lockupViewModel', () {
       final preview = InnertubeParser.parseBrowse(browse);
       expect(preview, isNotNull);
       expect(
@@ -27,30 +27,33 @@ void main() {
       expect(preview.title, 'Top Trending Videos of the Week');
     });
 
-    test('كل مقطع: رابط watch كامل وعنوان ومدة وغلاف مستقر', () {
-      final track = InnertubeParser.parseBrowse(browse)!.tracks.first;
-      expect(track.url, startsWith('https://www.youtube.com/watch?v='));
-      expect(UrlKit.youtubeVideoId(track.url), hasLength(11));
-      expect(track.title, isNotEmpty);
-      expect(track.duration, isNotNull);
-      expect(track.duration!.inSeconds, greaterThan(0));
-      expect(track.thumbnail, contains('i.ytimg.com'));
-      expect(
-        track.thumbnail,
-        isNot(contains('sqp=')),
-        reason: 'روابط sqp مؤقتة تنتهي صلاحيتها',
-      );
-    });
+    test(
+      'every clip: a full watch URL, a title, a duration and a stable cover',
+      () {
+        final track = InnertubeParser.parseBrowse(browse)!.tracks.first;
+        expect(track.url, startsWith('https://www.youtube.com/watch?v='));
+        expect(UrlKit.youtubeVideoId(track.url), hasLength(11));
+        expect(track.title, isNotEmpty);
+        expect(track.duration, isNotNull);
+        expect(track.duration!.inSeconds, greaterThan(0));
+        expect(track.thumbnail, contains('i.ytimg.com'));
+        expect(
+          track.thumbnail,
+          isNot(contains('sqp=')),
+          reason: 'روابط sqp مؤقتة تنتهي صلاحيتها',
+        );
+      },
+    );
 
-    test('يلتقط رمز الاستمرار من الشكل المتداخل', () {
+    test('it picks the continuation token out of the nested shape', () {
       expect(InnertubeParser.continuationToken(browse), isNotNull);
     });
 
-    test('ردّ بلا مقاطع ⇒ null لا قائمة فارغة', () {
+    test('a response with no clips gives null, not an empty list', () {
       expect(InnertubeParser.parseBrowse({'contents': []}), isNull);
     });
 
-    test('parseClock يقرأ mm:ss وh:mm:ss ويرفض ما عداهما', () {
+    test('parseClock reads mm:ss and h:mm:ss and rejects everything else', () {
       expect(
         InnertubeParser.parseClock('16:09'),
         const Duration(minutes: 16, seconds: 9),
@@ -64,8 +67,8 @@ void main() {
     });
   });
 
-  group('YoutubePlaylistResolver — بلا شبكة', () {
-    test('يجمع الصفحات حتى ينقطع الاستمرار', () async {
+  group('YoutubePlaylistResolver, with no network', () {
+    test('it gathers the pages until the continuation stops', () async {
       var calls = 0;
       final resolver = YoutubePlaylistResolver(
         httpPost: (uri, body) async {
@@ -89,7 +92,7 @@ void main() {
       expect(preview!.tracks, isNotEmpty);
     });
 
-    test('فشل الشبكة ⇒ null ولا رمي', () async {
+    test('a network failure gives null and does not throw', () async {
       final resolver = YoutubePlaylistResolver(
         httpPost: (uri, body) async => throw const SocketException('down'),
       );
@@ -100,8 +103,8 @@ void main() {
     });
   });
 
-  group('PlaylistDetector — ما هو قائمة حقاً', () {
-    test('رابط فيديو مفرد بلا list ليس قائمة', () {
+  group('PlaylistDetector: what really is a playlist', () {
+    test('a single video URL with no list is not a playlist', () {
       // The URL that was reported: it has no `list=` in it at all.
       expect(
         PlaylistDetector.detect('https://youtu.be/i_OHQH4-M2Y?si=jnr8PIx'),
@@ -109,7 +112,7 @@ void main() {
       );
     });
 
-    test('صفحة قائمة ⇒ يوتيوب', () {
+    test('a playlist page is YouTube', () {
       expect(
         PlaylistDetector.detect(
           'https://www.youtube.com/playlist?list=PLbpi6&si=x',
@@ -118,7 +121,7 @@ void main() {
       );
     });
 
-    test('قوائم المزيج والخاصة تُعامل كرابط مفرد', () {
+    test('mix and private playlists are treated as a single URL', () {
       for (final id in ['RDMM', 'RDAMVM123', 'WL', 'LL']) {
         expect(
           PlaylistDetector.detect(
@@ -130,7 +133,7 @@ void main() {
       }
     });
 
-    test('ألبوم ساوندكلاود ⇒ ساوندكلاود', () {
+    test('a SoundCloud album is SoundCloud', () {
       expect(
         PlaylistDetector.detect('https://soundcloud.com/a/sets/b'),
         PlaylistKind.soundcloud,

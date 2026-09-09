@@ -45,7 +45,7 @@ void main() {
     existingFiles = {};
   });
 
-  test('ع-3 — سحب المشغل المصغر أثناء تحميل لا يعيده حياً يعزف', () async {
+  test('dragging the mini player away during a load does not bring it back alive and playing', () async {
     final handler = build();
     final pending = handler.playItems([_item('a'), _item('b')]);
     await handler.stop();
@@ -60,17 +60,20 @@ void main() {
     expect(await states.read(), anyOf(isNull, predicate((s) => true)));
   });
 
-  test('ع-3 — طلبان متتاليان: الأخير هو من يبقى في الإشعار', () async {
-    final handler = build();
-    final first = handler.playItems([_item('a')]);
-    final second = handler.playItems([_item('b')]);
-    await Future.wait([first, second]);
+  test(
+    'two requests in a row: the last is the one that stays in the notification',
+    () async {
+      final handler = build();
+      final first = handler.playItems([_item('a')]);
+      final second = handler.playItems([_item('b')]);
+      await Future.wait([first, second]);
 
-    expect(handler.mediaItem.value?.id, 'https://x/b');
-    expect(handler.currentItem?.canonicalUrl, 'https://x/b');
-  });
+      expect(handler.mediaItem.value?.id, 'https://x/b');
+      expect(handler.currentItem?.canonicalUrl, 'https://x/b');
+    },
+  );
 
-  test('ع-4 — تشغيل الصوت يطلب تركيز الفيديو أولاً', () async {
+  test("starting audio takes the video's focus first", () async {
     final handler = build();
     var videoPaused = 0;
     handler.onTakeVideoFocus = () async => videoPaused++;
@@ -83,7 +86,7 @@ void main() {
     expect(videoPaused, 2, reason: 'زر التشغيل في الإشعار كذلك');
   });
 
-  test('ع-4 — الاستعادة بلا تشغيل لا تنتزع تركيز الفيديو', () async {
+  test("restoring without playing does not seize the video's focus", () async {
     await AudioStateStore(store: store, mutex: mutex).write(
       AudioSessionSnapshot(
         items: [_item('a')],
@@ -100,28 +103,31 @@ void main() {
     expect(player.playing, isFalse);
   });
 
-  test('ع-5 — عنصر أول معطوب في الاستعادة لا يشغّل التالي تلقائياً', () async {
-    await AudioStateStore(store: store, mutex: mutex).write(
-      AudioSessionSnapshot(
-        items: [_item('broken'), _item('good')],
-        index: 0,
-        position: Duration.zero,
-      ),
-    );
-    final handler = build();
-    player.failing.add('https://srv/download/broken.mp3');
+  test(
+    'a broken first item on restore does not start the next one on its own',
+    () async {
+      await AudioStateStore(store: store, mutex: mutex).write(
+        AudioSessionSnapshot(
+          items: [_item('broken'), _item('good')],
+          index: 0,
+          position: Duration.zero,
+        ),
+      );
+      final handler = build();
+      player.failing.add('https://srv/download/broken.mp3');
 
-    await handler.restoreSession();
+      await handler.restoreSession();
 
-    expect(
-      handler.currentItem?.canonicalUrl,
-      'https://x/good',
-      reason: 'التخطي نفسه سلوك صحيح',
-    );
-    expect(
-      player.playing,
-      isFalse,
-      reason: 'قبل الإصلاح كان يعزف بصوت مسموع فور الإقلاع بلا نقرة',
-    );
-  });
+      expect(
+        handler.currentItem?.canonicalUrl,
+        'https://x/good',
+        reason: 'التخطي نفسه سلوك صحيح',
+      );
+      expect(
+        player.playing,
+        isFalse,
+        reason: 'قبل الإصلاح كان يعزف بصوت مسموع فور الإقلاع بلا نقرة',
+      );
+    },
+  );
 }

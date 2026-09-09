@@ -59,7 +59,7 @@ void main() {
     }
   }
 
-  test('عنصر واحد دون اتصال ⇒ وحده يحمل مساراً محلياً', () async {
+  test('one offline item: it alone carries a local path', () async {
     final container = containerWith();
     await seed(container, const {fb1: '/media/الأول.mp4'});
 
@@ -74,20 +74,23 @@ void main() {
     expect(byTitle['الثالث']?.localPath, isNull);
   });
 
-  test('لا يتكرر ملفٌ واحد تحت عنصرين مهما تصادمت المطابقة', () async {
-    final container = containerWith();
-    await seed(container, const {fb1: '/media/x.mp4'});
+  test(
+    'one file never appears under two items, however the matching collides',
+    () async {
+      final container = containerWith();
+      await seed(container, const {fb1: '/media/x.mp4'});
 
-    final items = await container.read(libraryItemsProvider.future);
-    final paths = [for (final i in items) i.localPath].nonNulls.toList();
-    expect(
-      paths.toSet(),
-      hasLength(paths.length),
-      reason: 'كل مسار محلي لعنصر واحد لا أكثر',
-    );
-  });
+      final items = await container.read(libraryItemsProvider.future);
+      final paths = [for (final i in items) i.localPath].nonNulls.toList();
+      expect(
+        paths.toSet(),
+        hasLength(paths.length),
+        reason: 'كل مسار محلي لعنصر واحد لا أكثر',
+      );
+    },
+  );
 
-  test('كلٌّ دون اتصال ⇒ كلٌّ بملفه هو', () async {
+  test('when all are offline, each carries its own file', () async {
     final container = containerWith();
     await seed(container, const {
       fb1: '/media/1.mp4',
@@ -106,7 +109,7 @@ void main() {
   /// The fuzzy matching itself is still needed: an entered URL can differ
   /// in shape from `/history`'s canonical one, so the cure must not be to
   /// abolish it.
-  test('صيغة مختلفة لنفس المقطع ما زالت تتطابق', () async {
+  test('a different shape of the same clip still matches', () async {
     final container = containerWith();
     await seed(container, const {
       'https://www.facebook.com/watch/?v=1619243166301797': '/media/1.mp4',

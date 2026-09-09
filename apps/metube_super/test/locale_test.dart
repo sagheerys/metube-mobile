@@ -31,7 +31,7 @@ void main() {
     );
   }
 
-  test('اختيار لغة يثبّتها في الحالة والتخزين', () async {
+  test('choosing a language fixes it in the state and in storage', () async {
     final container = makeContainer();
     addTearDown(container.dispose);
     await container.read(settingsProvider.notifier).setLocale('en');
@@ -40,43 +40,51 @@ void main() {
     expect(await store.getString('app_locale'), 'en');
   });
 
-  test('«النظام» يمحو اللغة المحفوظة — حالةً وتخزيناً', () async {
-    final container = makeContainer(initialLocale: 'en');
-    addTearDown(container.dispose);
-    final notifier = container.read(settingsProvider.notifier);
-    await notifier.setLocale('en');
+  test(
+    'System clears the saved language, in the state and in storage',
+    () async {
+      final container = makeContainer(initialLocale: 'en');
+      addTearDown(container.dispose);
+      final notifier = container.read(settingsProvider.notifier);
+      await notifier.setLocale('en');
 
-    await notifier.setLocale(null);
+      await notifier.setLocale(null);
 
-    // **The guard**: the old `copyWith` was `localeCode ??
-    // this.localeCode`, which swallowed the null and kept 'en', so the
-    // third option looked as though it worked and did not. `clearLocale` is
-    // what distinguishes "clear" from "do not change".
-    expect(
-      container.read(settingsProvider).localeCode,
-      isNull,
-      reason: 'فارغ ⇒ MaterialApp يمرّر locale: null فيتبع الهاتف',
-    );
-    expect(
-      await store.getString('app_locale'),
-      isNull,
-      reason: 'ولا يعود بعد إعادة التشغيل',
-    );
-  });
+      // **The guard**: the old `copyWith` was `localeCode ??
+      // this.localeCode`, which swallowed the null and kept 'en', so the
+      // third option looked as though it worked and did not. `clearLocale` is
+      // what distinguishes "clear" from "do not change".
+      expect(
+        container.read(settingsProvider).localeCode,
+        isNull,
+        reason: 'فارغ ⇒ MaterialApp يمرّر locale: null فيتبع الهاتف',
+      );
+      expect(
+        await store.getString('app_locale'),
+        isNull,
+        reason: 'ولا يعود بعد إعادة التشغيل',
+      );
+    },
+  );
 
-  test('التحميل من تخزين بلا مفتاح لغة ⇒ اتباع النظام', () async {
-    final settings = await SuperSettings.load(
-      MemoryKeyValueStore(),
-      MemorySecretStore(),
-    );
-    expect(settings.localeCode, isNull);
-  });
+  test(
+    'loading from storage with no language key follows the system',
+    () async {
+      final settings = await SuperSettings.load(
+        MemoryKeyValueStore(),
+        MemorySecretStore(),
+      );
+      expect(settings.localeCode, isNull);
+    },
+  );
 
   /// **The real risk in this change is presentation, not logic**: a third
   /// segment in a divided button on a 360dp screen may overflow, and an
   /// overflow in release mode is not a yellow stripe, which does not
   /// appear, but truncated text.
-  testWidgets('المبدّل الثلاثي يسع شاشة ضيقة بالعربية', (tester) async {
+  testWidgets('the three-way switch fits a narrow screen in Arabic', (
+    tester,
+  ) async {
     tester.view.physicalSize = const Size(1080, 2400);
     tester.view.devicePixelRatio = 3; // 360dp wide
     addTearDown(tester.view.reset);

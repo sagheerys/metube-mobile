@@ -19,7 +19,7 @@ void main() {
       Transfer(api: api, backoff: const [Duration.zero, Duration.zero]);
 
   group('Transfer (§2.4)', () {
-    test('نجاح مباشر مع تقدم 0..1', () async {
+    test('a straight success, with progress from 0 to 1', () async {
       final api = FakeApi();
       final progress = <double>[];
       await makeTransfer(api).pull(
@@ -35,7 +35,7 @@ void main() {
     // library before it has finished downloading". Lite's library is built
     // by **scanning the folder**, and Dio writes incrementally, so the
     // final file existed from the first byte.
-    test('الملف النهائي لا يظهر إلا بعد الاكتمال — الجزئي في .part', () async {
+    test('the final file appears only once complete; the partial one lives in .part', () async {
       final api = FakeApi();
       final finalPath = pathOf('a.mp4');
       final partPath = '$finalPath${Transfer.partSuffix}';
@@ -69,18 +69,21 @@ void main() {
       );
     });
 
-    test('فشل كل المحاولات ⇒ لا ملف نهائي ولا جزئي متروك', () async {
-      final api = FakeApi()..failDownloadsBeforeSuccess = 99;
-      final finalPath = pathOf('a.mp4');
-      await expectLater(
-        makeTransfer(api).pull(serverFilename: 'a.mp4', savePath: finalPath),
-        throwsA(isA<NetworkException>()),
-      );
-      expect(File(finalPath).existsSync(), isFalse);
-      expect(File('$finalPath${Transfer.partSuffix}').existsSync(), isFalse);
-    });
+    test(
+      'every attempt failing leaves no final file and no partial one behind',
+      () async {
+        final api = FakeApi()..failDownloadsBeforeSuccess = 99;
+        final finalPath = pathOf('a.mp4');
+        await expectLater(
+          makeTransfer(api).pull(serverFilename: 'a.mp4', savePath: finalPath),
+          throwsA(isA<NetworkException>()),
+        );
+        expect(File(finalPath).existsSync(), isFalse);
+        expect(File('$finalPath${Transfer.partSuffix}').existsSync(), isFalse);
+      },
+    );
 
-    test('فشلان ثم نجاح: 3 محاولات وحذف الجزئي قبل كل واحدة', () async {
+    test('two failures then a success: three attempts, deleting the partial before each', () async {
       final api = FakeApi()..failDownloadsBeforeSuccess = 2;
       await makeTransfer(api)
           .pull(serverFilename: 'a.mp4', savePath: pathOf('a.mp4'));
@@ -92,7 +95,7 @@ void main() {
       );
     });
 
-    test('فشل كل المحاولات ⇒ NetworkException والجزئي محذوف', () async {
+    test('every attempt failing raises NetworkException, and the partial file is deleted', () async {
       final api = FakeApi()..failDownloadsBeforeSuccess = 99;
       await expectLater(
         makeTransfer(api)
@@ -103,19 +106,22 @@ void main() {
       expect(File(pathOf('a.mp4')).existsSync(), isFalse);
     });
 
-    test('الإلغاء أثناء السحب يحذف الجزئي ولا يعيد المحاولة', () async {
-      final api = FakeApi()..hangDownloadUntilCancel = true;
-      final token = CancelToken();
-      final pulling = makeTransfer(api).pull(
-        serverFilename: 'a.mp4',
-        savePath: pathOf('a.mp4'),
-        cancelToken: token,
-      );
-      await Future<void>.delayed(const Duration(milliseconds: 20));
-      token.cancel();
-      await expectLater(pulling, throwsA(isA<CancelledException>()));
-      expect(api.downloadCalls, 1);
-      expect(File(pathOf('a.mp4')).existsSync(), isFalse);
-    });
+    test(
+      'cancelling during a pull deletes the partial file and does not retry',
+      () async {
+        final api = FakeApi()..hangDownloadUntilCancel = true;
+        final token = CancelToken();
+        final pulling = makeTransfer(api).pull(
+          serverFilename: 'a.mp4',
+          savePath: pathOf('a.mp4'),
+          cancelToken: token,
+        );
+        await Future<void>.delayed(const Duration(milliseconds: 20));
+        token.cancel();
+        await expectLater(pulling, throwsA(isA<CancelledException>()));
+        expect(api.downloadCalls, 1);
+        expect(File(pathOf('a.mp4')).existsSync(), isFalse);
+      },
+    );
   });
 }

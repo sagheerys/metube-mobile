@@ -60,7 +60,7 @@ void main() {
   const landscape = Size(800, 400);
 
   group('MTRotationScope', () {
-    testWidgets('إمالة الجهاز تفتح الملء التام مرة واحدة', (tester) async {
+    testWidgets('tilting the device opens fullscreen once', (tester) async {
       var opened = 0;
       Widget scope(Size size) => host(
         size: size,
@@ -86,64 +86,68 @@ void main() {
       expect(opened, 1);
     });
 
-    testWidgets('خروج يدوي والجهاز عرضي ⇒ لا يُعاد الفتح فوراً', (
-      tester,
-    ) async {
-      var opened = 0;
-      Widget scope(Size size) => host(
-        size: size,
-        child: MTRotationScope(
-          // Full screen closed immediately, as if the user had pressed
-          // exit.
-          open: (_) async => opened++,
-          builder: (_, _) => const SizedBox.shrink(),
-        ),
-      );
+    testWidgets(
+      'leaving by hand while landscape does not reopen it immediately',
+      (tester) async {
+        var opened = 0;
+        Widget scope(Size size) => host(
+          size: size,
+          child: MTRotationScope(
+            // Full screen closed immediately, as if the user had pressed
+            // exit.
+            open: (_) async => opened++,
+            builder: (_, _) => const SizedBox.shrink(),
+          ),
+        );
 
-      await tester.pumpWidget(scope(landscape));
-      await tester.pump();
-      expect(opened, 1);
-
-      // The loop this guards against: you exit, the scope sees a landscape
-      // device and reopens, you exit, it reopens, endlessly.
-      for (var i = 0; i < 3; i++) {
         await tester.pumpWidget(scope(landscape));
         await tester.pump();
-      }
-      expect(opened, 1);
+        expect(opened, 1);
 
-      // Returning to portrait rearms it, and the next tilt opens again.
-      await tester.pumpWidget(scope(portrait));
-      await tester.pump();
-      await tester.pumpWidget(scope(landscape));
-      await tester.pump();
-      expect(opened, 2);
-    });
+        // The loop this guards against: you exit, the scope sees a landscape
+        // device and reopens, you exit, it reopens, endlessly.
+        for (var i = 0; i < 3; i++) {
+          await tester.pumpWidget(scope(landscape));
+          await tester.pump();
+        }
+        expect(opened, 1);
 
-    testWidgets('الزر يفتح بلا إمالة ويخبر الصفحة أنه ليس تدويراً', (
+        // Returning to portrait rearms it, and the next tilt opens again.
+        await tester.pumpWidget(scope(portrait));
+        await tester.pump();
+        await tester.pumpWidget(scope(landscape));
+        await tester.pump();
+        expect(opened, 2);
+      },
+    );
+
+    testWidgets(
+      'the button opens without a tilt, and tells the page it was not a rotation',
+      (tester) async {
+        bool? byRotation;
+        late VoidCallback press;
+        await tester.pumpWidget(
+          host(
+            size: portrait,
+            child: MTRotationScope(
+              open: (r) async => byRotation = r,
+              builder: (_, open) {
+                press = open;
+                return const SizedBox.shrink();
+              },
+            ),
+          ),
+        );
+
+        press();
+        await tester.pump();
+        expect(byRotation, isFalse);
+      },
+    );
+
+    testWidgets('it unlocks on entering and locks again on leaving', (
       tester,
     ) async {
-      bool? byRotation;
-      late VoidCallback press;
-      await tester.pumpWidget(
-        host(
-          size: portrait,
-          child: MTRotationScope(
-            open: (r) async => byRotation = r,
-            builder: (_, open) {
-              press = open;
-              return const SizedBox.shrink();
-            },
-          ),
-        ),
-      );
-
-      press();
-      await tester.pump();
-      expect(byRotation, isFalse);
-    });
-
-    testWidgets('يفكّ القفل عند الدخول ويعيده عند المغادرة', (tester) async {
       await tester.pumpWidget(
         host(
           size: portrait,
@@ -171,7 +175,7 @@ void main() {
   });
 
   group('MTOrientation', () {
-    test('الطولي وحده لا يشمل المقلوب', () {
+    test('portrait alone does not include upside down', () {
       expect(MTOrientation.portrait, [DeviceOrientation.portraitUp]);
       expect(
         MTOrientation.free.contains(DeviceOrientation.portraitDown),
@@ -179,13 +183,15 @@ void main() {
       );
     });
 
-    testWidgets('lockLandscape يرسل العرضيين وحدهما', (tester) async {
+    testWidgets('lockLandscape sends the two landscape orientations alone', (
+      tester,
+    ) async {
       await MTOrientation.lockLandscape();
       expect(locks.single, predicate<List<String>>(isLandscapeLock));
     });
   });
 
-  group('المشغل الحقيقي — العطل المُبلَّغ عنه', () {
+  group('the real player: the reported defect', () {
     setUp(() => VideoPlayerPlatform.instance = FakeVideoPlatform());
 
     MTVideoSession newSession() {
@@ -208,7 +214,7 @@ void main() {
       }
     }
 
-    testWidgets('الخروج من الملء التام لا يثبّت التطبيق على الطولي', (
+    testWidgets('leaving fullscreen does not pin the app to portrait', (
       tester,
     ) async {
       // **A portrait test surface**: the default 800x600 is landscape, so

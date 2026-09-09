@@ -8,8 +8,8 @@ import 'package:test/test.dart';
 /// (a non-transactional restore plus a password leak), خ-3 (name collisions
 /// and orphaned partials).
 void main() {
-  group('خ-1 — مخزن القوائم لا ينكسر نهائياً على JSON مشوّه', () {
-    test('عنصر بـ items خريطة بدل قائمة يُسقَط ولا يُسقط الباقي', () async {
+  group('the playlists store is not broken for good by malformed JSON', () {
+    test('an entry whose items is a map rather than a list is dropped, and the rest survive', () async {
       final store = MemoryKeyValueStore();
       await store.setString(
         PlaylistsStore.prefsKey,
@@ -37,7 +37,7 @@ void main() {
       expect((await playlists.readAll()).length, 3);
     });
 
-    test('JSON غير صالح أصلاً ⇒ قائمة فارغة لا رمي', () async {
+    test('outright invalid JSON gives an empty list, not a throw', () async {
       final store = MemoryKeyValueStore();
       await store.setString(PlaylistsStore.prefsKey, '{ليس JSON');
       final playlists = PlaylistsStore(store: store, mutex: PrefsMutex());
@@ -45,8 +45,8 @@ void main() {
     });
   });
 
-  group('خ-2 — النسخ الاحتياطي', () {
-    test('كلمة السر المضمّنة في الرابط لا تدخل النسخة', () async {
+  group('backups', () {
+    test('a password embedded in the URL never enters the backup', () async {
       final store = MemoryKeyValueStore();
       await store.setString('server_url', 'https://user:s3cret@mtube.example');
       await store.setStringList('external_urls', [
@@ -76,14 +76,14 @@ void main() {
     });
   });
 
-  group('خ-3 — الملفات المحلية', () {
+  group('the local files', () {
     late Directory dir;
     setUp(() async {
       dir = await Directory.systemTemp.createTemp('mtf_files_');
     });
     tearDown(() => dir.delete(recursive: true));
 
-    test('الكنس يحذف الجزئيات القديمة ويترك الجارية والوسائط', () async {
+    test('the sweep deletes the old partials and leaves the running ones and the media', () async {
       final old = File('${dir.path}/قديم.mp4.part')..writeAsStringSync('x');
       final fresh = File('${dir.path}/جارٍ.mp4.part')..writeAsStringSync('y');
       final media = File('${dir.path}/سليم.mp4')..writeAsStringSync('z');
@@ -97,7 +97,7 @@ void main() {
       expect(media.existsSync(), isTrue);
     });
 
-    test('مجلد غير موجود ⇒ صفر بلا رمي', () async {
+    test('a missing folder gives zero, without throwing', () async {
       expect(await sweepPartialFiles('${dir.path}/لا-وجود-له'), 0);
     });
   });

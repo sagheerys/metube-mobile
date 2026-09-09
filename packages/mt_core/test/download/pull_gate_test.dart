@@ -45,42 +45,48 @@ void main() {
     pullGate: gate,
   );
 
-  group('بوابة السحب (م-42)', () {
-    test('بلا بوابة: يسحب مباشرة ولا يمر بـ waitingForNetwork', () async {
-      final engine = build(apiWithDone());
-      final phases = <TaskPhase>[];
-      engine.updates.listen((t) => phases.add(t.phase));
-      final task = engine.submit(inputUrl, Quality.best);
-      final result = await engine.updates
-          .firstWhere((t) => t.id == task.id && t.isFinished)
-          .timeout(const Duration(seconds: 5));
+  group('the pull gate', () {
+    test(
+      'with no gate it pulls straight away and never enters waitingForNetwork',
+      () async {
+        final engine = build(apiWithDone());
+        final phases = <TaskPhase>[];
+        engine.updates.listen((t) => phases.add(t.phase));
+        final task = engine.submit(inputUrl, Quality.best);
+        final result = await engine.updates
+            .firstWhere((t) => t.id == task.id && t.isFinished)
+            .timeout(const Duration(seconds: 5));
 
-      expect(result.phase, TaskPhase.completed);
-      expect(phases, isNot(contains(TaskPhase.waitingForNetwork)));
-    });
+        expect(result.phase, TaskPhase.completed);
+        expect(phases, isNot(contains(TaskPhase.waitingForNetwork)));
+      },
+    );
 
-    test('بوابة مغلقة: ينتظر بلا فشل — ثم يكمل حين تُفتح', () async {
-      var allowed = false;
-      final engine = build(apiWithDone(), gate: () => allowed);
-      final phases = <TaskPhase>[];
-      engine.updates.listen((t) => phases.add(t.phase));
-      final task = engine.submit(inputUrl, Quality.best);
+    test(
+      'a closed gate waits without failing, and finishes when it opens',
+      () async {
+        var allowed = false;
+        final engine = build(apiWithDone(), gate: () => allowed);
+        final phases = <TaskPhase>[];
+        engine.updates.listen((t) => phases.add(t.phase));
+        final task = engine.submit(inputUrl, Quality.best);
 
-      await _tick(30);
-      // **Waiting is a legitimate state**: neither completion nor failure
-      // while the gate is closed.
-      expect(phases.last, TaskPhase.waitingForNetwork);
-      expect(phases, isNot(contains(TaskPhase.completed)));
-      expect(phases, isNot(contains(TaskPhase.failed)));
+        await _tick(30);
+        // **Waiting is a legitimate state**: neither completion nor failure
+        // while the gate is closed.
+        expect(phases.last, TaskPhase.waitingForNetwork);
+        expect(phases, isNot(contains(TaskPhase.completed)));
+        expect(phases, isNot(contains(TaskPhase.failed)));
 
-      allowed = true;
-      final result = await engine.updates
-          .firstWhere((t) => t.id == task.id && t.isFinished)
-          .timeout(const Duration(seconds: 5));
-      expect(result.phase, TaskPhase.completed);
-    });
+        allowed = true;
+        final result = await engine.updates
+            .firstWhere((t) => t.id == task.id && t.isFinished)
+            .timeout(const Duration(seconds: 5));
+        expect(result.phase, TaskPhase.completed);
+      },
+    );
 
-    test('الإلغاء يكسر الانتظار — لا حلقة أبدية', () async {
+    test('cancelling breaks the wait: no endless loop', () async {
       final engine = build(apiWithDone(), gate: () => false);
       final phases = <TaskPhase>[];
       engine.updates.listen((t) => phases.add(t.phase));
@@ -99,19 +105,22 @@ void main() {
     });
   });
 
-  group('isRetryable (م-43) — عطل الطريق لا رفض الوجهة', () {
-    test('الشبكة والمهلة تُعادان', () {
+  group('isRetryable: a broken road, not a refusal at the destination', () {
+    test('the network and the timeout are retried', () {
       expect(const NetworkException().isRetryable, isTrue);
       expect(const PollTimeoutException().isRetryable, isTrue);
     });
 
-    test('رفض السيرفر والاعتماد والحظر لا تُعاد', () {
-      expect(const AuthFailureException().isRetryable, isFalse);
-      expect(const ServerErrorException('boom').isRetryable, isFalse);
-      expect(const PlatformBlockedException('login').isRetryable, isFalse);
-      expect(const CancelledException().isRetryable, isFalse);
-      expect(const UnsafeFilenameException().isRetryable, isFalse);
-    });
+    test(
+      'a server refusal, a credentials refusal and a block are not retried',
+      () {
+        expect(const AuthFailureException().isRetryable, isFalse);
+        expect(const ServerErrorException('boom').isRetryable, isFalse);
+        expect(const PlatformBlockedException('login').isRetryable, isFalse);
+        expect(const CancelledException().isRetryable, isFalse);
+        expect(const UnsafeFilenameException().isRetryable, isFalse);
+      },
+    );
   });
 }
 

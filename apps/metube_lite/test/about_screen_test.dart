@@ -41,7 +41,7 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  testWidgets('الإصدار بلا رقم البناء', (tester) async {
+  testWidgets('the version, without the build number', (tester) async {
     await open(tester);
     final l10n = tester.element(find.byType(AboutScreen)).mtl;
 
@@ -51,17 +51,22 @@ void main() {
     expect(find.textContaining('+7'), findsNothing);
   });
 
-  testWidgets('الرخصة ونفي الانتساب ونفي الضمان معروضة', (tester) async {
-    await open(tester);
-    final l10n = tester.element(find.byType(AboutScreen)).mtl;
+  testWidgets(
+    'the licence, the non-affiliation notice and the warranty disclaimer are shown',
+    (tester) async {
+      await open(tester);
+      final l10n = tester.element(find.byType(AboutScreen)).mtl;
 
-    expect(find.text(l10n.licensedUnder), findsOneWidget);
-    expect(find.text(l10n.notAffiliated), findsOneWidget);
-    expect(find.text(l10n.noWarranty), findsOneWidget);
-    expect(find.text(l10n.copyright), findsOneWidget);
-  });
+      expect(find.text(l10n.licensedUnder), findsOneWidget);
+      expect(find.text(l10n.notAffiliated), findsOneWidget);
+      expect(find.text(l10n.noWarranty), findsOneWidget);
+      expect(find.text(l10n.copyright), findsOneWidget);
+    },
+  );
 
-  testWidgets('روابط المشروع وما بُني عليه موجودة', (tester) async {
+  testWidgets('the project links and what it is built on are present', (
+    tester,
+  ) async {
     await open(tester);
 
     expect(find.text('sagheerys/metube-mobile'), findsOneWidget);
@@ -70,7 +75,7 @@ void main() {
     expect(find.text('yt-dlp'), findsOneWidget);
   });
 
-  testWidgets('أيقونة التطبيق نفسها لا رمز عام', (tester) async {
+  testWidgets("the app's own icon, not a generic symbol", (tester) async {
     await open(tester);
 
     final image = tester.widget<Image>(find.byType(Image).first);
@@ -81,7 +86,7 @@ void main() {
     expect((asset as AssetImage).assetName, 'assets/icons/icon.png');
   });
 
-  testWidgets('**مصفوفة الأجهزة**: «حول» بلا تجاوز إطار', (tester) async {
+  testWidgets('**device matrix**: About does not overflow', (tester) async {
     await expectNoOverflow(tester, host);
   });
 }

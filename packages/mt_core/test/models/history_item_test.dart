@@ -12,7 +12,7 @@ void main() {
       ),
     );
 
-    test('percent > 1 يُقسم على 100', () {
+    test('a percent above 1 is divided by 100', () {
       expect(response.queue.first.progress, closeTo(0.453, 0.0001));
     });
 
@@ -21,24 +21,27 @@ void main() {
       expect(response.queue.first.isDownloading, isTrue);
     });
 
-    test('الفخ: filename الغائب يبقى null — لا يُخلَّق من العنوان', () {
+    test('the trap: a missing filename stays null and is never made from the title', () {
       expect(response.queue.first.filename, isNull);
     });
 
-    test('state=preparing (مرادف) ⇒ inProgress', () {
+    test('state=preparing, a synonym, means inProgress', () {
       expect(response.queue[1].status, ItemStatus.inProgress);
     });
 
-    test('pending: _id بديل id، وname بديل title', () {
+    test('pending: _id stands in for id, and name for title', () {
       final item = response.pending.single;
       expect(item.id, 'pend-1');
       expect(item.title, 'قائمة الانتظار — مقطع معلق');
       expect(item.status, ItemStatus.inProgress);
     });
 
-    test('لا ytimg لغير YouTube: عنصر SoundCloud بلا صورة ⇒ null', () {
-      expect(response.queue[1].thumbnail, isNull);
-    });
+    test(
+      'no ytimg outside YouTube: a SoundCloud item with no image gives null',
+      () {
+        expect(response.queue[1].thumbnail, isNull);
+      },
+    );
   });
 
   group('HistoryItem.fromJson — fixture: history_done', () {
@@ -49,33 +52,39 @@ void main() {
               .done,
     );
 
-    test('finished ⇒ completed مع filename حقيقي من السيرفر', () {
+    test('finished means completed, with a real filename from the server', () {
       expect(done[0].status, ItemStatus.completed);
       expect(done[0].filename, endsWith('.dQw4w9WgXcQ.mp4'));
     });
 
-    test('YouTube بلا حقل صورة ⇒ اشتقاق i.ytimg من المعرف', () {
-      expect(
-        done[0].thumbnail,
-        'https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg',
-      );
-    });
+    test(
+      'YouTube with no thumbnail field derives an i.ytimg URL from the id',
+      () {
+        expect(
+          done[0].thumbnail,
+          'https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg',
+        );
+      },
+    );
 
-    test('لاحقة [videoid] تُزال من الرافع', () {
+    test('a trailing [videoid] is stripped from the uploader', () {
       expect(done[0].uploader, 'Rick Astley');
     });
 
-    test('file بديل filename، وartist بديل uploader', () {
+    test('file stands in for filename, and artist for uploader', () {
       expect(done[1].filename, 'أغنية تجريبية من ساوند كلاود.sc-track-9.mp3');
       expect(done[1].uploader, 'Artist Name');
     });
 
-    test('timestamp نانوثانية (>1e13) يُحوَّل ميلي ثانية', () {
-      expect(done[1].timestamp?.year, 2026);
-      expect(done[1].timestamp?.month, 9);
-    });
+    test(
+      'a nanosecond timestamp, above 1e13, is converted to milliseconds',
+      () {
+        expect(done[1].timestamp?.year, 2026);
+        expect(done[1].timestamp?.month, 9);
+      },
+    );
 
-    test('عنصر Facebook: state=done ⇒ completed، datetime ISO، بلا اختلاق', () {
+    test('a Facebook item: state=done means completed, an ISO datetime, and nothing invented', () {
       final fb = done[2];
       expect(fb.id, 'fb-reel-1');
       expect(fb.status, ItemStatus.completed);
@@ -85,7 +94,7 @@ void main() {
       expect(fb.timestamp?.toUtc().hour, 6);
     });
 
-    test('entry.thumbnails ⇒ آخر عنصر (الأعلى جودة)', () {
+    test('entry.thumbnails takes the last entry, the highest quality', () {
       expect(done[3].thumbnail, 'https://i.vimeocdn.com/video/high.jpg');
     });
   });
@@ -98,42 +107,42 @@ void main() {
       ).done,
     );
 
-    test('خطأ كوكيز/تسجيل دخول ⇒ isPlatformBlocked', () {
+    test('a cookie or sign-in error means isPlatformBlocked', () {
       expect(done[0].status, ItemStatus.failed);
       expect(done[0].isPlatformBlocked, isTrue);
     });
 
-    test('خطأ "not a bot" ⇒ isPlatformBlocked', () {
+    test('a "not a bot" error means isPlatformBlocked', () {
       expect(done[1].isPlatformBlocked, isTrue);
     });
 
-    test('فشل عادي: message بديل error، ليس محظور منصة', () {
+    test('an ordinary failure: message stands in for error, and it is not a platform block', () {
       expect(done[2].status, ItemStatus.failed);
       expect(done[2].error, 'Unsupported URL');
       expect(done[2].isPlatformBlocked, isFalse);
     });
   });
 
-  group('HistoryItem — حواف', () {
-    test('بلا id ⇒ uuid فريد لكل استدعاء', () {
+  group('HistoryItem: the edges', () {
+    test('with no id, a unique uuid for every call', () {
       final a = HistoryItem.fromJson({'url': 'https://x.com/a/status/1'});
       final b = HistoryItem.fromJson({'url': 'https://x.com/a/status/1'});
       expect(a.id, isNotEmpty);
       expect(a.id, isNot(b.id));
     });
 
-    test('progress ضمن 0..1 يبقى كما هو', () {
+    test('a progress already within 0..1 is left as it is', () {
       final item = HistoryItem.fromJson({'url': 'u', 'progress': 0.7});
       expect(item.progress, 0.7);
     });
 
-    test('بلا حالة وبلا خطأ ⇒ unknown', () {
+    test('no status and no error means unknown', () {
       final item = HistoryItem.fromJson({'url': 'u'});
       expect(item.status, ItemStatus.unknown);
       expect(item.hasError, isFalse);
     });
 
-    test('خطأ نصي بلا status ⇒ failed', () {
+    test('an error text with no status means failed', () {
       final item = HistoryItem.fromJson({'url': 'u', 'error': 'boom'});
       expect(item.status, ItemStatus.failed);
     });

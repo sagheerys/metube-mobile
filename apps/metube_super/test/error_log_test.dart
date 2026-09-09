@@ -52,8 +52,8 @@ void main() {
     return logger.readAll();
   }
 
-  group('مرشّح التكرار', () {
-    test('نفس الخطأ من نفس المصدر يُسجَّل مرة واحدة', () async {
+  group('the repetition filter', () {
+    test('the same error from the same source is logged once', () async {
       logErrorOnce(logger, 'probe', const NetworkException('down'));
       logErrorOnce(logger, 'probe', const NetworkException('down'));
       logErrorOnce(logger, 'probe', const NetworkException('down'));
@@ -64,23 +64,26 @@ void main() {
       expect('probe:'.allMatches(text).length, 1);
     });
 
-    test('خطأ مختلف من نفس المصدر يُسجَّل', () async {
+    test('a different error from the same source is logged', () async {
       logErrorOnce(logger, 'probe', const NetworkException('down'));
       logErrorOnce(logger, 'probe', const AuthFailureException('HTTP 401'));
       final text = await waitForLog('401');
       expect('probe:'.allMatches(text).length, 2);
     });
 
-    test('بعد التعافي يُسجَّل تكرار العطل — حدث جديد', () async {
-      logErrorOnce(logger, 'probe', const NetworkException('down'));
-      clearErrorSignature('probe');
-      logErrorOnce(logger, 'probe', const NetworkException('down'));
-      final text = await waitForLog('probe');
-      expect('probe:'.allMatches(text).length, 2);
-    });
+    test(
+      'after a recovery the same failure is logged again, as a new event',
+      () async {
+        logErrorOnce(logger, 'probe', const NetworkException('down'));
+        clearErrorSignature('probe');
+        logErrorOnce(logger, 'probe', const NetworkException('down'));
+        final text = await waitForLog('probe');
+        expect('probe:'.allMatches(text).length, 2);
+      },
+    );
   });
 
-  group('فشل المكتبة يصل السجل', () {
+  group('a library failure reaches the log', () {
     ProviderContainer containerWith(int status) {
       final dio = Dio()..httpClientAdapter = _StatusAdapter(status);
       return ProviderContainer(
@@ -102,7 +105,7 @@ void main() {
       );
     }
 
-    test('رفض الاعتماد (401) يُكتب في السجل بوسم الشبكة', () async {
+    test('a 401 is written to the log under the network tag', () async {
       final container = containerWith(401);
       addTearDown(container.dispose);
       await expectLater(
@@ -114,7 +117,7 @@ void main() {
       expect(await waitForLog('history'), contains('AuthFailureException'));
     });
 
-    test('نجاح السجل لا يكتب شيئاً', () async {
+    test('a successful load writes nothing', () async {
       final container = containerWith(200);
       addTearDown(container.dispose);
       await container.read(historyProvider.future);
@@ -123,8 +126,8 @@ void main() {
     });
   });
 
-  group('بطاقة الحالة لا تكذب بعد العودة', () {
-    testWidgets('العودة إلى التطبيق تعيد سؤال السيرفر', (tester) async {
+  group('the status card does not lie after coming back', () {
+    testWidgets('returning to the app asks the server again', (tester) async {
       var probes = 0;
       final container = ProviderContainer(
         overrides: [
@@ -170,8 +173,8 @@ void main() {
     });
   });
 
-  group('إشعارات Super (قرار المالك 2026-09-06)', () {
-    test('مهمة فاشلة ⇒ إشعار خطأ يحمل سبب الفشل لا كلمة «فشل»', () async {
+  group("Super's notifications", () {
+    test('a failed task raises an error notification carrying the reason, not the word failed', () async {
       final fake = _FakeNotifications();
       final tasks = StreamController<List<DownloadTask>>();
       addTearDown(tasks.close);
@@ -210,7 +213,7 @@ void main() {
       expect(fake.results.single.body, contains('كلمة المرور'));
     });
 
-    test('مهمة مكتملة ⇒ إشعار نتيجة بحمولة تُبرز العنصر', () async {
+    test('a completed task raises a result notification whose payload points at the item', () async {
       final fake = _FakeNotifications();
       final tasks = StreamController<List<DownloadTask>>();
       addTearDown(tasks.close);

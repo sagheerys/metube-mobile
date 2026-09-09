@@ -61,7 +61,7 @@ void main() {
     return (container, store);
   }
 
-  test('تغيّر الشبكة يعتمد المحلي تلقائياً بدل النفق', () async {
+  test('a network change adopts the local URL over the tunnel', () async {
     final (container, store) = build(reachable: {local, tunnel});
     final changes = StreamController<Object?>.broadcast();
     addTearDown(changes.close);
@@ -81,19 +81,22 @@ void main() {
     expect(container.read(settingsProvider).serverConfig?.baseUrl, local);
   });
 
-  test('خروج من الشبكة المنزلية: المحلي يسقط ⇒ يعتمد النفق', () async {
-    final (container, store) = build(reachable: {tunnel}, activeUrl: local);
-    final service = AutoSwitchService(
-      _RefFor(container),
-      networkChanges: const Stream.empty(),
-      debounce: Duration.zero,
-    );
-    await service.resolveNow();
-    expect(container.read(settingsProvider).activeUrl, tunnel);
-    expect(await store.getString('active_url'), tunnel);
-  });
+  test(
+    'leaving the home network: the local URL drops and the tunnel is adopted',
+    () async {
+      final (container, store) = build(reachable: {tunnel}, activeUrl: local);
+      final service = AutoSwitchService(
+        _RefFor(container),
+        networkChanges: const Stream.empty(),
+        debounce: Duration.zero,
+      );
+      await service.resolveNow();
+      expect(container.read(settingsProvider).activeUrl, tunnel);
+      expect(await store.getString('active_url'), tunnel);
+    },
+  );
 
-  test('المعتمد لم يعد من المرشحين (عُدّل الرابط) ⇒ يُصحَّح', () async {
+  test('an active URL no longer among the candidates is corrected', () async {
     // A regression: editing the endpoint list left the app on a deleted
     // address.
     final (container, _) = build(
@@ -112,7 +115,7 @@ void main() {
     expect(container.read(settingsProvider).activeUrl, tunnel);
   });
 
-  test('لا شيء يستجيب ⇒ **لا يُصفَّر** الرابط المعتمد', () async {
+  test('when nothing responds, the active URL is **not** cleared', () async {
     final (container, _) = build(reachable: const {});
     final service = AutoSwitchService(
       _RefFor(container),
@@ -123,7 +126,7 @@ void main() {
     expect(container.read(settingsProvider).activeUrl, tunnel);
   });
 
-  test('التبديل مُطفأ ⇒ لا يمس الرابط المعتمد', () async {
+  test('with switching off, the active URL is left alone', () async {
     final (container, _) = build(reachable: {local, tunnel}, autoSwitch: false);
     final service = AutoSwitchService(
       _RefFor(container),
@@ -134,46 +137,49 @@ void main() {
     expect(container.read(settingsProvider).activeUrl, tunnel);
   });
 
-  group('بذرة قائمة الروابط (تثبيت هُيّئ برابط واحد)', () {
-    test('عنوان شبكة خاصة ⇒ يُسجَّل رابطاً محلياً', () async {
-      final store = MemoryKeyValueStore();
-      await seedEndpointsFromActive(
-        store,
-        PrefsMutex(),
-        const SuperSettings(activeUrl: local),
-      );
-      expect(await store.getString('local_url'), local);
-      expect(await store.getStringList('external_urls'), isNull);
-    });
+  group(
+    'seeding the URL list from an install configured with a single URL',
+    () {
+      test('a private address is recorded as the local URL', () async {
+        final store = MemoryKeyValueStore();
+        await seedEndpointsFromActive(
+          store,
+          PrefsMutex(),
+          const SuperSettings(activeUrl: local),
+        );
+        expect(await store.getString('local_url'), local);
+        expect(await store.getStringList('external_urls'), isNull);
+      });
 
-    test('نطاق عام ⇒ يُسجَّل رابطاً خارجياً', () async {
-      final store = MemoryKeyValueStore();
-      await seedEndpointsFromActive(
-        store,
-        PrefsMutex(),
-        const SuperSettings(activeUrl: tunnel),
-      );
-      expect(await store.getStringList('external_urls'), [tunnel]);
-      expect(await store.getString('local_url'), isNull);
-    });
+      test('a public domain is recorded as an external URL', () async {
+        final store = MemoryKeyValueStore();
+        await seedEndpointsFromActive(
+          store,
+          PrefsMutex(),
+          const SuperSettings(activeUrl: tunnel),
+        );
+        expect(await store.getStringList('external_urls'), [tunnel]);
+        expect(await store.getString('local_url'), isNull);
+      });
 
-    test('قائمة موجودة ⇒ لا تُمس', () async {
-      final store = MemoryKeyValueStore();
-      await seedEndpointsFromActive(
-        store,
-        PrefsMutex(),
-        const SuperSettings(
-          localUrl: local,
-          activeUrl: tunnel,
-          externalUrls: [tunnel],
-        ),
-      );
-      expect(await store.getStringList('external_urls'), isNull);
-    });
-  });
+      test('an existing list is left untouched', () async {
+        final store = MemoryKeyValueStore();
+        await seedEndpointsFromActive(
+          store,
+          PrefsMutex(),
+          const SuperSettings(
+            localUrl: local,
+            activeUrl: tunnel,
+            externalUrls: [tunnel],
+          ),
+        );
+        expect(await store.getStringList('external_urls'), isNull);
+      });
+    },
+  );
 
   group('isPrivateHostUrl', () {
-    test('العناوين الخاصة', () {
+    test('private addresses', () {
       for (final url in const [
         'http://192.168.1.10:8086',
         'http://10.0.0.5',
@@ -188,7 +194,7 @@ void main() {
       }
     });
 
-    test('العناوين العامة', () {
+    test('public addresses', () {
       for (final url in const [
         'https://metube.example.com',
         'http://172.32.0.1',

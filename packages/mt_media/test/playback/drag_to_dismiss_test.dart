@@ -36,7 +36,7 @@ void main() {
     expect(find.text('صوت'), findsOneWidget);
   }
 
-  testWidgets('سحب قصير ⇒ تعود إلى مكانها ولا تُغلق', (tester) async {
+  testWidgets('a short drag springs back and does not close', (tester) async {
     await pumpPage(tester);
     await tester.drag(
       find.text('صوت'),
@@ -52,7 +52,7 @@ void main() {
     );
   });
 
-  testWidgets('سحب يتجاوز المسافة ⇒ تُغلق', (tester) async {
+  testWidgets('a drag past the distance closes it', (tester) async {
     await pumpPage(tester);
     await tester.drag(
       find.text('صوت'),
@@ -63,7 +63,7 @@ void main() {
     expect(find.text('افتح'), findsOneWidget);
   });
 
-  testWidgets('قذفة سريعة قصيرة ⇒ تُغلق أيضاً', (tester) async {
+  testWidgets('a quick short fling closes it too', (tester) async {
     await pumpPage(tester);
     await tester.fling(
       find.text('صوت'),
@@ -74,7 +74,7 @@ void main() {
     expect(find.text('صوت'), findsNothing);
   });
 
-  testWidgets('السحب لأعلى لا يفعل شيئاً', (tester) async {
+  testWidgets('dragging upwards does nothing', (tester) async {
     await pumpPage(tester);
     await tester.drag(find.text('صوت'), const Offset(0, -300));
     await tester.pumpAndSettle();

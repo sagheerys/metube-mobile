@@ -14,7 +14,7 @@ void main() {
   const url = 'https://www.youtube.com/watch?v=dQw4w9WgXcQ';
 
   group('OfflineIndex', () {
-    test('put/get/remove بمفتاح canonicalUrl', () async {
+    test('put, get and remove, keyed by canonicalUrl', () async {
       final index = OfflineIndex(store: store, mutex: mutex);
       await index.put(url, '/storage/emulated/0/Download/MeTube_Super/a.mp4');
       expect(await index.isOffline(url), isTrue);
@@ -23,13 +23,13 @@ void main() {
       expect(await index.isOffline(url), isFalse);
     });
 
-    test('يخزن تحت مفتاح prefs القديم offline_index', () async {
+    test('it stores under the old offline_index preference key', () async {
       final index = OfflineIndex(store: store, mutex: mutex);
       await index.put(url, '/x');
       expect(store.snapshot.keys, contains('offline_index'));
     });
 
-    test('JSON معطوب ⇒ خريطة فارغة لا انهيار', () async {
+    test('corrupt JSON gives an empty map, not a crash', () async {
       await store.setString('offline_index', '{broken');
       final index = OfflineIndex(store: store, mutex: mutex);
       expect(await index.readAll(), isEmpty);
@@ -37,7 +37,7 @@ void main() {
   });
 
   group('ArtworkIndex', () {
-    test('غلاف SoundCloud محفوظ ومسترجع', () async {
+    test('a SoundCloud cover is stored and read back', () async {
       final index = ArtworkIndex(store: store, mutex: mutex);
       const sc = 'https://soundcloud.com/artist/track';
       await index.put(sc, 'https://i1.sndcdn.com/art-t500x500.jpg');
@@ -59,7 +59,7 @@ void main() {
       File thumbAt(String name) =>
           File('${dir.path}/$name.jpg')..writeAsStringSync('jpeg');
 
-      test('يحذف الملف من القرص لا المدخلة وحدها', () async {
+      test('it deletes the file from disk, not only the entry', () async {
         final index = ArtworkIndex(store: store, mutex: mutex);
         final thumb = thumbAt('a');
         await index.put(url, thumb.path);
@@ -70,7 +70,7 @@ void main() {
         expect(await index.artworkOf(url), isNull);
       });
 
-      test('رابط بعيد لا يُعامل معاملة المسار', () async {
+      test('a remote URL is not treated as a path', () async {
         final index = ArtworkIndex(store: store, mutex: mutex);
         await index.put(url, 'https://i.ytimg.com/vi/x/hq.jpg');
         // There is no file to delete, and what matters is that it does not
@@ -79,7 +79,7 @@ void main() {
         expect(await index.artworkOf(url), isNull);
       });
 
-      test('غلاف يشترك فيه مفتاح باقٍ لا يُحذف', () async {
+      test('a cover shared with a surviving key is not deleted', () async {
         final index = ArtworkIndex(store: store, mutex: mutex);
         final shared = thumbAt('shared');
         await index.put('u1', shared.path);
@@ -95,17 +95,20 @@ void main() {
         expect(await index.artworkOf('u2'), shared.path);
       });
 
-      test('ملف مفقود أصلاً ⇒ لا انهيار، والمدخلة تزول', () async {
-        final index = ArtworkIndex(store: store, mutex: mutex);
-        await index.put(url, '${dir.path}/gone.jpg');
-        await index.removeKeysAndFiles([url]);
-        expect(await index.readAll(), isEmpty);
-      });
+      test(
+        'a file already missing does not crash, and the entry goes',
+        () async {
+          final index = ArtworkIndex(store: store, mutex: mutex);
+          await index.put(url, '${dir.path}/gone.jpg');
+          await index.removeKeysAndFiles([url]);
+          expect(await index.readAll(), isEmpty);
+        },
+      );
     });
   });
 
   group('TagsIndex', () {
-    test('toggle يضيف ثم يزيل، والفارغ يُحذف من الخريطة', () async {
+    test('toggle adds then removes, and an empty set leaves the map', () async {
       final index = TagsIndex(store: store, mutex: mutex);
       await index.toggleTag(url, 'أناشيد');
       expect(await index.tagsOf(url), ['أناشيد']);
@@ -114,7 +117,7 @@ void main() {
       expect(await index.readAll(), isEmpty);
     });
 
-    test('العدادات والتصفية', () async {
+    test('the counters and the filtering', () async {
       final index = TagsIndex(store: store, mutex: mutex);
       await index.toggleTag('u1', 'وثائقي');
       await index.toggleTag('u2', 'وثائقي');
@@ -123,7 +126,7 @@ void main() {
       expect(await index.urlsWithTag('وثائقي'), ['u1', 'u2']);
     });
 
-    test('إعادة تسمية وحذف وسم — الوسائط تبقى', () async {
+    test('renaming and deleting a tag; the media stay', () async {
       final index = TagsIndex(store: store, mutex: mutex);
       await index.toggleTag('u1', 'قديم');
       await index.toggleTag('u1', 'ثابت');

@@ -23,21 +23,24 @@ void main() {
       );
     }
 
-    test('المحلي مفضّل حتى لو الخارجي يستجيب أيضاً', () async {
-      final resolver = makeResolver({
-        'http://192.168.1.10:8081': () async => true,
-        'https://tunnel.example.com': () async => true,
-      });
-      expect(
-        await resolver.resolveActive(
-          localUrl: 'http://192.168.1.10:8081',
-          externalUrls: ['https://tunnel.example.com'],
-        ),
-        'http://192.168.1.10:8081',
-      );
-    });
+    test(
+      'the local URL is preferred even when the external one also responds',
+      () async {
+        final resolver = makeResolver({
+          'http://192.168.1.10:8081': () async => true,
+          'https://tunnel.example.com': () async => true,
+        });
+        expect(
+          await resolver.resolveActive(
+            localUrl: 'http://192.168.1.10:8081',
+            externalUrls: ['https://tunnel.example.com'],
+          ),
+          'http://192.168.1.10:8081',
+        );
+      },
+    );
 
-    test('سقوط المحلي ⇒ أول خارجي مستجيب بترتيب القائمة', () async {
+    test('when the local URL drops, the first responding external one in list order', () async {
       final resolver = makeResolver({
         'http://192.168.1.10:8081': () async => false,
         'https://a.example.com': () async => false,
@@ -52,7 +55,7 @@ void main() {
       );
     });
 
-    test('لا شيء يستجيب ⇒ null', () async {
+    test('nothing responds gives null', () async {
       final resolver = makeResolver({});
       expect(
         await resolver.resolveActive(
@@ -63,21 +66,24 @@ void main() {
       );
     });
 
-    test('probe معلّق يسقط بمهلة قصيرة بدل التعليق', () async {
-      final resolver = makeResolver({
-        'http://hangs': () => Completer<bool>().future, // never completes
-        'https://ok.example.com': () async => true,
-      });
-      expect(
-        await resolver.resolveActive(
-          localUrl: 'http://hangs',
-          externalUrls: ['https://ok.example.com'],
-        ),
-        'https://ok.example.com',
-      );
-    });
+    test(
+      'a hanging probe fails on a short timeout instead of hanging',
+      () async {
+        final resolver = makeResolver({
+          'http://hangs': () => Completer<bool>().future, // never completes
+          'https://ok.example.com': () async => true,
+        });
+        expect(
+          await resolver.resolveActive(
+            localUrl: 'http://hangs',
+            externalUrls: ['https://ok.example.com'],
+          ),
+          'https://ok.example.com',
+        );
+      },
+    );
 
-    test('probe يرمي ⇒ «لا يستجيب» لا انهيار', () async {
+    test('a probe that throws means unreachable, not a crash', () async {
       final resolver = makeResolver({
         'http://boom': () async => throw const NetworkException('down'),
       });
@@ -86,36 +92,39 @@ void main() {
       });
     });
 
-    test('لا مرشحين ⇒ null فوراً', () async {
+    test('no candidates gives null immediately', () async {
       final resolver = makeResolver({});
       expect(await resolver.resolveActive(localUrl: '  '), isNull);
     });
 
-    test('probeAll يفحص بالتوازي (زمن ≈ الأبطأ لا المجموع)', () async {
-      Future<bool> Function() slowTrue() =>
-          () => Future.delayed(const Duration(milliseconds: 80), () => true);
-      final resolver = makeResolver({
-        'a': slowTrue(),
-        'b': slowTrue(),
-        'c': slowTrue(),
-      });
-      final watch = Stopwatch()..start();
-      final result = await resolver.probeAll(['a', 'b', 'c']);
-      watch.stop();
-      expect(result.values.every((v) => v.isUsable), isTrue);
-      expect(
-        watch.elapsedMilliseconds,
-        lessThan(200),
-        reason: 'تسلسلي كان سيستغرق ≥240ms',
-      );
-    });
+    test(
+      'probeAll runs in parallel: the time is the slowest, not the sum',
+      () async {
+        Future<bool> Function() slowTrue() =>
+            () => Future.delayed(const Duration(milliseconds: 80), () => true);
+        final resolver = makeResolver({
+          'a': slowTrue(),
+          'b': slowTrue(),
+          'c': slowTrue(),
+        });
+        final watch = Stopwatch()..start();
+        final result = await resolver.probeAll(['a', 'b', 'c']);
+        watch.stop();
+        expect(result.values.every((v) => v.isUsable), isTrue);
+        expect(
+          watch.elapsedMilliseconds,
+          lessThan(200),
+          reason: 'تسلسلي كان سيستغرق ≥240ms',
+        );
+      },
+    );
   });
 
   /// **A guard from field report 2026-09-05**: putting the server behind
   /// Cloudflare Access turned every endpoint "red" with no stated reason,
   /// and "does not respond" and "rejects your credentials" have entirely
   /// different cures.
-  group('القفل ليس انقطاعاً', () {
+  group('a locked door is not a broken road', () {
     EndpointResolver clientResolver(
       Map<String, int> statusByHost, {
       Set<String> html = const {},
@@ -134,14 +143,14 @@ void main() {
       });
     }
 
-    test('401 ⇒ unauthorized لا unreachable', () async {
+    test('401 is unauthorized, not unreachable', () async {
       final resolver = clientResolver({'locked.example.com': 401});
       expect(await resolver.probeAll(['https://locked.example.com']), {
         'https://locked.example.com': MTEndpointStatus.unauthorized,
       });
     });
 
-    test('رابط مرفوض الاعتماد لا يُعتمد نشطاً ويُتخطى لما بعده', () async {
+    test('a URL that refuses the credentials is not adopted, and the next is tried', () async {
       final resolver = clientResolver({'locked.example.com': 401});
       expect(
         await resolver.resolveActive(
@@ -153,29 +162,35 @@ void main() {
       );
     });
 
-    test('عنوان ليس MeTube ⇒ notMeTube لا unreachable', () async {
-      // A 200 with an HTML body means another service lives at that
-      // address. "Wrong address" is cured by correcting the address and
-      // "does not respond" by waiting for the network, and the two must not
-      // be conflated into one red dot (measured on a real device
-      // 2026-09-06).
-      final resolver = clientResolver(
-        {'wrong.example.com': 200},
-        html: {'wrong.example.com'},
-      );
-      expect(await resolver.probeAll(['https://wrong.example.com']), {
-        'https://wrong.example.com': MTEndpointStatus.notMeTube,
-      });
-    });
+    test(
+      'an address that is not MeTube is notMeTube, not unreachable',
+      () async {
+        // A 200 with an HTML body means another service lives at that
+        // address. "Wrong address" is cured by correcting the address and
+        // "does not respond" by waiting for the network, and the two must not
+        // be conflated into one red dot (measured on a real device
+        // 2026-09-06).
+        final resolver = clientResolver(
+          {'wrong.example.com': 200},
+          html: {'wrong.example.com'},
+        );
+        expect(await resolver.probeAll(['https://wrong.example.com']), {
+          'https://wrong.example.com': MTEndpointStatus.notMeTube,
+        });
+      },
+    );
 
-    test('404 على المسار ⇒ notMeTube (خادم حيّ بلا واجهة MeTube)', () async {
-      final resolver = clientResolver({'bare.example.com': 404});
-      expect(await resolver.probeAll(['https://bare.example.com']), {
-        'https://bare.example.com': MTEndpointStatus.notMeTube,
-      });
-    });
+    test(
+      '404 on the path is notMeTube: a live server with no MeTube API',
+      () async {
+        final resolver = clientResolver({'bare.example.com': 404});
+        expect(await resolver.probeAll(['https://bare.example.com']), {
+          'https://bare.example.com': MTEndpointStatus.notMeTube,
+        });
+      },
+    );
 
-    test('عنوان ليس MeTube لا يُعتمد نشطاً', () async {
+    test('an address that is not MeTube is never adopted as active', () async {
       final resolver = clientResolver(
         {'wrong.example.com': 200},
         html: {'wrong.example.com'},
@@ -189,7 +204,7 @@ void main() {
       );
     });
 
-    test('كل الروابط مقفلة ⇒ null (ولا يُدّعى نجاح)', () async {
+    test('every URL locked gives null, and no success is claimed', () async {
       final resolver = clientResolver({
         'a.example.com': 401,
         'b.example.com': 403,

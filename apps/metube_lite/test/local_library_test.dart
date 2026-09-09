@@ -25,7 +25,7 @@ LocalItem item(
 
 void main() {
   group('LocalItem', () {
-    test('العنوان الافتراضي يُسقط الامتداد وبصمة الوقت', () {
+    test('the default title drops the extension and the time stamp', () {
       expect(
         LocalItem.titleFromFilename('Golden Brown_035532.m4a'),
         'Golden Brown',
@@ -36,22 +36,25 @@ void main() {
       expect(LocalItem.titleFromFilename('Episode_12.mp4'), 'Episode_12');
     });
 
-    test('نوع الوسيط من الامتداد', () {
+    test('the media type comes from the extension', () {
       expect(item('a.m4a').isAudio, isTrue);
       expect(item('a.mp4').isAudio, isFalse);
       expect(isMediaFile('/x/a.txt'), isFalse);
       expect(isMediaFile('/x/a.webm'), isTrue);
     });
 
-    test('المنصة تُشتق من الرابط، والمجهول ليس تخميناً', () {
-      expect(
-        item('a.mp4', url: 'https://youtu.be/abc').platform,
-        MediaPlatform.youtube,
-      );
-      expect(item('a.mp4').platform, MediaPlatform.other);
-    });
+    test(
+      'the platform is derived from the URL, and unknown is not a guess',
+      () {
+        expect(
+          item('a.mp4', url: 'https://youtu.be/abc').platform,
+          MediaPlatform.youtube,
+        );
+        expect(item('a.mp4').platform, MediaPlatform.other);
+      },
+    );
 
-    test('القِصار: عمودي ≤٣ دقائق والمجهول ليس قصيراً (م-35)', () {
+    test('shorts: portrait and at most 3 minutes; unknown is not a short', () {
       expect(
         item(
           'a.mp4',
@@ -111,7 +114,7 @@ void main() {
       ),
     ];
 
-    test('الافتراضي: الأحدث أولاً', () {
+    test('the default is newest first', () {
       expect(buildLocalLibraryView(items).map((i) => i.title), [
         'Alpha',
         'Gamma',
@@ -119,7 +122,7 @@ void main() {
       ]);
     });
 
-    test('مرشح المفضلة والصوت والقِصار', () {
+    test('the favourites, audio and shorts filters', () {
       expect(
         buildLocalLibraryView(
           items,
@@ -143,7 +146,7 @@ void main() {
       );
     });
 
-    test('مرشح المنصة (خاص بـ Lite)', () {
+    test("the platform filter, which is Lite's alone", () {
       expect(
         buildLocalLibraryView(
           items,
@@ -160,13 +163,13 @@ void main() {
       );
     });
 
-    test('البحث بالعنوان بلا حساسية حالة', () {
+    test('searching by title is case-insensitive', () {
       expect(buildLocalLibraryView(items, query: 'BET').map((i) => i.title), [
         'Beta',
       ]);
     });
 
-    test('الفرز بالحجم والاسم', () {
+    test('sorting by size and by name', () {
       expect(
         buildLocalLibraryView(
           items,
@@ -183,7 +186,7 @@ void main() {
       );
     });
 
-    test('المرشحات تتراكم', () {
+    test('the filters compose', () {
       expect(
         buildLocalLibraryView(
           items,
@@ -196,7 +199,7 @@ void main() {
   });
 
   group('platformCounts', () {
-    test('الأكثر أولاً و«أخرى» في الذيل مهما كان عددها', () {
+    test('the largest first, with Other last however many it holds', () {
       final counts = platformCounts([
         item('a.mp4'),
         item('b.mp4'),
@@ -213,7 +216,7 @@ void main() {
       expect(counts.map((e) => e.value), [2, 1, 3]);
     });
 
-    test('مكتبة فارغة ⇒ لا رقائق', () {
+    test('an empty library shows no chips', () {
       expect(platformCounts(const []), isEmpty);
     });
   });

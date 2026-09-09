@@ -24,74 +24,76 @@ void main() {
         ),
       );
 
-  testWidgets('غلاف بطاقة القائمة يملأ ارتفاع الغلاف لا شريطاً وسطه', (
-    tester,
-  ) async {
-    const marker = Key('cover-0');
-    await tester.pumpWidget(
-      host(
-        SizedBox(
-          width: 200,
-          height: 260,
-          child: PlaylistCard(
-            playlist: SavedPlaylist(
-              id: 'p1',
-              name: 'قائمة',
-              items: const [],
-              createdAt: DateTime(2026),
+  testWidgets(
+    "a playlist card cover fills the cover's height, not a band across its middle",
+    (tester) async {
+      const marker = Key('cover-0');
+      await tester.pumpWidget(
+        host(
+          SizedBox(
+            width: 200,
+            height: 260,
+            child: PlaylistCard(
+              playlist: SavedPlaylist(
+                id: 'p1',
+                name: 'قائمة',
+                items: const [],
+                createdAt: DateTime(2026),
+              ),
+              thumbnails: const [
+                ColoredBox(key: marker, color: Color(0xFF123456)),
+              ],
+              onTap: () {},
+              onPlay: () {},
+              onLongPress: () {},
             ),
-            thumbnails: const [
-              ColoredBox(key: marker, color: Color(0xFF123456)),
-            ],
-            onTap: () {},
-            onPlay: () {},
-            onLongPress: () {},
           ),
         ),
-      ),
-    );
+      );
 
-    final cover = tester.getSize(find.byKey(marker)).height;
-    // The root: `Row` defaults to `center`, so the image took its natural
-    // height and centred itself, a thin strip in the middle of an empty
-    // card.
-    expect(
-      cover,
-      greaterThan(120),
-      reason: 'الغلاف يشغل ما تبقى من البطاقة بعد الاسم والعدّاد',
-    );
-  });
+      final cover = tester.getSize(find.byKey(marker)).height;
+      // The root: `Row` defaults to `center`, so the image took its natural
+      // height and centred itself, a thin strip in the middle of an empty
+      // card.
+      expect(
+        cover,
+        greaterThan(120),
+        reason: 'الغلاف يشغل ما تبقى من البطاقة بعد الاسم والعدّاد',
+      );
+    },
+  );
 
-  testWidgets('باني الغلاف يعيد null لعنصر بلا غلاف — لا ودجت فارغة', (
-    tester,
-  ) async {
-    Widget? built = const SizedBox.shrink();
-    await tester.pumpWidget(
-      host(
-        Consumer(
-          builder: (context, ref, _) {
-            built = artworkBuilderFor(ref)(
-              context,
-              const PlaylistItem(
-                canonicalUrl: 'https://x/a',
-                title: 'بلا غلاف',
-                localPath: '/media/a.mp3',
-                isAudio: true,
-              ),
-            );
-            return const SizedBox.shrink();
-          },
+  testWidgets(
+    'the cover builder returns null for an item with no cover, never an empty widget',
+    (tester) async {
+      Widget? built = const SizedBox.shrink();
+      await tester.pumpWidget(
+        host(
+          Consumer(
+            builder: (context, ref, _) {
+              built = artworkBuilderFor(ref)(
+                context,
+                const PlaylistItem(
+                  canonicalUrl: 'https://x/a',
+                  title: 'بلا غلاف',
+                  localPath: '/media/a.mp3',
+                  isAudio: true,
+                ),
+              );
+              return const SizedBox.shrink();
+            },
+          ),
+          overrides: [
+            keyValueStoreProvider.overrideWithValue(MemoryKeyValueStore()),
+            secretStoreProvider.overrideWithValue(MemorySecretStore()),
+            initialSettingsProvider.overrideWithValue(const SuperSettings()),
+          ],
         ),
-        overrides: [
-          keyValueStoreProvider.overrideWithValue(MemoryKeyValueStore()),
-          secretStoreProvider.overrideWithValue(MemorySecretStore()),
-          initialSettingsProvider.overrideWithValue(const SuperSettings()),
-        ],
-      ),
-    );
+      );
 
-    // `?? const SizedBox.shrink()` here killed the fallback icon in the
-    // audio player and the mini player: a blank square with nothing in it.
-    expect(built, isNull);
-  });
+      // `?? const SizedBox.shrink()` here killed the fallback icon in the
+      // audio player and the mini player: a blank square with nothing in it.
+      expect(built, isNull);
+    },
+  );
 }

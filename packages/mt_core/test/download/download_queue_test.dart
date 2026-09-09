@@ -3,7 +3,7 @@ import 'package:test/test.dart';
 
 void main() {
   group('DownloadQueue (§3)', () {
-    test('المفرد يتقدم على أعضاء الدفعات', () {
+    test('a single download takes precedence over batch members', () {
       final queue = DownloadQueue()
         ..enqueue('b1', isBatchMember: true)
         ..enqueue('b2', isBatchMember: true)
@@ -14,7 +14,7 @@ void main() {
       expect(queue.takeNext(), isNull);
     });
 
-    test('FIFO داخل كل صنف', () {
+    test('FIFO within each class', () {
       final queue = DownloadQueue()
         ..enqueue('s1', isBatchMember: false)
         ..enqueue('s2', isBatchMember: false);
@@ -22,7 +22,7 @@ void main() {
       expect(queue.takeNext(), 's2');
     });
 
-    test('remove يلغي المنتظر', () {
+    test('remove cancels what is waiting', () {
       final queue = DownloadQueue()
         ..enqueue('a', isBatchMember: false)
         ..enqueue('b', isBatchMember: true);

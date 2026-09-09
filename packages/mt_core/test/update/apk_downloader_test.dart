@@ -38,7 +38,7 @@ void main() {
   String url() => 'http://127.0.0.1:${server.port}/update.apk';
   File part() => File('$savePath.part');
 
-  test('ينزّل ويعيد التسمية ويبلّغ التقدّم', () async {
+  test('it downloads, renames, and reports progress', () async {
     final body = fakeApk(40000);
     handler = (r) async {
       r.response.headers.contentLength = body.length;
@@ -61,7 +61,7 @@ void main() {
     expect(part().existsSync(), isFalse);
   });
 
-  test('**الحارس**: صفحة HTML بحالة 200 تُرفض ولا تُسلَّم للمثبّت', () async {
+  test('**the guard**: an HTML page with status 200 is refused and never handed to the installer', () async {
     // A GitHub login or error page arrives with status 200 and is saved as
     // `.apk`; without the signature check the user opens a "corrupt
     // package" and cannot tell why.
@@ -75,7 +75,7 @@ void main() {
     expect(part().existsSync(), isFalse);
   });
 
-  test('حجم مبتور يُرفض', () async {
+  test('a truncated size is refused', () async {
     final body = fakeApk(1000);
     handler = (r) async => r.response.add(body);
 
@@ -90,7 +90,7 @@ void main() {
     expect(File(savePath).existsSync(), isFalse);
   });
 
-  test('حالة HTTP خطأ تُرفض', () async {
+  test('an error HTTP status is refused', () async {
     handler = (r) async => r.response.statusCode = HttpStatus.notFound;
 
     await expectLater(
@@ -100,7 +100,7 @@ void main() {
     expect(part().existsSync(), isFalse);
   });
 
-  test('الإلغاء يوقف التنزيل وينظّف', () async {
+  test('cancelling stops the download and cleans up', () async {
     final chunk = fakeApk(8000);
     handler = (r) async {
       r.response.headers.contentLength = chunk.length * 10;

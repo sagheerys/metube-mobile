@@ -3,11 +3,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mt_ui/mt_ui.dart';
 
 void main() {
-  group('mtTheme — درس surfaceContainer*', () {
+  group('mtTheme: the surfaceContainer* lesson', () {
     for (final variant in MTVariant.values) {
       for (final brightness in Brightness.values) {
         test(
-          '${variant.name}/${brightness.name}: الأدوار الخمسة معينة ومتمايزة',
+          '${variant.name}/${brightness.name}: the five roles are assigned and distinct',
           () {
             final scheme = mtTheme(variant, brightness).colorScheme;
             final ramp = {
@@ -28,42 +28,48 @@ void main() {
       }
     }
 
-    test('لون الفعل: وهج لـ Super وبترولي لـ Lite (سجل §4)', () {
-      expect(
-        mtTheme(MTVariant.superApp, Brightness.light).colorScheme.primary,
-        const Color(0xFFC25E2E),
-      );
-      expect(
-        mtTheme(MTVariant.superApp, Brightness.dark).colorScheme.primary,
-        const Color(0xFFE0784A),
-      );
-      expect(
-        mtTheme(MTVariant.lite, Brightness.light).colorScheme.primary,
-        const Color(0xFF2F6D74),
-      );
-      expect(
-        mtTheme(MTVariant.lite, Brightness.dark).colorScheme.primary,
-        const Color(0xFF6FB3BA),
-      );
-    });
+    test(
+      'the accent colour: the warm glow for Super and the teal for Lite',
+      () {
+        expect(
+          mtTheme(MTVariant.superApp, Brightness.light).colorScheme.primary,
+          const Color(0xFFC25E2E),
+        );
+        expect(
+          mtTheme(MTVariant.superApp, Brightness.dark).colorScheme.primary,
+          const Color(0xFFE0784A),
+        );
+        expect(
+          mtTheme(MTVariant.lite, Brightness.light).colorScheme.primary,
+          const Color(0xFF2F6D74),
+        );
+        expect(
+          mtTheme(MTVariant.lite, Brightness.dark).colorScheme.primary,
+          const Color(0xFF6FB3BA),
+        );
+      },
+    );
 
-    test('ليلاً النص فوق لون الفعل داكن لا أبيض (سجل §4)', () {
+    test('at night, text over the accent is dark, not white', () {
       for (final variant in MTVariant.values) {
         final onAccent = MTPalette.of(variant, Brightness.dark).onAccent;
         expect(onAccent.computeLuminance(), lessThan(0.1));
       }
     });
 
-    test('المفضلة قرمزي مستقل عن لوني الفعل', () {
-      for (final variant in MTVariant.values) {
-        final p = MTPalette.of(variant, Brightness.light);
-        expect(p.favorite, const Color(0xFFA83A3A));
-        expect(p.favorite, isNot(p.accent));
-      }
-    });
+    test(
+      'the favourite is a crimson of its own, independent of both accents',
+      () {
+        for (final variant in MTVariant.values) {
+          final p = MTPalette.of(variant, Brightness.light);
+          expect(p.favorite, const Color(0xFFA83A3A));
+          expect(p.favorite, isNot(p.accent));
+        }
+      },
+    );
   });
 
-  group('MTGalleryScreen — بوابة 3', () {
+  group('MTGalleryScreen', () {
     Widget host(
       MTVariant variant,
       Brightness brightness,
@@ -83,7 +89,7 @@ void main() {
       for (final brightness in Brightness.values) {
         for (final direction in TextDirection.values) {
           testWidgets(
-            'يرسم بلا أخطاء: ${variant.name}/${brightness.name}/${direction.name}',
+            'it draws without error: ${variant.name}/${brightness.name}/${direction.name}',
             (tester) async {
               // A tall surface, so every section of the lazy list is actually
               // built.
@@ -104,7 +110,7 @@ void main() {
   });
 
   group('MTMediaCard', () {
-    testWidgets('نقرة القلب تستدعي التبديل', (tester) async {
+    testWidgets('tapping the heart calls the toggle', (tester) async {
       var toggled = false;
       await tester.pumpWidget(
         MaterialApp(
@@ -130,7 +136,7 @@ void main() {
   });
 
   group('MTLocalizations', () {
-    test('عربي وإنجليزي مدعومان', () {
+    test('Arabic and English are both supported', () {
       expect(
         MTLocalizations.supportedLocales.map((l) => l.languageCode),
         containsAll(['ar', 'en']),
@@ -144,7 +150,7 @@ void main() {
     /// quote. Neither `analyze` nor the parity guard catches it: the JSON
     /// is valid and the key is translated in both languages. **Only the eye
     /// sees it**, and this guard now stands in for the eye.
-    test('لا شرطة مائلة ظاهرة في نصوص التأكيد', () async {
+    test('no stray slash visible in the confirmation strings', () async {
       for (final code in ['ar', 'en']) {
         final l10n = await MTLocalizations.delegate.load(Locale(code));
         for (final text in [

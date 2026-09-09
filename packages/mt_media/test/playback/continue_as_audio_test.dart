@@ -99,42 +99,43 @@ void main() {
     await settle(tester);
   }
 
-  testWidgets('نقلٌ بطيء لا يُسقط الغلاف بعد أن يغادر المستخدم بطريق آخر', (
-    tester,
-  ) async {
-    final session = newSession();
-    await tester.runAsync(() => session.open([item]));
-    final transfer = Completer<void>();
-    final navKey = GlobalKey<NavigatorState>();
-    await openPlayer(tester, navKey, session, (_, _) => transfer.future);
+  testWidgets(
+    'a slow handover does not drop the cover after the user has left another way',
+    (tester) async {
+      final session = newSession();
+      await tester.runAsync(() => session.open([item]));
+      final transfer = Completer<void>();
+      final navKey = GlobalKey<NavigatorState>();
+      await openPlayer(tester, navKey, session, (_, _) => transfer.future);
 
-    // Going back opens the "continue in the background?" dialog, then
-    // "continue as audio".
-    unawaited(navKey.currentState!.maybePop());
-    await settle(tester);
-    await tester.tap(find.byType(FilledButton));
-    await tester.pump();
-    expect(find.text('BASE'), findsNothing, reason: 'النقل لم يكتمل بعد');
+      // Going back opens the "continue in the background?" dialog, then
+      // "continue as audio".
+      unawaited(navKey.currentState!.maybePop());
+      await settle(tester);
+      await tester.tap(find.byType(FilledButton));
+      await tester.pump();
+      expect(find.text('BASE'), findsNothing, reason: 'النقل لم يكتمل بعد');
 
-    // The user leaves by themselves (the second press in the report).
-    navKey.currentState!.pop();
-    await settle(tester);
-    expect(find.text('BASE'), findsOneWidget);
+      // The user leaves by themselves (the second press in the report).
+      navKey.currentState!.pop();
+      await settle(tester);
+      expect(find.text('BASE'), findsOneWidget);
 
-    // And then the handover completes late, when the audio is stopped in
-    // the mini player.
-    transfer.complete();
-    await settle(tester);
+      // And then the handover completes late, when the audio is stopped in
+      // the mini player.
+      transfer.complete();
+      await settle(tester);
 
-    expect(
-      find.text('BASE'),
-      findsOneWidget,
-      reason: 'pop عمياء كانت تُسقط الغلاف ⇒ شاشة سوداء',
-    );
-    await tester.runAsync(session.dispose);
-  });
+      expect(
+        find.text('BASE'),
+        findsOneWidget,
+        reason: 'pop عمياء كانت تُسقط الغلاف ⇒ شاشة سوداء',
+      );
+      await tester.runAsync(session.dispose);
+    },
+  );
 
-  testWidgets('النقل السريع يُغلق الشاشة كالمعتاد', (tester) async {
+  testWidgets('a fast handover closes the screen as usual', (tester) async {
     final session = newSession();
     await tester.runAsync(() => session.open([item]));
     var transferred = 0;
@@ -151,7 +152,7 @@ void main() {
     await tester.runAsync(session.dispose);
   });
 
-  testWidgets('«لا، أوقف» تُغلق الشاشة بلا نقل', (tester) async {
+  testWidgets('No, stop closes the screen with no handover', (tester) async {
     final session = newSession();
     await tester.runAsync(() => session.open([item]));
     var transferred = 0;

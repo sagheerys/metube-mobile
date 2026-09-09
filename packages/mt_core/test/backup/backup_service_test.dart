@@ -19,8 +19,8 @@ void main() {
     );
   });
 
-  group('BackupService — الصيغة النصّية (قرار المالك 2026-09-04)', () {
-    test('roundtrip كامل بكل الأنواع، وبلا أي سرّ', () async {
+  group('BackupService: the plain format', () {
+    test('a full round trip with every type, and no secret', () async {
       await store.setString('server_url', 'https://metube.example.com');
       await store.setBool('library_compact_view', true);
       await store.setInt('player_play_mode', 2);
@@ -67,33 +67,36 @@ void main() {
       ]);
     });
 
-    test('الاعتمادات المضمّنة في الرابط تُحذف (إصلاح خ-2 باقٍ)', () async {
+    test('credentials embedded in the URL are stripped', () async {
       await store.setString('server_url', 'https://u:pw@host/path');
       final exported = await service.exportToString();
       expect(exported, isNot(contains('pw@host')));
       expect(exported, contains('https://host/path'));
     });
 
-    test('نصّ ليس نسخة ⇒ BackupFormatException لا انهيار', () async {
-      expect(
-        service.importFromString('مرحبا'),
-        throwsA(isA<BackupFormatException>()),
-      );
-      expect(
-        service.importFromString('{"app":"شيء آخر"}'),
-        throwsA(isA<BackupFormatException>()),
-      );
-      expect(
-        service.importFromString('{ليس json'),
-        throwsA(isA<BackupFormatException>()),
-      );
-    });
+    test(
+      'text that is not a backup raises BackupFormatException, not a crash',
+      () async {
+        expect(
+          service.importFromString('مرحبا'),
+          throwsA(isA<BackupFormatException>()),
+        );
+        expect(
+          service.importFromString('{"app":"شيء آخر"}'),
+          throwsA(isA<BackupFormatException>()),
+        );
+        expect(
+          service.importFromString('{ليس json'),
+          throwsA(isA<BackupFormatException>()),
+        );
+      },
+    );
   });
 
   /// **Migration still works**: anyone holding an `MTF1` file from an
   /// earlier release opens it after importing its key. Only writing
   /// changed.
-  group('استيراد MTF1 المشفَّر (قراءة فقط بعد 2026-09-04)', () {
+  group('importing the encrypted MTF1, read only', () {
     String legacyV2File(String keyBase64, Map<String, dynamic> prefs) =>
         BackupCrypto.encrypt(
           plaintext: json.encode({
@@ -106,7 +109,7 @@ void main() {
           keyBase64: keyBase64,
         );
 
-    test('يُقرأ بالمفتاح الصحيح ويعيد اسم المستخدم', () async {
+    test('it reads with the right key and returns the username', () async {
       final key = BackupCrypto.generateKeyBase64();
       await secrets.write(SecretKeys.backupAesKey, key);
       final file = legacyV2File(key, {
@@ -119,7 +122,7 @@ void main() {
       expect(await secrets.read(SecretKeys.username), 'user');
     });
 
-    test('مفتاح آخر ⇒ BackupKeyMismatchException', () async {
+    test('another key raises BackupKeyMismatchException', () async {
       final file = legacyV2File(BackupCrypto.generateKeyBase64(), const {});
       final other = BackupService(
         store: MemoryKeyValueStore(),
@@ -134,8 +137,8 @@ void main() {
     });
   });
 
-  group('استيراد MTBACKUP1 (Lite القديم — قراءة فقط)', () {
-    test('التنسيق الحقيقي بايتاً ببايت يُهاجَر للمفاتيح القديمة', () async {
+  group('importing MTBACKUP1, old Lite, read only', () {
+    test('the real format, byte for byte, migrates to the old keys', () async {
       // Builds the file with exactly the old BackupHelper layout.
       final legacyKey = BackupCrypto.generateKeyBase64();
       final legacyPayload = json.encode({
@@ -198,37 +201,34 @@ void main() {
     /// A shape caught on **a real Lite backup** (2026-09-01): 32 positions
     /// stored as seconds in strings were imported dead, because the shape
     /// migration only ran on the `MTSBACKUP1` path.
-    test(
-      'مواضع Lite القديمة تُهاجَر لمفاتيح §5.1 والوضع الرقمي يُزال',
-      () async {
-        final key = BackupCrypto.generateKeyBase64();
-        await secrets.write(SecretKeys.backupAesKey, key);
-        await service.importFromString(
-          BackupCrypto.encrypt(
-            plaintext: json.encode({
-              'app': 'MeTube Lite',
-              'settings': {'playMode': 1},
-              'playbackPositions': {
-                'https://youtu.be/abc': '12',
-                'https://youtu.be/def': 305,
-              },
-            }),
-            keyBase64: key,
-            header: BackupCrypto.headerLegacyLite,
-          ),
-        );
-        expect(await store.getInt('playback_pos_https://youtu.be/abc'), 12000);
-        expect(await store.getInt('playback_pos_https://youtu.be/def'), 305000);
-        expect(await store.getString('video_playback_positions'), isNull);
-        expect(
-          await store.get('player_play_mode'),
-          isNull,
-          reason: 'الرقم القديم يُزال ليعود الوضع للافتراضي',
-        );
-      },
-    );
+    test('old Lite positions migrate to the current keys, and the numeric mode is dropped', () async {
+      final key = BackupCrypto.generateKeyBase64();
+      await secrets.write(SecretKeys.backupAesKey, key);
+      await service.importFromString(
+        BackupCrypto.encrypt(
+          plaintext: json.encode({
+            'app': 'MeTube Lite',
+            'settings': {'playMode': 1},
+            'playbackPositions': {
+              'https://youtu.be/abc': '12',
+              'https://youtu.be/def': 305,
+            },
+          }),
+          keyBase64: key,
+          header: BackupCrypto.headerLegacyLite,
+        ),
+      );
+      expect(await store.getInt('playback_pos_https://youtu.be/abc'), 12000);
+      expect(await store.getInt('playback_pos_https://youtu.be/def'), 305000);
+      expect(await store.getString('video_playback_positions'), isNull);
+      expect(
+        await store.get('player_play_mode'),
+        isNull,
+        reason: 'الرقم القديم يُزال ليعود الوضع للافتراضي',
+      );
+    });
 
-    test('جودة قديمة غير صالحة تُجبر على best', () async {
+    test('an invalid legacy quality is forced to best', () async {
       final key = BackupCrypto.generateKeyBase64();
       await secrets.write(SecretKeys.backupAesKey, key);
       final file = BackupCrypto.encrypt(
@@ -244,8 +244,8 @@ void main() {
     });
   });
 
-  group('استيراد MTSBACKUP1 (Super القديم — قراءة فقط)', () {
-    test('حمولة prefs المصنفة تُطبق كما هي', () async {
+  group('importing MTSBACKUP1, old Super, read only', () {
+    test('a typed prefs payload is applied as it is', () async {
       final key = BackupCrypto.generateKeyBase64();
       await secrets.write(SecretKeys.backupAesKey, key);
       final file = BackupCrypto.encrypt(
@@ -278,7 +278,7 @@ void main() {
 
     /// Shapes caught on **a real backup** (2026-09-01), all of which
     /// imported silently incomplete before the fix.
-    group('هجرة الأشكال القديمة', () {
+    group('migrating the legacy shapes', () {
       Future<void> importLegacySuper(Map<String, dynamic> prefs) async {
         final key = BackupCrypto.generateKeyBase64();
         await secrets.write(SecretKeys.backupAesKey, key);
@@ -291,7 +291,7 @@ void main() {
         );
       }
 
-      test('قائمة بمصفوفة `entries` تُستورد بعناصرها لا فارغة', () async {
+      test('a playlist with an `entries` array is imported with its items, not empty', () async {
         await importLegacySuper({
           'saved_playlists': {
             't': 's',
@@ -322,32 +322,41 @@ void main() {
         expect(playlists.single.items.first.serverFilename, 'a.mp3');
       });
 
-      test('مواضع الاستئناف تتحول من خريطة ثوانٍ إلى مفاتيح §5.1', () async {
-        await importLegacySuper({
-          'video_playback_positions': {
-            't': 's',
-            'v': json.encode({
-              'https://youtu.be/abc': '30',
-              'https://youtu.be/def': '125',
-              'https://youtu.be/zero': '0',
-            }),
-          },
-        });
-        expect(await store.getInt('playback_pos_https://youtu.be/abc'), 30000);
-        expect(await store.getInt('playback_pos_https://youtu.be/def'), 125000);
-        expect(
-          await store.get('playback_pos_https://youtu.be/zero'),
-          isNull,
-          reason: 'الصفر لا يستحق مفتاحاً',
-        );
-        expect(
-          await store.getString('video_playback_positions'),
-          isNull,
-          reason: 'المفتاح القديم يُزال فلا يتكرر في كل تصدير لاحق',
-        );
-      });
+      test(
+        'resume positions turn from a map of seconds into the current keys',
+        () async {
+          await importLegacySuper({
+            'video_playback_positions': {
+              't': 's',
+              'v': json.encode({
+                'https://youtu.be/abc': '30',
+                'https://youtu.be/def': '125',
+                'https://youtu.be/zero': '0',
+              }),
+            },
+          });
+          expect(
+            await store.getInt('playback_pos_https://youtu.be/abc'),
+            30000,
+          );
+          expect(
+            await store.getInt('playback_pos_https://youtu.be/def'),
+            125000,
+          );
+          expect(
+            await store.get('playback_pos_https://youtu.be/zero'),
+            isNull,
+            reason: 'الصفر لا يستحق مفتاحاً',
+          );
+          expect(
+            await store.getString('video_playback_positions'),
+            isNull,
+            reason: 'المفتاح القديم يُزال فلا يتكرر في كل تصدير لاحق',
+          );
+        },
+      );
 
-      test('قيمة كبيرة تُقرأ ميلي لا ثوانٍ', () async {
+      test('a large value is read as milliseconds, not seconds', () async {
         await importLegacySuper({
           'video_playback_positions': {
             't': 's',
@@ -357,31 +366,40 @@ void main() {
         expect(await store.getInt('playback_pos_https://youtu.be/ms'), 900000);
       });
 
-      test('وضع التشغيل الرقمي القديم يُزال ليعود للافتراضي', () async {
-        await importLegacySuper({
-          'player_play_mode': {'t': 'i', 'v': 0},
-          'player_play_mode_Music': {'t': 'i', 'v': 2},
-          'video_quality': {'t': 's', 'v': 'audio'},
-        });
-        expect(await store.get('player_play_mode'), isNull);
-        expect(await store.get('player_play_mode_Music'), isNull);
-        expect(
-          await store.getString('video_quality'),
-          'audio',
-          reason: 'بقية المفاتيح لا تُمس',
-        );
-      });
+      test(
+        'the old numeric play mode is dropped, back to the default',
+        () async {
+          await importLegacySuper({
+            'player_play_mode': {'t': 'i', 'v': 0},
+            'player_play_mode_Music': {'t': 'i', 'v': 2},
+            'video_quality': {'t': 's', 'v': 'audio'},
+          });
+          expect(await store.get('player_play_mode'), isNull);
+          expect(await store.get('player_play_mode_Music'), isNull);
+          expect(
+            await store.getString('video_quality'),
+            'audio',
+            reason: 'بقية المفاتيح لا تُمس',
+          );
+        },
+      );
 
-      test('نسخة v2 لا تمر بالهجرة (أشكالها حديثة أصلاً)', () async {
-        await store.setString('video_playback_positions', '{"u":"30"}');
-        await service.importFromString(await service.exportToString());
-        expect(await store.getString('video_playback_positions'), '{"u":"30"}');
-        expect(await store.get('playback_pos_u'), isNull);
-      });
+      test(
+        'a v2 backup skips the migration: its shapes are already current',
+        () async {
+          await store.setString('video_playback_positions', '{"u":"30"}');
+          await service.importFromString(await service.exportToString());
+          expect(
+            await store.getString('video_playback_positions'),
+            '{"u":"30"}',
+          );
+          expect(await store.get('playback_pos_u'), isNull);
+        },
+      );
     });
   });
 
-  test('ملف بلا ترويسة ⇒ BackupFormatException', () {
+  test('a file with no header raises BackupFormatException', () {
     expect(
       service.importFromString('{"app": "x"}'),
       throwsA(isA<BackupFormatException>()),
@@ -393,20 +411,23 @@ void main() {
   /// encrypted backup cannot be decrypted, and that is said plainly with
   /// [BackupKeyMismatchException] rather than by generating a new key for
   /// nothing and then failing with a message further from the cause.
-  test('نسخة مشفّرة بلا مفتاح محفوظ ⇒ BackupKeyMismatchException', () async {
-    final file = BackupCrypto.encrypt(
-      plaintext: json.encode({'app': 'MTF', 'version': 2, 'prefs': {}}),
-      keyBase64: BackupCrypto.generateKeyBase64(),
-    );
-    expect(await secrets.read(SecretKeys.backupAesKey), isNull);
-    await expectLater(
-      service.importFromString(file),
-      throwsA(isA<BackupKeyMismatchException>()),
-    );
-    expect(
-      await secrets.read(SecretKeys.backupAesKey),
-      isNull,
-      reason: 'ولا يُولَّد مفتاح لا يفكّ شيئاً',
-    );
-  });
+  test(
+    'an encrypted backup with no stored key raises BackupKeyMismatchException',
+    () async {
+      final file = BackupCrypto.encrypt(
+        plaintext: json.encode({'app': 'MTF', 'version': 2, 'prefs': {}}),
+        keyBase64: BackupCrypto.generateKeyBase64(),
+      );
+      expect(await secrets.read(SecretKeys.backupAesKey), isNull);
+      await expectLater(
+        service.importFromString(file),
+        throwsA(isA<BackupKeyMismatchException>()),
+      );
+      expect(
+        await secrets.read(SecretKeys.backupAesKey),
+        isNull,
+        reason: 'ولا يُولَّد مفتاح لا يفكّ شيئاً',
+      );
+    },
+  );
 }

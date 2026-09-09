@@ -2,40 +2,40 @@ import 'package:mt_core/mt_core.dart';
 import 'package:test/test.dart';
 
 void main() {
-  group('UrlKit.extractUrl — سلّم م-4', () {
-    test('رابط نقي يعود كما هو', () {
+  group('UrlKit.extractUrl: the ladder', () {
+    test('a bare URL comes back unchanged', () {
       expect(
         UrlKit.extractUrl('https://youtu.be/dQw4w9WgXcQ'),
         'https://youtu.be/dQw4w9WgXcQ',
       );
     });
 
-    test('جملة مشاركة SoundCloud عربية ملفوفة حول الرابط', () {
+    test('an Arabic SoundCloud share sentence wrapped around the URL', () {
       const share =
           'استمع إلى أغنيتي عبر فنان #SoundCloud '
           'https://on.soundcloud.com/AbCd123';
       expect(UrlKit.extractUrl(share), 'https://on.soundcloud.com/AbCd123');
     });
 
-    test('رابط متبوع بنص ⇒ يقص عند أول فراغ', () {
+    test('a URL followed by text is cut at the first space', () {
       expect(
         UrlKit.extractUrl('https://vimeo.com/76979871 شاهد هذا'),
         'https://vimeo.com/76979871',
       );
     });
 
-    test('تنظيف الترقيم الزائد بالنهاية', () {
+    test('trailing punctuation is cleaned off', () {
       expect(
         UrlKit.extractUrl('جرب (https://www.reddit.com/r/videos/abc).'),
         'https://www.reddit.com/r/videos/abc',
       );
     });
 
-    test('لا رابط ⇒ يعيد المدخل ليكشفه التحقق', () {
+    test('with no URL it returns the input, for validation to catch', () {
       expect(UrlKit.extractUrl('مجرد نص'), 'مجرد نص');
     });
 
-    test('extractAllUrls لمشاركة عدة روابط (م-3)', () {
+    test('extractAllUrls, for a share carrying several links', () {
       const text =
           'https://youtu.be/aaaaaaaaaaa و https://youtu.be/bbbbbbbbbbb';
       expect(UrlKit.extractAllUrls(text), hasLength(2));
@@ -56,7 +56,7 @@ void main() {
       test(url, () => expect(UrlKit.youtubeVideoId(url), id));
     }
 
-    test('غير يوتيوب ⇒ null حتى مع v= في الاستعلام', () {
+    test('anything but YouTube gives null, even with v= in the query', () {
       expect(UrlKit.youtubeVideoId('https://example.com/watch?v=$id'), isNull);
       expect(
         UrlKit.youtubeVideoId('https://www.tiktok.com/@u/video/123'),
@@ -65,12 +65,12 @@ void main() {
     });
   });
 
-  group('UrlKit.urlsMatch — السلّم الضبابي', () {
-    test('حرفي', () {
+  group('UrlKit.urlsMatch: the fuzzy ladder', () {
+    test('literal', () {
       expect(UrlKit.urlsMatch('https://a.com/x', 'https://a.com/x'), isTrue);
     });
 
-    test('youtu.be ⇄ watch (القنونة)', () {
+    test('youtu.be against watch, the canonicalisation', () {
       expect(
         UrlKit.urlsMatch(
           'https://youtu.be/dQw4w9WgXcQ',
@@ -90,7 +90,7 @@ void main() {
       );
     });
 
-    test('معرف رقمي ≥10 (TikTok/FB)', () {
+    test('a numeric id of ten digits or more, TikTok and Facebook', () {
       expect(
         UrlKit.urlsMatch(
           'https://www.tiktok.com/@user/video/7301234567890123456',
@@ -100,7 +100,7 @@ void main() {
       );
     });
 
-    test('تطبيع www/m والاستعلام', () {
+    test('normalising www, m and the query', () {
       expect(
         UrlKit.urlsMatch(
           'https://www.soundcloud.com/artist/track?p=1',
@@ -110,7 +110,7 @@ void main() {
       );
     });
 
-    test('لا تطابق بين فيديوهين مختلفين', () {
+    test('two different videos do not match', () {
       expect(
         UrlKit.urlsMatch(
           'https://youtu.be/aaaaaaaaaaa',
@@ -120,7 +120,7 @@ void main() {
       );
     });
 
-    test('انحدار السيرفر الحقيقي: رابطا watch بمعرفين مختلفين لا يتساويان '
+    test('a regression from a real server: two watch URLs with different ids are not equal'
         'عبر التطبيع (كاد يحذف عنصراً بريئاً)', () {
       expect(
         UrlKit.urlsMatch(
@@ -139,13 +139,13 @@ void main() {
       );
     });
 
-    test('فارغ ⇒ false', () {
+    test('empty gives false', () {
       expect(UrlKit.urlsMatch('', 'https://a.com'), isFalse);
     });
   });
 
-  group('UrlKit.isSafeServerFilename — حارس المسار', () {
-    test('اسم عربي بمسافات صالح', () {
+  group('UrlKit.isSafeServerFilename: the path guard', () {
+    test('an Arabic name with spaces is valid', () {
       expect(UrlKit.isSafeServerFilename('أغنية جميلة.dQw4.mp3'), isTrue);
     });
 
@@ -155,7 +155,7 @@ void main() {
     // genuinely serves (measured: HTTP 206). Traversal needs a path
     // separator, which is rejected below.
     for (final good in ['x..y', 'مدر... [2077436096300945409].mp4', 'a....b']) {
-      test('يقبل "$good"', () {
+      test('it accepts "$good"', () {
         expect(UrlKit.isSafeServerFilename(good), isTrue);
       });
     }
@@ -169,7 +169,7 @@ void main() {
       r'a\b.mp4',
       'a\u0000b.mp4',
     ]) {
-      test('يرفض "$bad"', () {
+      test('it rejects "$bad"', () {
         expect(UrlKit.isSafeServerFilename(bad), isFalse);
       });
     }
@@ -183,10 +183,13 @@ void main() {
       'https://www.facebook.com/share/v/abc/',
       'https://on.soundcloud.com/AbCd',
     ]) {
-      test('قصير: $short', () => expect(UrlKit.needsResolution(short), isTrue));
+      test(
+        'short: $short',
+        () => expect(UrlKit.needsResolution(short), isTrue),
+      );
     }
 
-    test('الكامل لا يحتاج حلاً', () {
+    test('a full URL needs no resolving', () {
       expect(
         UrlKit.needsResolution('https://www.tiktok.com/@u/video/1'),
         isFalse,
@@ -199,7 +202,7 @@ void main() {
   });
 
   group('UrlKit.longestNumericId', () {
-    test('يختار الأطول من المسار', () {
+    test('it picks the longest one in the path', () {
       expect(
         UrlKit.longestNumericId(
           'https://www.facebook.com/12345/videos/9876543210987',
@@ -208,7 +211,7 @@ void main() {
       );
     });
 
-    test('أقل من 10 خانات ⇒ فارغ', () {
+    test('fewer than ten digits gives empty', () {
       expect(UrlKit.longestNumericId('https://vimeo.com/123456'), '');
     });
   });
@@ -224,20 +227,20 @@ void main() {
   /// first one's clip in the external player. Worse, the same function
   /// matches `/history` in Lite, which means pulling an innocent file **and
   /// then deleting the original from the server**.
-  group('urlsMatch — الهوية في الاستعلام (فيسبوك)', () {
+  group('urlsMatch: the identity in the query, Facebook', () {
     const a = 'https://m.facebook.com/watch/?v=1619243166301797&_rdr';
     const b = 'https://m.facebook.com/watch/?v=2657266731405287&_rdr';
 
-    test('مقطعان مختلفان لا يتطابقان', () {
+    test('two different clips do not match', () {
       expect(UrlKit.urlsMatch(a, b), isFalse);
       expect(UrlKit.urlsMatch(b, a), isFalse, reason: 'والعكس كذلك');
     });
 
-    test('المعرف يُقرأ من الاستعلام لا المسار وحده', () {
+    test('the id is read from the query, not from the path alone', () {
       expect(UrlKit.longestNumericId(a), '1619243166301797');
     });
 
-    test('نفس المقطع بصيغتين ما زال يتطابق', () {
+    test('the same clip in two shapes still matches', () {
       expect(
         UrlKit.urlsMatch(
           a,
@@ -248,12 +251,12 @@ void main() {
       );
     });
 
-    test('الرابط نفسه حرفياً يتطابق', () {
+    test('the very same URL matches', () {
       expect(UrlKit.urlsMatch(a, a), isTrue);
     });
 
     /// The general guard: it is not limited to Facebook or to numeric ids.
-    test('استعلامان مختلفان على نفس المسار ⇒ لا تطابق', () {
+    test('two different queries on the same path do not match', () {
       expect(
         UrlKit.urlsMatch(
           'https://site.com/watch?id=abc',
@@ -263,7 +266,7 @@ void main() {
       );
     });
 
-    test('استعلام في طرف واحد لا يمنع المطابقة', () {
+    test('a query on one side only does not prevent a match', () {
       expect(
         UrlKit.urlsMatch(
           'https://vimeo.com/1234567890',

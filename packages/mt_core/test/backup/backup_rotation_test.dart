@@ -25,18 +25,18 @@ void main() {
 
   DateTime at(int minute) => DateTime(2026, 9, 4, 10, minute);
 
-  test('العدد المعتمد سبع نسخ', () {
+  test('the agreed count is seven backups', () {
     expect(BackupRotation.defaultKeep, 7);
     expect(rotation.keep, 7);
   });
 
-  test('الاسم مؤرَّخ ويُقرأ تاريخه منه', () {
+  test('the name carries the date, and the date is read back from it', () {
     final name = rotation.fileNameFor(DateTime(2026, 9, 4, 9, 42, 33));
     expect(name, 'metube_lite_2026-09-04_094233.json');
     expect(rotation.dateOf(name), DateTime(2026, 9, 4, 9, 42, 33));
   });
 
-  test('اسم لا يتبع النمط لا يُقرأ ولا يُلمس', () async {
+  test('a name outside the pattern is neither read nor touched', () async {
     // **A file from an earlier install**: Android 11+ forbids writing over
     // it or deleting it (`errno 13`, seen in a screenshot). Ignoring it is
     // what makes the conflict impossible.
@@ -54,7 +54,7 @@ void main() {
     );
   });
 
-  test('يحتفظ بسبع ويحذف الأقدم، والأحدث أولاً', () async {
+  test('it keeps seven and deletes the oldest, newest first', () async {
     for (var i = 0; i < 10; i++) {
       await rotation.write('{"n":$i}', at: at(i));
     }
@@ -65,31 +65,37 @@ void main() {
     expect(await rotation.read(all.first), '{"n":9}');
   });
 
-  test('محتوى مطابق لأحدث نسخة لا يُكتب ولا يطرد نسخة', () async {
-    await rotation.write('{"a":1}', at: at(1));
-    await rotation.write('{"a":2}', at: at(2));
+  test(
+    'content identical to the newest backup is not written and evicts nothing',
+    () async {
+      await rotation.write('{"a":1}', at: at(1));
+      await rotation.write('{"a":2}', at: at(2));
 
-    // Without this guard the seven become seven moments rather than seven
-    // changes.
-    expect(await rotation.write('{"a":2}', at: at(3)), isNull);
-    expect(await rotation.list(), hasLength(2));
+      // Without this guard the seven become seven moments rather than seven
+      // changes.
+      expect(await rotation.write('{"a":2}', at: at(3)), isNull);
+      expect(await rotation.list(), hasLength(2));
 
-    expect(await rotation.write('{"a":3}', at: at(4)), isNotNull);
-    expect(await rotation.list(), hasLength(3));
-  });
+      expect(await rotation.write('{"a":3}', at: at(4)), isNotNull);
+      expect(await rotation.list(), hasLength(3));
+    },
+  );
 
-  test('الكتابة ذرّية: لا يبقى ملف مؤقت ولا نصف نسخة', () async {
-    await rotation.write('{"a":1}');
-    final names = [
-      for (final entity in temp.listSync())
-        entity.path.split(RegExp(r'[/\\]')).last,
-    ];
-    expect(names, hasLength(1));
-    expect(names.single, endsWith('.json'));
-    expect(names.single, isNot(contains('.tmp')));
-  });
+  test(
+    'the write is atomic: no temporary file and no half a backup remain',
+    () async {
+      await rotation.write('{"a":1}');
+      final names = [
+        for (final entity in temp.listSync())
+          entity.path.split(RegExp(r'[/\\]')).last,
+      ];
+      expect(names, hasLength(1));
+      expect(names.single, endsWith('.json'));
+      expect(names.single, isNot(contains('.tmp')));
+    },
+  );
 
-  test('مجلد غير موجود ⇒ قائمة فارغة لا رمي', () async {
+  test('a missing folder gives an empty list, not a throw', () async {
     final missing = BackupRotation(
       directory: '${temp.path}/none',
       prefix: 'metube_lite',
@@ -98,7 +104,7 @@ void main() {
     expect(await missing.latest(), isNull);
   });
 
-  test('البادئة تفصل التطبيقين في مجلد واحد', () async {
+  test('the prefix keeps the two apps apart in one folder', () async {
     await rotation.write('{"lite":1}', at: at(1));
     final superRotation = BackupRotation(
       directory: temp.path,
@@ -112,7 +118,7 @@ void main() {
     expect(await rotation.read((await rotation.list()).single), '{"lite":1}');
   });
 
-  test('keep مخصص يُحترم', () async {
+  test('a custom keep is honoured', () async {
     final three = BackupRotation(
       directory: temp.path,
       prefix: 'metube_lite',
@@ -125,34 +131,37 @@ void main() {
     expect(await three.list(), hasLength(3));
   });
 
-  group('التباعد الزمني — عطل مقيس على جهاز المالك 2026-09-05', () {
+  group('the spacing in time, a defect measured on a real device', () {
     late BackupRotation spaced;
 
     setUp(() {
       spaced = BackupRotation(directory: temp.path, prefix: 'metube_lite');
     });
 
-    test('الافتراضي ساعة', () {
+    test('the default is one hour', () {
       expect(BackupRotation.defaultSpacing, const Duration(hours: 1));
       expect(spaced.minSpacing, const Duration(hours: 1));
     });
 
-    test('دفعة تحميل كاملة تبقى خانة واحدة تحمل آخر حالة', () async {
-      // The real case: seven changes in six minutes consumed all seven
-      // slots, so the entire backup history covered six minutes.
-      for (var i = 0; i < 7; i++) {
-        await spaced.write('{"n":$i}', at: at(i));
-      }
-      final all = await spaced.list();
-      expect(all, hasLength(1), reason: 'الدفعة خانة واحدة لا سبع');
-      expect(
-        await spaced.read(all.single),
-        '{"n":6}',
-        reason: 'وأحدث حالة هي المحفوظة — لا الأولى',
-      );
-    });
+    test(
+      'a whole download batch stays one slot carrying the latest state',
+      () async {
+        // The real case: seven changes in six minutes consumed all seven
+        // slots, so the entire backup history covered six minutes.
+        for (var i = 0; i < 7; i++) {
+          await spaced.write('{"n":$i}', at: at(i));
+        }
+        final all = await spaced.list();
+        expect(all, hasLength(1), reason: 'الدفعة خانة واحدة لا سبع');
+        expect(
+          await spaced.read(all.single),
+          '{"n":6}',
+          reason: 'وأحدث حالة هي المحفوظة — لا الأولى',
+        );
+      },
+    );
 
-    test('بعد انقضاء الفاصل تُفتح خانة جديدة', () async {
+    test('once the interval passes, a new slot opens', () async {
       await spaced.write('{"a":1}', at: DateTime(2026, 9, 5, 10));
       await spaced.write('{"a":2}', at: DateTime(2026, 9, 5, 10, 30));
       expect(await spaced.list(), hasLength(1));
@@ -174,7 +183,7 @@ void main() {
       expect(all.first.at.day, 6, reason: 'الأحدث أولاً');
     });
 
-    test('سبع خانات متباعدة تغطي سبع ساعات لا ست دقائق', () async {
+    test('seven spaced slots cover seven hours, not six minutes', () async {
       for (var hour = 0; hour < 10; hour++) {
         await spaced.write('{"h":$hour}', at: DateTime(2026, 9, 5, hour));
       }
@@ -187,15 +196,18 @@ void main() {
       );
     });
 
-    test('الاستبدال لا يترك المستخدم بلا نسخة لحظةً واحدة', () async {
-      await spaced.write('{"a":1}', at: at(1));
-      // The old copy is deleted **after** the replacement is written
-      // successfully: the number of visible files never drops below one.
-      final result = await spaced.write('{"a":2}', at: at(2));
-      expect(result, isNotNull);
-      final files = temp.listSync().map((e) => e.path).toList();
-      expect(files, hasLength(1));
-      expect(await spaced.read((await spaced.list()).single), '{"a":2}');
-    });
+    test(
+      'replacing never leaves the user without a backup, not for a moment',
+      () async {
+        await spaced.write('{"a":1}', at: at(1));
+        // The old copy is deleted **after** the replacement is written
+        // successfully: the number of visible files never drops below one.
+        final result = await spaced.write('{"a":2}', at: at(2));
+        expect(result, isNotNull);
+        final files = temp.listSync().map((e) => e.path).toList();
+        expect(files, hasLength(1));
+        expect(await spaced.read((await spaced.list()).single), '{"a":2}');
+      },
+    );
   });
 }

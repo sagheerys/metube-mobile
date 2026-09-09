@@ -78,41 +78,9 @@ void main() {
     );
   }
 
-  test(
-    'ملف مفقود على السيرفر ⇒ لا يُسلَّم للمنصة أصلاً، ويُسجَّل سببه',
-    () async {
-      final probe = _RecordingProbe();
-      final container = containerWith(404, probe);
-      addTearDown(container.dispose);
-
-      await LibraryEnricher(
-        container.read(_refProvider),
-        probe: probe,
-      ).enrich(const [item]);
-
-      // **The first guard**: without the pre-check the dead URL went to
-      // `MediaMetadataRetriever` and froze the queue for 80 seconds.
-      expect(probe.calls, isEmpty, reason: 'رابط ميت لا يُسلَّم للمنصة');
-
-      // **The second guard**: the failure is written down; it used to be
-      // swallowed in complete silence.
-      expect(await logger.readAll(), contains('file missing on server'));
-
-      // **The third guard**: it is deferred by a day, so it is not retried
-      // at every launch.
-      final failures = await container
-          .read(probeFailureIndexProvider)
-          .readAll();
-      expect(failures.containsKey(item.canonicalUrl), isTrue);
-    },
-  );
-
-  test('عنصر أخفق قريباً يُتخطّى ولو عاد الملف', () async {
-    final index = ProbeFailureIndex(store: store, mutex: PrefsMutex());
-    await index.put(item.canonicalUrl, DateTime.now());
-
+  test('a file missing on the server is never handed to the platform, and the reason is logged', () async {
     final probe = _RecordingProbe();
-    final container = containerWith(206, probe); // the server is healthy now
+    final container = containerWith(404, probe);
     addTearDown(container.dispose);
 
     await LibraryEnricher(
@@ -120,10 +88,40 @@ void main() {
       probe: probe,
     ).enrich(const [item]);
 
-    expect(probe.calls, isEmpty, reason: 'التبريد يمنع إعادة المحاولة فوراً');
+    // **The first guard**: without the pre-check the dead URL went to
+    // `MediaMetadataRetriever` and froze the queue for 80 seconds.
+    expect(probe.calls, isEmpty, reason: 'رابط ميت لا يُسلَّم للمنصة');
+
+    // **The second guard**: the failure is written down; it used to be
+    // swallowed in complete silence.
+    expect(await logger.readAll(), contains('file missing on server'));
+
+    // **The third guard**: it is deferred by a day, so it is not retried
+    // at every launch.
+    final failures = await container.read(probeFailureIndexProvider).readAll();
+    expect(failures.containsKey(item.canonicalUrl), isTrue);
   });
 
-  test('ملف موجود ⇒ يُسبَر فعلاً', () async {
+  test(
+    'an item that failed recently is skipped even if the file came back',
+    () async {
+      final index = ProbeFailureIndex(store: store, mutex: PrefsMutex());
+      await index.put(item.canonicalUrl, DateTime.now());
+
+      final probe = _RecordingProbe();
+      final container = containerWith(206, probe); // the server is healthy now
+      addTearDown(container.dispose);
+
+      await LibraryEnricher(
+        container.read(_refProvider),
+        probe: probe,
+      ).enrich(const [item]);
+
+      expect(probe.calls, isEmpty, reason: 'التبريد يمنع إعادة المحاولة فوراً');
+    },
+  );
+
+  test('a file that exists really is probed', () async {
     final probe = _RecordingProbe();
     final container = containerWith(206, probe);
     addTearDown(container.dispose);
@@ -137,46 +135,49 @@ void main() {
     expect(probe.calls.single.single.url, contains('/download/'));
   });
 
-  test('التبريد ينتهي بعد يوم', () {
+  test('the cooldown expires after a day', () {
     final index = ProbeFailureIndex(store: store, mutex: PrefsMutex());
     final old = DateTime.now().subtract(const Duration(days: 2));
     expect(index.isCoolingDown({'k': old}, 'k'), isFalse);
     expect(index.isCoolingDown({'k': DateTime.now()}, 'k'), isTrue);
   });
 
-  test('غلافٌ اختفى من القرص ⇒ يُنسى ويُعاد سبره', () async {
-    final artwork = ArtworkIndex(store: store, mutex: PrefsMutex());
-    // A path in a cache folder that was wiped: this is what Android did to
-    // the thumbnails.
-    await artwork.put(item.canonicalUrl, '/data/cache/thumbs/gone.jpg');
+  test(
+    'a cover that vanished from disk is forgotten and probed again',
+    () async {
+      final artwork = ArtworkIndex(store: store, mutex: PrefsMutex());
+      // A path in a cache folder that was wiped: this is what Android did to
+      // the thumbnails.
+      await artwork.put(item.canonicalUrl, '/data/cache/thumbs/gone.jpg');
 
-    final probe = _RecordingProbe();
-    final container = containerWith(206, probe);
-    addTearDown(container.dispose);
+      final probe = _RecordingProbe();
+      final container = containerWith(206, probe);
+      addTearDown(container.dispose);
 
-    // The item carries a cover in its model, so without the cleanup it is
-    // never a candidate for probing.
-    const withThumb = LibraryItem(
-      canonicalUrl: 'https://instagram.com/reel/abc',
-      title: 'Video by someone',
-      serverFilename: 'Video by someone.mp4',
-      onServer: true,
-      thumbnail: '/data/cache/thumbs/gone.jpg',
-      duration: Duration(seconds: 30),
-      aspectRatio: 0.5625,
-    );
-    await LibraryEnricher(
-      container.read(_refProvider),
-      probe: probe,
-    ).enrich(const [withThumb]);
+      // The item carries a cover in its model, so without the cleanup it is
+      // never a candidate for probing.
+      const withThumb = LibraryItem(
+        canonicalUrl: 'https://instagram.com/reel/abc',
+        title: 'Video by someone',
+        serverFilename: 'Video by someone.mp4',
+        onServer: true,
+        thumbnail: '/data/cache/thumbs/gone.jpg',
+        duration: Duration(seconds: 30),
+        aspectRatio: 0.5625,
+      );
+      await LibraryEnricher(
+        container.read(_refProvider),
+        probe: probe,
+      ).enrich(const [withThumb]);
 
-    expect(probe.calls, hasLength(1), reason: 'يُعاد سبره في نفس الجولة');
-    // The dead path is gone, replaced by what the new probe produced.
-    expect(
-      (await artwork.readAll())[item.canonicalUrl],
-      isNot('/data/cache/thumbs/gone.jpg'),
-    );
-  });
+      expect(probe.calls, hasLength(1), reason: 'يُعاد سبره في نفس الجولة');
+      // The dead path is gone, replaced by what the new probe produced.
+      expect(
+        (await artwork.readAll())[item.canonicalUrl],
+        isNot('/data/cache/thumbs/gone.jpg'),
+      );
+    },
+  );
 }
 
 /// Reaching a `Ref` from inside the container: `LibraryEnricher` takes a

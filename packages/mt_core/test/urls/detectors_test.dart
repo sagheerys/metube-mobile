@@ -2,7 +2,7 @@ import 'package:mt_core/mt_core.dart';
 import 'package:test/test.dart';
 
 void main() {
-  group('MediaPlatform.detect — القائمة الواحدة (م-4)', () {
+  group('MediaPlatform.detect: one list', () {
     const cases = {
       'https://www.youtube.com/watch?v=dQw4w9WgXcQ': MediaPlatform.youtube,
       'https://youtu.be/dQw4w9WgXcQ': MediaPlatform.youtube,
@@ -27,7 +27,7 @@ void main() {
       });
     });
 
-    test('isKnown يغذي الزر الذكي (م-2)', () {
+    test('isKnown feeds the smart button', () {
       expect(MediaPlatform.isKnown('https://youtu.be/dQw4w9WgXcQ'), isTrue);
       expect(MediaPlatform.isKnown('https://example.com/x'), isFalse);
     });
@@ -38,8 +38,8 @@ void main() {
     });
   });
 
-  group('PlaylistDetector — التوجيه التلقائي (م-5)', () {
-    test('يوتيوب list= ⇒ youtube', () {
+  group('PlaylistDetector: routing on its own', () {
+    test('a YouTube list= URL is youtube', () {
       expect(
         PlaylistDetector.detect(
           'https://www.youtube.com/watch?v=dQw4w9WgXcQ&list=PLabc',
@@ -48,7 +48,7 @@ void main() {
       );
     });
 
-    test('يوتيوب /playlist ⇒ youtube', () {
+    test('a YouTube /playlist URL is youtube', () {
       expect(
         PlaylistDetector.detect('https://www.youtube.com/playlist?list=PLx'),
         PlaylistKind.youtube,
@@ -62,7 +62,7 @@ void main() {
       );
     });
 
-    test('فيديو مفرد ⇒ none', () {
+    test('a single video is none', () {
       expect(
         PlaylistDetector.detect('https://www.youtube.com/watch?v=dQw4w9WgXcQ'),
         PlaylistKind.none,
@@ -77,7 +77,7 @@ void main() {
       );
     });
 
-    test('list فارغ ⇒ none', () {
+    test('an empty list is none', () {
       expect(
         PlaylistDetector.detect('https://www.youtube.com/watch?v=x&list='),
         PlaylistKind.none,

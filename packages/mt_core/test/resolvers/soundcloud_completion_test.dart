@@ -14,7 +14,7 @@ void main() {
   final html = File('test/fixtures/real/soundcloud_set.html')
       .readAsStringSync();
 
-  test('العينة الحقيقية فيها مقاطع كاملة وأخرى ناقصة', () {
+  test('the real capture holds both complete and incomplete tracks', () {
     expect(SoundCloudResolver.parseHydration(html)!.tracks, hasLength(2));
     expect(
       SoundCloudResolver.pendingTrackIds(html),
@@ -23,7 +23,7 @@ void main() {
     );
   });
 
-  test('client_id يُقرأ من apiClient في hydration', () {
+  test('the client_id is read from apiClient inside the hydration', () {
     final id = SoundCloudResolver.extractClientId(html);
     expect(id, isNotNull);
     expect(
@@ -33,43 +33,46 @@ void main() {
     );
   });
 
-  test('resolveSet يُكمل الناقص عبر api-v2 بدفعات', () async {
-    final pending = SoundCloudResolver.pendingTrackIds(html);
-    var tracksCall = 0;
-    final resolver = SoundCloudResolver(
-      httpGet: (uri) async {
-        if (uri.host == 'soundcloud.com') return html;
-        tracksCall++;
-        expect(uri.host, 'api-v2.soundcloud.com');
-        expect(uri.queryParameters['client_id'], isNotNull);
-        final ids = uri.queryParameters['ids']!.split(',');
-        expect(ids, hasLength(pending.length));
-        return json.encode([
-          for (final id in ids)
-            {
-              'id': int.parse(id),
-              'title': 'مقطع $id',
-              'permalink_url': 'https://soundcloud.com/a/$id',
-              'duration': 180000,
-            },
-        ]);
-      },
-    );
+  test(
+    'resolveSet completes what is missing through api-v2, in batches',
+    () async {
+      final pending = SoundCloudResolver.pendingTrackIds(html);
+      var tracksCall = 0;
+      final resolver = SoundCloudResolver(
+        httpGet: (uri) async {
+          if (uri.host == 'soundcloud.com') return html;
+          tracksCall++;
+          expect(uri.host, 'api-v2.soundcloud.com');
+          expect(uri.queryParameters['client_id'], isNotNull);
+          final ids = uri.queryParameters['ids']!.split(',');
+          expect(ids, hasLength(pending.length));
+          return json.encode([
+            for (final id in ids)
+              {
+                'id': int.parse(id),
+                'title': 'مقطع $id',
+                'permalink_url': 'https://soundcloud.com/a/$id',
+                'duration': 180000,
+              },
+          ]);
+        },
+      );
 
-    final preview = await resolver.resolveSet(
-      'https://soundcloud.com/relaxcafemusic/sets/coffee-jazz',
-    );
+      final preview = await resolver.resolveSet(
+        'https://soundcloud.com/relaxcafemusic/sets/coffee-jazz',
+      );
 
-    expect(tracksCall, 1);
-    expect(
-      preview!.tracks,
-      hasLength(2 + pending.length),
-      reason: 'قبل الإصلاح: الكاملة وحدها',
-    );
-    expect(preview.tracks.last.duration, const Duration(minutes: 3));
-  });
+      expect(tracksCall, 1);
+      expect(
+        preview!.tracks,
+        hasLength(2 + pending.length),
+        reason: 'قبل الإصلاح: الكاملة وحدها',
+      );
+      expect(preview.tracks.last.duration, const Duration(minutes: 3));
+    },
+  );
 
-  test('فشل الإكمال لا يُضيّع ما نجح', () async {
+  test('a failure to complete does not lose what already succeeded', () async {
     final resolver = SoundCloudResolver(
       httpGet: (uri) async {
         if (uri.host == 'soundcloud.com') return html;

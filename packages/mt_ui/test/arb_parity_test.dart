@@ -41,7 +41,7 @@ void main() {
     ar = load('app_ar.arb');
   });
 
-  test('مجموعة المفاتيح متطابقة في الملفين', () {
+  test('the key sets are identical in both files', () {
     final enKeys = messageKeys(en);
     final arKeys = messageKeys(ar);
     expect(
@@ -56,7 +56,7 @@ void main() {
     );
   });
 
-  test('لا نص فارغ في أي من اللغتين', () {
+  test('no empty text in either language', () {
     for (final MapEntry(:key, :value) in {...en, ...ar}.entries) {
       if (key.startsWith('@')) continue;
       expect(en[key], isNotNull, reason: 'قيمة إنجليزية مفقودة: $key');
@@ -67,7 +67,7 @@ void main() {
     }
   });
 
-  test('معاملات كل مفتاح متطابقة بين اللغتين', () {
+  test("every key's placeholders match across the two languages", () {
     for (final key in messageKeys(en)) {
       if (!ar.containsKey(key)) continue; // covered by the first test
       expect(
@@ -85,7 +85,7 @@ void main() {
   /// assumed: `resultsFound` is a plural in both languages with its block
   /// in English alone, and generation passes. Requiring it in Arabic too
   /// used to fail the test on **healthy** files.
-  test('كل مفتاح بصيغة جمع له كتلة @ في القالب الإنجليزي', () {
+  test('every plural key has an @ block in the English template', () {
     for (final key in messageKeys(en)) {
       final isPlural =
           (en[key] as String).contains(', plural,') ||
@@ -107,7 +107,7 @@ void main() {
   /// literal opposite of GPL-3.0: the licence grants copying, modification
   /// and redistribution, and that sentence forbids them. Any return of that
   /// claim in any string fails here.
-  test('لا ادّعاء بحفظ كل الحقوق يناقض GPL', () {
+  test('no all rights reserved claim to contradict the GPL', () {
     for (final name in ['app_en.arb', 'app_ar.arb']) {
       final values = load(name).entries
           .where((e) => !e.key.startsWith('@'))
@@ -129,7 +129,7 @@ void main() {
 
   /// The licence expects the user to find its name and the warranty
   /// disclaimer **inside the program**.
-  test('نصوص الرخصة موجودة وتسمّيها', () {
+  test('the licence strings are present, and name it', () {
     for (final name in ['app_en.arb', 'app_ar.arb']) {
       final arb = load(name);
       expect(

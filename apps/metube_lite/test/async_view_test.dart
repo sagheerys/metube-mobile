@@ -15,24 +15,27 @@ void main() {
   // Proven with a probe against Riverpod:
   // derived = AsyncLoading<List<int>>(value: [1, 2, 3])
   // whenData => AsyncLoading<int>()   <- hasValue = false
-  test('تحميلٌ فوق بيانات سابقة (إبطال مزوّد أدنى) ⇒ القيمة تبقى', () {
-    const previous = AsyncData<List<int>>([1, 2, 3]);
-    final loading = const AsyncLoading<List<int>>().copyWithPrevious(
-      previous,
-      isRefresh: false,
-    );
-    expect(
-      loading,
-      isA<AsyncLoading<List<int>>>(),
-      reason: 'شرط الاختبار نفسه: الحالة تحميل لا بيانات-تُحدَّث',
-    );
+  test(
+    'loading over previous data, a lower provider invalidated, keeps the value',
+    () {
+      const previous = AsyncData<List<int>>([1, 2, 3]);
+      final loading = const AsyncLoading<List<int>>().copyWithPrevious(
+        previous,
+        isRefresh: false,
+      );
+      expect(
+        loading,
+        isA<AsyncLoading<List<int>>>(),
+        reason: 'شرط الاختبار نفسه: الحالة تحميل لا بيانات-تُحدَّث',
+      );
 
-    final view = asyncViewOf(loading, (items) => items.length);
+      final view = asyncViewOf(loading, (items) => items.length);
 
-    expect(view.valueOrNull, 3, reason: 'whenData كانت تعيد null هنا');
-  });
+      expect(view.valueOrNull, 3, reason: 'whenData كانت تعيد null هنا');
+    },
+  );
 
-  test('إعادة تحميل هذا المزوّد نفسه ⇒ القيمة تبقى أيضاً', () {
+  test('reloading this very provider keeps the value too', () {
     const previous = AsyncData<List<int>>([1, 2, 3]);
     final refreshing = const AsyncLoading<List<int>>().copyWithPrevious(
       previous,
@@ -40,7 +43,7 @@ void main() {
     expect(asyncViewOf(refreshing, (items) => items.length).valueOrNull, 3);
   });
 
-  test('بيانات مكتملة ⇒ تُبنى كالمعتاد', () {
+  test('complete data builds as usual', () {
     final view = asyncViewOf(
       const AsyncData<List<int>>([1, 2]),
       (items) => items.length,
@@ -49,7 +52,7 @@ void main() {
     expect(view.isLoading, isFalse);
   });
 
-  test('تحميل أول بلا بيانات ⇒ تحميل', () {
+  test('a first load with no data shows loading', () {
     final view = asyncViewOf(
       const AsyncLoading<List<int>>(),
       (items) => items.length,
@@ -58,7 +61,7 @@ void main() {
     expect(view.isLoading, isTrue);
   });
 
-  test('خطأ بلا بيانات ⇒ خطأ لا دوّارة أبدية', () {
+  test('an error with no data shows the error, not a spinner forever', () {
     final view = asyncViewOf(
       AsyncError<List<int>>('boom', StackTrace.empty),
       (items) => items.length,
@@ -67,7 +70,7 @@ void main() {
     expect(view.error, 'boom');
   });
 
-  test('خطأ فوق بيانات سابقة ⇒ البيانات تفوز', () {
+  test('an error over previous data: the data wins', () {
     const previous = AsyncData<List<int>>([9]);
     final failed = AsyncError<List<int>>(
       'boom',

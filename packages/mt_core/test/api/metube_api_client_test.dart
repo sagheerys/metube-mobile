@@ -56,14 +56,14 @@ ResponseBody _json(String body, {int status = 200}) => ResponseBody.fromString(
 
 void main() {
   group('ServerConfig', () {
-    test('تطبيع الرابط: إزالة الشرطات الأخيرة والمسافات', () {
+    test('normalising the URL: trailing slashes and spaces are removed', () {
       expect(
         ServerConfig(baseUrl: ' https://s.com// ').baseUrl,
         'https://s.com',
       );
     });
 
-    test('basicAuthHeader يُبنى من الاعتمادات', () {
+    test('basicAuthHeader is built from the credentials', () {
       final config = ServerConfig(
         baseUrl: 'https://s.com',
         username: 'user',
@@ -79,7 +79,7 @@ void main() {
 
   group('testConnection (§2.1)', () {
     test(
-      '200 + done/queue ⇒ نجاح، مع ترويسة Basic والاستعلام limit=1',
+      '200 with done and queue succeeds, sending the Basic header and limit=1',
       () async {
         final (client, adapter) = makeClient(
           (o) => _json('{"done": [], "queue": []}'),
@@ -101,7 +101,7 @@ void main() {
       expect(client.testConnection(), throwsA(isA<NotMeTubeServerException>()));
     });
 
-    test('JSON بلا queue ⇒ NotMeTubeServerException', () async {
+    test('JSON without queue raises NotMeTubeServerException', () async {
       final (client, _) = makeClient((o) => _json('{"done": []}'));
       expect(client.testConnection(), throwsA(isA<NotMeTubeServerException>()));
     });
@@ -116,7 +116,7 @@ void main() {
       expect(client.testConnection(), throwsA(isA<NoApiException>()));
     });
 
-    test('انقطاع النقل ⇒ NetworkException', () async {
+    test('a dropped connection raises NetworkException', () async {
       final (client, _) = makeClient(
         (o) => throw DioException.connectionError(
           requestOptions: o,
@@ -128,7 +128,7 @@ void main() {
   });
 
   group('fetchHistory (§2.3)', () {
-    test('يفك نصاً plain ويبني HistoryResponse', () async {
+    test('it decodes a plain-text body and builds a HistoryResponse', () async {
       final (client, _) = makeClient(
         (o) => _json(
           '{"done": [{"url": "https://youtu.be/dQw4w9WgXcQ", '
@@ -141,77 +141,77 @@ void main() {
   });
 
   group('add (§2.2)', () {
-    test(
-      'يرسل url + quality، ويطبق قاعدة المنصة (رقمية+TikTok ⇒ best)',
-      () async {
-        final (client, adapter) = makeClient((o) => _json('{"status": "ok"}'));
-        await client.add(
-          'https://www.tiktok.com/@u/video/7301234567890123456',
-          Quality.q1080,
-        );
-        final req = adapter.requests.single;
-        expect(req.uri.path, '/add');
-        final body = json.decode(req.data as String) as Map;
-        expect(body['quality'], 'best');
-        expect(body['url'], contains('tiktok.com'));
-      },
-    );
+    test('it sends url and quality, applying the platform rule: a numeric quality on TikTok becomes best', () async {
+      final (client, adapter) = makeClient((o) => _json('{"status": "ok"}'));
+      await client.add(
+        'https://www.tiktok.com/@u/video/7301234567890123456',
+        Quality.q1080,
+      );
+      final req = adapter.requests.single;
+      expect(req.uri.path, '/add');
+      final body = json.decode(req.data as String) as Map;
+      expect(body['quality'], 'best');
+      expect(body['url'], contains('tiktok.com'));
+    });
 
     // **Playback compatibility** (field report 2026-09-03: "reels look
     // torn"). Measured against a real server: `format:mp4` alone produced
     // av1 inside mp4, and the two fields together produced h264/aac. So
     // **both** are asserted.
-    test('توافق التشغيل يرسل download_type+format+codec للفيديو', () async {
-      final (client, adapter) = makeClient((o) => _json('{"status": "ok"}'));
-      await client.add(
-        'https://youtu.be/dQw4w9WgXcQ',
-        Quality.best,
-        compatibleVideo: true,
-      );
-      final body = json.decode(adapter.requests.single.data as String) as Map;
-      expect(body['format'], 'mp4');
-      expect(body['codec'], 'h264');
-      // **Without it, codec is ignored** — measured against a real server
-      // twice.
-      expect(body['download_type'], 'video');
-    });
+    test(
+      'playback compatibility sends download_type, format and codec for video',
+      () async {
+        final (client, adapter) = makeClient((o) => _json('{"status": "ok"}'));
+        await client.add(
+          'https://youtu.be/dQw4w9WgXcQ',
+          Quality.best,
+          compatibleVideo: true,
+        );
+        final body = json.decode(adapter.requests.single.data as String) as Map;
+        expect(body['format'], 'mp4');
+        expect(body['codec'], 'h264');
+        // **Without it, codec is ignored** — measured against a real server
+        // twice.
+        expect(body['download_type'], 'video');
+      },
+    );
 
     /// **Facebook guards (ffprobe and yt-dlp measurements 2026-09-08).**
     /// `codec:h264` arrived and was recorded, and then MeTube's middle
     /// step, which carries **no codec filter**, picked av1 at 1440x2560,
     /// while `hd`, h264 at 720x1280, sat right behind it. The preset skips
     /// that step.
-    test('توافق التشغيل + best ⇒ يرسل preset التوافق', () async {
-      final (client, adapter) = makeClient((o) => _json('{"status": "ok"}'));
-      await client.add(
-        'https://m.facebook.com/watch/?v=161924316',
-        Quality.best,
-        compatibleVideo: true,
-      );
-      final body = json.decode(adapter.requests.single.data as String) as Map;
-      expect(body['ytdl_options_presets'], [MeTubeApiClient.compatPreset]);
-    });
-
     test(
-      'جودة رقمية ⇒ لا preset (المُحدِّد الثابت يبتلع سقف الارتفاع)',
+      'playback compatibility with best sends the compatibility preset',
       () async {
         final (client, adapter) = makeClient((o) => _json('{"status": "ok"}'));
         await client.add(
-          'https://youtu.be/dQw4w9WgXcQ',
-          Quality.q720,
+          'https://m.facebook.com/watch/?v=161924316',
+          Quality.best,
           compatibleVideo: true,
         );
         final body = json.decode(adapter.requests.single.data as String) as Map;
-        expect(
-          body.containsKey('ytdl_options_presets'),
-          isFalse,
-          reason: 'وإلا نزل 1080p لمن طلب 720p',
-        );
-        expect(body['quality'], '720');
+        expect(body['ytdl_options_presets'], [MeTubeApiClient.compatPreset]);
       },
     );
 
-    test('الصوت لا preset له', () async {
+    test('a numeric quality sends no preset: the fixed selector would swallow the height cap', () async {
+      final (client, adapter) = makeClient((o) => _json('{"status": "ok"}'));
+      await client.add(
+        'https://youtu.be/dQw4w9WgXcQ',
+        Quality.q720,
+        compatibleVideo: true,
+      );
+      final body = json.decode(adapter.requests.single.data as String) as Map;
+      expect(
+        body.containsKey('ytdl_options_presets'),
+        isFalse,
+        reason: 'وإلا نزل 1080p لمن طلب 720p',
+      );
+      expect(body['quality'], '720');
+    });
+
+    test('audio has no preset', () async {
       final (client, adapter) = makeClient((o) => _json('{"status": "ok"}'));
       await client.add(
         'https://youtu.be/dQw4w9WgXcQ',
@@ -225,7 +225,7 @@ void main() {
     /// A server without the preset configured answers 400, and an
     /// open-source app runs on containers other than its author's. Without
     /// this fallback, **every download** fails.
-    test('سيرفر يرفض الـpreset ⇒ إعادة المحاولة بلا preset لا فشل', () async {
+    test('a server that refuses the preset is retried without it rather than failing', () async {
       var calls = 0;
       final (client, adapter) = makeClient((o) {
         calls++;
@@ -247,7 +247,7 @@ void main() {
       expect(second['codec'], 'h264', reason: 'بقية التوافق تبقى');
     });
 
-    test('فشل بلا preset لا يُعاد مرتين', () async {
+    test('a failure with no preset is not retried twice', () async {
       var calls = 0;
       final (client, _) = makeClient((o) {
         calls++;
@@ -269,7 +269,7 @@ void main() {
     /// recognise downloaded **twenty clips** on the server with no
     /// selection screen, while the app knew of one task, and in Lite the
     /// other nineteen are orphaned after one is pulled and deleted.
-    test('رابط مفرد يحمل حدّ عنصر واحد', () async {
+    test('a single URL carries the one-item limit', () async {
       final (client, adapter) = makeClient((o) => _json('{"status": "ok"}'));
       await client.add(
         'https://soundcloud.com/artist/some-track',
@@ -279,7 +279,7 @@ void main() {
       expect(body['playlist_item_limit'], 1);
     });
 
-    test('صفحة فنان غير مكتشَفة تُعامل مفرداً ⇒ الحدّ يحميها', () async {
+    test('an undetected artist page is treated as single, and the limit protects it', () async {
       final (client, adapter) = makeClient((o) => _json('{"status": "ok"}'));
       await client.add('https://soundcloud.com/jazzhopcafe', Quality.best);
       final body = json.decode(adapter.requests.single.data as String) as Map;
@@ -293,7 +293,7 @@ void main() {
     /// `watch?v=…&list=…` is **a recognised playlist** to
     /// `PlaylistDetector`, so it goes to the selection screen and never
     /// arrives here as a single item, and the limit is not imposed on it.
-    test('watch مع list قائمة معروفة ⇒ بلا حدّ', () async {
+    test('a watch URL with a recognised list carries no limit', () async {
       final (client, adapter) = makeClient((o) => _json('{"status": "ok"}'));
       await client.add(
         'https://www.youtube.com/watch?v=dQw4w9WgXcQ&list=PLabc123',
@@ -303,7 +303,7 @@ void main() {
       expect(body.containsKey('playlist_item_limit'), isFalse);
     });
 
-    test('رابط قائمة صريح لا يُحدّ — الدفعي يرسل كل مقطع وحده', () async {
+    test('an explicit playlist URL is not limited: the batch screen sends each clip on its own', () async {
       final (client, adapter) = makeClient((o) => _json('{"status": "ok"}'));
       await client.add(
         'https://soundcloud.com/artist/sets/album',
@@ -313,7 +313,7 @@ void main() {
       expect(body.containsKey('playlist_item_limit'), isFalse);
     });
 
-    test('توافق التشغيل لا يُرسل مع الصوت', () async {
+    test('playback compatibility is never sent with audio', () async {
       final (client, adapter) = makeClient((o) => _json('{"status": "ok"}'));
       await client.add(
         'https://youtu.be/dQw4w9WgXcQ',
@@ -333,21 +333,21 @@ void main() {
     /// single clip downloaded **twenty** on the server. That field stays
     /// the only permitted addition here, and this guard stops anything else
     /// leaking in.
-    test('بلا توافق التشغيل: الجسم url+quality والحدّ لا غير', () async {
+    test('without playback compatibility the body is url, quality and the limit, nothing else', () async {
       final (client, adapter) = makeClient((o) => _json('{"status": "ok"}'));
       await client.add('https://youtu.be/dQw4w9WgXcQ', Quality.best);
       final body = json.decode(adapter.requests.single.data as String) as Map;
       expect(body.keys.toSet(), {'url', 'quality', 'playlist_item_limit'});
     });
 
-    test('يوتيوب يحتفظ بالرقمية', () async {
+    test('YouTube keeps the numeric quality', () async {
       final (client, adapter) = makeClient((o) => _json('{"status": "ok"}'));
       await client.add('https://youtu.be/dQw4w9WgXcQ', Quality.q720);
       final body = json.decode(adapter.requests.single.data as String) as Map;
       expect(body['quality'], '720');
     });
 
-    test('200 مع status=error + نص كوكيز ⇒ PlatformBlockedException', () async {
+    test('200 with status=error and a cookie message raises PlatformBlockedException', () async {
       final (client, _) = makeClient(
         (o) => _json(
           '{"status": "error", "msg": "Sign in to confirm you are not a bot"}',
@@ -359,7 +359,7 @@ void main() {
       );
     });
 
-    test('خطأ عادي ⇒ ServerErrorException برسالة السيرفر', () async {
+    test("an ordinary error raises ServerErrorException carrying the server's message", () async {
       final (client, _) = makeClient(
         (o) => _json('{"status": "error", "msg": "Unsupported URL"}'),
       );
@@ -375,7 +375,7 @@ void main() {
       );
     });
 
-    test('خطأ Map (error كائن) يُسطّح نصاً', () async {
+    test('an error given as a map is flattened to text', () async {
       final (client, _) = makeClient(
         (o) => _json('{"error": {"code": 400, "msg": "bad url"}}'),
       );
@@ -387,7 +387,7 @@ void main() {
   });
 
   group('delete (§2.5)', () {
-    test('الحمولة: ids روابط كاملة + where=done', () async {
+    test('the payload: ids are full URLs, with where=done', () async {
       final (client, adapter) = makeClient((o) => _json('{"status": "ok"}'));
       await client.delete(['https://www.youtube.com/watch?v=dQw4w9WgXcQ']);
       final body = json.decode(adapter.requests.single.data as String) as Map;
@@ -397,7 +397,7 @@ void main() {
   });
 
   group('downloadUrl (§2.4)', () {
-    test('ترميز الاسم العربي بالمسافات', () {
+    test('encoding an Arabic name with spaces', () {
       final (client, _) = makeClient((o) => _json('{}'));
       expect(
         client.downloadUrl('ملف جميل.mp4'),
@@ -415,7 +415,7 @@ void main() {
       'a..b.mp4',
       'clip....webm',
     ]) {
-      test('حارس المسار يقبل "$good"', () {
+      test('the path guard accepts "$good"', () {
         final (client, _) = makeClient((o) => _json('{}'));
         expect(
           client.downloadUrl(good),
@@ -425,7 +425,7 @@ void main() {
     }
 
     for (final bad in ['', '.', '..', '../secret', 'a/b.mp4', r'a\b.mp4']) {
-      test('حارس المسار يرفض "$bad"', () {
+      test('the path guard rejects "$bad"', () {
         final (client, _) = makeClient((o) => _json('{}'));
         expect(
           () => client.downloadUrl(bad),
@@ -435,7 +435,7 @@ void main() {
     }
   });
 
-  test('streamingHeaders تحمل Basic وkeep-alive', () {
+  test('streamingHeaders carry Basic and keep-alive', () {
     final (client, _) = makeClient(
       (o) => _json('{}'),
       username: 'u',
@@ -449,7 +449,7 @@ void main() {
   /// is what hid the fact that `validateStatus < 600` let an error page be
   /// saved as **a successful media file**, after which the original was
   /// deleted from the server.
-  group('downloadTo (§2.4) — حالة HTTP لا تمرّ بصمت', () {
+  group('downloadTo: an HTTP status never passes silently', () {
     late Directory tempDir;
     setUp(() async {
       tempDir = await Directory.systemTemp.createTemp('mtf_dl_');
@@ -475,7 +475,7 @@ void main() {
     }
 
     test(
-      '401 ⇒ AuthFailure لا «نجاح»',
+      '401 raises AuthFailure rather than reporting success',
       () => expectRejected(401, isA<AuthFailureException>()),
     );
     test(
@@ -488,11 +488,11 @@ void main() {
       () => expectRejected(500, isA<ServerErrorException>()),
     );
     test(
-      '502 ⇒ ServerError (وكيل عكسي عابر)',
+      '502 raises ServerError, a passing reverse proxy',
       () => expectRejected(502, isA<ServerErrorException>()),
     );
 
-    test('200 ⇒ يُكتب الملف بلا رمي', () async {
+    test('200 writes the file without throwing', () async {
       final (client, _) = makeClient(
         (o) => ResponseBody.fromString(
           'MEDIA',
@@ -508,25 +508,31 @@ void main() {
     });
   });
 
-  group('fileExists — الحارس الرخيص قبل تسليم الرابط للمنصة', () {
-    test('206 على نطاق بايت واحد ⇒ موجود', () async {
-      final (client, adapter) = makeClient((_) => _json('x', status: 206));
-      expect(await client.fileExists('a.mp4'), isTrue);
-      expect(adapter.requests.single.headers['Range'], 'bytes=0-0');
-    });
+  group(
+    'fileExists: the cheap guard before a URL is handed to the platform',
+    () {
+      test('206 on a one-byte range means it exists', () async {
+        final (client, adapter) = makeClient((_) => _json('x', status: 206));
+        expect(await client.fileExists('a.mp4'), isTrue);
+        expect(adapter.requests.single.headers['Range'], 'bytes=0-0');
+      });
 
-    test('404 ⇒ غير موجود (بلا رمي)', () async {
-      final (client, _) = makeClient((_) => _json('no', status: 404));
-      // The guard: one dead record in `/history` used to be handed to
-      // MediaMetadataRetriever, freezing thumbnail probing for 80 seconds
-      // every session.
-      expect(await client.fileExists('gone.mp4'), isFalse);
-    });
+      test('404 means it does not exist, without throwing', () async {
+        final (client, _) = makeClient((_) => _json('no', status: 404));
+        // The guard: one dead record in `/history` used to be handed to
+        // MediaMetadataRetriever, freezing thumbnail probing for 80 seconds
+        // every session.
+        expect(await client.fileExists('gone.mp4'), isFalse);
+      });
 
-    test('اسم ملف خبيث ⇒ false ولا يُبنى له رابط (القاعدة 9)', () async {
-      final (client, adapter) = makeClient((_) => _json('x', status: 206));
-      expect(await client.fileExists('../etc/passwd'), isFalse);
-      expect(adapter.requests, isEmpty);
-    });
-  });
+      test(
+        'a malicious filename returns false, and no URL is built for it',
+        () async {
+          final (client, adapter) = makeClient((_) => _json('x', status: 206));
+          expect(await client.fileExists('../etc/passwd'), isFalse);
+          expect(adapter.requests, isEmpty);
+        },
+      );
+    },
+  );
 }

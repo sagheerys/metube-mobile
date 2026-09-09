@@ -18,7 +18,7 @@ void main() {
     isBatchMember: true,
   );
 
-  test('يُسحب أعضاء الدفعة المطلوبة وحدهم', () async {
+  test('only the requested batch members are pulled', () async {
     final pulled = <String>[];
     final saver = BatchOfflineSaver(pull: (t) async => pulled.add(t.id));
     saver.want(['a', 'b']);
@@ -33,27 +33,30 @@ void main() {
     expect(pulled, ['a', 'b']);
   });
 
-  test('السحب متسلسل — لا 400 تنزيل معاً', () async {
-    var active = 0;
-    var peak = 0;
-    final saver = BatchOfflineSaver(
-      pull: (t) async {
-        active++;
-        peak = peak > active ? peak : active;
-        await Future<void>.delayed(const Duration(milliseconds: 5));
-        active--;
-      },
-    );
-    saver.want(['a', 'b', 'c']);
-    for (final id in ['a', 'b', 'c']) {
-      saver.onFinished(done(id));
-    }
-    await saver.idle;
+  test(
+    'the pulls run in sequence, not four hundred downloads at once',
+    () async {
+      var active = 0;
+      var peak = 0;
+      final saver = BatchOfflineSaver(
+        pull: (t) async {
+          active++;
+          peak = peak > active ? peak : active;
+          await Future<void>.delayed(const Duration(milliseconds: 5));
+          active--;
+        },
+      );
+      saver.want(['a', 'b', 'c']);
+      for (final id in ['a', 'b', 'c']) {
+        saver.onFinished(done(id));
+      }
+      await saver.idle;
 
-    expect(peak, 1);
-  });
+      expect(peak, 1);
+    },
+  );
 
-  test('فشل عنصر لا يوقف بقية الألبوم', () async {
+  test('one item failing does not stop the rest of the album', () async {
     final pulled = <String>[];
     final errors = <Object>[];
     final saver = BatchOfflineSaver(
@@ -73,7 +76,7 @@ void main() {
     expect(errors, hasLength(1));
   });
 
-  test('العضو الساقط لا يبقى منتظراً للأبد', () async {
+  test('a dropped member is not waited on forever', () async {
     final saver = BatchOfflineSaver(pull: (_) async {});
     saver.want(['a', 'b']);
     saver.forget('a');
@@ -84,21 +87,24 @@ void main() {
     expect(saver.pendingCount, 1);
   });
 
-  test('مهمة بلا canonicalUrl لا تُسحب (لا مفتاح لفهرستها)', () async {
-    final pulled = <String>[];
-    final saver = BatchOfflineSaver(pull: (t) async => pulled.add(t.id));
-    saver.want(['a']);
-    saver.onFinished(
-      DownloadTask(
-        id: 'a',
-        inputUrl: 'https://sc/a',
-        quality: Quality.audio,
-        phase: TaskPhase.completed,
-        isBatchMember: true,
-      ),
-    );
-    await saver.idle;
+  test(
+    'a task with no canonicalUrl is not pulled: there is no key to index it by',
+    () async {
+      final pulled = <String>[];
+      final saver = BatchOfflineSaver(pull: (t) async => pulled.add(t.id));
+      saver.want(['a']);
+      saver.onFinished(
+        DownloadTask(
+          id: 'a',
+          inputUrl: 'https://sc/a',
+          quality: Quality.audio,
+          phase: TaskPhase.completed,
+          isBatchMember: true,
+        ),
+      );
+      await saver.idle;
 
-    expect(pulled, isEmpty);
-  });
+      expect(pulled, isEmpty);
+    },
+  );
 }

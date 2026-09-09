@@ -28,18 +28,18 @@ void main() {
     return c.read(libraryViewProvider);
   }
 
-  test('لا شيء محفوظ ⇒ القائمة', () async {
+  test('nothing saved means the list', () async {
     expect((await restored()).mode, LibraryViewMode.list);
   });
 
   /// **The guard**: someone updating the app while on grid must find it as
   /// they left it.
-  test('هجرة من المفتاحين القديمين', () async {
+  test('migrating from the two old keys', () async {
     await store.setBool('library_grid_view', true);
     expect((await restored()).mode, LibraryViewMode.grid);
   });
 
-  test('المفتاح الجديد يغلب القديمين', () async {
+  test('the new key beats both old ones', () async {
     await store.setBool('library_grid_view', true);
     await store.setString('library_view_mode', 'cards');
     final options = await restored();
@@ -47,7 +47,9 @@ void main() {
     expect(options.grid, isFalse);
   });
 
-  testWidgets('عرض الفك يرتفع بالارتفاع حين يفرضه cover', (tester) async {
+  testWidgets('the decode width rises with the height when cover demands it', (
+    tester,
+  ) async {
     late BuildContext ctx;
     await tester.pumpWidget(
       MediaQuery(

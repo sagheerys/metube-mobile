@@ -5,37 +5,40 @@ import '../fixtures/fixtures.dart';
 
 void main() {
   group('HistoryResponse', () {
-    test('fixture فارغ ⇒ isEmpty', () {
+    test('an empty fixture is empty', () {
       final r = HistoryResponse.fromJson(loadFixture('history_empty.json'));
       expect(r.isEmpty, isTrue);
       expect(r.active, isEmpty);
     });
 
-    test('قوائم غائبة ⇒ فارغة بلا رمي', () {
+    test('missing lists come back empty, without throwing', () {
       final r = HistoryResponse.fromJson({'done': []});
       expect(r.queue, isEmpty);
       expect(r.pending, isEmpty);
     });
 
-    test('عناصر غير صالحة (ليست Map) تُتجاوز بصمت', () {
-      final r = HistoryResponse.fromJson({
-        'done': [
-          {'url': 'https://youtu.be/dQw4w9WgXcQ', 'status': 'finished'},
-          'garbage-string',
-          42,
-        ],
-        'queue': ['x'],
-      });
-      expect(r.done, hasLength(1));
-      expect(r.queue, isEmpty);
-    });
+    test(
+      'invalid entries, the ones that are not maps, are skipped silently',
+      () {
+        final r = HistoryResponse.fromJson({
+          'done': [
+            {'url': 'https://youtu.be/dQw4w9WgXcQ', 'status': 'finished'},
+            'garbage-string',
+            42,
+          ],
+          'queue': ['x'],
+        });
+        expect(r.done, hasLength(1));
+        expect(r.queue, isEmpty);
+      },
+    );
 
     test('active = queue + pending', () {
       final r = HistoryResponse.fromJson(loadFixture('history_active.json'));
       expect(r.active, hasLength(3));
     });
 
-    test('looksLikeMeTube: يشترط done وqueue معاً في Map', () {
+    test('looksLikeMeTube requires both done and queue in a map', () {
       expect(
         HistoryResponse.looksLikeMeTube({'done': [], 'queue': []}),
         isTrue,

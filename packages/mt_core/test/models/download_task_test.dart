@@ -3,14 +3,14 @@ import 'package:test/test.dart';
 
 void main() {
   group('DownloadTask', () {
-    test('معرف uuid تلقائي فريد', () {
+    test('an automatic uuid, unique each time', () {
       final a = DownloadTask(inputUrl: 'u', quality: Quality.best);
       final b = DownloadTask(inputUrl: 'u', quality: Quality.best);
       expect(a.id, isNotEmpty);
       expect(a.id, isNot(b.id));
     });
 
-    test('copyWith يحفظ الهوية ويحدث المرحلة', () {
+    test('copyWith keeps the identity and updates the phase', () {
       final task = DownloadTask(inputUrl: 'u', quality: Quality.audio);
       final updated = task.copyWith(
         phase: TaskPhase.polling,
@@ -25,7 +25,7 @@ void main() {
       expect(task.phase, TaskPhase.queued, reason: 'الأصل لا يتغير');
     });
 
-    test('effectiveUrl يفضّل المحلول', () {
+    test('effectiveUrl prefers the resolved URL', () {
       final task = DownloadTask(
         inputUrl: 'https://vt.tiktok.com/xyz/',
         quality: Quality.best,
@@ -39,7 +39,7 @@ void main() {
       );
     });
 
-    test('isFinished للحالات النهائية فقط', () {
+    test('isFinished is true only for the terminal states', () {
       final task = DownloadTask(inputUrl: 'u', quality: Quality.best);
       expect(task.isFinished, isFalse);
       expect(task.copyWith(phase: TaskPhase.completed).isFinished, isTrue);
@@ -58,9 +58,12 @@ void main() {
       quality: Quality.best,
     ).copyWith(phase: phase, progress: progress);
 
-    test('فارغة ⇒ null', () => expect(averageTaskProgress(const []), isNull));
+    test(
+      'an empty list gives null',
+      () => expect(averageTaskProgress(const []), isNull),
+    );
 
-    test('كلها بلا تقدم معروف ⇒ null (شريط غير محدد)', () {
+    test('none with known progress gives null: an indeterminate bar', () {
       expect(
         averageTaskProgress([
           make(TaskPhase.queued, 0),
@@ -70,7 +73,7 @@ void main() {
       );
     });
 
-    test('المنتظِرة تخفض المتوسط بدل أن تُستبعد', () {
+    test('a waiting task lowers the average rather than being excluded', () {
       // One at 90% and two queued gives 30%, not 90%.
       final average = averageTaskProgress([
         make(TaskPhase.pulling, 0.9),
@@ -80,7 +83,7 @@ void main() {
       expect(average, closeTo(0.3, 0.001));
     });
 
-    test('متوسط عادي', () {
+    test('an ordinary average', () {
       expect(
         averageTaskProgress([
           make(TaskPhase.polling, 0.25),

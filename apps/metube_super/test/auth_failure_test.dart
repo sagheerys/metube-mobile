@@ -77,7 +77,7 @@ void main() {
     }
   }
 
-  testWidgets('رفض الاعتماد (401) ⇒ رسالة تقول سببه لا شاشة رمادية', (
+  testWidgets('a 401 shows a message that names the cause, not a grey screen', (
     tester,
   ) async {
     await tester.pumpWidget(appFailingWith(const AuthFailureException('401')));
@@ -95,17 +95,20 @@ void main() {
     expect(find.text(l10n.updateCredentials), findsOneWidget);
   });
 
-  testWidgets('عطل شبكة ⇒ رسالة الشبكة لا رسالة الاعتماد', (tester) async {
-    await tester.pumpWidget(appFailingWith(const NetworkException('down')));
-    await settle(tester);
+  testWidgets(
+    'a network failure shows the network message, not the credentials one',
+    (tester) async {
+      await tester.pumpWidget(appFailingWith(const NetworkException('down')));
+      await settle(tester);
 
-    expect(tester.takeException(), isNull);
-    final l10n = await arabic();
-    // The distinction is deliberate: "update your password" is a wrong
-    // diagnosis for a network outage, exactly as "could not reach" is a
-    // wrong diagnosis for a rejected credential.
-    expect(find.text(l10n.signInRequired), findsNothing);
-    expect(find.text(l10n.connectionFailed), findsOneWidget);
-    expect(find.text(l10n.errNetwork), findsOneWidget);
-  });
+      expect(tester.takeException(), isNull);
+      final l10n = await arabic();
+      // The distinction is deliberate: "update your password" is a wrong
+      // diagnosis for a network outage, exactly as "could not reach" is a
+      // wrong diagnosis for a rejected credential.
+      expect(find.text(l10n.signInRequired), findsNothing);
+      expect(find.text(l10n.connectionFailed), findsOneWidget);
+      expect(find.text(l10n.errNetwork), findsOneWidget);
+    },
+  );
 }

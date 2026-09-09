@@ -56,17 +56,18 @@ void main() {
     child: const SuperApp(),
   );
 
-  testWidgets('الإقلاع بلا سيرفر ⇒ المكتبة بحالة «لا سيرفر بعد» (ر-1)', (
-    tester,
-  ) async {
-    await tester.pumpWidget(app());
-    await tester.pump(const Duration(milliseconds: 100));
-    expect(tester.takeException(), isNull);
-    expect(find.byType(MTEmptyState), findsOneWidget);
-    expect(find.byType(MTFab), findsOneWidget);
-  });
+  testWidgets(
+    'launching with no server leaves the library in its no server yet state',
+    (tester) async {
+      await tester.pumpWidget(app());
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(tester.takeException(), isNull);
+      expect(find.byType(MTEmptyState), findsOneWidget);
+      expect(find.byType(MTFab), findsOneWidget);
+    },
+  );
 
-  testWidgets('لا مشغل مصغر شبح عند الإقلاع بلا تشغيل (فخ §6.5)', (
+  testWidgets('no ghost mini player when launching without playing anything', (
     tester,
   ) async {
     await tester.pumpWidget(app());
@@ -83,33 +84,34 @@ void main() {
     );
   });
 
-  testWidgets('تشغيل نسخة محلية بلا سيرفر يُظهر المشغل المصغر ثم stop يخفيه', (
-    tester,
-  ) async {
-    await tester.pumpWidget(app());
-    await tester.pump(const Duration(milliseconds: 100));
+  testWidgets(
+    'playing a local copy with no server shows the mini player, and stop hides it',
+    (tester) async {
+      await tester.pumpWidget(app());
+      await tester.pump(const Duration(milliseconds: 100));
 
-    // Real asynchronous work outside the fake clock, or the wait deadlocks.
-    await tester.runAsync(
-      () => handler.playItems(const [
-        PlaylistItem(
-          canonicalUrl: 'https://x/1',
-          title: 'مقطع صوتي',
-          localPath: '/sd/a.mp3',
-          isAudio: true,
-        ),
-      ]),
-    );
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 50));
-    expect(find.text('مقطع صوتي'), findsOneWidget);
+      // Real asynchronous work outside the fake clock, or the wait deadlocks.
+      await tester.runAsync(
+        () => handler.playItems(const [
+          PlaylistItem(
+            canonicalUrl: 'https://x/1',
+            title: 'مقطع صوتي',
+            localPath: '/sd/a.mp3',
+            isAudio: true,
+          ),
+        ]),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 50));
+      expect(find.text('مقطع صوتي'), findsOneWidget);
 
-    await tester.runAsync(handler.stop);
-    await tester.pump();
-    // The mini player disappears with a fade and a shrink (polish
-    // 2026-09-04), so we wait the full animation and then confirm it is
-    // actually gone rather than fading.
-    await tester.pump(MTMotion.reveal + const Duration(milliseconds: 50));
-    expect(find.text('مقطع صوتي'), findsNothing);
-  });
+      await tester.runAsync(handler.stop);
+      await tester.pump();
+      // The mini player disappears with a fade and a shrink (polish
+      // 2026-09-04), so we wait the full animation and then confirm it is
+      // actually gone rather than fading.
+      await tester.pump(MTMotion.reveal + const Duration(milliseconds: 50));
+      expect(find.text('مقطع صوتي'), findsNothing);
+    },
+  );
 }

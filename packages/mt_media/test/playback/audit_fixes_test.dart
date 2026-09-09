@@ -28,25 +28,28 @@ void main() {
     home: Scaffold(body: Center(child: child)),
   );
 
-  group('الوقت المتبقي', () {
-    test('معزول الاتجاه فلا يتذيّل السالب', () {
-      final text = mtFormatRemaining(
-        const Duration(minutes: 10, seconds: 55),
-        const Duration(hours: 1, minutes: 1, seconds: 44),
-      );
-      // The guard: without isolation the Arabic interface rendered
-      // "50:49-".
-      expect(text.startsWith(mtLtrIsolate), isTrue);
-      expect(text, contains('-50:49'));
-    });
+  group('the remaining time', () {
+    test(
+      'it is direction-isolated, so the minus sign does not drift to the end',
+      () {
+        final text = mtFormatRemaining(
+          const Duration(minutes: 10, seconds: 55),
+          const Duration(hours: 1, minutes: 1, seconds: 44),
+        );
+        // The guard: without isolation the Arabic interface rendered
+        // "50:49-".
+        expect(text.startsWith(mtLtrIsolate), isTrue);
+        expect(text, contains('-50:49'));
+      },
+    );
 
-    test('بلا مدة معروفة يبقى الشكل المحايد', () {
+    test('with no known duration it keeps the neutral shape', () {
       expect(mtFormatRemaining(Duration.zero, null), '--:--');
     });
   });
 
-  group('الغلاف البديل', () {
-    testWidgets('باني الغلاف يعيد null ⇒ تظهر الأيقونة البديلة', (
+  group('the fallback cover', () {
+    testWidgets('the cover builder returning null shows the fallback icon', (
       tester,
     ) async {
       await tester.pumpWidget(
@@ -65,7 +68,9 @@ void main() {
       expect(find.byIcon(Icons.graphic_eq_rounded), findsOneWidget);
     });
 
-    testWidgets('غلاف موجود ⇒ يُعرض ولا تظهر الأيقونة', (tester) async {
+    testWidgets('an existing cover is shown, and the icon is not', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         host(
           SizedBox(
@@ -82,83 +87,87 @@ void main() {
     });
   });
 
-  group('المشغل عرضياً (بلاغ المالك 2026-09-05)', () {
-    testWidgets('الخروج من الملء التام والجهاز عرضي ⇒ الفيديو يملأ الشاشة', (
-      tester,
-    ) async {
-      tester.view.physicalSize = const Size(1440, 2880);
-      tester.view.devicePixelRatio = 3;
-      addTearDown(tester.view.reset);
+  group('the player in landscape', () {
+    testWidgets(
+      'leaving fullscreen while the device is landscape still fills the screen with the video',
+      (tester) async {
+        tester.view.physicalSize = const Size(1440, 2880);
+        tester.view.devicePixelRatio = 3;
+        addTearDown(tester.view.reset);
 
-      final session = MTVideoSession(
-        resolver: PlaybackSourceResolver(
-          endpoint: ServerStreamEndpoint.none,
-          fileExists: (_) => true,
-        ),
-        positions: PlaybackPositionStore(
-          store: MemoryKeyValueStore(),
-          mutex: PrefsMutex(),
-        ),
-        prefs: PlaybackPrefs(store: MemoryKeyValueStore(), mutex: PrefsMutex()),
-        saveInterval: const Duration(hours: 1),
-      );
-      await tester.runAsync(
-        () => session.open(const [
-          PlaylistItem(
-            canonicalUrl: 'https://x/a',
-            title: 'مقطع',
-            localPath: '/media/a.mp4',
+        final session = MTVideoSession(
+          resolver: PlaybackSourceResolver(
+            endpoint: ServerStreamEndpoint.none,
+            fileExists: (_) => true,
           ),
-        ]),
-      );
+          positions: PlaybackPositionStore(
+            store: MemoryKeyValueStore(),
+            mutex: PrefsMutex(),
+          ),
+          prefs: PlaybackPrefs(
+            store: MemoryKeyValueStore(),
+            mutex: PrefsMutex(),
+          ),
+          saveInterval: const Duration(hours: 1),
+        );
+        await tester.runAsync(
+          () => session.open(const [
+            PlaylistItem(
+              canonicalUrl: 'https://x/a',
+              title: 'مقطع',
+              localPath: '/media/a.mp4',
+            ),
+          ]),
+        );
 
-      final navKey = GlobalKey<NavigatorState>();
-      Future<void> settle() async {
-        for (var i = 0; i < 6; i++) {
-          await tester.pump(const Duration(milliseconds: 100));
+        final navKey = GlobalKey<NavigatorState>();
+        Future<void> settle() async {
+          for (var i = 0; i < 6; i++) {
+            await tester.pump(const Duration(milliseconds: 100));
+          }
         }
-      }
 
-      await tester.pumpWidget(
-        MaterialApp(
-          navigatorKey: navKey,
-          locale: const Locale('ar'),
-          localizationsDelegates: MTLocalizations.localizationsDelegates,
-          supportedLocales: MTLocalizations.supportedLocales,
-          theme: mtTheme(MTVariant.lite, Brightness.light),
-          home: MTVideoScreen(session: session),
-        ),
-      );
-      await settle();
-      expect(
-        find.byType(MTVideoInfoSheet, skipOffstage: false),
-        findsOneWidget,
-        reason: 'ضابط: طولياً الورقة موجودة',
-      );
+        await tester.pumpWidget(
+          MaterialApp(
+            navigatorKey: navKey,
+            locale: const Locale('ar'),
+            localizationsDelegates: MTLocalizations.localizationsDelegates,
+            supportedLocales: MTLocalizations.supportedLocales,
+            theme: mtTheme(MTVariant.lite, Brightness.light),
+            home: MTVideoScreen(session: session),
+          ),
+        );
+        await settle();
+        expect(
+          find.byType(MTVideoInfoSheet, skipOffstage: false),
+          findsOneWidget,
+          reason: 'ضابط: طولياً الورقة موجودة',
+        );
 
-      // A tilt opens full screen automatically.
-      tester.view.physicalSize = const Size(2880, 1440);
-      await settle();
-      expect(
-        find.byType(MTVideoFullscreenPage, skipOffstage: false),
-        findsOneWidget,
-      );
+        // A tilt opens full screen automatically.
+        tester.view.physicalSize = const Size(2880, 1440);
+        await settle();
+        expect(
+          find.byType(MTVideoFullscreenPage, skipOffstage: false),
+          findsOneWidget,
+        );
 
-      // Leaving by the button with the device still in landscape: this is
-      // where a portrait layout appeared on a wide screen (field report).
-      navKey.currentState!.pop();
-      await settle();
-      expect(
-        find.byType(MTVideoFullscreenPage, skipOffstage: false),
-        findsNothing,
-      );
-      expect(
-        find.byType(MTVideoInfoSheet, skipOffstage: false),
-        findsNothing,
-        reason: 'الورقة الكريمية لا مكان لها في شاشة عريضة',
-      );
+        // Leaving by the button with the device still in landscape: this is
+        // where a portrait layout appeared on a wide screen (field report).
+        navKey.currentState!.pop();
+        await settle();
+        expect(
+          find.byType(MTVideoFullscreenPage, skipOffstage: false),
+          findsNothing,
+        );
+        expect(
+          find.byType(MTVideoInfoSheet, skipOffstage: false),
+          findsNothing,
+          reason: 'الورقة الكريمية لا مكان لها في شاشة عريضة',
+        );
 
-      await tester.runAsync(session.dispose);
-    });
+        await tester.runAsync(session.dispose);
+      },
+    );
   });
 }

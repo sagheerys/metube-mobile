@@ -9,7 +9,7 @@ import '../fixtures/fixtures.dart';
 /// their oddities. The identifying text has since been scrambled; see the
 /// anonymisation note in the fixtures.
 void main() {
-  group('fixture حقيقية: history_real_done', () {
+  group('a real fixture: history_real_done', () {
     late HistoryResponse response;
     setUp(
       () => response = HistoryResponse.fromJson(
@@ -17,17 +17,17 @@ void main() {
       ),
     );
 
-    test('تتحلل بلا رمي وبعناصر كثيرة', () {
+    test('it parses without throwing, and with many items', () {
       expect(response.done.length, greaterThan(200));
     });
 
-    test('كل عنصر مكتمل له canonicalUrl غير فارغ', () {
+    test('every completed item has a non-empty canonicalUrl', () {
       for (final item in response.done) {
         expect(item.canonicalUrl, isNotEmpty);
       }
     });
 
-    test('لا اختلاق أسماء ملفات: الغائب يبقى null', () {
+    test('no invented filenames: a missing one stays null', () {
       // At minimum, every genuinely finished item carries a filename from
       // the server.
       final finished = response.done.where(
@@ -39,7 +39,7 @@ void main() {
       );
     });
 
-    test('الطوابع الزمنية الحقيقية تُفك لأزمنة معقولة', () {
+    test('the real timestamps decode to plausible times', () {
       final withTime = response.done.where((i) => i.timestamp != null).toList();
       expect(withTime, isNotEmpty);
       for (final item in withTime.take(20)) {
@@ -48,8 +48,8 @@ void main() {
     });
   });
 
-  group('fixture حقيقية: history_real_active (لحظة تحميل جارٍ)', () {
-    test('عنصر الطابور جارٍ بالحالة الصحيحة', () {
+  group('a real fixture: history_real_active, a download in flight', () {
+    test('the queued item is in progress, with the right status', () {
       final response = HistoryResponse.fromJson(
         loadFixture('real/history_real_active.json'),
       );

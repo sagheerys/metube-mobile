@@ -14,19 +14,19 @@ final _five = [
 ];
 
 void main() {
-  group('الترتيب العادي', () {
-    test('يبدأ من الفهرس المطلوب', () {
+  group('the ordinary order', () {
+    test('it starts at the requested index', () {
       final queue = PlaybackQueue(items: _five, index: 2);
       expect(queue.current!.title, 'c');
       expect(queue.index, 2);
     });
 
-    test('الفهرس خارج المدى يُقصّ', () {
+    test('an index out of range is clamped', () {
       expect(PlaybackQueue(items: _five, index: 99).index, 4);
       expect(PlaybackQueue(items: _five, index: -3).index, 0);
     });
 
-    test('قائمة فارغة: لا حالي ولا تالٍ', () {
+    test('an empty list: no current and no next', () {
       final queue = PlaybackQueue(items: const []);
       expect(queue.current, isNull);
       expect(queue.index, -1);
@@ -34,46 +34,46 @@ void main() {
     });
   });
 
-  group('أوضاع التشغيل (م-20)', () {
-    test('تلقائي: التالي ثم يتوقف عند النهاية', () {
+  group('the play modes', () {
+    test('automatic: the next, then it stops at the end', () {
       final queue = PlaybackQueue(items: _five, index: 3);
       expect(queue.nextIndex(PlayMode.autoNext), 4);
       queue.jumpTo(4);
       expect(queue.nextIndex(PlayMode.autoNext), isNull);
     });
 
-    test('تكرار الكل يلتف من النهاية للبداية والعكس', () {
+    test('repeat all wraps from the end to the start, and back', () {
       final queue = PlaybackQueue(items: _five, index: 4);
       expect(queue.nextIndex(PlayMode.repeatAll), 0);
       queue.jumpTo(0);
       expect(queue.previousIndex(PlayMode.repeatAll), 4);
     });
 
-    test('إيقاف عند النهاية لا يلتف', () {
+    test('stop at the end does not wrap', () {
       final queue = PlaybackQueue(items: _five, index: 4);
       expect(queue.nextIndex(PlayMode.stopAtEnd), isNull);
     });
 
-    test('تكرار واحد: تلقائياً يعيد نفسه', () {
+    test('repeat one: on its own it replays itself', () {
       final queue = PlaybackQueue(items: _five, index: 1);
       expect(queue.nextIndex(PlayMode.repeatOne), 1);
     });
 
-    test('تكرار واحد لا يحبس المستخدم حين يضغط «التالي»', () {
+    test('repeat one does not trap the user who presses next', () {
       final queue = PlaybackQueue(items: _five, index: 1);
       expect(queue.nextIndex(PlayMode.repeatOne, userInitiated: true), 2);
       queue.jumpTo(4);
       expect(queue.nextIndex(PlayMode.repeatOne, userInitiated: true), 0);
     });
 
-    test('السابق من أول القائمة بلا تكرار = لا شيء', () {
+    test('previous from the head of the list, with no repeat, is nothing', () {
       final queue = PlaybackQueue(items: _five);
       expect(queue.previousIndex(PlayMode.autoNext), isNull);
     });
   });
 
-  group('العشوائي', () {
-    test('يبدأ من العنصر الحالي ويشمل كل العناصر مرة واحدة', () {
+  group('shuffle', () {
+    test('it starts at the current item and covers every item once', () {
       final queue = PlaybackQueue(
         items: _five,
         index: 3,
@@ -85,7 +85,7 @@ void main() {
       expect(queue.ordered.map((i) => i.title).toSet().length, 5);
     });
 
-    test('المرور على كل العناصر بلا تكرار حتى النهاية', () {
+    test('it passes over every item without repeating, to the end', () {
       final queue = PlaybackQueue(
         items: _five,
         shuffle: true,
@@ -98,7 +98,7 @@ void main() {
       expect(visited.toSet().length, 5);
     });
 
-    test('إطفاء العشوائي يعيد الترتيب الأصلي مع بقاء العنصر الحالي', () {
+    test('turning shuffle off restores the original order and keeps the current item', () {
       final queue = PlaybackQueue(
         items: _five,
         index: 2,
@@ -112,41 +112,47 @@ void main() {
     });
   });
 
-  group('الحذف (تخطي معطوب / إزالة من الورقة)', () {
-    test('حذف غير الحالي يبقي العنصر الحالي نفسه', () {
-      final queue = PlaybackQueue(items: _five, index: 3);
-      expect(queue.removeAt(0), isTrue);
-      expect(queue.current!.title, 'd');
-      expect(queue.length, 4);
-    });
+  group(
+    'removal, whether skipping something broken or removing from the sheet',
+    () {
+      test(
+        'removing something other than the current keeps the current item',
+        () {
+          final queue = PlaybackQueue(items: _five, index: 3);
+          expect(queue.removeAt(0), isTrue);
+          expect(queue.current!.title, 'd');
+          expect(queue.length, 4);
+        },
+      );
 
-    test('حذف الحالي ينتقل لما حلّ محله', () {
-      final queue = PlaybackQueue(items: _five, index: 2);
-      queue.removeAt(2);
-      expect(queue.current!.title, 'd');
-    });
+      test('removing the current moves to whatever took its place', () {
+        final queue = PlaybackQueue(items: _five, index: 2);
+        queue.removeAt(2);
+        expect(queue.current!.title, 'd');
+      });
 
-    test('حذف آخر عنصر وهو الحالي يرجع للأخير الباقي', () {
-      final queue = PlaybackQueue(items: _five, index: 4);
-      queue.removeAt(4);
-      expect(queue.current!.title, 'd');
-    });
+      test('removing the last item while it is current falls back to the last one left', () {
+        final queue = PlaybackQueue(items: _five, index: 4);
+        queue.removeAt(4);
+        expect(queue.current!.title, 'd');
+      });
 
-    test('حذف الجميع يترك الطابور فارغاً', () {
-      final queue = PlaybackQueue(items: [_item('only')]);
-      queue.removeAt(0);
-      expect(queue.isEmpty, isTrue);
-      expect(queue.current, isNull);
-    });
+      test('removing everything leaves the queue empty', () {
+        final queue = PlaybackQueue(items: [_item('only')]);
+        queue.removeAt(0);
+        expect(queue.isEmpty, isTrue);
+        expect(queue.current, isNull);
+      });
 
-    test('فهرس خارج المدى يُرفض', () {
-      final queue = PlaybackQueue(items: _five);
-      expect(queue.removeAt(9), isFalse);
-      expect(queue.length, 5);
-    });
-  });
+      test('an index out of range is refused', () {
+        final queue = PlaybackQueue(items: _five);
+        expect(queue.removeAt(9), isFalse);
+        expect(queue.length, 5);
+      });
+    },
+  );
 
-  test('jumpTo يرفض ما ليس في الطابور', () {
+  test('jumpTo refuses what is not in the queue', () {
     final queue = PlaybackQueue(items: _five);
     expect(queue.jumpTo(2), isTrue);
     expect(queue.jumpTo(50), isFalse);

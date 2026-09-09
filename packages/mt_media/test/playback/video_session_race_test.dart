@@ -42,7 +42,7 @@ void main() {
     VideoPlayerPlatform.instance = platform;
   });
 
-  test('تخطٍّ أثناء التحضير ⇒ مشغل واحد فقط يشتغل ولا يتيم يبقى', () async {
+  test('a skip during preparation leaves exactly one player running, and no orphan', () async {
     platform.createDelay = const Duration(milliseconds: 60);
     final session = build();
     addTearDown(session.dispose);
@@ -68,7 +68,7 @@ void main() {
     expect(session.current!.title, 'b');
   });
 
-  test('ثلاث تخطيات متتالية سريعة ⇒ يبقى واحد', () async {
+  test('three quick skips in a row leave one', () async {
     platform.createDelay = const Duration(milliseconds: 40);
     final session = build();
     addTearDown(session.dispose);
@@ -84,7 +84,7 @@ void main() {
     expect(platform.alive.length, 1);
   });
 
-  test('بدء الفيديو يوقف الصوت الخلفي (مخرج واحد)', () async {
+  test('starting a video stops the background audio: one output', () async {
     final session = build();
     addTearDown(session.dispose);
     final pause = RecordingAudioPause();
@@ -97,7 +97,7 @@ void main() {
     expect(platform.playing.length, 1);
   });
 
-  test('pause() الصريح يوقف الفيديو — «متابعة صوتاً» بلا تداخل', () async {
+  test('an explicit pause() stops the video, so continue as audio does not overlap', () async {
     final session = build();
     addTearDown(session.dispose);
 

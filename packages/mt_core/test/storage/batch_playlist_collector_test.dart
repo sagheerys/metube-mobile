@@ -27,70 +27,86 @@ void main() {
     collector = BatchPlaylistCollector(playlists: playlists);
   });
 
-  test('الدفعة تُجمع في قائمة واحدة باسم قائمة المصدر', () async {
-    final playlist = await collector.begin('دورة Flutter', ['t1', 't2', 't3']);
-    expect(playlist.name, 'دورة Flutter');
+  test(
+    'the batch is collected into one playlist, named after the source',
+    () async {
+      final playlist = await collector.begin('دورة Flutter', [
+        't1',
+        't2',
+        't3',
+      ]);
+      expect(playlist.name, 'دورة Flutter');
 
-    await collector.onFinished(done('t1', 'https://y/1', title: 'الدرس 1'));
-    await collector.onFinished(done('t2', 'https://y/2', title: 'الدرس 2'));
-    await collector.onFinished(done('t3', 'https://y/3', title: 'الدرس 3'));
+      await collector.onFinished(done('t1', 'https://y/1', title: 'الدرس 1'));
+      await collector.onFinished(done('t2', 'https://y/2', title: 'الدرس 2'));
+      await collector.onFinished(done('t3', 'https://y/3', title: 'الدرس 3'));
 
-    final saved = (await playlists.readAll()).single;
-    expect(saved.name, 'دورة Flutter');
-    expect(saved.items.map((e) => e.canonicalUrl), [
-      'https://y/1',
-      'https://y/2',
-      'https://y/3',
-    ]);
-    expect(saved.items.first.cachedTitle, 'الدرس 1');
-    expect(saved.items.first.serverFilename, 't1.mp4');
-  });
+      final saved = (await playlists.readAll()).single;
+      expect(saved.name, 'دورة Flutter');
+      expect(saved.items.map((e) => e.canonicalUrl), [
+        'https://y/1',
+        'https://y/2',
+        'https://y/3',
+      ]);
+      expect(saved.items.first.cachedTitle, 'الدرس 1');
+      expect(saved.items.first.serverFilename, 't1.mp4');
+    },
+  );
 
-  test('الترتيب من المصدر لا من الاكتمال', () async {
-    await collector.begin('دورة', ['t1', 't2', 't3']);
-    // The third completed first (the first stumbled and was retried).
-    await collector.onFinished(done('t3', 'https://y/3'));
-    await collector.onFinished(done('t1', 'https://y/1'));
-    await collector.onFinished(done('t2', 'https://y/2'));
+  test(
+    'the order comes from the source, not from what finished first',
+    () async {
+      await collector.begin('دورة', ['t1', 't2', 't3']);
+      // The third completed first (the first stumbled and was retried).
+      await collector.onFinished(done('t3', 'https://y/3'));
+      await collector.onFinished(done('t1', 'https://y/1'));
+      await collector.onFinished(done('t2', 'https://y/2'));
 
-    final saved = (await playlists.readAll()).single;
-    expect(saved.items.map((e) => e.canonicalUrl), [
-      'https://y/1',
-      'https://y/2',
-      'https://y/3',
-    ]);
-  });
+      final saved = (await playlists.readAll()).single;
+      expect(saved.items.map((e) => e.canonicalUrl), [
+        'https://y/1',
+        'https://y/2',
+        'https://y/3',
+      ]);
+    },
+  );
 
-  test('عضو ساقط لا يعطّل القائمة ولا يترك مكاناً فارغاً', () async {
-    await collector.begin('دورة', ['t1', 't2']);
-    await collector.onDropped('t1'); // failed
-    await collector.onFinished(done('t2', 'https://y/2'));
+  test(
+    'a dropped member neither breaks the playlist nor leaves a gap',
+    () async {
+      await collector.begin('دورة', ['t1', 't2']);
+      await collector.onDropped('t1'); // failed
+      await collector.onFinished(done('t2', 'https://y/2'));
 
-    final saved = (await playlists.readAll()).single;
-    expect(saved.items.map((e) => e.canonicalUrl), ['https://y/2']);
-  });
+      final saved = (await playlists.readAll()).single;
+      expect(saved.items.map((e) => e.canonicalUrl), ['https://y/2']);
+    },
+  );
 
-  test('سقوط كل الأعضاء ⇒ لا تبقى قائمة فارغة شبح', () async {
+  test('every member dropping leaves no ghost empty playlist', () async {
     await collector.begin('دورة فاشلة', ['t1', 't2']);
     await collector.onDropped('t1');
     await collector.onDropped('t2');
     expect(await playlists.readAll(), isEmpty);
   });
 
-  test('كل كتابة تُخبِر الواجهة (وإلا بقيت القائمة غير مرئية)', () async {
-    var notified = 0;
-    final watched = BatchPlaylistCollector(
-      playlists: playlists,
-      onChanged: () => notified++,
-    );
-    await watched.begin('دورة', ['t1', 't2']);
-    expect(notified, 1, reason: 'الإنشاء وحده يستحق إظهار البطاقة');
-    await watched.onFinished(done('t1', 'https://y/1'));
-    await watched.onDropped('t2');
-    expect(notified, 3);
-  });
+  test(
+    'every write notifies the interface, or the playlist stays invisible',
+    () async {
+      var notified = 0;
+      final watched = BatchPlaylistCollector(
+        playlists: playlists,
+        onChanged: () => notified++,
+      );
+      await watched.begin('دورة', ['t1', 't2']);
+      expect(notified, 1, reason: 'الإنشاء وحده يستحق إظهار البطاقة');
+      await watched.onFinished(done('t1', 'https://y/1'));
+      await watched.onDropped('t2');
+      expect(notified, 3);
+    },
+  );
 
-  test('مهمة ليست من الدفعة لا تُضاف لشيء', () async {
+  test('a task outside the batch is added to nothing', () async {
     await collector.begin('دورة', ['t1']);
     await collector.onFinished(done('غريب', 'https://y/x'));
     final saved = (await playlists.readAll()).single;
@@ -100,25 +116,28 @@ void main() {
   // **Field report 2026-09-04:** "I downloaded the YouTube playlist again
   // and it appeared as a new playlist, so now I have two." `begin` used to
   // create a playlist every time without asking.
-  group('إعادة تحميل المصدر نفسه', () {
-    test('لا تُستنسخ القائمة — نفس الاسم يعني نفس القائمة', () async {
-      await collector.begin('دورة', ['t1', 't2']);
-      await collector.onFinished(done('t1', 'https://y/1'));
-      await collector.onFinished(done('t2', 'https://y/2'));
+  group('downloading the same source again', () {
+    test(
+      'the playlist is not duplicated: the same name means the same playlist',
+      () async {
+        await collector.begin('دورة', ['t1', 't2']);
+        await collector.onFinished(done('t1', 'https://y/1'));
+        await collector.onFinished(done('t2', 'https://y/2'));
 
-      await collector.begin('دورة', ['r1', 'r2']);
-      await collector.onFinished(done('r1', 'https://y/1'));
-      await collector.onFinished(done('r2', 'https://y/2'));
+        await collector.begin('دورة', ['r1', 'r2']);
+        await collector.onFinished(done('r1', 'https://y/1'));
+        await collector.onFinished(done('r2', 'https://y/2'));
 
-      final all = await playlists.readAll();
-      expect(all, hasLength(1), reason: 'قائمة واحدة لا قائمتان');
-      expect(all.single.items.map((e) => e.canonicalUrl), [
-        'https://y/1',
-        'https://y/2',
-      ], reason: 'ولا مداخل مكررة داخلها');
-    });
+        final all = await playlists.readAll();
+        expect(all, hasLength(1), reason: 'قائمة واحدة لا قائمتان');
+        expect(all.single.items.map((e) => e.canonicalUrl), [
+          'https://y/1',
+          'https://y/2',
+        ], reason: 'ولا مداخل مكررة داخلها');
+      },
+    );
 
-    test('الجديد يُلحق بآخر القائمة لا برأسها', () async {
+    test('new items are appended to the end, not to the head', () async {
       await collector.begin('دورة', ['t1']);
       await collector.onFinished(done('t1', 'https://y/1'));
 
@@ -134,7 +153,7 @@ void main() {
       ], reason: 'الترتيب يُزاح بما كان في القائمة قبل الدفعة');
     });
 
-    test('قائمة كانت موجودة لا تُحذف لو سقط كل أعضاء الدفعة', () async {
+    test('a playlist that already existed is not deleted when every batch member drops', () async {
       await collector.begin('دورة', ['t1']);
       await collector.onFinished(done('t1', 'https://y/1'));
 

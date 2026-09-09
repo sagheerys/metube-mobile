@@ -42,7 +42,7 @@ void main() {
   );
 
   for (final count in [0, 1, 2, 3, 4, 6]) {
-    testWidgets('$count غلافاً يُبنى بلا فيض', (tester) async {
+    testWidgets('$count covers build without overflowing', (tester) async {
       await tester.pumpWidget(cardWith(count));
       await tester.pump();
       expect(tester.takeException(), isNull);

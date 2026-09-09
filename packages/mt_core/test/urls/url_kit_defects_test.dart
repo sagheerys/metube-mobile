@@ -5,8 +5,8 @@ import 'package:test/test.dart';
 /// negative matching tests for anything but YouTube, and zero tests for
 /// direction marks inside Arabic text.
 void main() {
-  group('ح-2 — الاحتواء لا يطابق العنصر الخطأ', () {
-    test('مقطع SoundCloud لا يطابق ريمكسه', () {
+  group('containment does not match the wrong item', () {
+    test('a SoundCloud track does not match its own remix', () {
       expect(
         UrlKit.urlsMatch(
           'https://soundcloud.com/artist/track',
@@ -17,7 +17,7 @@ void main() {
       );
     });
 
-    test('روابط SoundCloud مختلفة لنفس الفنان لا تتساوى', () {
+    test('different SoundCloud URLs by the same artist are not equal', () {
       expect(
         UrlKit.urlsMatch(
           'https://soundcloud.com/artist/song-one',
@@ -27,7 +27,7 @@ void main() {
       );
     });
 
-    test('الرابط الخاص (بادئة مسار كاملة) يبقى مطابقاً', () {
+    test('a private URL, a full path prefix, still matches', () {
       expect(
         UrlKit.urlsMatch(
           'https://soundcloud.com/artist/track',
@@ -37,7 +37,7 @@ void main() {
       );
     });
 
-    test('معرف رقمي ليس بادئة معرف أطول', () {
+    test('a numeric id is not a prefix of a longer one', () {
       expect(
         UrlKit.urlsMatch(
           'https://vimeo.com/1234567890',
@@ -47,7 +47,7 @@ void main() {
       );
     });
 
-    test('معرف رقمي متطابق يطابق رغم اختلاف شكل الرابط', () {
+    test('an identical numeric id matches despite a different URL shape', () {
       expect(
         UrlKit.urlsMatch(
           'https://www.tiktok.com/@a/video/7301234567890123456',
@@ -57,7 +57,7 @@ void main() {
       );
     });
 
-    test('مساران مختلفان تماماً على نفس المضيف لا يتطابقان', () {
+    test('two entirely different paths on the same host do not match', () {
       expect(
         UrlKit.urlsMatch(
           'https://vimeo.com/channels/staffpicks',
@@ -68,18 +68,21 @@ void main() {
     });
   });
 
-  group('خ-5 — علامات الاتجاه في المشاركة العربية', () {
-    test('RLM/LRM حول الرابط تُقصّ', () {
+  group('the direction marks in an Arabic share', () {
+    test('RLM and LRM around the URL are trimmed', () {
       const wrapped = '\u200Fشاهد هذا \u200Ehttps://youtu.be/dQw4w9WgXcQ\u200F';
       expect(UrlKit.extractUrl(wrapped), 'https://youtu.be/dQw4w9WgXcQ');
     });
 
-    test('المسافة الصفرية داخل النص المحيط لا تلوث الرابط', () {
-      const wrapped = 'رابط:\u200B https://soundcloud.com/a/b\u200B';
-      expect(UrlKit.extractUrl(wrapped), 'https://soundcloud.com/a/b');
-    });
+    test(
+      'a zero-width space in the surrounding text does not contaminate the URL',
+      () {
+        const wrapped = 'رابط:\u200B https://soundcloud.com/a/b\u200B';
+        expect(UrlKit.extractUrl(wrapped), 'https://soundcloud.com/a/b');
+      },
+    );
 
-    test('extractAllUrls تنظف كذلك', () {
+    test('extractAllUrls cleans them too', () {
       const text =
           '\u202Bالأول https://youtu.be/aaaaaaaaaaa\u200F والثاني '
           'https://youtu.be/bbbbbbbbbbb\u202C';
@@ -89,7 +92,7 @@ void main() {
       ]);
     });
 
-    test('BOM في بداية النص الملصق', () {
+    test('a BOM at the start of the pasted text', () {
       expect(
         UrlKit.extractUrl('\uFEFFhttps://youtu.be/dQw4w9WgXcQ'),
         'https://youtu.be/dQw4w9WgXcQ',

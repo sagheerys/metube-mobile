@@ -31,8 +31,8 @@ PlaylistItem _unknown(String id) =>
     PlaylistItem(canonicalUrl: 'https://x/$id', title: id);
 
 void main() {
-  group('مسار القِصار المصفّى (م-35)', () {
-    test('يأخذ العمودية القصيرة فقط بترتيب القائمة', () {
+  group('the filtered shorts lane', () {
+    test('it takes only the short portrait clips, in list order', () {
       final source = [
         _wide('a'),
         _short('b'),
@@ -46,15 +46,15 @@ void main() {
       expect(lane.length, 2, reason: 'العداد يعدّ القِصار وحدها');
     });
 
-    test('الصوتي لا يدخل المسار مهما كانت مدته ونسبته', () {
+    test('audio never enters the lane, whatever its duration and ratio', () {
       expect(ShortsLane.from([_audio('a')]).isEmpty, isTrue);
     });
 
-    test('المجهول الأبعاد ليس قصيراً — لا تخمين', () {
+    test('unknown dimensions are not a short: no guessing', () {
       expect(ShortsLane.from([_unknown('a')]).isEmpty, isTrue);
     });
 
-    test('العمودي الطويل (>3 دقائق) خارج المسار', () {
+    test('a long portrait clip, over 3 minutes, is outside the lane', () {
       const longVertical = PlaylistItem(
         canonicalUrl: 'https://x/l',
         title: 'l',
@@ -64,25 +64,28 @@ void main() {
       expect(ShortsLane.from(const [longVertical]).isEmpty, isTrue);
     });
 
-    test('موضع عنصر داخل المسار', () {
+    test("an item's position within the lane", () {
       final lane = ShortsLane.from([_wide('a'), _short('b'), _short('d')]);
       expect(lane.laneIndexOf('https://x/d'), 1);
       expect(lane.laneIndexOf('https://x/a'), -1);
     });
 
-    test('«متابعة بقية القائمة» تختار أول غير قصير بعد آخر قصير', () {
+    test('continue with the rest of the list picks the first non-short after the last short', () {
       final source = [_short('a'), _short('b'), _wide('c'), _audio('d')];
       final lane = ShortsLane.from(source);
       expect(lane.nextNonShortIndex(source), 2);
     });
 
-    test('لا غير-قصير بعده ⇒ يلتف لأول غير قصير في القائمة', () {
-      final source = [_wide('a'), _short('b'), _short('c')];
-      final lane = ShortsLane.from(source);
-      expect(lane.nextNonShortIndex(source), 0);
-    });
+    test(
+      'with no non-short after it, it wraps to the first non-short in the list',
+      () {
+        final source = [_wide('a'), _short('b'), _short('c')];
+        final lane = ShortsLane.from(source);
+        expect(lane.nextNonShortIndex(source), 0);
+      },
+    );
 
-    test('قائمة كلها قِصار ⇒ لا شيء لمتابعته', () {
+    test('a list of nothing but shorts has nothing to continue with', () {
       final source = [_short('a'), _short('b')];
       expect(ShortsLane.from(source).nextNonShortIndex(source), isNull);
     });
@@ -97,7 +100,7 @@ void main() {
       ),
     );
 
-    test('يحفظ الأبعاد ويقرؤها', () async {
+    test('it saves the dimensions and reads them back', () async {
       await index.remember('https://x/1', const Duration(seconds: 50), 0.5625);
       final shape = await index.valueOf('https://x/1');
       expect(shape!.duration, const Duration(seconds: 50));
@@ -106,7 +109,7 @@ void main() {
       expect(shape.isShortForm, isTrue);
     });
 
-    test('العرضي والطويل ليسا قِصاراً', () {
+    test('landscape and long are not shorts', () {
       const wide = MediaShape(
         duration: Duration(seconds: 30),
         aspectRatio: 1.77,
@@ -119,12 +122,12 @@ void main() {
       expect(longVertical.isShortForm, isFalse);
     });
 
-    test('مدة صفرية لا تُحفظ', () async {
+    test('a zero duration is not saved', () async {
       await index.remember('https://x/2', Duration.zero, 0.5);
       expect(await index.valueOf('https://x/2'), isNull);
     });
 
-    test('قيمة تالفة في الفهرس تُتجاهل', () {
+    test('a corrupt value in the index is ignored', () {
       expect(index.decodeValue({'d': 'ليس رقماً', 'r': 1}), isNull);
       expect(index.decodeValue('نص'), isNull);
     });

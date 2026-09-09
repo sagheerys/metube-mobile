@@ -81,7 +81,7 @@ void main() {
   ShareReceiver build() =>
       ShareReceiver(onUrls: delivered.add, onLog: logs.add);
 
-  test('رابط يصل قبل انتهاء getInitialMedia لا يضيع', () async {
+  test('a link arriving before getInitialMedia finishes is not lost', () async {
     final receiver = build();
     addTearDown(receiver.dispose);
     final started = receiver.start();
@@ -101,7 +101,7 @@ void main() {
     expect(delivered.single.single, contains('dQw4w9WgXcQ'));
   });
 
-  test('نفس الدفعة مرتين ⇒ تسليم واحد', () async {
+  test('the same batch twice is delivered once', () async {
     final receiver = build();
     addTearDown(receiver.dispose);
     final started = receiver.start();
@@ -115,7 +115,7 @@ void main() {
     expect(logs.where((l) => l.startsWith('share duplicate')), hasLength(1));
   });
 
-  test('رابطان مختلفان يمرّان كلاهما', () async {
+  test('two different links both get through', () async {
     final receiver = build();
     addTearDown(receiver.dispose);
     final started = receiver.start();
@@ -128,7 +128,7 @@ void main() {
     expect(delivered, hasLength(2));
   });
 
-  test('كل استقبال يترك أثراً في السجل', () async {
+  test('every reception leaves a trace in the log', () async {
     final receiver = build();
     addTearDown(receiver.dispose);
     final started = receiver.start();
@@ -140,7 +140,7 @@ void main() {
     expect(logs.any((l) => l.startsWith('share received: 1')), isTrue);
   });
 
-  test('التفكيك أثناء الانتظار لا يسلّم شيئاً (م-1)', () async {
+  test('a teardown during the await delivers nothing', () async {
     final receiver = build();
     final started = receiver.start();
     receiver.dispose();

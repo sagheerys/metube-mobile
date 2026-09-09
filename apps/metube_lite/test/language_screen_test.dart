@@ -46,7 +46,9 @@ void main() {
     return container;
   }
 
-  testWidgets('كل لغة مدعومة لها صف، و«النظام» فوقها', (tester) async {
+  testWidgets('every supported language has a row, with System above them', (
+    tester,
+  ) async {
     await pump(tester, null);
 
     // **The real guard**: the list is read from `supportedLocales` rather
@@ -63,12 +65,16 @@ void main() {
     expect(find.text('English'), findsOneWidget);
   });
 
-  testWidgets('العلامة على «النظام» حين لا لغة محفوظة', (tester) async {
+  testWidgets('the tick sits on System when no language is saved', (
+    tester,
+  ) async {
     await pump(tester, null);
     expect(find.byIcon(Icons.check_rounded), findsOneWidget);
   });
 
-  testWidgets('اختيار لغة يحفظها، والعلامة تنتقل إليها', (tester) async {
+  testWidgets('choosing a language saves it, and the tick moves to it', (
+    tester,
+  ) async {
     final container = await pump(tester, null);
 
     await tester.tap(find.text('English'));
@@ -82,7 +88,7 @@ void main() {
     );
   });
 
-  testWidgets('العودة إلى «النظام» تمحو اللغة (م-50)', (tester) async {
+  testWidgets('going back to System clears the saved language', (tester) async {
     final container = await pump(tester, 'en');
     expect(container.read(settingsProvider).localeCode, 'en');
 
@@ -93,7 +99,7 @@ void main() {
   });
 
   /// A narrow screen is the whole reason this screen exists.
-  testWidgets('عشر لغات لا تكسر شاشة 360dp', (tester) async {
+  testWidgets('ten languages do not break a 360dp screen', (tester) async {
     tester.view.physicalSize = const Size(1080, 2400);
     tester.view.devicePixelRatio = 3;
     addTearDown(tester.view.reset);
@@ -102,7 +108,9 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('**مصفوفة الأجهزة**: شاشة اللغة بلا تجاوز إطار', (tester) async {
+  testWidgets('**device matrix**: the language screen does not overflow', (
+    tester,
+  ) async {
     final store = MemoryKeyValueStore();
     final container = containerWith(null, store);
     addTearDown(container.dispose);

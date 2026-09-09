@@ -73,7 +73,7 @@ void main() {
     throw StateError('Cannot use "ref" after the widget was disposed');
   }
 
-  testWidgets('رمية onLive عند الموت لا تترك مشغلاً يتيماً يعمل', (
+  testWidgets('onLive throwing at death leaves no orphaned player running', (
     tester,
   ) async {
     await tester.pumpWidget(host([short('a')], onLive: throwingOnLive));
@@ -95,7 +95,9 @@ void main() {
     expect(platform.alive, isEmpty, reason: 'متحكم لم يُصرَّف = تسريب مرمّز');
   });
 
-  testWidgets('رجوعٌ أثناء التحضير لا يشغّل شيئاً بعد الموت', (tester) async {
+  testWidgets('going back during preparation plays nothing after death', (
+    tester,
+  ) async {
     platform.createDelay = const Duration(milliseconds: 80);
     await tester.pumpWidget(host([short('a')], onLive: throwingOnLive));
     await tester.pump();
@@ -115,21 +117,22 @@ void main() {
     expect(platform.alive, isEmpty);
   });
 
-  testWidgets('onLive السليم يُسلَّم موقفاً عند الحياة وnull عند الموت', (
-    tester,
-  ) async {
-    final handovers = <bool>[];
-    await tester.pumpWidget(
-      host([short('a')], onLive: (pauser) => handovers.add(pauser != null)),
-    );
-    await tester.pump();
-    await tester.pumpAndSettle();
+  testWidgets(
+    'a healthy onLive is handed a paused player while alive, and null at death',
+    (tester) async {
+      final handovers = <bool>[];
+      await tester.pumpWidget(
+        host([short('a')], onLive: (pauser) => handovers.add(pauser != null)),
+      );
+      await tester.pump();
+      await tester.pumpAndSettle();
 
-    await tester.pumpWidget(const MaterialApp(home: SizedBox.shrink()));
-    await tester.pumpAndSettle();
-    await settleTeardown(tester);
+      await tester.pumpWidget(const MaterialApp(home: SizedBox.shrink()));
+      await tester.pumpAndSettle();
+      await settleTeardown(tester);
 
-    expect(handovers, [true, false]);
-    expect(platform.alive, isEmpty);
-  });
+      expect(handovers, [true, false]);
+      expect(platform.alive, isEmpty);
+    },
+  );
 }

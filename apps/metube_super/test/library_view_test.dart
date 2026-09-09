@@ -32,19 +32,19 @@ void main() {
     ),
   ];
 
-  group('buildLibraryView — منطق المكتبة الموحدة (م-13/م-14)', () {
-    test('الافتراضي: الكل بالأحدث أولاً', () {
+  group("buildLibraryView: the merged library's logic", () {
+    test('the default: everything, newest first', () {
       final result = buildLibraryView(items);
       expect(result.map((i) => i.title).first, 'خطبة الجمعة');
       expect(result, hasLength(3));
     });
 
-    test('مرشح المفضلة ♥ (م-36)', () {
+    test('the favourites filter', () {
       final result = buildLibraryView(items, scope: LibraryScope.favorites);
       expect(result.single.title, 'أنشودة الصباح');
     });
 
-    test('مرشح دون اتصال / سيرفر', () {
+    test('the offline and server filters', () {
       expect(
         buildLibraryView(items, scope: LibraryScope.offline),
         hasLength(2),
@@ -55,7 +55,7 @@ void main() {
       );
     });
 
-    test('مرشح النوع صوت/فيديو', () {
+    test('the audio and video type filter', () {
       expect(
         buildLibraryView(items, type: MediaTypeFilter.audio),
         hasLength(1),
@@ -66,19 +66,19 @@ void main() {
       );
     });
 
-    test('البحث الحي بالعنوان', () {
+    test('live search by title', () {
       expect(buildLibraryView(items, query: 'أنشودة').single.isAudio, isTrue);
       expect(buildLibraryView(items, query: 'غير موجود'), isEmpty);
     });
 
-    test('تصفية وسم', () {
+    test('filtering by a tag', () {
       expect(
         buildLibraryView(items, tags: {'وثائقي'}).single.title,
         'وثائقي البحار',
       );
     });
 
-    test('تصفية وسوم مركبة: التضمين «أو» والاستثناء يغلب', () {
+    test('compound tag filtering: inclusion is OR, and exclusion wins', () {
       // Inclusion widens: two tags means everything carrying either of
       // them.
       expect(
@@ -98,7 +98,7 @@ void main() {
       expect(withoutDoc, isNotEmpty);
     });
 
-    test('الفرز بالحجم والاسم', () {
+    test('sorting by size and by name', () {
       expect(
         buildLibraryView(items, sort: LibrarySort.largest).first.sizeBytes,
         300,
@@ -109,7 +109,7 @@ void main() {
       );
     });
 
-    test('شارة المكان (م-13)', () {
+    test('the location badge', () {
       expect(items[0].location, MTMediaLocation.onServer);
       expect(items[1].location, MTMediaLocation.both);
       expect(items[2].location, MTMediaLocation.offline);
@@ -117,7 +117,7 @@ void main() {
   });
 
   group('LibraryItem.fromHistory', () {
-    test('كشف الصوت من quality=audio', () {
+    test('detecting audio from quality=audio', () {
       final item = LibraryItem.fromHistory(
         HistoryItem.fromJson({
           'url': 'https://soundcloud.com/a/t',
@@ -130,7 +130,7 @@ void main() {
       expect(item.onServer, isTrue);
     });
 
-    test('المنصة تُشتق من الرابط المعياري', () {
+    test('the platform is derived from the canonical URL', () {
       expect(items[0].platform, MediaPlatform.youtube);
       expect(items[2].platform, MediaPlatform.vimeo);
     });
@@ -139,28 +139,31 @@ void main() {
   /// **The platform filter in Super** (requested 2026-09-08): the same
   /// logic as Lite, with the choice in the sort sheet rather than a third
   /// chip row.
-  group('تصفية المنصة', () {
-    test('المنصة المختارة وحدها تبقى', () {
+  group('filtering by platform', () {
+    test('only the chosen platform remains', () {
       final result = buildLibraryView(items, platform: MediaPlatform.youtube);
       expect(result, hasLength(2));
       expect(result.every((i) => i.platform == MediaPlatform.youtube), isTrue);
     });
 
-    test('بلا منصة ⇒ الكل (null ليست منصة مجهولة)', () {
+    test('with no platform, everything: null is not the unknown platform', () {
       expect(buildLibraryView(items, platform: null), hasLength(3));
       expect(buildLibraryView(items, platform: MediaPlatform.other), isEmpty);
     });
 
-    test('المنصة تتركب مع بقية المرشحات لا تلغيها', () {
-      final result = buildLibraryView(
-        items,
-        platform: MediaPlatform.youtube,
-        scope: LibraryScope.favorites,
-      );
-      expect(result.map((i) => i.title), ['أنشودة الصباح']);
-    });
+    test(
+      'the platform composes with the other filters rather than replacing them',
+      () {
+        final result = buildLibraryView(
+          items,
+          platform: MediaPlatform.youtube,
+          scope: LibraryScope.favorites,
+        );
+        expect(result.map((i) => i.title), ['أنشودة الصباح']);
+      },
+    );
 
-    test('العدّادات: الأكثر أولاً والمجهولة أخيراً', () {
+    test('the counters: the largest first and unknown last', () {
       final counts = platformCounts([
         ...items,
         LibraryItem(canonicalUrl: 'file:///x/y.mp4', title: 'مجهول'),
@@ -176,8 +179,8 @@ void main() {
     });
   });
 
-  group('عوامل مساعدة', () {
-    test('fromOfflineOnly يستمد العنوان من اسم الملف', () {
+  group('helpers', () {
+    test('fromOfflineOnly takes the title from the filename', () {
       final item = LibraryItem.fromOfflineOnly(
         'https://youtu.be/ccccccccccc',
         '/storage/emulated/0/Download/MeTube_Super/درس التجويد_120000.mp4',

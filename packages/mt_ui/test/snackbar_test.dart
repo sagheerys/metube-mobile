@@ -48,14 +48,18 @@ void main() {
     expect(find.text('رسالة'), findsOneWidget);
   }
 
-  testWidgets('شريط بلا فعل يختفي بعد المهلة', (tester) async {
+  testWidgets('a bar with no action disappears after the timeout', (
+    tester,
+  ) async {
     await show(tester);
     await tester.pump(mtSnackDuration + const Duration(seconds: 1));
     await tester.pumpAndSettle();
     expect(find.text('رسالة'), findsNothing);
   });
 
-  testWidgets('شريط **له فعل** يختفي بعد المهلة نفسها', (tester) async {
+  testWidgets('a bar **with** an action disappears after the same timeout', (
+    tester,
+  ) async {
     await show(tester, actionLabel: 'تغيير');
     expect(find.text('تغيير'), findsOneWidget);
     await tester.pump(mtSnackDuration + const Duration(seconds: 1));
