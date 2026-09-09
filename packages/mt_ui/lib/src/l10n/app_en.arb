@@ -108,6 +108,8 @@
       }
     }
   },
+  "builtWith": "Built with",
+  "copyright": "© 2026 Yasir Sagheer",
   "externalPlayerLocalOnly": "Local copy only — the server link is never handed to another app",
   "externalPlayerShort": "Another player",
   "@fileSizeBytes": {
@@ -152,6 +154,8 @@
       }
     }
   },
+  "licensedUnder": "Licensed under GPL-3.0",
+  "metubeCredit": "The self-hosted server this app is a client for",
   "noExternalPlayer": "No external player on this device",
   "@onServerProgress": {
     "placeholders": {
@@ -160,6 +164,8 @@
       }
     }
   },
+  "noWarranty": "Provided as is, without any warranty.",
+  "notAffiliated": "Unofficial client — not affiliated with the MeTube project or yt-dlp, and not endorsed by them.",
   "openInExternalPlayer": "Open in another player",
   "@platformCount": {
     "placeholders": {
@@ -313,7 +319,6 @@
   "allDownloadsFinished": "All downloads finished!",
   "alreadyInPlaylist": "Already added",
   "allPlatforms": "All platforms",
-  "allRightsReserved": "All rights reserved",
   "allTagsFilter": "All",
   "appFeatures": "App Features",
   "appTitle": "MeTube Super",
@@ -736,6 +741,7 @@
   "sortedByLastPlayed": "By last played",
   "source": "Source",
   "sourceCode": "Source code",
+  "sourceCode": "Source code",
   "speedNormal": "Normal",
   "startDownload": "Start download",
   "startingDownload": "Starting download via server...",
@@ -802,5 +808,6 @@
   "yourTags": "Your tags",
   "youtubeDownloadStarting": "Starting YouTube download...",
   "aboutDescriptionLite": "A light, fast app that downloads videos from many platforms through your MeTube server, pulls them to your device and cleans the server afterwards — with a built-in player and playlists.",
-  "aboutDescriptionSuper": "The server owner's edition: one library across server and device, streaming, tags, offline availability, batch downloads and server address switching."
+  "aboutDescriptionSuper": "The server owner's edition: one library across server and device, streaming, tags, offline availability, batch downloads and server address switching.",
+  "ytdlpCredit": "The downloader MeTube runs"
 }

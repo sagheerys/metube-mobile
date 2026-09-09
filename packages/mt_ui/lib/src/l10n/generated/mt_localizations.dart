@@ -98,6 +98,18 @@ abstract class MTLocalizations {
     Locale('en'),
   ];
 
+  /// No description provided for @builtWith.
+  ///
+  /// In en, this message translates to:
+  /// **'Built with'**
+  String get builtWith;
+
+  /// No description provided for @copyright.
+  ///
+  /// In en, this message translates to:
+  /// **'© 2026 Yasir Sagheer'**
+  String get copyright;
+
   /// No description provided for @externalPlayerLocalOnly.
   ///
   /// In en, this message translates to:
@@ -110,11 +122,35 @@ abstract class MTLocalizations {
   /// **'Another player'**
   String get externalPlayerShort;
 
+  /// No description provided for @licensedUnder.
+  ///
+  /// In en, this message translates to:
+  /// **'Licensed under GPL-3.0'**
+  String get licensedUnder;
+
+  /// No description provided for @metubeCredit.
+  ///
+  /// In en, this message translates to:
+  /// **'The self-hosted server this app is a client for'**
+  String get metubeCredit;
+
   /// No description provided for @noExternalPlayer.
   ///
   /// In en, this message translates to:
   /// **'No external player on this device'**
   String get noExternalPlayer;
+
+  /// No description provided for @noWarranty.
+  ///
+  /// In en, this message translates to:
+  /// **'Provided as is, without any warranty.'**
+  String get noWarranty;
+
+  /// No description provided for @notAffiliated.
+  ///
+  /// In en, this message translates to:
+  /// **'Unofficial client — not affiliated with the MeTube project or yt-dlp, and not endorsed by them.'**
+  String get notAffiliated;
 
   /// No description provided for @openInExternalPlayer.
   ///
@@ -247,12 +283,6 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'All platforms'**
   String get allPlatforms;
-
-  /// No description provided for @allRightsReserved.
-  ///
-  /// In en, this message translates to:
-  /// **'All rights reserved'**
-  String get allRightsReserved;
 
   /// No description provided for @allTagsFilter.
   ///
@@ -3061,6 +3091,12 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'The server owner\'s edition: one library across server and device, streaming, tags, offline availability, batch downloads and server address switching.'**
   String get aboutDescriptionSuper;
+
+  /// No description provided for @ytdlpCredit.
+  ///
+  /// In en, this message translates to:
+  /// **'The downloader MeTube runs'**
+  String get ytdlpCredit;
 }
 
 class _MTLocalizationsDelegate extends LocalizationsDelegate<MTLocalizations> {

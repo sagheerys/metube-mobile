@@ -24,9 +24,15 @@
       }
     }
   },
+  "builtWith": "مبنيّ على",
+  "copyright": "© 2026 ياسر صغير",
   "externalPlayerLocalOnly": "النسخة المحلية فقط — لا يُسلَّم رابط السيرفر لتطبيق آخر",
   "externalPlayerShort": "مشغل خارجي",
+  "licensedUnder": "مرخَّص برخصة GPL-3.0",
+  "metubeCredit": "الخادم ذاتي الاستضافة الذي يتصل به التطبيق",
   "noExternalPlayer": "لا يوجد مشغل خارجي على الجهاز",
+  "noWarranty": "يُقدَّم كما هو، بلا أي ضمان.",
+  "notAffiliated": "عميل غير رسمي — لا يتبع مشروع MeTube ولا yt-dlp ولا يمثّلهما.",
   "openInExternalPlayer": "فتح في مشغل خارجي",
   "@queueItemsCount": {
     "placeholders": {
@@ -63,7 +69,6 @@
   "allDownloadsFinished": "اكتملت جميع التحميلات!",
   "alreadyInPlaylist": "مضاف مسبقاً",
   "allPlatforms": "كل المنصات",
-  "allRightsReserved": "جميع الحقوق محفوظة",
   "allTagsFilter": "الكل",
   "appFeatures": "مميزات التطبيق",
   "appTitle": "MeTube Super",
@@ -465,6 +470,7 @@
   "sortedByLastPlayed": "بآخر تشغيل",
   "source": "المصدر",
   "sourceCode": "الكود المصدري",
+  "sourceCode": "الشيفرة المصدرية",
   "speedNormal": "عادي",
   "startDownload": "ابدأ التحميل",
   "startingDownload": "جاري بدء التحميل عبر السيرفر...",
@@ -531,5 +537,6 @@
   "yourTags": "وسومك",
   "youtubeDownloadStarting": "جاري بدء تحميل يوتيوب...",
   "aboutDescriptionLite": "تطبيق خفيف وسريع لتحميل الفيديوهات من مختلف المنصات عبر سيرفر MeTube، يسحبها إلى جهازك وينظّف السيرفر بعدها — مع مشغل مدمج وقوائم تشغيل.",
-  "aboutDescriptionSuper": "نسخة مالك السيرفر: مكتبة موحّدة من السيرفر وجهازك، بثّ مباشر ووسوم وإتاحة دون اتصال وتحميل دفعي وتبديل بين عناوين السيرفر."
+  "aboutDescriptionSuper": "نسخة مالك السيرفر: مكتبة موحّدة من السيرفر وجهازك، بثّ مباشر ووسوم وإتاحة دون اتصال وتحميل دفعي وتبديل بين عناوين السيرفر.",
+  "ytdlpCredit": "أداة التنزيل التي يشغّلها MeTube"
 }

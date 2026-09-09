@@ -10,6 +10,12 @@ class MTLocalizationsEn extends MTLocalizations {
   MTLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
+  String get builtWith => 'Built with';
+
+  @override
+  String get copyright => '© 2026 Yasir Sagheer';
+
+  @override
   String get externalPlayerLocalOnly =>
       'Local copy only — the server link is never handed to another app';
 
@@ -17,7 +23,20 @@ class MTLocalizationsEn extends MTLocalizations {
   String get externalPlayerShort => 'Another player';
 
   @override
+  String get licensedUnder => 'Licensed under GPL-3.0';
+
+  @override
+  String get metubeCredit => 'The self-hosted server this app is a client for';
+
+  @override
   String get noExternalPlayer => 'No external player on this device';
+
+  @override
+  String get noWarranty => 'Provided as is, without any warranty.';
+
+  @override
+  String get notAffiliated =>
+      'Unofficial client — not affiliated with the MeTube project or yt-dlp, and not endorsed by them.';
 
   @override
   String get openInExternalPlayer => 'Open in another player';
@@ -98,9 +117,6 @@ class MTLocalizationsEn extends MTLocalizations {
 
   @override
   String get allPlatforms => 'All platforms';
-
-  @override
-  String get allRightsReserved => 'All rights reserved';
 
   @override
   String get allTagsFilter => 'All';
@@ -1643,4 +1659,7 @@ class MTLocalizationsEn extends MTLocalizations {
   @override
   String get aboutDescriptionSuper =>
       'The server owner\'s edition: one library across server and device, streaming, tags, offline availability, batch downloads and server address switching.';
+
+  @override
+  String get ytdlpCredit => 'The downloader MeTube runs';
 }

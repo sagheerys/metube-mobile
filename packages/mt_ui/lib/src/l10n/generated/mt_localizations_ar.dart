@@ -10,6 +10,12 @@ class MTLocalizationsAr extends MTLocalizations {
   MTLocalizationsAr([String locale = 'ar']) : super(locale);
 
   @override
+  String get builtWith => 'مبنيّ على';
+
+  @override
+  String get copyright => '© 2026 ياسر صغير';
+
+  @override
   String get externalPlayerLocalOnly =>
       'النسخة المحلية فقط — لا يُسلَّم رابط السيرفر لتطبيق آخر';
 
@@ -17,7 +23,20 @@ class MTLocalizationsAr extends MTLocalizations {
   String get externalPlayerShort => 'مشغل خارجي';
 
   @override
+  String get licensedUnder => 'مرخَّص برخصة GPL-3.0';
+
+  @override
+  String get metubeCredit => 'الخادم ذاتي الاستضافة الذي يتصل به التطبيق';
+
+  @override
   String get noExternalPlayer => 'لا يوجد مشغل خارجي على الجهاز';
+
+  @override
+  String get noWarranty => 'يُقدَّم كما هو، بلا أي ضمان.';
+
+  @override
+  String get notAffiliated =>
+      'عميل غير رسمي — لا يتبع مشروع MeTube ولا yt-dlp ولا يمثّلهما.';
 
   @override
   String get openInExternalPlayer => 'فتح في مشغل خارجي';
@@ -100,9 +119,6 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get allPlatforms => 'كل المنصات';
-
-  @override
-  String get allRightsReserved => 'جميع الحقوق محفوظة';
 
   @override
   String get allTagsFilter => 'الكل';
@@ -1432,7 +1448,7 @@ class MTLocalizationsAr extends MTLocalizations {
   String get source => 'المصدر';
 
   @override
-  String get sourceCode => 'الكود المصدري';
+  String get sourceCode => 'الشيفرة المصدرية';
 
   @override
   String get speedNormal => 'عادي';
@@ -1646,4 +1662,7 @@ class MTLocalizationsAr extends MTLocalizations {
   @override
   String get aboutDescriptionSuper =>
       'نسخة مالك السيرفر: مكتبة موحّدة من السيرفر وجهازك، بثّ مباشر ووسوم وإتاحة دون اتصال وتحميل دفعي وتبديل بين عناوين السيرفر.';
+
+  @override
+  String get ytdlpCredit => 'أداة التنزيل التي يشغّلها MeTube';
 }

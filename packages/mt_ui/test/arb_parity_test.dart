@@ -92,4 +92,36 @@ void main() {
               'gen-l10n لن يعرف نوع المعامل');
     }
   });
+
+  /// **حارس الرخصة (فتح المصدر 2026-09-09).**
+  ///
+  /// كانت شاشة «حول» تقول «جميع الحقوق محفوظة» — وهو نقيض GPL-3.0
+  /// حرفياً: الرخصة تمنح النسخ والتعديل وإعادة النشر، والجملة تمنعها.
+  /// أي عودة لهذا الادّعاء في أي نصّ تسقط هنا.
+  test('لا ادّعاء بحفظ كل الحقوق يناقض GPL', () {
+    for (final name in ['app_en.arb', 'app_ar.arb']) {
+      final values = load(name).entries
+          .where((e) => !e.key.startsWith('@'))
+          .map((e) => e.value.toString().toLowerCase());
+      for (final v in values) {
+        expect(v.contains('all rights reserved'), isFalse,
+            reason: 'نصّ يناقض GPL في $name');
+        expect(v.contains('جميع الحقوق محفوظة'), isFalse,
+            reason: 'نصّ يناقض GPL في $name');
+      }
+    }
+  });
+
+  /// الرخصة تتوقّع أن يجد المستخدم اسمها ونفي الضمان **داخل البرنامج**.
+  test('نصوص الرخصة موجودة وتسمّيها', () {
+    for (final name in ['app_en.arb', 'app_ar.arb']) {
+      final arb = load(name);
+      expect(arb['licensedUnder'].toString(), contains('GPL-3.0'),
+          reason: name);
+      expect(arb['copyright'].toString(), contains('2026'), reason: name);
+      expect(arb['notAffiliated'].toString(), contains('MeTube'),
+          reason: name);
+      expect(arb['noWarranty'], isNotNull, reason: name);
+    }
+  });
 }
