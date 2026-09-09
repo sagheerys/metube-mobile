@@ -24,7 +24,7 @@ dependencies:
   # The system file picker (SAF). Android 11+ forbids reading a file the app
   # did not create, so importing a backup from another device cannot work
   # from a fixed path.
-  file_picker: ^10.0.0
+  file_picker: ^11.0.3
   # Lite only: downloads that continue in the background, and their
   # notifications.
   # **`permission_handler` was removed**: it had zero imports in the code. The
