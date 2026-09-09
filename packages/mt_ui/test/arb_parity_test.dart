@@ -69,7 +69,7 @@ void main() {
 
   test('معاملات كل مفتاح متطابقة بين اللغتين', () {
     for (final key in messageKeys(en)) {
-      if (!ar.containsKey(key)) continue; // يغطيه الاختبار الأول
+      if (!ar.containsKey(key)) continue; // covered by the first test
       expect(
         placeholdersOf(ar[key] as String),
         placeholdersOf(en[key] as String),

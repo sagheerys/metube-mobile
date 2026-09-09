@@ -49,8 +49,9 @@ void main() {
     });
   });
 
-  /// الشريط المُجمِّع أعلى المكتبة حين تتعدد التحميلات (بلاغ المالك
-  /// 2026-09-03) — المنتظِرة **تُحسب صفراً لا تُستبعد**.
+  /// The summary bar at the top of the library when several downloads run
+  /// at once (field report 2026-09-03): a waiting task **counts as zero
+  /// rather than being excluded**.
   group('averageTaskProgress', () {
     DownloadTask make(TaskPhase phase, double progress) => DownloadTask(
       inputUrl: 'u',
@@ -70,7 +71,7 @@ void main() {
     });
 
     test('المنتظِرة تخفض المتوسط بدل أن تُستبعد', () {
-      // واحدة على 90٪ واثنتان في الطابور ⇒ 30٪ لا 90٪.
+      // One at 90% and two queued gives 30%, not 90%.
       final average = averageTaskProgress([
         make(TaskPhase.pulling, 0.9),
         make(TaskPhase.queued, 0),

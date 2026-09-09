@@ -40,7 +40,9 @@ void main() {
       positions: positions,
       prefs: prefs,
       stateStore: states,
-      saveInterval: const Duration(hours: 1), // الحفظ الدوري يدوياً هنا
+      saveInterval: const Duration(
+        hours: 1,
+      ), // the periodic save is triggered by hand here
     );
   }
 

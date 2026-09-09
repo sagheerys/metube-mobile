@@ -3,9 +3,11 @@ import 'package:test/test.dart';
 
 import '../fixtures/fixtures.dart';
 
-/// اختبارات على JSON **حقيقي** من سيرفر المالك (بوابة 1 — التُقط
-/// 2026-09-01 من TrueNAS عبر المحلي والنفق): التحليل المتسامح يصمد
-/// أمام 251 عنصراً فعلياً بكل شواذها.
+/// Tests against **real** JSON captured from a live server (gate 1,
+/// captured 2026-09-01 from TrueNAS over both the local address and the
+/// tunnel): the tolerant parser holds up against 251 actual items with all
+/// their oddities. The identifying text has since been scrambled; see the
+/// anonymisation note in the fixtures.
 void main() {
   group('fixture حقيقية: history_real_done', () {
     late HistoryResponse response;
@@ -26,7 +28,8 @@ void main() {
     });
 
     test('لا اختلاق أسماء ملفات: الغائب يبقى null', () {
-      // على الأقل كل عنصر finished الحقيقي يحمل filename من السيرفر
+      // At minimum, every genuinely finished item carries a filename from
+      // the server.
       final finished = response.done.where(
         (i) => i.status == ItemStatus.completed,
       );

@@ -4,11 +4,12 @@ import 'dart:io';
 import 'package:mt_core/mt_core.dart';
 import 'package:test/test.dart';
 
-/// **بلاغ المالك 2026-09-02: «الألبوم يُحمَّل بطريقة غريبة».**
+/// **Field report 2026-09-02: "the album downloads strangely".**
 ///
-/// ساوندكلاود يضمّن الكائن الكامل لأول ~5 مقاطع فقط، والبقية تصل
-/// `{id, kind}` بلا `permalink_url` — وكان المحلل يُسقطها بصمت، فألبوم
-/// من 432 مقطعاً يظهر **5**. العينة هنا من الموقع الحقيقي (القاعدة 8).
+/// SoundCloud embeds the full object for only the first five or so tracks,
+/// and the rest arrive as `{id, kind}` with no `permalink_url`. The parser
+/// was dropping them silently, so an album of 432 tracks showed **5**. The
+/// sample here comes from the live site (rule 8).
 void main() {
   final html = File('test/fixtures/real/soundcloud_set.html')
       .readAsStringSync();

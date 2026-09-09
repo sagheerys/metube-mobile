@@ -26,10 +26,10 @@ class BatchOfflineSaver {
   final Future<void> Function(DownloadTask task) pull;
   final void Function(Object error)? onError;
 
-  /// Task ids waiting to be pulled once they complete on the server.
+  /// The pull chain: every item waits for the one before it.
   final Set<String> _wanted = {};
 
-  /// The pull chain: every item waits for the one before it.
+  /// For tests: waits until the queue is empty.
   Future<void> _chain = Future<void>.value();
 
   /// For tests: waits until the queue is empty.
@@ -37,11 +37,11 @@ class BatchOfflineSaver {
 
   int get pendingCount => _wanted.length;
 
-  /// Called on enqueue: this batch is wanted on the device.
-  void want(Iterable<String> taskIds) => _wanted.addAll(taskIds);
-
   /// A member that fell away, failed or cancelled, is not waited on, or the
   /// ids leak.
+  void want(Iterable<String> taskIds) => _wanted.addAll(taskIds);
+
+  /// A member completed, so it takes its turn in the pull queue.
   void forget(String taskId) => _wanted.remove(taskId);
 
   /// A member completed, so it takes its turn in the pull queue.

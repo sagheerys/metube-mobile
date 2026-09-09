@@ -142,18 +142,20 @@ class UpdateNotifier extends Notifier<UpdateState> {
   Future<String> _currentVersion() async =>
       (await PackageInfo.fromPlatform()).version;
 
-  /// **Stamped before the request, not after**: a request that hangs until
-  /// the timeout would otherwise allow a fresh check on every quick
-  /// consecutive launch.
+  /// A manual check: it always shows the result, **including a failure**.
+  ///
+  /// It does not honour "skip this version": whoever pressed the button
+  /// wants to know.
   Future<void> checkSilently() async {
     if (state.busy || state.release != null) return;
     final prefs = ref.read(updatePrefsProvider);
     if (!await prefs.autoCheck()) return;
     final now = DateTime.now();
     if (!UpdateChecker.isDue(await prefs.lastCheck(), now)) return;
-    // **Stamped before the request, not after**: a request that hangs until
-    // the timeout would otherwise allow a fresh check on every quick
-    // consecutive launch.
+    // A manual check: it always shows the result, **including a failure**.
+    //
+    // It does not honour "skip this version": whoever pressed the button
+    // wants to know.
     await prefs.markChecked(now);
     final release = await ref
         .read(updateCheckerProvider)
@@ -242,8 +244,7 @@ class UpdateNotifier extends Notifier<UpdateState> {
         apkPath: path,
       );
     } on UpdateCancelledException {
-      // Cancelling returns to "available" rather than a failure; the button
-      // offers "download" again.
+      // Mutes this release alone; anything newer appears automatically.
       state = state.copyWith(phase: UpdatePhase.available, progress: 0);
     } catch (_) {
       state = state.copyWith(

@@ -42,7 +42,7 @@ class PlaylistsStore {
       try {
         out.add(SavedPlaylist.fromJson(Map<String, dynamic>.from(item)));
       } on Object {
-        continue; // عنصر مشوّه لا يُسقط المخزن كله
+        continue; // one malformed item does not bring down the whole store
       }
     }
     return out;

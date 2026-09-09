@@ -3,7 +3,7 @@ import 'dart:io';
 
 import 'package:mt_core/mt_core.dart';
 
-/// التقاط عينات حقيقية (القاعدة 8) — يُشغَّل يدوياً عند تغيّر المنصات.
+/// Captures real samples (rule 8); run by hand when the platforms change.
 Future<void> main() async {
   final browse = await ioHttpPostJson(
     Uri.parse('https://www.youtube.com/youtubei/v1/browse?prettyPrint=false'),
@@ -18,7 +18,8 @@ Future<void> main() async {
       'browseId': 'VLPLbpi6ZahtOH6Blw3RGYpWkSByi_T7Rygb',
     },
   );
-  // نقتطع: نحتفظ بأول عنصرين فقط كي يبقى الـ fixture صغيراً ومقروءاً.
+  // Truncated: only the first two items are kept so the fixture stays small
+  // and readable.
   final data = json.decode(browse);
   final lockups = <Object>[];
   InnertubeParser.walk(data, (m) {

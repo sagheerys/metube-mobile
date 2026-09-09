@@ -5,12 +5,13 @@ import 'package:video_player_platform_interface/video_player_platform_interface.
 
 import 'fake_video_platform.dart';
 
-/// **انحدار: تعارض تشغيل المقاطع الصوتية** (بلاغ المالك 2026-09-01).
+/// **A regression: clips playing over each other** (field report
+/// 2026-09-01).
 ///
-/// `_load` ينتظر `initialize()`؛ تخطٍّ ثانٍ أثناء الانتظار كان يبدأ
-/// تحميلاً موازياً فيفوز آخر من ينتهي بـ `_controller` **بينما يبقى
-/// الأول حياً يشتغل صوتاً بلا صورة**. وفتح فيديو والصوت الخلفي يعمل كان
-/// يشغّل المصدرين معاً.
+/// `_load` awaits `initialize()`; a second skip during that wait started a
+/// parallel load, and the last to finish won `_controller` **while the
+/// first stayed alive playing audio with no picture**. And opening a video
+/// while background audio played ran both sources together.
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -28,7 +29,7 @@ void main() {
     return MTVideoSession(
       resolver: PlaybackSourceResolver(
         endpoint: ServerStreamEndpoint.none,
-        fileExists: (_) => true, // كل الملفات محلية: لا شبكة في الاختبار
+        fileExists: (_) => true, // every file is local: no network in this test
       ),
       positions: PlaybackPositionStore(store: store, mutex: mutex),
       prefs: PlaybackPrefs(store: store, mutex: mutex),
@@ -46,7 +47,8 @@ void main() {
     final session = build();
     addTearDown(session.dispose);
 
-    // فتح ثم تخطٍّ فورياً — التخطي يقع والتحضير الأول لم ينتهِ بعد.
+    // Open, then skip immediately: the skip lands before the first
+    // preparation has finished.
     final opening = session.open([item('a'), item('b'), item('c')]);
     await Future<void>.delayed(const Duration(milliseconds: 10));
     final skipping = session.skipNext();

@@ -60,9 +60,11 @@ extension MTVideoSessionCommands on MTVideoSession {
 
   /// **Shorts have no resume position (defect ط-4):** there was no
   /// `isShortForm` check here at all, so a mixed list advancing
-  /// automatically into a short clip, or a list opened at `/player`, wrote
+  /// automatically
+  /// into a short clip, or a list opened at `/player`, wrote
   /// `playback_pos_<url>` for a short. Reels never clears it, because it
-  /// does not touch the position store: a dead entry forever.
+  /// does
+  /// not touch the position store: a dead entry forever.
   Future<void> savePosition() async {
     final item = _queue.current;
     final controller = _controller;

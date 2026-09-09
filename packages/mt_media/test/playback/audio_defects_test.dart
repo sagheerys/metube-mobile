@@ -4,8 +4,8 @@ import 'package:mt_media/mt_media.dart';
 
 import 'fake_player_port.dart';
 
-/// أعطال التشغيل 2026-09-02: ع-3 (حارس الأجيال)، ع-4 (الاتجاه المعاكس
-/// للقاعدة الذهبية)، ع-5 (استعادة تعزف تلقائياً).
+/// Playback defects from 2026-09-02: ع-3 (the generation guard), ع-4 (the
+/// opposite direction of the golden rule), ع-5 (a restore that autoplays).
 PlaylistItem _item(String id) => PlaylistItem(
   canonicalUrl: 'https://x/$id',
   title: id,

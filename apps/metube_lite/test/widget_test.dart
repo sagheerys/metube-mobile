@@ -9,7 +9,8 @@ import 'package:metube_lite/features/settings/settings_state.dart';
 import 'package:mt_core/mt_core.dart';
 import 'package:mt_ui/mt_ui.dart';
 
-/// غلاف اختبار بهوية Lite وترجمتها — بلا سيرفر ولا صوت.
+/// A test shell in Lite's identity with its localisations, and with no
+/// server and no audio.
 Widget host(Widget child, {List<Override> overrides = const []}) =>
     ProviderScope(
       overrides: overrides,
@@ -69,7 +70,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    // «كل المنصات» + رقاقة لكل منصة موجودة فعلاً.
+    // "All platforms" plus one chip per platform actually present.
     expect(find.byType(ChoiceChip), findsNWidgets(3));
     expect(find.textContaining('1'), findsWidgets);
   });

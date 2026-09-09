@@ -2,19 +2,21 @@ import 'dart:async';
 
 import 'package:mt_media/mt_media.dart';
 
-/// مشغل وهمي كامل التحكم — يتيح اختبار منطق [MTAudioHandler] بلا
-/// قنوات منصة: الأوضاع، تخطي المعطوب، حفظ الموضع، و«لا مشغل شبح».
+/// A fully controllable fake player, so [MTAudioHandler]'s logic can be
+/// tested with no platform channels: the modes, skipping a broken item,
+/// saving the position, and "no ghost player".
 class FakePlayerPort implements MediaPlayerPort {
   final _events = StreamController<void>.broadcast();
   final _states = StreamController<MediaPlaybackState>.broadcast();
   final _errors = StreamController<Object>.broadcast();
   final _positions = StreamController<Duration>.broadcast();
 
-  /// المصادر التي طُلب تشغيلها بالترتيب — لفحص القاعدة الذهبية.
+  /// The sources it was asked to play, in order, for checking the golden
+  /// rule.
   final List<PlaybackSource> loaded = [];
   final List<String> calls = [];
 
-  /// روابط تفشل عند التحميل (مصدر معطوب).
+  /// URLs that fail on load (a broken source).
   final Set<String> failing = {};
 
   @override
@@ -97,7 +99,7 @@ class FakePlayerPort implements MediaPlayerPort {
     await _positions.close();
   }
 
-  /// محاكاة انتهاء المقطع طبيعياً.
+  /// Simulates a clip ending naturally.
   void emitCompleted() {
     state = MediaPlaybackState.completed;
     _states.add(MediaPlaybackState.completed);

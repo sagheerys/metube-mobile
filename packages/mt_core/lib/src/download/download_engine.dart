@@ -58,10 +58,14 @@ class DownloadEngine {
   /// not, where pulling happens only through "make available offline".
   final bool pullToDevice;
 
-  /// For indexing after completion (OfflineIndex, MediaStore).
+  /// A diagnostic trace: mt_core does not know where the log file lives.
   final void Function(DownloadTask task)? onCompleted;
 
-  /// A diagnostic trace: mt_core does not know where the log file lives.
+  /// **The pull gate** ("Wi-Fi only"), asked before fetching a file to the
+  /// device. `false` parks the task ([PullGateParking]) and the queue
+  /// continues. The gate sits before the pull rather than before the add on
+  /// purpose: the expensive part is the file. The app answers it, because
+  /// mt_core does not know `connectivity_plus` (rule 6).
   final void Function(String message)? onLog;
 
   /// **The pull gate** ("Wi-Fi only"), asked before fetching a file to the
@@ -142,11 +146,13 @@ class DownloadEngine {
   void cancel(String taskId) {
     _cancelRequested.add(taskId);
     final task = _tasks[taskId];
-    // Queued or parked means no worker will reach it, so the announcement
-    // and the cleanup happen here.
+    // Removes a **finished** task from the snapshot, for a failed card that
+    // was resubmitted, so it does not linger beside the new attempt.
+    // Running
+    // tasks are untouched.
     if (_queue.remove(taskId) || _parked.remove(taskId)) {
       if (task != null) _emit(task.copyWith(phase: TaskPhase.cancelled));
-      _cancelRequested.remove(taskId); // م-8: وإلا تسرّب للأبد
+      _cancelRequested.remove(taskId); // or it leaks forever
       unawaited(_cleanupOrphan(taskId));
       return;
     }
@@ -297,7 +303,8 @@ class DownloadEngine {
     final task = _tasks[taskId];
     final before = _snapshots.remove(taskId);
     if (task == null || before == null || _disposed) return;
-    if (task.localPath != null) return; // اكتمل السحب ⇒ ليس يتيماً
+    // The pull completed, so nothing was left orphaned on the server.
+    if (task.localPath != null) return;
     await _matcher.deleteOrphan(task.effectiveUrl, before);
   }
 

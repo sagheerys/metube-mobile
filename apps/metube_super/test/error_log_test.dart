@@ -17,11 +17,12 @@ import 'package:metube_super/features/settings/widgets/server_status_card.dart';
 import 'package:metube_super/features/shared/error_report.dart';
 import 'package:mt_core/mt_core.dart';
 
-/// **حرّاس فحص الأخطاء (طلب المالك 2026-09-06).**
+/// **Error-review guards** (requested 2026-09-06).
 ///
-/// كان السجل التشخيصي سجلَّ تحميلات لا سجلَّ أخطاء: أربعون موضع رسالة
-/// خطأ ولا واحد منها يصل السجل — حتى انهيار المكتبة بـ401 (2026-09-05)
-/// مرّ بلا سطر. وكان Super بلا إشعارات تحميل إطلاقاً.
+/// The diagnostic log was a download log rather than an error log: forty
+/// places show an error message and not one of them reached the log, not
+/// even the library collapsing with a 401 (2026-09-05). And Super had no
+/// download notifications at all.
 void main() {
   late MTLogger logger;
   late File logFile;
@@ -39,8 +40,9 @@ void main() {
     if (await logFile.exists()) await logFile.delete();
   });
 
-  /// الكتابة غير منتظَرة بقصد (لا نُبطئ الواجهة لأجل السجل) — فالانتظار
-  /// هنا استطلاعٌ قصير بدل مهلة ثابتة تتقلب مع سرعة القرص.
+  /// The write is deliberately not awaited, so the interface is not slowed
+  /// for the log's sake, which makes the wait here a short poll rather than
+  /// a fixed timeout that varies with disk speed.
   Future<String> waitForLog(String needle) async {
     for (var i = 0; i < 40; i++) {
       final text = await logger.readAll();
@@ -56,8 +58,9 @@ void main() {
       logErrorOnce(logger, 'probe', const NetworkException('down'));
       logErrorOnce(logger, 'probe', const NetworkException('down'));
       final text = await waitForLog('probe');
-      // الحارس: الاستطلاع الحي كل ثانيتين كان سيملأ السجل الحلقي
-      // (1000 سطر) بعطلٍ واحد في نصف ساعة، فيمحو تاريخ التطبيق كله.
+      // The guard: live polling every two seconds would fill the
+      // thousand-line ring log with one fault in half an hour, erasing the
+      // app's whole history.
       expect('probe:'.allMatches(text).length, 1);
     });
 
@@ -106,7 +109,8 @@ void main() {
         container.read(historyProvider.future),
         throwsA(isA<AuthFailureException>()),
       );
-      // **الحارس**: هذا بالضبط ما جرى للمالك ولم يترك أثراً.
+      // **The guard**: this is exactly what happened in the field and left
+      // no trace.
       expect(await waitForLog('history'), contains('AuthFailureException'));
     });
 
@@ -136,14 +140,16 @@ void main() {
         ],
       );
       addTearDown(container.dispose);
-      // مستمع يبقي المزوّد حياً — الإبطال لا يعيد حساب مزوّد لا يُراقَب.
+      // A listener keeps the provider alive; invalidating does not
+      // recompute a provider nobody watches.
       container.listen(serverStatusProvider, (_, _) {});
       container.read(statusRefreshProvider);
       await tester.pump();
       expect(probes, 1);
 
-      // التسلسل الكامل الذي يفرضه إطار العمل (القفز يرفضه بتأكيد):
-      // خروجاً resumed→inactive→hidden→paused، وعودةً بالعكس.
+      // The full sequence the framework requires (skipping is rejected by
+      // an assertion): leaving is resumed, inactive, hidden, paused, and
+      // returning is the reverse.
       for (final state in const [
         AppLifecycleState.inactive,
         AppLifecycleState.hidden,
@@ -156,9 +162,10 @@ void main() {
       }
       await tester.pump(const Duration(milliseconds: 20));
       await tester.pump(const Duration(milliseconds: 20));
-      // **الحارس**: بلا هذا يبقى المزوّد محفوظاً بلا `autoDispose` ولا
-      // مؤقّت، فتقول البطاقة «متصل» وقد سقط السيرفر من ساعات — حتى
-      // يضغط المستخدم ↻ (فحص 2026-09-06).
+      // **The guard**: without this the provider stays cached with no
+      // `autoDispose` and no timer, so the card says "connected" hours
+      // after the server went down, until the user presses refresh (review
+      // 2026-09-06).
       expect(probes, 2);
     });
   });
@@ -197,7 +204,8 @@ void main() {
 
       expect(fake.results, hasLength(1));
       expect(fake.results.single.isError, isTrue);
-      // الحارس: «فشل» وحدها تترك المالك يخمّن بين شبكة ورابط واعتماد.
+      // The guard: "failed" alone leaves the user guessing between the
+      // network, the link and the credentials.
       expect(fake.results.single.body, isNot('فشل'));
       expect(fake.results.single.body, contains('كلمة المرور'));
     });
@@ -284,7 +292,7 @@ class _FakeNotifications extends DownloadNotifications {
   Future<void> cancel(int id) async {}
 }
 
-/// محوّل يعيد حالة HTTP واحدة — بلا شبكة.
+/// An adapter returning one HTTP status, with no network.
 class _StatusAdapter implements HttpClientAdapter {
   _StatusAdapter(this.status);
 

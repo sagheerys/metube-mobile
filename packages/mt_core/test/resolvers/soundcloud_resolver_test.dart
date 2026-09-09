@@ -40,7 +40,7 @@ void main() {
                   'permalink_url': 'https://soundcloud.com/a/t1',
                   'artwork_url': 'https://i1.sndcdn.com/artworks-1-large.jpg',
                 },
-                {'id': 222}, // عنصر ناقص (stub) — يُتجاوز
+                {'id': 222}, // an incomplete item (a stub), skipped
                 {
                   'id': 333,
                   'title': 'مقطع ٢',

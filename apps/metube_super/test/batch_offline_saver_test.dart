@@ -2,9 +2,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:metube_super/features/batch/batch_offline_saver.dart';
 import 'package:mt_core/mt_core.dart';
 
-/// **طلب المالك 2026-09-03:** «حالياً لا يحمّلها على الجهاز وإنما على
-/// السيرفر». Super يضيف ولا يسحب (ر-2)، فهذا المُنفِّذ يطبّق «إتاحة دون
-/// اتصال» (م-17) على أعضاء الدفعة التي طلبها المالك — وحدها.
+/// **Requested 2026-09-03:** "right now it does not download them to the
+/// device, only to the server". Super adds and does not pull (rule 2), so
+/// this runner applies "available offline" to the members of the batch the
+/// owner asked for, and only those.
 void main() {
   DownloadTask done(String id, {String? url}) => DownloadTask(
     id: id,
@@ -23,7 +24,9 @@ void main() {
     saver.want(['a', 'b']);
 
     saver.onFinished(done('a'));
-    saver.onFinished(done('c')); // ليس من الدفعة — تحميل مفرد بجانبها
+    saver.onFinished(
+      done('c'),
+    ); // not part of the batch: a single download beside it
     saver.onFinished(done('b'));
     await saver.idle;
 
@@ -76,7 +79,7 @@ void main() {
     saver.forget('a');
     expect(saver.pendingCount, 1);
 
-    saver.onFinished(done('a')); // لن يُسحب: نُسي عمداً
+    saver.onFinished(done('a')); // will not be pulled: deliberately forgotten
     await saver.idle;
     expect(saver.pendingCount, 1);
   });

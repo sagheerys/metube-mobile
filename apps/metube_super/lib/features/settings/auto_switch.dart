@@ -127,9 +127,9 @@ class AutoSwitchService {
             externalUrls: settings.externalUrls,
           );
       final best = probe.url;
-      // Nothing responds, so **we keep the active endpoint as it is**: the
-      // network may be mid-switch, and clearing the URL empties the library
-      // in front of the user.
+      // A server switch is the most important diagnostic event in Super,
+      // and it
+      // was not being logged.
       if (best == null) {
         // **The reason is logged** (field report 2026-09-05): putting the
         // server behind Cloudflare Access stopped switching, and nothing in
@@ -152,8 +152,10 @@ class AutoSwitchService {
       }
       if (best == settings.activeUrl && !activeIsStale) return;
       lastAdopted = best;
-      // A server switch is the most important diagnostic event in Super,
-      // and it was not being logged.
+      // **A fourth trigger, caught on the device:** editing the endpoint
+      // list
+      // fired no probe, so the app stayed pinned to an address that was no
+      // longer registered at all.
       unawaited(
         _ref
             .read(loggerProvider)

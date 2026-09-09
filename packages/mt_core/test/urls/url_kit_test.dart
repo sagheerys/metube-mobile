@@ -129,7 +129,7 @@ void main() {
         ),
         isFalse,
       );
-      // ورابط watch لا يطابق رابط يوتيوب بلا معرف
+      // And a watch URL does not match a YouTube URL with no id.
       expect(
         UrlKit.urlsMatch(
           'https://www.youtube.com/watch?v=jNQXAC9IVRw',
@@ -149,10 +149,11 @@ void main() {
       expect(UrlKit.isSafeServerFilename('أغنية جميلة.dQw4.mp3'), isTrue);
     });
 
-    // **`x..y` صار مقبولاً عمداً (بلاغ المالك 2026-09-03).** yt-dlp
-    // يقتطع العناوين الطويلة بـ«...»، فكان الشرط القديم
-    // `contains('..')` يرفض ملفات مشروعة يخدمها السيرفر فعلاً
-    // (مقيس: HTTP 206). الاجتياز يحتاج فاصل مسار، وهو مرفوض أدناه.
+    // **`x..y` is deliberately accepted now (field report 2026-09-03).**
+    // yt-dlp truncates long titles with an ellipsis, so the old
+    // `contains('..')` condition rejected legitimate files the server
+    // genuinely serves (measured: HTTP 206). Traversal needs a path
+    // separator, which is rejected below.
     for (final good in ['x..y', 'مدر... [2077436096300945409].mp4', 'a....b']) {
       test('يقبل "$good"', () {
         expect(UrlKit.isSafeServerFilename(good), isTrue);
@@ -212,15 +213,17 @@ void main() {
     });
   });
 
-  /// **عطل المالك 2026-09-08 — تصادم روابط فيسبوك.**
+  /// **Defect found 2026-09-08: colliding Facebook URLs.**
   ///
-  /// فيسبوك يضع المعرف في الاستعلام لا المسار، فكان `longestNumericId`
-  /// يعود فارغاً لكل روابطه وتسقط المطابقة إلى رتبة التطبيع — والتطبيع
-  /// يمسح الاستعلام فتنهار كل روابط `watch` إلى `facebook.com/watch`.
-  /// الأثر المقيس على جهاز المالك: عنصر واحد أُتيح دون اتصال أعطى ملفه
-  /// **لكل** عناصر فيسبوك، فيفتح الرابع في المشغل الخارجي مقطع الأول.
-  /// والأخطر أن نفس الدالة تطابق `/history` في Lite — أي سحب ملف بريء
-  /// **ثم حذف الأصل من السيرفر**.
+  /// Facebook puts the id in the query rather than the path, so
+  /// `longestNumericId` returned empty for all of its links and matching
+  /// fell through to the normalisation rank. Normalisation strips the
+  /// query, so every `watch` URL collapsed to `facebook.com/watch`. The
+  /// measured effect on a real device: one item made available offline gave
+  /// its file to **every** Facebook item, so the fourth one opened the
+  /// first one's clip in the external player. Worse, the same function
+  /// matches `/history` in Lite, which means pulling an innocent file **and
+  /// then deleting the original from the server**.
   group('urlsMatch — الهوية في الاستعلام (فيسبوك)', () {
     const a = 'https://m.facebook.com/watch/?v=1619243166301797&_rdr';
     const b = 'https://m.facebook.com/watch/?v=2657266731405287&_rdr';
@@ -249,7 +252,7 @@ void main() {
       expect(UrlKit.urlsMatch(a, a), isTrue);
     });
 
-    /// الحارس العام: لا يقتصر على فيسبوك ولا على المعرفات الرقمية.
+    /// The general guard: it is not limited to Facebook or to numeric ids.
     test('استعلامان مختلفان على نفس المسار ⇒ لا تطابق', () {
       expect(
         UrlKit.urlsMatch(

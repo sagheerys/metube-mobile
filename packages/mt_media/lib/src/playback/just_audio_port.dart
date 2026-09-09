@@ -32,17 +32,21 @@ class JustAudioPort implements MediaPlayerPort {
   );
 
   /// **just_audio's `play()` future does not complete until playback
-  /// stops** — the package's own words: "completes when playback ends or is
+  /// stops**
+  /// — the package's own words: "completes when playback ends or is
   /// stopped". Awaiting it means awaiting the whole clip (field report
   /// 2026-09-03):
   ///
   /// "continue as audio" hung the video screen so it would not close
-  /// however long you waited, **and then** the deferred `pop` ran when the
-  /// audio was stopped, by which time the user had left the screen another
-  /// way, so it popped the shell itself: **a black screen**.
+  /// however
+  /// long you waited, **and then** the deferred `pop` ran when the audio
+  /// was
+  /// stopped, by which time the user had left the screen another way, so it
+  /// popped the shell itself: **a black screen**.
   ///
   /// The contract of [MediaPlayerPort.play] is "issue the play command",
-  /// not "play to the end". Errors are forwarded to the error stream so the
+  /// not
+  /// "play to the end". Errors are forwarded to the error stream so the
   /// handler skips the item.
   @override
   Future<void> play() async {

@@ -6,7 +6,8 @@ void main() {
     test('يقبل الصيغ التي يصدرها المشروع فعلاً', () {
       expect(AppVersion.tryParse('2.0.0').toString(), '2.0.0');
       expect(AppVersion.tryParse('v2.1.3').toString(), '2.1.3');
-      // `pubspec` يكتب `2.0.0+1` و`package_info` يعيدها كذلك أحياناً.
+      // `pubspec` writes `2.0.0+1` and `package_info` sometimes returns it
+      // that way.
       expect(AppVersion.tryParse('2.0.0+7').toString(), '2.0.0');
       expect(AppVersion.tryParse('  v2.1.0  ').toString(), '2.1.0');
       expect(AppVersion.tryParse('2.1').toString(), '2.1.0');
@@ -30,15 +31,17 @@ void main() {
     test('يقرأ الإصدار التجريبي ويحتفظ بلاحقته', () {
       final v = AppVersion.tryParse('2.1.0-beta.1')!;
       expect(v.preRelease, 'beta.1');
-      // `+` قبل `-` في القطع: `2.1.0-beta+7` لاحقتها `beta` لا `beta+7`.
+      // The `+` is cut before the `-`: the suffix of `2.1.0-beta+7` is
+      // `beta`, not `beta+7`.
       expect(AppVersion.tryParse('2.1.0-beta+7')!.preRelease, 'beta');
     });
   });
 
   group('المقارنة', () {
     test('**الحارس**: 2.10.0 أحدث من 2.9.0', () {
-      // المقارنة النصية تعطي العكس (`'1' < '9'`) فيتجمّد المستخدم على
-      // 2.9.0 إلى الأبد — هذا سبب وجود الصنف كله.
+      // A string comparison gives the opposite (`'1' < '9'`), so the user
+      // is frozen on 2.9.0 forever. That is the whole reason this class
+      // exists.
       expect('2.10.0'.compareTo('2.9.0'), lessThan(0));
       expect(
         AppVersion.tryParse('2.10.0')! > AppVersion.tryParse('2.9.0')!,
@@ -69,7 +72,7 @@ void main() {
       final beta = AppVersion.tryParse('2.1.0-beta.1')!;
       final stable = AppVersion.tryParse('2.1.0')!;
       expect(beta < stable, isTrue);
-      // ومن يملك التجريبي يرى المستقر تحديثاً.
+      // And whoever holds the pre-release sees the stable one as an update.
       expect(stable > beta, isTrue);
       expect(
         AppVersion.tryParse('2.1.0-beta.2')! >

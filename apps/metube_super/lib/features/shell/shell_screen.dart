@@ -151,11 +151,11 @@ class _ShellScreenState extends ConsumerState<ShellScreen>
     if (!mounted) return;
     widget.navigationShell.goBranch(0);
     if (urls.length == 1) {
-      // **An explicit playlist URL goes straight to the batch screen.**
-      // Sharing a single album used to open the "add link" sheet, because
-      // the condition lived in the multiple-links path alone.
-      // `watch?v=…&list=…` keeps its behaviour: it is a single video first
-      // and foremost, and YouTube appends `list` to its shares very often.
+      // "Quick download" makes the default quality an effective setting: a
+      // shared link downloads immediately with no sheet, and the snack bar
+      // offers an undo. The gate lives inside `startQuickDownload` itself,
+      // so
+      // it is not repeated here.
       if (_isPurePlaylistLink(urls.first)) {
         GoRouter.of(context).push('/batch', extra: urls.first);
         return;
@@ -240,12 +240,11 @@ class _ShellScreenState extends ConsumerState<ShellScreen>
 
     return Scaffold(
       body: widget.navigationShell,
-      // **The button is always mounted, never `null`** (field report
-      // 2026-09-05: "the appearing animation is strange"). Swapping the
-      // floating action button slot wakes `Scaffold`'s default animator,
-      // which rotates **on appearance only**, in the words of the Flutter
-      // source. `noAnimation` below silences it, and `visible` hides it
-      // with our own fade.
+      // The mini player is a permanent bar **above** the bottom bar, inside
+      // the
+      // same slot so Scaffold accounts for its height and lifts the add
+      // button
+      // over it (log §4).
       floatingActionButtonAnimator: FloatingActionButtonAnimator.noAnimation,
       floatingActionButton: MTHiddenUnderRoutes(
         // It hides under any sheet or dialog: it used to cover the "about

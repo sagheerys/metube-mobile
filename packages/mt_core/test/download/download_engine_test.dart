@@ -49,8 +49,9 @@ void main() {
           .timeout(const Duration(seconds: 5));
 
   group('DownloadEngine — الخط الرباعي (§3)', () {
-    // **توافق التشغيل يُسأل عند الإضافة** (بلاغ المالك 2026-09-03) —
-    // كـ`pullGate`: قراءة لحظية فلا يحتاج تبديل الإعداد إعادة بناء.
+    // **Playback compatibility is asked at add time** (field report
+    // 2026-09-03), like `pullGate`: a point-in-time read, so changing the
+    // setting needs no rebuild.
     test('compatibleVideo يصل إلى api.add كما تقوله البوابة', () async {
       for (final answer in [true, false]) {
         final api = FakeApi(
@@ -86,7 +87,7 @@ void main() {
       () async {
         final api = FakeApi(
           historyScript: [
-            historyWith(), // لقطة ما قبل الإضافة (ح-3)
+            historyWith(), // the snapshot from before the add (defect ح-3)
             historyWith(
               queue: [
                 {'url': canonical, 'status': 'downloading', 'percent': 40},
@@ -264,11 +265,12 @@ void main() {
       expect(seen, contains(closeTo(0.453, 0.0001)));
     });
 
-    // **حارس خنق بثّ التقدّم** (بلاغ المالك 2026-09-04: «سبعة تحميلات
-    // ⇒ التطبيق ثقيل»، و«عدّاد الإشعارات لا يتحرك»). Dio ينادي
-    // `onReceiveProgress` مع **كل قطعة**؛ بلا مرشّح كانت كل قطعة تصير
-    // عنصراً في `updates` ⇒ إعادة بناء المكتبة ونشرَ إشعار لكل مهمة.
-    // ألف نبضة يجب ألا تتجاوز 101 بثّة (نسبة صحيحة واحدة لكل قيمة).
+    // **The progress throttling guard** (field report 2026-09-04: "seven
+    // downloads make the app heavy", and "the notification counter does not
+    // move"). Dio calls `onReceiveProgress` on **every chunk**; without a
+    // filter each chunk became an item in `updates`, rebuilding the library
+    // and posting a notification per task. A thousand ticks must not exceed
+    // 101 broadcasts, one per whole percentage.
     test('ألف نبضة سحب ⇒ بثّ واحد لكل نسبة صحيحة لا أكثر', () async {
       final api = FakeApi(
         historyScript: [
@@ -285,20 +287,23 @@ void main() {
       await awaitFinished(engine, task.id);
       await sub.cancel();
 
-      // 101 نسبة صحيحة + بثّتان ليستا تقدّماً: بداية الطور
-      // (`progress: 0`) وتسجيل `localPath` بعد نجاح النقل.
+      // 101 whole percentages plus two broadcasts that are not progress:
+      // the start of the phase (`progress: 0`) and recording `localPath`
+      // after the transfer succeeds.
       expect(
         pulls.length,
         lessThanOrEqualTo(103),
         reason: 'التقدّم يُبَثّ عند تغيّر النسبة الصحيحة فقط',
       );
-      // ولا يُخنق حتى يختفي: التقدّم وصل فعلاً من أوله لآخره.
+      // And it is not throttled into silence: the progress genuinely
+      // arrived from beginning to end.
       expect(pulls.length, greaterThan(50));
       expect(pulls.last, closeTo(1.0, 0.0001));
     });
 
-    /// النسبة تُصفَّر مع كل طور، فلا يبتلع المرشّحُ **تقدّمَ طورٍ جديد**
-    /// لمجرد أن الطور السابق بلغ النسبة نفسها.
+    /// The percentage resets with every phase, so the filter does not
+    /// swallow **a new phase's progress** merely because the previous phase
+    /// reached the same number.
     test('المرشّح لا يمنع تقدّم طور جديد بنفس النسبة', () async {
       final api = FakeApi(
         historyScript: [
@@ -319,7 +324,8 @@ void main() {
       final task = engine.submit(inputUrl, Quality.best);
       await awaitFinished(engine, task.id);
       await sub.cancel();
-      // بلغ الاستطلاع 100٪ قبل السحب — ومع ذلك السحب بثّ تقدّمه كاملاً.
+      // Polling reached 100% before the pull, and the pull still broadcast
+      // its progress in full.
       expect(pulling.last, closeTo(1.0, 0.0001));
       expect(pulling.length, greaterThan(50));
     });

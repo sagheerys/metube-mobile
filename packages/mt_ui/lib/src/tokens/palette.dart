@@ -116,7 +116,9 @@ class MTPalette {
   static const MTPalette superDay = MTPalette(
     bg: Color(0xFFFBF6EE),
     card: Color(0xFFFFFDF9),
-    cardAlt: Color(0xFFF6EFE2), // مشتق: بين bg وcard لأرضية ثانوية
+    cardAlt: Color(
+      0xFFF6EFE2,
+    ), // derived: between bg and card, for a secondary ground
     ink: Color(0xFF2B211B),
     ink2: Color(0xAD2B211B), // rgba(43,33,27,.68)
     ink3: Color(0x732B211B), // rgba(43,33,27,.45)
@@ -153,7 +155,9 @@ class MTPalette {
     accentDeep: Color(0xFFC25E2E),
     accentSoft: Color(0x24E0784A), // rgba(224,120,74,.14)
     accentInk: Color(0xFFF0A981),
-    onAccent: Color(0xFF2B1207), // النص فوق لون الفعل ليلاً داكن لا أبيض
+    onAccent: Color(
+      0xFF2B1207,
+    ), // text over the accent is dark at night, not white
     offline: Color(0xFF95A55E),
     offlineSoft: Color(0x2695A55E), // rgba(.15)
     offlineInk: Color(0xFFC9D49A),
@@ -162,7 +166,9 @@ class MTPalette {
     ok: Color(0xFF7FAF6A),
     err: Color(0xFFE07A66),
     favorite: Color(0xFFFF9AA0),
-    favoriteSoft: Color(0x24FF9AA0), // مشتق: soft ليلي بنمط البقية
+    favoriteSoft: Color(
+      0x24FF9AA0,
+    ), // derived: a night soft in the same pattern as the rest
     grainOpacity: 0.04,
     night: true,
   );
@@ -171,7 +177,7 @@ class MTPalette {
   static const MTPalette liteDay = MTPalette(
     bg: Color(0xFFFBF6EE),
     card: Color(0xFFFFFDF9),
-    cardAlt: Color(0xFFF6EFE2), // مشتق
+    cardAlt: Color(0xFFF6EFE2), // derived
     ink: Color(0xFF2B211B),
     ink2: Color(0xAD2B211B),
     ink3: Color(0x732B211B),
@@ -198,17 +204,17 @@ class MTPalette {
   static const MTPalette liteNight = MTPalette(
     bg: Color(0xFF141A1B),
     card: Color(0xFF1E2627),
-    cardAlt: Color(0xFF253030), // مشتق: درجة أعلى من card
+    cardAlt: Color(0xFF253030), // derived: one step above card
     ink: Color(0xFFEAF1F0),
     ink2: Color(0xA8EAF1F0), // rgba(.66)
     ink3: Color(0x6BEAF1F0), // rgba(.42)
     line: Color(0x17EAF1F0), // rgba(.09)
     line2: Color(0x2BEAF1F0), // rgba(.17)
     accent: Color(0xFF6FB3BA),
-    accentDeep: Color(0xFF569CA3), // مشتق
+    accentDeep: Color(0xFF569CA3), // derived
     accentSoft: Color(0x246FB3BA), // rgba(111,179,186,.14)
     accentInk: Color(0xFFA5D2D6),
-    onAccent: Color(0xFF0E2325), // داكن فوق لون الفعل ليلاً
+    onAccent: Color(0xFF0E2325), // dark over the accent at night
     offline: Color(0xFF95A55E),
     offlineSoft: Color(0x2695A55E),
     offlineInk: Color(0xFFC9D49A),

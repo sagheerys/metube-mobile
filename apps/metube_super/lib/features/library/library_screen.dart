@@ -180,7 +180,12 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     );
   }
 
-  /// The library items matching the current selection (rule 6).
+  /// **Lazy building is mandatory:** a real library holds 251 items, and
+  /// building them all at once inside a `Column` froze the app to the point
+  /// of an ANR. The header and the live cards are slivers, and the items
+  /// are
+  /// a `SliverList.builder` that builds only what is visible (the "large
+  /// lists stay smooth" requirement in `01-PRD.md` §2.7).
   List<LibraryItem> _selectedItems(Set<String> selection) {
     final visible = ref.read(visibleLibraryProvider).valueOrNull ?? const [];
     return [
@@ -224,17 +229,26 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                   ),
                 ),
               const SizedBox(height: MTSpace.md),
-              // Live cards at the top of the library, only while something
-              // is active.
+              // Every mode is lazy: `builder` builds only what is visible,
+              // which is the
+              // condition for 251 items without freezing. The fourth mode,
+              // cards, is
+              // the heaviest because every cover is the width of the
+              // screen, and
+              // laziness is what makes it possible at all: only three cards
+              // are ever
+              // visible.
               ..._activeStrip(l10n, active),
             ],
           ),
         ),
-        // **Existing data beats a loading state** (the same cure as Lite's
-        // flicker): live polling invalidates the history every two seconds,
-        // and every invalidation passes through `AsyncLoading` while
-        // keeping its data. Matching that first replaced the library with a
-        // spinner twice a second during any download.
+        // **The ratio is measured, not estimated** (verified with an
+        // emulator
+        // screenshot): 0.82 left about 50 points of dead space under every
+        // card
+        // and the grid looked disjointed. The real content is a 16:9 cover
+        // plus
+        // two title lines plus a meta line.
         ...switch (itemsAsync) {
           AsyncValue(valueOrNull: final value?) when value.isNotEmpty => [
             SliverPadding(
@@ -247,11 +261,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
               // visible.
               sliver: switch (options.mode) {
                 LibraryViewMode.grid => SliverGrid.builder(
-                  // **The ratio is measured, not estimated** (verified
-                  // with an emulator screenshot): 0.82 left about 50
-                  // points of dead space under every card and the grid
-                  // looked disjointed. The real content is a 16:9 cover
-                  // plus two title lines plus a meta line.
+                  // Cards carry no divider; the space is the divider.
                   gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
                     maxCrossAxisExtent: 210,
                     mainAxisSpacing: MTSpace.md,
@@ -353,9 +363,13 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     final engine = ref.read(downloadEngineProvider);
     final statusText = switch (task.phase) {
       TaskPhase.queued => l10n.queuedSection,
-      // **No percentage in the text**: the counter became an independent
-      // element in the card, so keeping it here printed it twice ("on
-      // server · 0%" beside "0%"), spotted in a screenshot.
+      // Rule 4: tapping an item. Audio plays in the background immediately
+      // and
+      // the mini player appears; video opens `/player`. The internal play
+      // queue
+      // is **the library as displayed** at the moment of the tap, with the
+      // same
+      // sorting and filtering.
       TaskPhase.adding || TaskPhase.polling => l10n.onServerPhase,
       TaskPhase.waitingForNetwork => l10n.waitingForWifi,
       TaskPhase.pulling => l10n.pullingToDevice,

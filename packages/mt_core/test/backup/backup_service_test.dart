@@ -30,7 +30,8 @@ void main() {
       await secrets.write(SecretKeys.password, 'sirri-jiddan');
 
       final exported = await service.exportToString();
-      // نصّ لا ترويسة مشفّرة — ولا مفتاح يموت مع إعادة التثبيت.
+      // Plain text, no encrypted header, and no key that dies with a
+      // reinstall.
       expect(exported, startsWith('{'));
       expect(BackupCrypto.headerOf(exported), isNull);
       expect(exported, isNot(contains('sirri-jiddan')));
@@ -40,7 +41,8 @@ void main() {
         reason: 'اسم المستخدم لم يعد يُنسخ — الملف بلا سرّ إطلاقاً',
       );
 
-      // جهاز جديد: **بلا استيراد أي مفتاح**، وهذا هو المكسب كله.
+      // A new device: **with no key imported at all**, which is the whole
+      // gain.
       final freshStore = MemoryKeyValueStore();
       final freshService = BackupService(
         store: freshStore,
@@ -88,8 +90,9 @@ void main() {
     });
   });
 
-  /// **الهجرة تبقى**: من كان عنده ملف `MTF1` من إصدار سابق يفتحه بعد
-  /// استيراد مفتاحه — الكتابة وحدها هي التي تغيّرت.
+  /// **Migration still works**: anyone holding an `MTF1` file from an
+  /// earlier release opens it after importing its key. Only writing
+  /// changed.
   group('استيراد MTF1 المشفَّر (قراءة فقط بعد 2026-09-04)', () {
     String legacyV2File(String keyBase64, Map<String, dynamic> prefs) =>
         BackupCrypto.encrypt(
@@ -133,7 +136,7 @@ void main() {
 
   group('استيراد MTBACKUP1 (Lite القديم — قراءة فقط)', () {
     test('التنسيق الحقيقي بايتاً ببايت يُهاجَر للمفاتيح القديمة', () async {
-      // بناء الملف بنفس تخطيط BackupHelper القديم حرفياً
+      // Builds the file with exactly the old BackupHelper layout.
       final legacyKey = BackupCrypto.generateKeyBase64();
       final legacyPayload = json.encode({
         'app': 'MeTube Lite',
@@ -166,7 +169,7 @@ void main() {
         header: BackupCrypto.headerLegacyLite,
       );
 
-      // استيراد مفتاح Lite القديم (MTKEY1) ثم الملف
+      // Import the old Lite key (MTKEY1), then the file.
       await secrets.write(SecretKeys.backupAesKey, legacyKey);
       final result = await service.importFromString(legacyFile);
 
@@ -186,15 +189,15 @@ void main() {
       );
       expect(await secrets.read(SecretKeys.username), 'family-user');
 
-      // القوائم القديمة تُقرأ عبر PlaylistsStore بصيغة legacy
+      // Old playlists are read through PlaylistsStore in the legacy format.
       final playlists = PlaylistsStore(store: store, mutex: PrefsMutex());
       final imported = await playlists.readAll();
       expect(imported.single.items.single.isLegacy, isTrue);
     });
 
-    /// شكل مصطاد على **نسخة Lite الحقيقية للمالك** (2026-09-01): 32
-    /// موضعاً بالثواني نصاً كانت تُستورد ميتة لأن هجرة الأشكال كانت
-    /// تعمل على مسار `MTSBACKUP1` وحده.
+    /// A shape caught on **a real Lite backup** (2026-09-01): 32 positions
+    /// stored as seconds in strings were imported dead, because the shape
+    /// migration only ran on the `MTSBACKUP1` path.
     test(
       'مواضع Lite القديمة تُهاجَر لمفاتيح §5.1 والوضع الرقمي يُزال',
       () async {
@@ -273,8 +276,8 @@ void main() {
       expect(await tags.tagsOf('https://youtu.be/dQw4w9WgXcQ'), ['أناشيد']);
     });
 
-    /// أشكال مصطادة على **نسخة المالك الحقيقية** (2026-09-01) — كلها
-    /// كانت تُستورد بصمت ناقصة قبل الإصلاح.
+    /// Shapes caught on **a real backup** (2026-09-01), all of which
+    /// imported silently incomplete before the fix.
     group('هجرة الأشكال القديمة', () {
       Future<void> importLegacySuper(Map<String, dynamic> prefs) async {
         final key = BackupCrypto.generateKeyBase64();
@@ -385,10 +388,11 @@ void main() {
     );
   });
 
-  /// **مفهوم المفتاح أُزيل من المنتج** (قرار المالك 2026-09-04): لا
-  /// تصدير ولا استيراد. وبلا مفتاح محفوظ لا تُفكّ نسخة مشفّرة قديمة —
-  /// وهذا يُقال صراحةً بـ[BackupKeyMismatchException] لا بمفتاح جديد
-  /// يُولَّد عبثاً ثم يفشل الفكّ برسالة أبعد عن السبب.
+  /// **The key concept was removed from the product** (decision
+  /// 2026-09-04): no export and no import. With no stored key an old
+  /// encrypted backup cannot be decrypted, and that is said plainly with
+  /// [BackupKeyMismatchException] rather than by generating a new key for
+  /// nothing and then failing with a message further from the cause.
   test('نسخة مشفّرة بلا مفتاح محفوظ ⇒ BackupKeyMismatchException', () async {
     final file = BackupCrypto.encrypt(
       plaintext: json.encode({'app': 'MTF', 'version': 2, 'prefs': {}}),

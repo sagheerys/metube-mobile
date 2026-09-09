@@ -1,8 +1,9 @@
 import 'package:mt_core/mt_core.dart';
 import 'package:test/test.dart';
 
-/// **سؤال المالك 2026-09-02:** «عند تحميل دورة من يوتيوب هل تُجمع مع
-/// بعضها؟» — كان الجواب لا: `isBatchMember` يرتّب الطابور فقط.
+/// **Asked 2026-09-02:** "when I download a course from YouTube, are they
+/// grouped together?" The answer was no: `isBatchMember` only ordered the
+/// queue.
 void main() {
   late PlaylistsStore playlists;
   late BatchPlaylistCollector collector;
@@ -47,7 +48,7 @@ void main() {
 
   test('الترتيب من المصدر لا من الاكتمال', () async {
     await collector.begin('دورة', ['t1', 't2', 't3']);
-    // الثالث اكتمل أولاً (الأول تعثّر وأُعيد).
+    // The third completed first (the first stumbled and was retried).
     await collector.onFinished(done('t3', 'https://y/3'));
     await collector.onFinished(done('t1', 'https://y/1'));
     await collector.onFinished(done('t2', 'https://y/2'));
@@ -62,7 +63,7 @@ void main() {
 
   test('عضو ساقط لا يعطّل القائمة ولا يترك مكاناً فارغاً', () async {
     await collector.begin('دورة', ['t1', 't2']);
-    await collector.onDropped('t1'); // فشل
+    await collector.onDropped('t1'); // failed
     await collector.onFinished(done('t2', 'https://y/2'));
 
     final saved = (await playlists.readAll()).single;
@@ -96,9 +97,9 @@ void main() {
     expect(saved.items, isEmpty);
   });
 
-  // **بلاغ المالك 2026-09-04:** «حمّلت القائمة من يوتيوب مرة أخرى
-  // فظهرت في قائمة جديدة وصار عندي قائمتان». `begin` كانت تُنشئ قائمة
-  // في كل مرة بلا سؤال.
+  // **Field report 2026-09-04:** "I downloaded the YouTube playlist again
+  // and it appeared as a new playlist, so now I have two." `begin` used to
+  // create a playlist every time without asking.
   group('إعادة تحميل المصدر نفسه', () {
     test('لا تُستنسخ القائمة — نفس الاسم يعني نفس القائمة', () async {
       await collector.begin('دورة', ['t1', 't2']);

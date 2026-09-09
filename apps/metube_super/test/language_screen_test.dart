@@ -9,9 +9,10 @@ import 'package:mt_ui/mt_ui.dart';
 
 import 'device_matrix.dart';
 
-/// **طلب المالك 2026-09-08**: الاختيار كان `SegmentedButton` بثلاث
-/// شرائح، وهو يقسم العرض على عددها — فثلاثةٌ تسع 360dp **وستةٌ تنكسر**،
-/// والخطة المعلنة دعم اللغات الشائعة.
+/// **Requested 2026-09-08**: the choice was a `SegmentedButton` with three
+/// segments, and it divides the width by their number, so three fit 360dp
+/// **and six break**, while the declared plan is to support the common
+/// languages.
 void main() {
   ProviderContainer containerWith(String? locale, MemoryKeyValueStore store) =>
       ProviderContainer(
@@ -48,8 +49,9 @@ void main() {
   testWidgets('كل لغة مدعومة لها صف، و«النظام» فوقها', (tester) async {
     await pump(tester, null);
 
-    // **الحارس الحقيقي**: القائمة تُقرأ من `supportedLocales` لا من
-    // ثلاث شرائح مكتوبة بيد — فإضافة `app_xx.arb` تظهر تلقائياً.
+    // **The real guard**: the list is read from `supportedLocales` rather
+    // than from three hand-written segments, so adding an `app_xx.arb`
+    // appears automatically.
     for (final locale in MTLocalizations.supportedLocales) {
       expect(
         find.text(mtLanguageName(locale.languageCode)),
@@ -90,7 +92,7 @@ void main() {
     expect(container.read(settingsProvider).localeCode, isNull);
   });
 
-  /// الشاشة الضيقة هي سبب وجود هذه الشاشة أصلاً.
+  /// A narrow screen is the whole reason this screen exists.
   testWidgets('عشر لغات لا تكسر شاشة 360dp', (tester) async {
     tester.view.physicalSize = const Size(1080, 2400);
     tester.view.devicePixelRatio = 3;

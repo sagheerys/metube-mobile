@@ -20,23 +20,23 @@ String qualityLabel(MTLocalizations l10n, Quality quality) => switch (quality) {
 /// quality with no sheet.
 ///
 /// Three deliberate decisions:
-/// 1. **Playlists are never downloaded silently**, whatever the
-///    setting. A playlist URL opens the batch screen so the user decides;
-///    200 clips do not start on a blind tap.
-/// 2. **The quality shown is the quality applied**:
-///    `Quality.applyRule` forces numeric qualities to `best` outside
-///    YouTube (a yt-dlp constraint), so showing "1080" for a TikTok link
-///    lies to the user. We show exactly what went to the server.
-/// 3. **An undo, not a confirmation**: a confirmation dialog defeats
-///    the meaning of "quick". Instead there is an action in the snack bar
-///    that cancels the task and opens the sheet with the same URL.
+/// 1. **Playlists are never downloaded silently**, whatever the setting. A
+/// playlist URL opens the batch screen so the user decides; 200 clips do
+/// not start on a blind tap.
+/// 2. **The quality shown is the quality applied**: `Quality.applyRule`
+/// forces numeric qualities to `best` outside YouTube (a yt-dlp
+/// constraint), so showing "1080" for a TikTok link lies to the user. We
+/// show exactly what went to the server.
+/// 3. **An undo, not a confirmation**: a confirmation dialog defeats the
+/// meaning of "quick". Instead there is an action in the snack bar that
+/// cancels the task and opens the sheet with the same URL.
 ///
-/// **The setting is gated here rather than at the call site** (field report
-/// 2026-09-04: "quick download is always on even though I turned it off").
-/// The condition used to be written into the share path alone, while the
-/// floating add button and the launcher shortcut downloaded immediately
-/// without asking, so the setting looked to have no effect. Gating inside
-/// the function makes forgetting it impossible.
+/// **The setting is gated here rather than at the call site** (field
+/// report 2026-09-04: "quick download is always on even though I turned it
+/// off"). The condition used to be written into the share path alone,
+/// while the floating add button and the launcher shortcut downloaded
+/// immediately without asking, so the setting looked to have no effect.
+/// Gating inside the function makes forgetting it impossible.
 ///
 /// [explicit] is for an unambiguous deliberate action, the "download now"
 /// button in the clipboard bar with "choose options" beside it, and that

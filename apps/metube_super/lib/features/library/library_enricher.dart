@@ -62,7 +62,7 @@ class LibraryEnricher {
           if (localFirst != 0) return localFirst;
           final at = a.timestamp, bt = b.timestamp;
           if (at == null || bt == null) return 0;
-          return bt.compareTo(at); // الأحدث أولاً
+          return bt.compareTo(at); // newest first
         });
 
     // **The failure memory** (defect 2026-09-07): an item that failed
@@ -180,9 +180,9 @@ class LibraryEnricher {
   /// Records the reason in the diagnostic log **and defers** the retry by a
   /// day.
   Future<void> _recordFailure(String canonicalUrl, String reason) async {
-    // Awaited here, unlike in the interface: enrichment is background work
-    // that blocks no screen, and log ordering matters more than a
-    // millisecond.
+    // No explicit error and no data: a codec the platform did not
+    // understand,
+    // which is a failure too.
     await logErrorOnce(
       _ref.read(loggerProvider),
       'probe',

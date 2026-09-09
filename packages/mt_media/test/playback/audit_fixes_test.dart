@@ -7,8 +7,8 @@ import 'package:video_player_platform_interface/video_player_platform_interface.
 
 import 'fake_video_platform.dart';
 
-/// **حرّاس فحص جهاز المالك 2026-09-05** — كلٌّ منها عن عيب رأيته على
-/// الجهاز لا عن احتمال تخيّلته.
+/// **Guards from a device review on 2026-09-05**: each one is about a flaw
+/// seen on the device rather than an imagined possibility.
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   setUp(() => VideoPlayerPlatform.instance = FakeVideoPlatform());
@@ -34,7 +34,8 @@ void main() {
         const Duration(minutes: 10, seconds: 55),
         const Duration(hours: 1, minutes: 1, seconds: 44),
       );
-      // الحارس: بلا العزل كانت تُعرض «50:49-» في الواجهة العربية.
+      // The guard: without isolation the Arabic interface rendered
+      // "50:49-".
       expect(text.startsWith(mtLtrIsolate), isTrue);
       expect(text, contains('-50:49'));
     });
@@ -53,9 +54,10 @@ void main() {
           SizedBox(
             width: 200,
             height: 200,
-            // **العطل المُبلَّغ عنه**: المزوّد كان يبتلع `null` ويعيد
-            // `SizedBox.shrink()`، فيبقى المربع فارغاً تماماً في مشغل
-            // الصوت والمشغل المصغر — والأيقونة أدناه كود ميت.
+            // **The reported defect**: the provider swallowed `null` and
+            // returned `SizedBox.shrink()`, so the square stayed completely
+            // blank in the audio player and the mini player, and the
+            // fallback icon below it was dead code.
             child: MTTiltedArtwork(item: item, artwork: (_, _) => null),
           ),
         ),
@@ -134,7 +136,7 @@ void main() {
         reason: 'ضابط: طولياً الورقة موجودة',
       );
 
-      // الإمالة ⇒ ملء تام تلقائي.
+      // A tilt opens full screen automatically.
       tester.view.physicalSize = const Size(2880, 1440);
       await settle();
       expect(
@@ -142,8 +144,8 @@ void main() {
         findsOneWidget,
       );
 
-      // الخروج بالزر والجهاز ما يزال عرضياً — هنا كان يظهر تخطيط
-      // طولي في شاشة عريضة (بلاغ المالك).
+      // Leaving by the button with the device still in landscape: this is
+      // where a portrait layout appeared on a wide screen (field report).
       navKey.currentState!.pop();
       await settle();
       expect(

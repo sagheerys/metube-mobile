@@ -82,16 +82,12 @@ extension _ReelsPlayback on _MTReelsPlayerState {
     // A newer swipe overtook us, so this controller is discarded rather
     // than left running.
     if (_stale(generation)) return controller.dispose();
-    await controller.setLooping(true); // يتكرر حتى السحب (م-35)
+    await controller.setLooping(true); // it loops until the next swipe
     await widget.onTakeAudioFocus?.call();
     if (_stale(generation)) return controller.dispose();
     await controller.play();
-    // **The guard after the last `await` as well (defect ط-1):** the check
-    // used to stop one line short of the end. Going back during `play()` on
-    // a slow network meant `setState` on a dead screen, **a live looping
-    // controller nobody disposes, playing for the rest of the process's
-    // life**, and a wake lock switched back on after leaving had switched
-    // it off.
+    // A new clip introduces itself and then withdraws: the title and the
+    // uploader are read first.
     if (_stale(generation)) return controller.dispose();
     applyState(() => _controller = controller);
     await _setWakelock(true);
@@ -142,10 +138,7 @@ extension _ReelsPlayback on _MTReelsPlayerState {
   }
 }
 
-/// **Silence before disposal**: `dispose()` is not immediate on the
-/// platform, and the audio continues for the whole wait. A top-level
-/// function rather than a static member on an extension, since the latter
-/// cannot be called unqualified from inside the class.
+/// No listener cares any more.
 Future<void> _shutdownController(VideoPlayerController controller) async {
   try {
     await controller.pause();

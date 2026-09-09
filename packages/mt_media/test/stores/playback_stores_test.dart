@@ -51,7 +51,8 @@ void main() {
     test('البث والمحلي يتشاركان الموضع لأن المفتاح واحد (م-19)', () async {
       const url = 'https://youtube.com/watch?v=abc';
       await positions.save(url, const Duration(seconds: 90));
-      // نفس العنصر بمصدر مختلف ⇒ نفس canonicalUrl ⇒ نفس الموضع.
+      // The same item from a different source means the same canonicalUrl,
+      // and so the same position.
       expect(await positions.positionOf(url), const Duration(seconds: 90));
     });
 

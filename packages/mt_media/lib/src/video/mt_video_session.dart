@@ -253,7 +253,7 @@ class MTVideoSession extends ChangeNotifier {
   @override
   Future<void> dispose() async {
     _disposed = true;
-    _generation++; // يبطل أي تحميل معلّق فلا ينشر متحكماً بعد الموت
+    _generation++; // invalidates any pending load so no controller is published after death
     _saveTimer?.cancel();
     _saveTimer = null;
     // **Silence before saving (defect ط-2/2):** between closing the screen

@@ -136,7 +136,7 @@ class HistoryItem {
     if (videoId != null) {
       return 'https://i.ytimg.com/vi/$videoId/hqdefault.jpg';
     }
-    return null; // غير YouTube: لا اختلاق — ArtworkIndex لاحقاً.
+    return null; // not YouTube: nothing is invented; ArtworkIndex fills it later.
   }
 
   static double? _parseProgress(Map<String, dynamic> json) {
@@ -163,7 +163,8 @@ class HistoryItem {
     final ts = json['timestamp'];
     if (ts is num) {
       var ms = ts.toInt();
-      if (ms > 10000000000000) ms = ms ~/ 1000000; // نانوثانية ⇒ ميلي.
+      // Nanoseconds to milliseconds.
+      if (ms > 10000000000000) ms = ms ~/ 1000000;
       return DateTime.fromMillisecondsSinceEpoch(ms);
     }
     if (ts != null) return DateTime.tryParse(ts.toString());

@@ -3,24 +3,27 @@ import 'dart:async';
 import 'package:flutter/widgets.dart';
 import 'package:video_player_platform_interface/video_player_platform_interface.dart';
 
-/// منصة `video_player` مزيّفة: تُبطئ التحضير عمداً لتفتح نافذة السباق
-/// التي كانت تترك مشغلات يتيمة تعمل بالخلفية، وتحصي من يشتغل فعلاً.
+/// A fake `video_player` platform: it delays preparation on purpose to open
+/// the race window that used to leave orphaned players running in the
+/// background, and it counts how many are actually playing.
 class FakeVideoPlatform extends VideoPlayerPlatform {
   FakeVideoPlatform({this.createDelay = Duration.zero});
 
-  /// زمن «التحضير» — على شبكة المالك كان يبلغ ثوانيَ لكل مقطع.
+  /// The "preparation" time; on a real network it ran to seconds per clip.
   Duration createDelay;
 
   int _next = 0;
   final Map<int, StreamController<VideoEvent>> _events = {};
 
-  /// معرّفات المشغلات التي تشتغل الآن — أكثر من واحد = صوتان معاً.
+  /// The ids of the players running right now; more than one means two
+  /// sounds at once.
   final Set<int> playing = {};
 
-  /// ما أُنشئ ولم يُصرَّف بعد (كشف التسريب).
+  /// What has been created and not yet disposed (leak detection).
   final Set<int> alive = {};
 
-  /// مصادر ما أُنشئ بالترتيب — للتأكد أي مقطع نجا من السباق.
+  /// The sources created, in order, to confirm which clip survived the
+  /// race.
   final List<String> created = [];
 
   @override
@@ -33,8 +36,9 @@ class FakeVideoPlatform extends VideoPlayerPlatform {
     final id = _next++;
     created.add(source.uri ?? source.asset ?? '');
     alive.add(id);
-    // الحدث يُبعث **عند أول اشتراك**: `initialize()` يشترك بعد `create`،
-    // وبثّه قبلها يضيع في مجرى broadcast فيعلّق التحضير للأبد.
+    // The event is emitted **on the first subscription**: `initialize()`
+    // subscribes after `create`, and emitting before that is lost in the
+    // broadcast stream, so preparation hangs forever.
     late final StreamController<VideoEvent> controller;
     controller = StreamController<VideoEvent>.broadcast(
       onListen: () {
@@ -44,7 +48,10 @@ class FakeVideoPlatform extends VideoPlayerPlatform {
             VideoEvent(
               eventType: VideoEventType.initialized,
               duration: const Duration(seconds: 30),
-              size: const Size(1080, 1920), // عمودي: يدخل مسار القِصار
+              size: const Size(
+                1080,
+                1920,
+              ), // portrait: it enters the shorts lane
             ),
           );
         });
@@ -97,7 +104,8 @@ class FakeVideoPlatform extends VideoPlayerPlatform {
       const SizedBox.shrink();
 }
 
-/// مشغل صوت وهمي يسجّل كم مرة طُلب إيقافه (حصرية المخرج).
+/// A fake audio player that records how many times it was asked to stop
+/// (output exclusivity).
 class RecordingAudioPause {
   int calls = 0;
 

@@ -95,17 +95,7 @@ abstract final class MTMotion {
   static const double dismissFlingVelocity = 700;
 }
 
-/// **Fixed-width digits** for live counters.
-///
-/// **A documented trap (review 2026-09-02):** adding
-/// `FontFeature.tabularFigures()` on its own does nothing here. Inspecting
-/// the font binaries proved that **Tajawal has no `tnum` table** while Noto
-/// Kufi Arabic does. A counter drawn in the body font keeps dancing with
-/// every passing second however loudly the feature is requested.
-///
-/// So counters are drawn in the **heading** font, which actually supports
-/// the feature, and only on changing numbers: time, size, speed. Never on
-/// prose.
+/// Warm shadows, copied from the reference values.
 abstract final class MTType {
   static const String display = 'NotoKufiArabic';
   static const String body = 'Tajawal';
@@ -115,17 +105,7 @@ abstract final class MTType {
   static const String package = 'mt_ui';
 }
 
-/// **Fixed-width digits** for live counters.
-///
-/// **A documented trap (review 2026-09-02):** adding
-/// `FontFeature.tabularFigures()` on its own does nothing here. Inspecting
-/// the font binaries proved that **Tajawal has no `tnum` table** while Noto
-/// Kufi Arabic does. A counter drawn in the body font keeps dancing with
-/// every passing second however loudly the feature is requested.
-///
-/// So counters are drawn in the **heading** font, which actually supports
-/// the feature, and only on changing numbers: time, size, speed. Never on
-/// prose.
+/// Warm shadows, copied from the reference values.
 extension MTTabularFigures on TextStyle {
   TextStyle get tabular => copyWith(
     fontFamily: MTType.display,

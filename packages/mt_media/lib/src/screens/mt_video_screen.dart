@@ -179,7 +179,13 @@ class MTVideoScreen extends StatelessWidget {
       currentIndex: ordered.indexWhere((i) => i.canonicalUrl == currentUrl),
       artwork: artwork,
       playlistName: playlistName,
-      // The smart handover dialog on exit.
+      // **We only pop our own page** (field report 2026-09-03): the
+      // handover to
+      // audio can take a while, and the user may have left another way in
+      // the
+      // meantime, so a blind `pop()` afterwards popped **the shell itself**
+      // and
+      // nothing was left: a black screen.
       liveness: session,
       paused: () => !session.isPlaying,
       onShowAll: onShowPlaylist,
@@ -188,7 +194,12 @@ class MTVideoScreen extends StatelessWidget {
     );
   }
 
-  /// The smart handover dialog on exit.
+  /// **We only pop our own page** (field report 2026-09-03): the handover
+  /// to
+  /// audio can take a while, and the user may have left another way in the
+  /// meantime, so a blind `pop()` afterwards popped **the shell itself**
+  /// and
+  /// nothing was left: a black screen.
   Future<void> _askContinueAsAudio(BuildContext context) async {
     final item = session.current;
     final navigator = Navigator.of(context);

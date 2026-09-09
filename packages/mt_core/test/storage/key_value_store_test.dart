@@ -43,7 +43,7 @@ void main() {
         for (var i = 0; i < n; i++) {
           await mutex.run(() async {
             final current = await store.getInt('counter') ?? 0;
-            await Future<void>.delayed(Duration.zero); // نافذة سباق
+            await Future<void>.delayed(Duration.zero); // the race window
             await store.setInt('counter', current + 1);
           });
         }

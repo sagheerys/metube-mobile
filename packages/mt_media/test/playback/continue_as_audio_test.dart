@@ -9,16 +9,19 @@ import 'package:video_player_platform_interface/video_player_platform_interface.
 
 import 'fake_video_platform.dart';
 
-/// **انحدار ميداني مُستنسخ على المحاكي (2026-09-03).**
+/// **A field regression reproduced on the emulator (2026-09-03).**
 ///
-/// بلاغ المالك: «عند الرجوع تظهر رسالة متابعة بالخلفية، وبالضغط على
-/// متابعة صوتاً يشتغل الصوت **ويبقى في نفس الشاشة**… وعند إيقاف المقطع
-/// في الميني بلاير يتوقف التطبيق كلياً وتظهر شاشة سوداء».
+/// Field report: "on going back the continue-in-background message appears,
+/// and pressing continue as audio starts the audio **and stays on the same
+/// screen**… and stopping the clip in the mini player kills the app
+/// entirely and shows a black screen".
 ///
-/// السبب: `just_audio.play()` — بنصّ الحزمة — «يكتمل حين ينتهي التشغيل
-/// أو يُوقَف». فانتظاره علّق النقل، فلم تُغلق الشاشة؛ ثم عند الإيقاف
-/// اكتمل المستقبل فنُفِّذ `pop` المؤجل — والمستخدم قد غادر — **فأسقط
-/// الغلاف نفسه**. هنا يُحرَس الطرفان: بطء النقل، وحرمة صفحة غيرنا.
+/// The cause: `just_audio.play()`, in the package's own words, "completes
+/// when playback ends or is stopped". Awaiting it hung the handover so the
+/// screen never closed; then on stopping, the future completed and the
+/// deferred `pop` ran, by which time the user had left, **so it popped the
+/// shell itself**. Both ends are guarded here: a slow handover, and the
+/// sanctity of somebody else's page.
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -49,17 +52,18 @@ void main() {
     localPath: '/media/a.mp4',
   );
 
-  /// **لا `pumpAndSettle`**: الشاشة تحوي مؤشرات دائمة الحركة (مكافئ
-  /// «يشغَّل الآن»)، فالاستقرار لا يقع أبداً.
+  /// **No `pumpAndSettle`**: the screen holds permanently animating
+  /// indicators (the "now playing" equaliser), so it never settles.
   Future<void> settle(WidgetTester tester) async {
     for (var i = 0; i < 5; i++) {
       await tester.pump(const Duration(milliseconds: 100));
     }
   }
 
-  /// **سطح الاختبار طولي كالهاتف.** الافتراضي 800×600 أي *عرضي*،
-  /// ومنذ 2026-09-05 صار المشغل يفتح الملء التام عند الإمالة — فكانت
-  /// هذه الاختبارات تبدأ داخل الملء التام بلا أن تقصده.
+  /// **A portrait test surface, like a phone.** The default 800x600 is
+  /// *landscape*, and since 2026-09-05 the player opens full screen on a
+  /// tilt, so these tests were starting inside full screen without meaning
+  /// to.
   void usePhonePortrait(WidgetTester tester) {
     tester.view.physicalSize = const Size(1200, 2400);
     tester.view.devicePixelRatio = 3;
@@ -104,19 +108,21 @@ void main() {
     final navKey = GlobalKey<NavigatorState>();
     await openPlayer(tester, navKey, session, (_, _) => transfer.future);
 
-    // الرجوع ⇒ حوار «متابعة بالخلفية؟» ⇒ «متابعة صوتاً».
+    // Going back opens the "continue in the background?" dialog, then
+    // "continue as audio".
     unawaited(navKey.currentState!.maybePop());
     await settle(tester);
     await tester.tap(find.byType(FilledButton));
     await tester.pump();
     expect(find.text('BASE'), findsNothing, reason: 'النقل لم يكتمل بعد');
 
-    // المستخدم يغادر بنفسه (الضغطة الثانية في البلاغ).
+    // The user leaves by themselves (the second press in the report).
     navKey.currentState!.pop();
     await settle(tester);
     expect(find.text('BASE'), findsOneWidget);
 
-    // ثم يكتمل النقل متأخراً — عند إيقاف الصوت في المشغل المصغر.
+    // And then the handover completes late, when the audio is stopped in
+    // the mini player.
     transfer.complete();
     await settle(tester);
 

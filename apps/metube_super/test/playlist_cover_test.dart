@@ -4,9 +4,11 @@ import 'package:metube_super/features/playlists/widgets/playlist_cards.dart';
 import 'package:mt_core/mt_core.dart';
 import 'package:mt_ui/mt_ui.dart';
 
-/// **طلب المالك 2026-09-08**: غلاف القائمة كان خليّتين دائماً، فقائمة
-/// من عشرين عنصراً تُعرَّف بغلافين. الآن حتى أربعة، **والتدرّج مقصود**:
-/// الواحدة تملأ الغلاف، والثلاث كبيرةٌ واثنتان — لا شبكةٌ فيها ربعٌ فارغ.
+/// **Requested 2026-09-08**: a playlist cover was always two cells, so a
+/// playlist of twenty items was represented by two covers. Now it goes up
+/// to four, **and the progression is deliberate**: one fills the cover, and
+/// three means one large and two small, rather than a grid with an empty
+/// quarter.
 void main() {
   SavedPlaylist playlistOf(int items) => SavedPlaylist(
     id: 'p1',
@@ -45,7 +47,8 @@ void main() {
       await tester.pump();
       expect(tester.takeException(), isNull);
 
-      // **الحارس**: أربعة أغلفة تظهر كلها — قبل التعديل كان يُعرض اثنان.
+      // **The guard**: all four covers appear; before the change two were
+      // shown.
       final shown = count > 4 ? 4 : count;
       for (var i = 0; i < shown; i++) {
         expect(

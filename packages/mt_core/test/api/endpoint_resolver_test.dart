@@ -13,8 +13,9 @@ void main() {
       Duration timeout = const Duration(milliseconds: 200),
     }) {
       return EndpointResolver(
-        // الفحص صار مصنفاً (ok/unauthorized/unreachable)؛ هذه الحالات
-        // تعنى بالأفضلية والتوازي فيكفيها «يستجيب أو لا».
+        // Probing is now classified (ok / unauthorized / unreachable);
+        // these cases are about preference and parallelism, so "responds or
+        // not" is enough for them.
         probe: (url) async => await (probes[url]?.call() ?? Future.value(false))
             ? MTEndpointStatus.ok
             : MTEndpointStatus.unreachable,
@@ -64,7 +65,7 @@ void main() {
 
     test('probe معلّق يسقط بمهلة قصيرة بدل التعليق', () async {
       final resolver = makeResolver({
-        'http://hangs': () => Completer<bool>().future, // لا يكتمل أبداً
+        'http://hangs': () => Completer<bool>().future, // never completes
         'https://ok.example.com': () async => true,
       });
       expect(
@@ -110,9 +111,10 @@ void main() {
     });
   });
 
-  /// **حارس بلاغ المالك 2026-09-05**: قفل السيرفر خلف كلاودفلير فصار
-  /// كل رابط «أحمر» بلا سبب معلن — و«لا يستجيب» و«يرفض اعتمادك»
-  /// علاجان مختلفان تماماً.
+  /// **A guard from field report 2026-09-05**: putting the server behind
+  /// Cloudflare Access turned every endpoint "red" with no stated reason,
+  /// and "does not respond" and "rejects your credentials" have entirely
+  /// different cures.
   group('القفل ليس انقطاعاً', () {
     EndpointResolver clientResolver(
       Map<String, int> statusByHost, {
@@ -152,9 +154,11 @@ void main() {
     });
 
     test('عنوان ليس MeTube ⇒ notMeTube لا unreachable', () async {
-      // 200 لكن الجسم HTML (خدمة أخرى على العنوان): «العنوان خطأ» علاجه
-      // تصحيح العنوان، و«لا يستجيب» علاجه انتظار الشبكة — ولا يجوز
-      // خلطهما في نقطة حمراء واحدة (قياس جهاز المالك 2026-09-06).
+      // A 200 with an HTML body means another service lives at that
+      // address. "Wrong address" is cured by correcting the address and
+      // "does not respond" by waiting for the network, and the two must not
+      // be conflated into one red dot (measured on a real device
+      // 2026-09-06).
       final resolver = clientResolver(
         {'wrong.example.com': 200},
         html: {'wrong.example.com'},
@@ -201,13 +205,14 @@ void main() {
   });
 }
 
-/// محوّل يعيد حالة HTTP واحدة — لفحص تصنيف الرفض دون شبكة.
+/// An adapter returning one HTTP status, to test refusal classification
+/// without a network.
 class _StatusAdapter implements HttpClientAdapter {
   _StatusAdapter(this.status, {this.html = false});
 
   final int status;
 
-  /// جسم HTML بحالة 200 — خدمة أخرى تعيش على العنوان.
+  /// An HTML body with status 200: another service living at the address.
   final bool html;
 
   @override

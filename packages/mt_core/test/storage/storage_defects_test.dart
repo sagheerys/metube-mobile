@@ -4,8 +4,9 @@ import 'dart:io';
 import 'package:mt_core/mt_core.dart';
 import 'package:test/test.dart';
 
-/// أعطال التخزين 2026-09-02: خ-1 (مخزن يتكسر نهائياً)، خ-2 (استعادة
-/// غير معاملاتية + تسريب كلمة سر)، خ-3 (تصادم أسماء + جزئيات يتيمة).
+/// Storage defects from 2026-09-02: خ-1 (a store breaking permanently), خ-2
+/// (a non-transactional restore plus a password leak), خ-3 (name collisions
+/// and orphaned partials).
 void main() {
   group('خ-1 — مخزن القوائم لا ينكسر نهائياً على JSON مشوّه', () {
     test('عنصر بـ items خريطة بدل قائمة يُسقَط ولا يُسقط الباقي', () async {
@@ -30,7 +31,8 @@ void main() {
         'سليمة ٢',
       ], reason: 'قبل الإصلاح كان TypeError يُفشل readAll كلها للأبد');
 
-      // والكتابة تعمل بعدها (المخزن كان يشلّ نهائياً بلا شفاء ذاتي).
+      // And writing works afterwards; the store used to be paralysed
+      // permanently with no self-healing.
       await playlists.create('جديدة');
       expect((await playlists.readAll()).length, 3);
     });
@@ -62,7 +64,7 @@ void main() {
       expect(exported, isNot(contains('s3cret')));
       expect(exported, isNot(contains('user:')));
 
-      // ويبقى الرابط نفسه صالحاً بعد التعقيم.
+      // And the URL itself stays valid after sanitising.
       expect(
         BackupService.stripUrlCredentials('https://u:p@a.example/x'),
         'https://a.example/x',

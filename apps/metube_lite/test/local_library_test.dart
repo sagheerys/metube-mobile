@@ -31,7 +31,8 @@ void main() {
         'Golden Brown',
       );
       expect(LocalItem.titleFromFilename('بلا امتداد'), 'بلا امتداد');
-      // رقم في آخر الاسم ليس بصمة وقت (٦ خانات فقط بعد شرطة سفلية).
+      // A number at the end of a name is not a time stamp; that is six
+      // digits after an underscore.
       expect(LocalItem.titleFromFilename('Episode_12.mp4'), 'Episode_12');
     });
 
@@ -67,7 +68,7 @@ void main() {
         ).isShortForm,
         isFalse,
       );
-      // أبعاد غير معروفة بعد ⇒ ليس قصيراً.
+      // Dimensions not yet known means it is not a short.
       expect(
         item('a.mp4', duration: const Duration(seconds: 40)).isShortForm,
         isFalse,

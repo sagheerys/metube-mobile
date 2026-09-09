@@ -6,16 +6,18 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:metube_lite/features/home/reception.dart';
 
-/// **بلاغ المالك 2026-09-08 — «أحياناً لا تظهر ورقة التحميل إلا بإعادة
-/// المحاولة».**
+/// **Field report 2026-09-08: "sometimes the download sheet only appears if
+/// I try again".**
 ///
-/// كان `start()` يقرأ الرابط الأولي **ثم** يشترك في البثّ، وبين
-/// الانتظارين نافذةٌ بلا مستمع. والتطبيق الساكن في الخلفية يُسلَّم
-/// رابطه إلى البثّ مباشرة، فيسقط فيها بلا أثر — ثم تنجح إعادة المحاولة
-/// لأن الاشتراك صار قائماً.
+/// `start()` used to read the initial link **and then** subscribe to the
+/// stream, and between the two awaits there was a window with no listener.
+/// An app resting in the background has its link delivered straight to the
+/// stream, so it fell into that window without a trace, and a retry then
+/// succeeded because the subscription was in place.
 ///
-/// المنصة تُحاكى بقناتَي الحزمة نفسها: `getInitialMedia` بطيء عمداً،
-/// والحدث يصل أثناء بطئه — وهي اللحظة التي كانت تضيع.
+/// The platform is simulated through the package's own two channels:
+/// `getInitialMedia` is deliberately slow, and the event arrives during
+/// that slowness, which is the moment that used to be lost.
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -27,8 +29,9 @@ void main() {
   late List<List<String>> delivered;
   late List<String> logs;
 
-  /// يدفع حدثاً في قناة البثّ **بنفس ترميز المنصة**: نصّ JSON داخل
-  /// مغلّف نجاح، لا خريطة خام (مقروء من مصدر الحزمة 1.9.0).
+  /// Pushes an event into the broadcast channel **with the platform's own
+  /// encoding**: JSON text inside a success envelope, not a raw map (read
+  /// from the package source, version 1.9.0).
   Future<void> emit(String text) async {
     final payload = const StandardMethodCodec().encodeSuccessEnvelope(
       jsonEncode([
@@ -50,15 +53,17 @@ void main() {
       call,
     ) async {
       if (call.method == 'getInitialMedia') {
-        // **بطء مقصود**: هذه هي النافذة التي كان الحدث يسقط فيها.
+        // **Deliberately slow**: this is the window the event used to fall
+        // into.
         await initialGate.future;
         return null;
       }
       return null;
     });
-    // **لا `setMockMessageHandler` هنا**: هي تستبدل مستقبِل القناة الذي
-    // سجّله `EventChannel` عند الاشتراك، فلا يصل الحدث أبداً. المطلوب
-    // الردّ على نداءي `listen`/`cancel` الصادرين فقط.
+    // **No `setMockMessageHandler` here**: it replaces the channel receiver
+    // that `EventChannel` registered on subscribing, so the event never
+    // arrives. What is needed is to answer the outgoing `listen` and
+    // `cancel` calls only.
     binding.defaultBinaryMessenger.setMockMethodCallHandler(
       const MethodChannel('receive_sharing_intent/events-media'),
       (call) async => null,
@@ -81,12 +86,13 @@ void main() {
     addTearDown(receiver.dispose);
     final started = receiver.start();
 
-    // اللحظة الحرجة: المنصة تسلّم الرابط والانتظار الأول لم ينتهِ بعد.
+    // The critical moment: the platform delivers the link while the first
+    // await has not finished.
     await emit('https://youtu.be/dQw4w9WgXcQ');
     initialGate.complete();
     await started;
 
-    // **الحارس**: بالترتيب القديم كانت هذه القائمة فارغة.
+    // **The guard**: with the old ordering this list was empty.
     expect(
       delivered,
       hasLength(1),

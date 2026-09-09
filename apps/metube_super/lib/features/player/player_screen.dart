@@ -178,8 +178,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
     await ref.read(libraryActionsProvider).smartShare(match);
   }
 
-  /// The question is worth asking only if there is something to hand over:
-  /// a current clip, and the audio player was not already playing it.
+  /// Continues the same item as background audio from the same second.
   bool _shouldOfferAudio() {
     final current = ref.read(videoSessionProvider).current;
     if (current == null) return false;
@@ -198,9 +197,10 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
     final session = ref.read(videoSessionProvider);
     final handler = ref.read(audioHandlerProvider);
     final positions = ref.read(playbackPositionsProvider);
-    // **Everything belonging to the session is read now**: after closing it
-    // is disposed (autoDispose), so `duration` becomes nothing and
-    // `ref.read` on it is an error (defect ط-5).
+    // **Handed to the background here** (field report 2026-09-03): what
+    // remains does not touch the session at all, and waiting for the source
+    // to load, seconds on a large file, froze the screen so it looked as
+    // though the button had done nothing.
     final ordered = session.orderedItems;
     final playlistId = session.playlistId;
     final duration = session.duration;

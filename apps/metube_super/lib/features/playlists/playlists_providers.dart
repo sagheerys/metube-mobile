@@ -65,8 +65,7 @@ List<SmartList> buildSmartLists(List<LibraryItem> items) {
 }
 
 final playlistsProvider = FutureProvider<List<SavedPlaylist>>((ref) async {
-  // A write from outside this screen, such as batch collection, arrives
-  // through the counter.
+  // The three smart playlists from the current library.
   ref.watch(playlistsRevisionProvider);
   return sortPlaylists(await ref.watch(playlistsStoreProvider).readAll());
 });
@@ -149,8 +148,8 @@ final playlistViewProvider = FutureProvider.family<PlaylistView, String>((
   return PlaylistView(items: items, missing: missing);
 });
 
-/// A playlist entry from a library item; it caches the title and the cover
-/// so the card survives.
+/// Returns true when playback is visual, and the caller then navigates to
+/// `/player`.
 PlaylistEntry toPlaylistEntry(LibraryItem item) => PlaylistEntry(
   canonicalUrl: item.canonicalUrl,
   serverFilename: item.serverFilename,

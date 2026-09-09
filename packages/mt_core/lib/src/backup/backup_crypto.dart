@@ -32,8 +32,8 @@ abstract final class BackupCrypto {
   static const String keyHeaderV2 = 'MTFKEY1';
   static const List<String> knownKeyHeaders = [
     keyHeaderV2,
-    'MTKEY1', // مفتاح Lite القديم
-    'MTSKEY1', // مفتاح Super القديم
+    'MTKEY1', // the old Lite key
+    'MTSKEY1', // the old Super key
   ];
 
   static String generateKeyBase64() => Key.fromSecureRandom(32).base64;

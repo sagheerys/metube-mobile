@@ -9,8 +9,8 @@ import 'package:mt_core/mt_core.dart';
 import 'package:mt_media/mt_media.dart';
 import 'package:mt_ui/mt_ui.dart';
 
-/// **حرّاس فحص جهاز المالك 2026-09-05** — عيبان بصريان رأيتهما على
-/// الجهاز، ولكلٍّ جذر في سطر واحد.
+/// **Guards from a device review on 2026-09-05**: two visual flaws seen on
+/// the device, each with a root in a single line.
 void main() {
   Widget host(Widget child, {List<Override> overrides = const []}) =>
       ProviderScope(
@@ -52,8 +52,9 @@ void main() {
     );
 
     final cover = tester.getSize(find.byKey(marker)).height;
-    // الجذر: `Row` افتراضه `center`، فكانت الصورة تأخذ ارتفاعها
-    // الطبيعي وتتوسّط — شريط رفيع وسط بطاقة فارغة.
+    // The root: `Row` defaults to `center`, so the image took its natural
+    // height and centred itself, a thin strip in the middle of an empty
+    // card.
     expect(
       cover,
       greaterThan(120),
@@ -89,8 +90,8 @@ void main() {
       ),
     );
 
-    // `?? const SizedBox.shrink()` هنا كان يقتل الأيقونة البديلة في
-    // مشغل الصوت والمشغل المصغر — مربع أصمّ بلا شيء.
+    // `?? const SizedBox.shrink()` here killed the fallback icon in the
+    // audio player and the mini player: a blank square with nothing in it.
     expect(built, isNull);
   });
 }

@@ -7,8 +7,9 @@ import 'package:metube_lite/features/downloads_library/library_providers.dart';
 import 'package:metube_lite/features/downloads_library/local_item.dart';
 import 'package:mt_core/mt_core.dart';
 
-/// نظير `apps/metube_super/test/library_modes_test.dart` — الوضع الرابع
-/// وصل التطبيقين معاً (طلب المالك 2026-09-08)، فحارسه في كليهما.
+/// The counterpart of `apps/metube_super/test/library_modes_test.dart`: the
+/// fourth view mode reached both apps together (requested 2026-09-08), so
+/// its guard lives in both.
 void main() {
   late MemoryKeyValueStore store;
 
@@ -31,7 +32,8 @@ void main() {
     expect((await restored()).mode, LibraryViewMode.list);
   });
 
-  /// **الحارس**: من يحدّث التطبيق وهو على «شبكي» يجب أن يجده كما تركه.
+  /// **The guard**: someone updating the app while on grid must find it as
+  /// they left it.
   test('هجرة من المفتاحين القديمين', () async {
     await store.setBool('library_grid_view', true);
     expect((await restored()).mode, LibraryViewMode.grid);

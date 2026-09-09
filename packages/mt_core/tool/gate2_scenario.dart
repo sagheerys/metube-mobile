@@ -1,7 +1,10 @@
-// سكربت بوابة 2: سيناريو تحميل كامل بلا UI على السيرفر الحقيقي.
-// التشغيل (بالسياستين):
-//   dart tool/gate2_scenario.dart <baseUrl> <user> <pass> <videoUrl> autoDelete
-//   dart tool/gate2_scenario.dart <baseUrl> <user> <pass> <videoUrl> keepOnServer
+// Gate 2 script: a complete download scenario with no UI against a real
+// server.
+// Usage, with both policies:
+// dart tool/gate2_scenario.dart <baseUrl> <user> <pass> <videoUrl>
+// autoDelete
+// dart tool/gate2_scenario.dart <baseUrl> <user> <pass> <videoUrl>
+// keepOnServer
 // ignore_for_file: avoid_print
 
 import 'dart:io';
@@ -21,7 +24,7 @@ Future<void> main(List<String> args) async {
       ? DeletePolicy.autoDelete
       : DeletePolicy.keepOnServer;
 
-  // '-' = بلا اعتمادات (أصداف Windows تُسقط "" الفارغة)
+  // '-' means no credentials (Windows shells drop an empty "").
   final client = MeTubeApiClient(
     config: ServerConfig(
       baseUrl: baseUrl,

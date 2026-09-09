@@ -10,12 +10,13 @@ import 'package:video_player_platform_interface/video_player_platform_interface.
 
 import 'fake_video_platform.dart';
 
-/// **حرّاس التدوير (قرار المالك 2026-09-05)**: التطبيق طولي والمشغل
-/// وحده يدور — والإمالة تفتح الملء التام وتغلقه.
+/// **Rotation guards (decision 2026-09-05)**: the app is portrait and only
+/// the player rotates, and a tilt opens full screen and closes it.
 ///
-/// العطل الأصلي: `dispose` الملء التام كان يقفل `portraitUp` **على
-/// التطبيق كله وإلى الأبد** (الأمر عام لا يخصّ الشاشة التي نادته)،
-/// فبعد أول فيديو ملء الشاشة لا يدور شيء حتى يُقتل التطبيق.
+/// The original defect: full screen's `dispose` locked `portraitUp`
+/// **across the whole app and forever** (the call is global and does not
+/// belong to the screen that made it), so after the first full-screen video
+/// nothing rotated until the app was killed.
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -43,7 +44,8 @@ void main() {
       lock.length == 2 && lock.every((o) => o.contains('landscape'));
   bool isFree(List<String> lock) => lock.length == 3;
 
-  /// مضيف يتحكم بالاتجاه عبر مقاس الشاشة — `Orientation` مشتق منه.
+  /// A host that controls the orientation through the screen size, from
+  /// which `Orientation` is derived.
   Widget host({required Size size, required Widget child}) => MediaQuery(
     data: MediaQueryData(size: size),
     child: Directionality(
@@ -78,7 +80,7 @@ void main() {
       await tester.pump();
       expect(opened, 1);
 
-      // إطارات إضافية بنفس الاتجاه لا تفتح شيئاً جديداً.
+      // Extra frames in the same orientation open nothing new.
       await tester.pumpWidget(scope(landscape));
       await tester.pump();
       expect(opened, 1);
@@ -91,7 +93,8 @@ void main() {
       Widget scope(Size size) => host(
         size: size,
         child: MTRotationScope(
-          // الملء التام أُغلق فوراً — كأن المستخدم ضغط الخروج.
+          // Full screen closed immediately, as if the user had pressed
+          // exit.
           open: (_) async => opened++,
           builder: (_, _) => const SizedBox.shrink(),
         ),
@@ -101,15 +104,15 @@ void main() {
       await tester.pump();
       expect(opened, 1);
 
-      // الحلقة التي يحرسها هذا: يخرج فيرى النطاقُ الجهازَ عرضياً
-      // فيفتح، فيخرج، فيفتح… إلى ما لا نهاية.
+      // The loop this guards against: you exit, the scope sees a landscape
+      // device and reopens, you exit, it reopens, endlessly.
       for (var i = 0; i < 3; i++) {
         await tester.pumpWidget(scope(landscape));
         await tester.pump();
       }
       expect(opened, 1);
 
-      // العودة للطولي تعيد التسليح، والإمالة التالية تفتح من جديد.
+      // Returning to portrait rearms it, and the next tilt opens again.
       await tester.pumpWidget(scope(portrait));
       await tester.pump();
       await tester.pumpWidget(scope(landscape));
@@ -156,11 +159,13 @@ void main() {
         reason: 'المشغل مفتوح ⇒ التدوير مسموح',
       );
 
-      // شجرة أخرى بالكامل — تبديل `child` داخل نفس `Navigator` لا
-      // يعيد بناء مساره القائم، فلا يُصرَّف النطاق أصلاً.
+      // An entirely different tree: swapping `child` inside the same
+      // `Navigator` does not rebuild its existing route, so the scope is
+      // never disposed.
       await tester.pumpWidget(const SizedBox.shrink());
       await tester.pump();
-      // الحارس: القفل يعود عند مغادرة المشغل لا قبلها ولا أبداً.
+      // The guard: the lock returns when the player is left, not before and
+      // not never.
       expect(locks.any(isPortraitLock), isTrue);
     });
   });
@@ -206,8 +211,9 @@ void main() {
     testWidgets('الخروج من الملء التام لا يثبّت التطبيق على الطولي', (
       tester,
     ) async {
-      // **سطح الاختبار طولي**: افتراضه 800×600 أي عرضي، فينفتح الملء
-      // التام بالإمالة قبل أن نضغط الزر ونحن نحرس مسار الزر.
+      // **A portrait test surface**: the default 800x600 is landscape, so
+      // full screen opens on the tilt before we press the button, while it
+      // is the button's path we are guarding.
       tester.view.physicalSize = const Size(1200, 2400);
       tester.view.devicePixelRatio = 3;
       addTearDown(tester.view.reset);
@@ -246,9 +252,10 @@ void main() {
         reason: 'المشغل مفتوح ⇒ الدوران مسموح',
       );
 
-      // الدخول بالزر يفرض العرضي (قافل التدوير لا يستطيع الإمالة).
-      // يُستدعى الفعل مباشرة لا بلمسة: الأدوات تختفي وحدها بمؤقت،
-      // فاللمسة تصير رهينة توقيت لا علاقة له بما نحرسه.
+      // Entering by the button forces landscape, since someone with
+      // rotation locked cannot tilt. The action is invoked directly rather
+      // than by a tap: the chrome hides itself on a timer, so a tap becomes
+      // hostage to timing unrelated to what is being guarded.
       tester
           .widget<MTVideoTopBar>(find.byType(MTVideoTopBar).first)
           .onToggleFullscreen();
@@ -257,8 +264,9 @@ void main() {
 
       navKey.currentState!.pop();
       await settle(tester);
-      // **الحارس**: كان هنا `portraitUp` — أمرٌ عام على التطبيق كله لا
-      // ينتهي بإغلاق الصفحة، فلا يدور شيء بعدها حتى يُقتل التطبيق.
+      // **The guard**: this used to be `portraitUp`, an app-wide command
+      // that does not end when the page closes, so nothing rotated
+      // afterwards until the app was killed.
       expect(locks.last, predicate<List<String>>(isFree));
 
       navKey.currentState!.pop();

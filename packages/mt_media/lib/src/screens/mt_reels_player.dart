@@ -166,7 +166,7 @@ class _MTReelsPlayerState extends State<MTReelsPlayer> {
   @override
   void dispose() {
     _disposed = true;
-    _generation++; // تحميل معلّق لا يشغّل شيئاً بعد هذه اللحظة
+    _generation++; // a pending load plays nothing after this moment
     _hideTimer?.cancel();
     final controller = _controller;
     _controller = null;

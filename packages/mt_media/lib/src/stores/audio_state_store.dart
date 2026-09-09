@@ -69,7 +69,7 @@ class AudioStateStore {
         playlistId: decoded['playlistId']?.toString(),
       );
     } on FormatException {
-      return null; // حالة تالفة ⇒ تُتجاهل بصمت ولا تمنع الإقلاع.
+      return null; // corrupt state is ignored silently and never blocks startup.
     }
   }
 

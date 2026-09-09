@@ -1,4 +1,5 @@
-// إصلاح أثر خطأ المطابقة: إعادة إضافة عنصر حُذف خطأً + حذف عنصر اختبار.
+// Repairs the effect of a matching bug: re-adds an item deleted by mistake
+// and deletes a test item.
 // dart tool/restore_item.dart <baseUrl> add <videoUrl>
 // dart tool/restore_item.dart <baseUrl> delete <videoId11>
 // ignore_for_file: avoid_print

@@ -8,7 +8,7 @@ import 'package:mt_ui/mt_ui.dart';
 /// buttons the last thing in a sheet was clipped, because a bottom sheet
 /// reaches the screen edge and `useSafeArea` does not protect the bottom.
 void main() {
-  const navBar = 48.0; // ارتفاع شريط الأزرار الثلاثة في أندرويد.
+  const navBar = 48.0; // the height of Android's three-button navigation bar.
 
   Widget host(Widget child, {double bottom = navBar, double keyboard = 0}) =>
       MaterialApp(

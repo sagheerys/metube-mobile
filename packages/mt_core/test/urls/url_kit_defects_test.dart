@@ -1,8 +1,9 @@
 import 'package:mt_core/mt_core.dart';
 import 'package:test/test.dart';
 
-/// **ح-2 وخ-5** — الثغرات السلبية التي أخفت العطلين: صفر اختبار مطابقة
-/// سلبي لغير YouTube، وصفر اختبار لعلامات الاتجاه في النص العربي.
+/// **ح-2 and خ-5**: the negative gaps that hid both defects, namely zero
+/// negative matching tests for anything but YouTube, and zero tests for
+/// direction marks inside Arabic text.
 void main() {
   group('ح-2 — الاحتواء لا يطابق العنصر الخطأ', () {
     test('مقطع SoundCloud لا يطابق ريمكسه', () {

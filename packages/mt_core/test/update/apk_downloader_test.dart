@@ -4,7 +4,8 @@ import 'dart:typed_data';
 import 'package:mt_core/mt_core.dart';
 import 'package:test/test.dart';
 
-/// جسم APK مزيّف: توقيع ZIP ثم حشو — المنزّل يفحص التوقيع لا المحتوى.
+/// A fake APK body: the ZIP signature followed by padding. The downloader
+/// checks the signature, not the content.
 Uint8List fakeApk(int size) {
   final bytes = Uint8List(size);
   bytes.setAll(0, ApkDownloader.zipMagic);
@@ -16,7 +17,7 @@ void main() {
   late Directory tmp;
   late String savePath;
 
-  /// ما يردّه السيرفر في الطلب التالي — يُضبط في كل اختبار.
+  /// What the server returns for the next request; set in each test.
   late Future<void> Function(HttpRequest) handler;
 
   setUp(() async {
@@ -55,13 +56,15 @@ void main() {
     expect(path, savePath);
     expect(File(savePath).lengthSync(), body.length);
     expect(seen.last, 1.0);
-    // **لا مخلَّفات**: `.part` باقٍ يوهم الإقلاع التالي بتحديث جاهز.
+    // **No leftovers**: a surviving `.part` makes the next launch believe
+    // an update is ready.
     expect(part().existsSync(), isFalse);
   });
 
   test('**الحارس**: صفحة HTML بحالة 200 تُرفض ولا تُسلَّم للمثبّت', () async {
-    // صفحة تسجيل دخول أو خطأ من GitHub تصل بحالة 200 وتُحفظ باسم
-    // `.apk`؛ بلا فحص التوقيع يفتح المستخدم «حزمة تالفة» ولا يفهم لماذا.
+    // A GitHub login or error page arrives with status 200 and is saved as
+    // `.apk`; without the signature check the user opens a "corrupt
+    // package" and cannot tell why.
     handler = (r) async => r.response.write('<html>Not Found</html>');
 
     await expectLater(

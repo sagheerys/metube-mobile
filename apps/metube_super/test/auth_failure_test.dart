@@ -13,14 +13,15 @@ import 'package:mt_ui/mt_ui.dart';
 
 import 'playback_test_doubles.dart';
 
-/// **حرّاس بلاغ المالك 2026-09-05**: قفل سيرفر Super خلف كلاودفلير،
-/// فصار التطبيق **شاشة رمادية فارغة** لا رسالة فيها.
+/// **Guards from field report 2026-09-05**: the Super server was put behind
+/// Cloudflare Access, and the app became **a blank grey screen** with no
+/// message in it.
 ///
-/// الجذر لم يكن الشبكة: `AsyncError.value` في Riverpod **يعيد رمي
-/// الخطأ**، والنمط `AsyncValue(:final value?)` في أول فروع المكتبة
-/// يقرأ ذلك الـgetter — فينفجر البناء **قبل** أن يُبلَغ فرع
-/// `AsyncError()` المكتوب بعده بأسطر. أي أن معالجة الخطأ كانت موجودة
-/// وغير قابلة للوصول.
+/// The root was not the network: `AsyncError.value` in Riverpod **rethrows
+/// the error**, and the pattern `AsyncValue(:final value?)` in the
+/// library's first branch reads that getter, so the build exploded
+/// **before** reaching the `AsyncError()` branch written a few lines below.
+/// The error handling existed and was unreachable.
 void main() {
   late MemoryKeyValueStore store;
   late PrefsMutex mutex;
@@ -44,7 +45,8 @@ void main() {
 
   tearDown(() => handler.dispose());
 
-  /// تطبيق مهيَّأ بسيرفر، ومكتبته تفشل بالخطأ المعطى.
+  /// An app configured with a server whose library fails with the given
+  /// error.
   Widget appFailingWith(Object error) => ProviderScope(
     overrides: [
       keyValueStoreProvider.overrideWithValue(store),
@@ -81,12 +83,13 @@ void main() {
     await tester.pumpWidget(appFailingWith(const AuthFailureException('401')));
     await settle(tester);
 
-    // **الحارس الأول**: البناء لا ينفجر. على الكود القديم كان
-    // `AsyncError.value` يرمي هنا فتُستبدل الشاشة كلها بمربع
-    // `ErrorWidget` الرمادي (رماديّ في وضع الإصدار، بلا نصّ).
+    // **The first guard**: the build does not explode. On the old code
+    // `AsyncError.value` threw here and the whole screen was replaced by
+    // the grey `ErrorWidget` box (grey in release mode, with no text).
     expect(tester.takeException(), isNull);
 
-    // **الحارس الثاني**: السبب معلن، وفيه طريق للإصلاح.
+    // **The second guard**: the cause is stated, and there is a path to
+    // fixing it.
     final l10n = await arabic();
     expect(find.text(l10n.signInRequired), findsOneWidget);
     expect(find.text(l10n.updateCredentials), findsOneWidget);
@@ -98,8 +101,9 @@ void main() {
 
     expect(tester.takeException(), isNull);
     final l10n = await arabic();
-    // التمييز مقصود: «حدّث كلمة المرور» تشخيص خاطئ لانقطاع الشبكة،
-    // تماماً كما أن «تعذّر الوصول» تشخيص خاطئ لرفض الاعتماد.
+    // The distinction is deliberate: "update your password" is a wrong
+    // diagnosis for a network outage, exactly as "could not reach" is a
+    // wrong diagnosis for a rejected credential.
     expect(find.text(l10n.signInRequired), findsNothing);
     expect(find.text(l10n.connectionFailed), findsOneWidget);
     expect(find.text(l10n.errNetwork), findsOneWidget);

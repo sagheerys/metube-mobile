@@ -172,7 +172,12 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     );
   }
 
-  /// The library items matching the current selection (rule 6).
+  /// **Lazy building is mandatory:** a real library holds 251 items, and
+  /// building them all at once inside a `Column` froze the app to the point
+  /// of an ANR. The header and the live cards are slivers, and the items
+  /// are
+  /// a `SliverList.builder` that builds only what is visible (the "large
+  /// lists stay smooth" requirement in `01-PRD.md` §2.7).
   List<LocalItem> _selectedItems(Set<String> selection) {
     final visible = ref.read(visibleLibraryProvider).valueOrNull ?? const [];
     return [
@@ -318,9 +323,13 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     final engine = ref.read(downloadEngineProvider);
     final statusText = switch (task.phase) {
       TaskPhase.queued => l10n.queuedSection,
-      // **No percentage in the text**: the counter became an independent
-      // element in the card, so keeping it here printed it twice ("on
-      // server · 0%" beside "0%"), spotted in a screenshot.
+      // Rule 4: tapping an item. Audio plays in the background immediately
+      // and
+      // the mini player appears; video opens `/player`. The internal play
+      // queue
+      // is **the library as displayed** at the moment of the tap, with the
+      // same
+      // sorting and filtering.
       TaskPhase.adding || TaskPhase.polling => l10n.onServerPhase,
       TaskPhase.waitingForNetwork => l10n.waitingForWifi,
       TaskPhase.pulling => l10n.pullingToDevice,

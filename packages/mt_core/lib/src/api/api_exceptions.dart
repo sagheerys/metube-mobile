@@ -66,7 +66,14 @@ final class CancelledException extends MTApiException {
   const CancelledException([super.detail]);
 }
 
-/// The `/history` poll ran out (120 x 5s) without the item completing.
+/// An unexpected local failure while running the task: filesystem,
+/// permissions, space.
+///
+/// **Its cause was defect ع-2:** the download worker caught only
+/// `MTApiException`, so any `FileSystemException` from renaming the
+/// partial file escaped the pump. The task froze on "pulling" and **the
+/// whole queue stopped with no message**. Everything unclassified is now
+/// wrapped here, so a single task fails and the rest continue.
 final class PollTimeoutException extends MTApiException {
   const PollTimeoutException([super.detail]);
 }

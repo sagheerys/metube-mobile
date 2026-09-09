@@ -6,7 +6,8 @@ import 'package:dio/dio.dart';
 import 'package:mt_core/mt_core.dart';
 import 'package:test/test.dart';
 
-/// محوّل HTTP مزيف: يلتقط الطلب ويعيد استجابة مبرمجة — بلا شبكة حقيقية.
+/// A fake HTTP adapter: it captures the request and returns a scripted
+/// response, with no real network.
 class _FakeAdapter implements HttpClientAdapter {
   _FakeAdapter(this.handler);
 
@@ -156,9 +157,10 @@ void main() {
       },
     );
 
-    // **توافق التشغيل** (بلاغ المالك 2026-09-03: «الريلز تظهر مشوشة»).
-    // مقيس على السيرفر الحقيقي: `format:mp4` وحدها أعطت av1 داخل mp4،
-    // والحقلان معاً أعطيا h264/aac. لذا يُتحقق من **كليهما**.
+    // **Playback compatibility** (field report 2026-09-03: "reels look
+    // torn"). Measured against a real server: `format:mp4` alone produced
+    // av1 inside mp4, and the two fields together produced h264/aac. So
+    // **both** are asserted.
     test('توافق التشغيل يرسل download_type+format+codec للفيديو', () async {
       final (client, adapter) = makeClient((o) => _json('{"status": "ok"}'));
       await client.add(
@@ -169,14 +171,16 @@ void main() {
       final body = json.decode(adapter.requests.single.data as String) as Map;
       expect(body['format'], 'mp4');
       expect(body['codec'], 'h264');
-      // **بدونه يُتجاهَل codec** — مقيس على السيرفر الحقيقي مرتين.
+      // **Without it, codec is ignored** — measured against a real server
+      // twice.
       expect(body['download_type'], 'video');
     });
 
-    /// **حرّاس فيسبوك (قياس ffprobe + yt-dlp 2026-09-08).** `codec:h264`
-    /// كان يصل ويُسجَّل ثم تلتقطه خطوة MeTube الوسطى **بلا مرشّح ترميز**
-    /// فينزل av1 1440×2560، بينما `hd` وهي h264 720×1280 موجودة خلفها.
-    /// الـpreset يتخطّى تلك الخطوة.
+    /// **Facebook guards (ffprobe and yt-dlp measurements 2026-09-08).**
+    /// `codec:h264` arrived and was recorded, and then MeTube's middle
+    /// step, which carries **no codec filter**, picked av1 at 1440x2560,
+    /// while `hd`, h264 at 720x1280, sat right behind it. The preset skips
+    /// that step.
     test('توافق التشغيل + best ⇒ يرسل preset التوافق', () async {
       final (client, adapter) = makeClient((o) => _json('{"status": "ok"}'));
       await client.add(
@@ -218,8 +222,9 @@ void main() {
       expect(body.containsKey('ytdl_options_presets'), isFalse);
     });
 
-    /// سيرفر لم يُضبَط فيه الـpreset يردّ 400 — والتطبيق مفتوح المصدر
-    /// يُشغَّل على حاويات غير حاويته. بلا هذا الرجوع يفشل **كل تنزيل**.
+    /// A server without the preset configured answers 400, and an
+    /// open-source app runs on containers other than its author's. Without
+    /// this fallback, **every download** fails.
     test('سيرفر يرفض الـpreset ⇒ إعادة المحاولة بلا preset لا فشل', () async {
       var calls = 0;
       final (client, adapter) = makeClient((o) {
@@ -259,10 +264,11 @@ void main() {
       expect(calls, 1);
     });
 
-    /// **حرّاس «ما نظنّه مفرداً يبقى مفرداً»** (بلاغ المالك 2026-09-08):
-    /// رابط ألبوم لم يعرفه `PlaylistDetector` نزل على السيرفر **عشرين
-    /// مقطعاً** بلا شاشة اختيار، والتطبيق لا يعرف إلا مهمة واحدة —
-    /// وفي Lite تبقى التسعة عشر يتيمة بعد سحب واحد وحذفه.
+    /// **Guards for "what we take for a single item stays single"** (field
+    /// report 2026-09-08): an album URL that `PlaylistDetector` did not
+    /// recognise downloaded **twenty clips** on the server with no
+    /// selection screen, while the app knew of one task, and in Lite the
+    /// other nineteen are orphaned after one is pulled and deleted.
     test('رابط مفرد يحمل حدّ عنصر واحد', () async {
       final (client, adapter) = makeClient((o) => _json('{"status": "ok"}'));
       await client.add(
@@ -284,8 +290,9 @@ void main() {
       );
     });
 
-    /// `watch?v=…&list=…` **قائمة معروفة** عند `PlaylistDetector`، فتذهب
-    /// إلى شاشة الاختيار ولا تصل هنا مفردة — والحدّ لا يُفرض عليها.
+    /// `watch?v=…&list=…` is **a recognised playlist** to
+    /// `PlaylistDetector`, so it goes to the selection screen and never
+    /// arrives here as a single item, and the limit is not imposed on it.
     test('watch مع list قائمة معروفة ⇒ بلا حدّ', () async {
       final (client, adapter) = makeClient((o) => _json('{"status": "ok"}'));
       await client.add(
@@ -320,10 +327,12 @@ void main() {
       expect(body['quality'], 'audio');
     });
 
-    /// **العقد تغيّر بقرار المالك 2026-09-08**: كان الجسم `{url, quality}`
-    /// حرفياً بلا توافق التشغيل. أُضيف `playlist_item_limit` لأن رابطاً
-    /// ظنّه التطبيق مفرداً نزل على السيرفر **عشرين مقطعاً**. الحقل يبقى
-    /// الوحيد المسموح بزيادته هنا — وهذا الحارس يمنع تسرّب غيره.
+    /// **The contract changed by decision 2026-09-08**: the body used to be
+    /// literally `{url, quality}` with no playback compatibility.
+    /// `playlist_item_limit` was added because a link the app took for a
+    /// single clip downloaded **twenty** on the server. That field stays
+    /// the only permitted addition here, and this guard stops anything else
+    /// leaking in.
     test('بلا توافق التشغيل: الجسم url+quality والحدّ لا غير', () async {
       final (client, adapter) = makeClient((o) => _json('{"status": "ok"}'));
       await client.add('https://youtu.be/dQw4w9WgXcQ', Quality.best);
@@ -396,10 +405,11 @@ void main() {
       );
     });
 
-    // **العنوان المقتطع بنقاط اسمٌ مشروع (بلاغ المالك 2026-09-03).**
-    // yt-dlp يقصّ العناوين الطويلة بـ«...»، وحارسنا كان يرفض كل اسم
-    // فيه `..` فيفشل المقطع بـ«unsafe filename» — والسيرفر الحقيقي
-    // يخدم هذا الاسم بعينه بـHTTP 206.
+    // **A title truncated with dots is a legitimate name (field report
+    // 2026-09-03).** yt-dlp truncates long titles with an ellipsis, and our
+    // guard rejected every name containing `..`, so the clip failed with
+    // "unsafe filename" while a real server served that very name with HTTP
+    // 206.
     for (final good in [
       'كهرباء.  مدر... [2077436096300945409].mp4',
       'a..b.mp4',
@@ -435,9 +445,10 @@ void main() {
     expect(client.streamingHeaders['Connection'], 'keep-alive');
   });
 
-  /// **العطل الحرج ح-1** — كان `downloadTo` بلا اختبار واحد، وهو ما
-  /// أخفى أن `validateStatus < 600` يجعل صفحة الخطأ تُحفظ **ملفَ وسائط
-  /// ناجحاً** ثم يُحذف الأصل من السيرفر.
+  /// **Critical defect ح-1** — `downloadTo` had not a single test, and that
+  /// is what hid the fact that `validateStatus < 600` let an error page be
+  /// saved as **a successful media file**, after which the original was
+  /// deleted from the server.
   group('downloadTo (§2.4) — حالة HTTP لا تمرّ بصمت', () {
     late Directory tempDir;
     setUp(() async {
@@ -506,8 +517,9 @@ void main() {
 
     test('404 ⇒ غير موجود (بلا رمي)', () async {
       final (client, _) = makeClient((_) => _json('no', status: 404));
-      // الحارس: سجلٌّ ميت في `/history` كان يُسلَّم لـ
-      // MediaMetadataRetriever فيجمّد سبر المصغرات ٨٠ ثانية لكل جلسة.
+      // The guard: one dead record in `/history` used to be handed to
+      // MediaMetadataRetriever, freezing thumbnail probing for 80 seconds
+      // every session.
       expect(await client.fileExists('gone.mp4'), isFalse);
     });
 

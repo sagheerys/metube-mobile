@@ -2,18 +2,19 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:metube_super/features/shared/async_view.dart';
 
-/// **حارس «وميض المكتبة» (بلاغ المالك 2026-09-03).**
+/// **The "library flicker" guard (field report 2026-09-03).**
 ///
-/// الاختبار الأول هو الذي كان يفشل على `whenData`: حالةُ تحميلٍ تحمل
-/// بيانات سابقة كانت تُحوَّل إلى `AsyncLoading` فارغة، فتستبدل الشاشةُ
-/// المكتبةَ بدوّارة طوال كل استطلاع.
+/// The first test is the one that failed on `whenData`: a loading state
+/// carrying earlier data was converted into an empty `AsyncLoading`, so the
+/// screen replaced the library with a spinner throughout every poll.
 void main() {
-  // **`isRefresh: false` ليست تفصيلاً**: هي ما يبنيه Riverpod حين يُبطَل
-  // مزوّد أدنى (لا حين يُعاد تحميل هذا المزوّد نفسه)، وهي وحدها التي
-  // تبقى من نوع `AsyncLoading` حاملةً القيمة — وهي بالضبط ما كانت
-  // `whenData` تفرّغه. مُثبت بمسبار على Riverpod:
-  //   derived = AsyncLoading<List<int>>(value: [1, 2, 3])
-  //   whenData ⇒ AsyncLoading<int>()   ← hasValue = false
+  // **`isRefresh: false` is not a detail**: it is what Riverpod builds when
+  // a lower provider is invalidated, rather than when this provider is
+  // itself reloaded, and it is the only one that stays an `AsyncLoading`
+  // still carrying the value, which is exactly what `whenData` emptied.
+  // Proven with a probe against Riverpod:
+  // derived = AsyncLoading<List<int>>(value: [1, 2, 3])
+  // whenData => AsyncLoading<int>()   <- hasValue = false
   test('تحميلٌ فوق بيانات سابقة (إبطال مزوّد أدنى) ⇒ القيمة تبقى', () {
     const previous = AsyncData<List<int>>([1, 2, 3]);
     final loading = const AsyncLoading<List<int>>().copyWithPrevious(

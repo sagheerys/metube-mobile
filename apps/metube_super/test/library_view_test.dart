@@ -79,17 +79,20 @@ void main() {
     });
 
     test('تصفية وسوم مركبة: التضمين «أو» والاستثناء يغلب', () {
-      // التضمين يوسّع: وسمان ⇒ كل ما يحمل أياً منهما.
+      // Inclusion widens: two tags means everything carrying either of
+      // them.
       expect(
         buildLibraryView(items, tags: {'وثائقي', 'أناشيد'}).length,
         greaterThanOrEqualTo(1),
       );
-      // الاستثناء يطرح العنصر ولو كان مُضمَّناً بوسم آخر — نية صريحة.
+      // Exclusion subtracts the item even when another tag includes it: an
+      // explicit intention.
       expect(
         buildLibraryView(items, tags: {'وثائقي'}, excludedTags: {'وثائقي'}),
         isEmpty,
       );
-      // استثناء وحده بلا تضمين: كل شيء إلا حاملي الوسم.
+      // Exclusion alone with no inclusion: everything except the carriers
+      // of that tag.
       final withoutDoc = buildLibraryView(items, excludedTags: {'وثائقي'});
       expect(withoutDoc.any((i) => i.title == 'وثائقي البحار'), isFalse);
       expect(withoutDoc, isNotEmpty);
@@ -133,8 +136,9 @@ void main() {
     });
   });
 
-  /// **مرشح المنصة في Super** (طلب المالك 2026-09-08): نفس منطق Lite،
-  /// والاختيار في ورقة الفرز لا في صف رقائق ثالث.
+  /// **The platform filter in Super** (requested 2026-09-08): the same
+  /// logic as Lite, with the choice in the sort sheet rather than a third
+  /// chip row.
   group('تصفية المنصة', () {
     test('المنصة المختارة وحدها تبقى', () {
       final result = buildLibraryView(items, platform: MediaPlatform.youtube);
@@ -165,7 +169,8 @@ void main() {
       ]);
       expect(counts.first.key, MediaPlatform.youtube);
       expect(counts.first.value, 2);
-      // ثلاثة عناصر مجهولة ⇒ الأكثر عدداً، ومع ذلك تبقى أخيراً.
+      // Three unknown items make it the largest group, and it still stays
+      // last.
       expect(counts.last.key, MediaPlatform.other);
       expect(counts.last.value, 3);
     });

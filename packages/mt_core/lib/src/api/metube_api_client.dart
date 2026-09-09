@@ -299,16 +299,8 @@ class MeTubeApiClient implements MeTubeApi {
     _throwIfDownloadRejected(response.statusCode ?? 0);
   }
 
-  /// **The download status guard — critical defect ح-1 (2026-09-02).**
-  ///
-  /// `validateStatus` in [BaseOptions] applies to `dio.download` as well,
-  /// and dio's download path **does not check the status afterwards**. So
-  /// an error page (a 401 after a password change, a transient 502 from a
-  /// reverse proxy) was streamed into `.part` and then promoted to a
-  /// "successful" media file. In Lite the original is deleted from the
-  /// server right after, so the file is lost at both ends. Checking here
-  /// makes it a classified failure: `Transfer` wipes the partial, and the
-  /// server-side delete never happens at all.
+  /// Runs the request, classifies transport errors, then classifies HTTP
+  /// statuses.
   static void _throwIfDownloadRejected(int status) {
     if (status == 200 || status == 206) return;
     if (status == 401 || status == 403) {
@@ -322,8 +314,9 @@ class MeTubeApiClient implements MeTubeApi {
 
   // Internals.
 
-  /// Runs the request, classifies transport errors, then classifies HTTP
-  /// statuses.
+  /// Defensive JSON decoding: HTML or broken text means this is not a
+  /// MeTube
+  /// server.
   Future<Response<String>> _request(
     Future<Response<String>> Function() send,
   ) async {

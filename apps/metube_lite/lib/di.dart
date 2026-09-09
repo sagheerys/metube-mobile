@@ -89,9 +89,13 @@ final playlistsStoreProvider = Provider(
   (ref) => PlaylistsStore(
     store: ref.watch(keyValueStoreProvider),
     mutex: ref.watch(prefsMutexProvider),
-    // **A single choke point for the automatic backup** (2026-09-04):
-    // every playlist write, from any screen, requests a backup, so no
-    // screen can be forgotten.
+    // **A counter that invalidates the playlists cache** when they are
+    // written from outside their own screen. Without it, an automatically
+    // collected playlist stayed invisible until the app restarted
+    // (confirmed
+    // on the emulator 2026-09-03: the file on disk was correct and the
+    // screen
+    // was empty).
     onChanged: () => unawaited(ref.read(autoBackupProvider).requestBackup()),
   ),
 );
@@ -104,11 +108,9 @@ final batchCollectorProvider = Provider(
   ),
 );
 
-/// **A counter that invalidates the playlists cache** when they are written
-/// from outside their own screen. Without it, an automatically collected
-/// playlist stayed invisible until the app restarted (confirmed on the
-/// emulator 2026-09-03: the file on disk was correct and the screen was
-/// empty).
+/// Lite's engine: the whole four-stage pipeline. It pulls to the device and
+/// then **deletes from the server automatically**, so the family's server
+/// stays clean.
 final playlistsRevisionProvider = StateProvider<int>((ref) => 0);
 
 /// **Resolving short links before the routing decision** (field report
@@ -168,9 +170,8 @@ final engineTasksProvider = StreamProvider<List<DownloadTask>>((ref) async* {
   yield* engine.updates.map((_) => engine.tasks);
 });
 
-/// **Tells the collector which batch members fell away** (failed or
-/// cancelled), so the collected playlist is not left pending, and is
-/// deleted if every one of its items fell.
+/// The server history. null before the server is configured; refreshed by
+/// pull-to-refresh or by live polling.
 final batchDropWatcherProvider = Provider<void>((ref) {
   final collector = ref.watch(batchCollectorProvider);
   ref.listen<AsyncValue<List<DownloadTask>>>(engineTasksProvider, (_, next) {
@@ -190,7 +191,7 @@ final activeTasksProvider = Provider<List<DownloadTask>>((ref) {
   return tasks.where((t) => !t.isFinished).toList();
 });
 
-/// The diagnostic log; overridden in main with a path from path_provider.
+/// Clip dimensions, filled opportunistically on first play.
 final backupServiceProvider = Provider(
   (ref) => BackupService(
     store: ref.watch(keyValueStoreProvider),
@@ -200,7 +201,7 @@ final backupServiceProvider = Provider(
   ),
 );
 
-/// The diagnostic log; overridden in main with a path from path_provider.
+/// Clip dimensions, filled opportunistically on first play.
 final loggerProvider = Provider<MTLogger>(
   (ref) => throw UnimplementedError('overridden in main'),
 );

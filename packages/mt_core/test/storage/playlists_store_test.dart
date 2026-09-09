@@ -15,8 +15,9 @@ void main() {
       PlaylistEntry(canonicalUrl: url, cachedTitle: title);
 
   group('PlaylistsStore', () {
-    // **بلاغ المالك 2026-09-04:** «حذفتُ ملفات القائمة فبقيت في القائمة
-    // ولا تعمل». الحذف كان يشذّب كل الفهارس إلا القوائم.
+    // **Field report 2026-09-04:** "I deleted the playlist's files and they
+    // stayed in the playlist and do not play." Deletion pruned every index
+    // except the playlists.
     test('removeFromAll يزيل المفتاح من كل القوائم ويعيد العدد', () async {
       final a = await playlists.create('أ');
       final b = await playlists.create('ب');

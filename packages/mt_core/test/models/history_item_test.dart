@@ -80,7 +80,7 @@ void main() {
       expect(fb.id, 'fb-reel-1');
       expect(fb.status, ItemStatus.completed);
       expect(fb.filename, isNull);
-      expect(fb.thumbnail, isNull); // لا ytimg لفيسبوك
+      expect(fb.thumbnail, isNull); // no ytimg for Facebook
       expect(fb.uploader, 'SomePage');
       expect(fb.timestamp?.toUtc().hour, 6);
     });

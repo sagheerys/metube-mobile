@@ -4,11 +4,11 @@ import 'dart:io';
 import 'package:dio/dio.dart' show CancelToken;
 import 'package:mt_core/mt_core.dart';
 
-/// سيرفر MeTube مزيف قابل للبرمجة لاختبارات المحرك والنقل.
+/// A programmable fake MeTube server for the engine and transfer tests.
 class FakeApi implements MeTubeApi {
   FakeApi({this.historyScript = const []});
 
-  /// استجابات `/history` بالترتيب — الأخيرة تتكرر بعد نفادها.
+  /// `/history` responses in order; the last one repeats once they run out.
   List<HistoryResponse> historyScript;
   int historyCalls = 0;
   void Function(int call)? onHistoryFetch;
@@ -18,12 +18,13 @@ class FakeApi implements MeTubeApi {
 
   final List<(List<String> ids, String where)> deletes = [];
 
-  /// يُرمى بدل تنفيذ الحذف — لاختبار ع-6 (تنظيف فاشل بعد سحب ناجح).
+  /// Thrown instead of performing the delete, to test ع-6 (a failed cleanup
+  /// after a successful pull).
   MTApiException? deleteError;
 
   int downloadCalls = 0;
 
-  /// عدد نبضات التقدّم التي يبثها السحب المزيف (0 = نبضتان فقط).
+  /// How many progress ticks the fake pull broadcasts (0 means just two).
   int fineProgressTicks = 0;
   int failDownloadsBeforeSuccess = 0;
   bool hangDownloadUntilCancel = false;
@@ -42,7 +43,8 @@ class FakeApi implements MeTubeApi {
         : historyScript.length - 1];
   }
 
-  /// آخر قيمة وصلت لـ`compatibleVideo` — يتحقق منها اختبار المحرك.
+  /// The last value received for `compatibleVideo`, asserted by the engine
+  /// test.
   bool? lastCompatibleVideo;
 
   @override
@@ -65,7 +67,7 @@ class FakeApi implements MeTubeApi {
     if (deleteError != null) throw deleteError!;
   }
 
-  /// أسماء يُدّعى أنها مفقودة على السيرفر — لاختبار حارس السبر.
+  /// Names claimed to be missing on the server, to test the probe guard.
   final Set<String> missingFiles = {};
 
   @override
@@ -100,8 +102,9 @@ class FakeApi implements MeTubeApi {
       await File(savePath).writeAsString('partial');
       throw const NetworkException('cloudflare hiccup');
     }
-    // **نبضات دقيقة كما يفعل Dio فعلاً**: `onReceiveProgress` يُنادى مع
-    // كل قطعة مستلمة، لا مرتين. يستعملها حارس خنق البثّ.
+    // **Fine-grained ticks, as Dio really behaves**: `onReceiveProgress` is
+    // called on every chunk received, not twice. The broadcast throttling
+    // guard uses this.
     if (fineProgressTicks > 0) {
       for (var i = 1; i <= fineProgressTicks; i++) {
         onProgress?.call(i, fineProgressTicks);
@@ -118,7 +121,7 @@ class FakeApi implements MeTubeApi {
   Map<String, String> get streamingHeaders => const {};
 }
 
-/// عناصر history جاهزة للسيناريوهات.
+/// History items ready for the scenarios.
 HistoryResponse historyWith({
   List<Map<String, dynamic>> done = const [],
   List<Map<String, dynamic>> queue = const [],

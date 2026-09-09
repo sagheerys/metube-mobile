@@ -6,17 +6,19 @@ import 'package:video_player_platform_interface/video_player_platform_interface.
 
 import 'fake_video_platform.dart';
 
-/// **انحدار ميداني مُثبت بأثر على الجهاز (2026-09-03).**
+/// **A field regression proven with a trace on the device (2026-09-03).**
 ///
-/// بلاغ المالك: «عند الرجوع من الريلز يبقى الصوت يعمل في خلفية التطبيق
-/// بلا مشغل مصغر… ولخبطت التطبيق تماماً فلا تعمل المقاطع الأخرى».
+/// Field report: "coming back from reels the audio keeps playing in the
+/// app's background with no mini player… and it broke the app completely so
+/// no other clips play".
 ///
-/// السلسلة كما التقطها السجل على المحاكي:
-/// `dispose` ⇒ `dispose-1` ⇒ **لا شيء بعدها** — لأن `onLive` (وهو
-/// `ref.read` من `ConsumerState` مُبطل) رمى. فلم يُصرَّف المتحكم، ولم
-/// يُنفَّذ `super.dispose()`، **ولم يصفّر الإطارُ `state._element`**
-/// فبقي `mounted == true` على شاشة ميتة: مرّ التحميل المعلّق من كل
-/// حُرّاس `mounted` وشغّل مقطعاً لا يملكه أحد ولا يوقفه شيء.
+/// The chain as the log captured it on the emulator: `dispose`, then
+/// `dispose-1`, then **nothing** — because `onLive`, which is a `ref.read`
+/// from a deactivated `ConsumerState`, threw. So the controller was never
+/// disposed, `super.dispose()` never ran, **and the framework never cleared
+/// `state._element`**, so `mounted` stayed true on a dead screen: the
+/// pending load passed every `mounted` guard and played a clip nobody owned
+/// and nothing could stop.
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -52,10 +54,12 @@ void main() {
     ),
   );
 
-  /// التحرير غير متزامن عمداً (إسكات ⇒ تصريف ⇒ إغلاق مجاري المنصة).
-  /// **و`runAsync` ضرورة لا زينة:** تصريف `video_player` ينتظر إلغاء
-  /// اشتراكه ببثّ المنصة، وهذا لا يكتمل داخل زمن الاختبار المزيّف —
-  /// أُثبت بتجربة معزولة قبل كتابة هذا السطر.
+  /// Releasing is asynchronous by design (silence, dispose, close the
+  /// platform streams).
+  /// **And `runAsync` is a necessity rather than decoration:** disposing
+  /// `video_player` waits for its subscription to the platform stream to be
+  /// cancelled, and that does not complete inside the test's fake time.
+  /// Proven with an isolated experiment before this line was written.
   Future<void> settleTeardown(WidgetTester tester) async {
     await tester.pumpAndSettle();
     await tester.runAsync(
@@ -63,7 +67,8 @@ void main() {
     );
   }
 
-  /// رد نداء المضيف كما كان يتصرف فعلاً بعد إبطال الشجرة.
+  /// The host callback behaving exactly as it did after the tree was
+  /// deactivated.
   void throwingOnLive(Future<void> Function()? pauser) {
     throw StateError('Cannot use "ref" after the widget was disposed');
   }
@@ -76,7 +81,8 @@ void main() {
     await tester.pumpAndSettle();
     expect(platform.playing, hasLength(1), reason: 'الريل يعمل قبل الرجوع');
 
-    // الرجوع: تُنزع الشجرة كلها — و`onLive(null)` يرمي في طريقه.
+    // Going back: the whole tree is removed, and `onLive(null)` throws on
+    // the way.
     await tester.pumpWidget(const MaterialApp(home: SizedBox.shrink()));
     await tester.pumpAndSettle();
     await settleTeardown(tester);
@@ -93,10 +99,12 @@ void main() {
     platform.createDelay = const Duration(milliseconds: 80);
     await tester.pumpWidget(host([short('a')], onLive: throwingOnLive));
     await tester.pump();
-    await tester.pump(const Duration(milliseconds: 20)); // ما زال يحضّر
+    await tester.pump(const Duration(milliseconds: 20)); // still preparing
 
     await tester.pumpWidget(const MaterialApp(home: SizedBox.shrink()));
-    await tester.pump(const Duration(milliseconds: 200)); // ينتهي التحضير الآن
+    await tester.pump(
+      const Duration(milliseconds: 200),
+    ); // preparation finishes now
     await settleTeardown(tester);
 
     expect(

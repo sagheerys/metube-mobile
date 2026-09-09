@@ -45,9 +45,10 @@ void main() {
       expect(await index.artworkOf('https://other'), isNull);
     });
 
-    /// **حرّاس تسريب المصغرات (عطل المالك 2026-09-08).** الحذف كان
-    /// يزيل السطر من الفهرس ويترك ملف JPG يتيماً — وبعد نقل المصغرات
-    /// إلى `filesDir` لم يبقَ من يكنسه: ٣٠KB تتراكم مع كل حذف.
+    /// **Thumbnail leak guards (defect found 2026-09-08).** Deletion
+    /// removed the line from the index and left an orphan JPG, and once
+    /// thumbnails moved to `filesDir` nothing swept them: 30KB accumulating
+    /// with every deletion.
     group('removeKeysAndFiles', () {
       late Directory dir;
       setUp(() => dir = Directory.systemTemp.createTempSync('mtf_art_'));
@@ -72,7 +73,8 @@ void main() {
       test('رابط بعيد لا يُعامل معاملة المسار', () async {
         final index = ArtworkIndex(store: store, mutex: mutex);
         await index.put(url, 'https://i.ytimg.com/vi/x/hq.jpg');
-        // لا ملف ليُحذف — والمهم ألا ينهار على قيمة ليست مساراً.
+        // There is no file to delete, and what matters is that it does not
+        // crash on a value that is not a path.
         await index.removeKeysAndFiles([url]);
         expect(await index.artworkOf(url), isNull);
       });

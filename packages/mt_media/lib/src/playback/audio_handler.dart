@@ -189,7 +189,7 @@ class MTAudioHandler extends BaseAudioHandler with SeekHandler {
     try {
       await onTakeVideoFocus?.call();
     } on Object {
-      onTakeVideoFocus = null; // مسجِّل ميت لا يُسأل مرة أخرى
+      onTakeVideoFocus = null; // a dead registrar is not asked again
     }
   }
 
@@ -242,7 +242,7 @@ class MTAudioHandler extends BaseAudioHandler with SeekHandler {
   /// visible.
   @override
   Future<void> stop() async {
-    _generation++; // تحميل معلّق لا يعيد إحياء المشغل المصغر بعد الإغلاق
+    _generation++; // a pending load does not revive the mini player after it closes
     await savePosition();
     await player.stop();
     _queue = PlaybackQueue(items: const []);

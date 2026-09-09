@@ -1,6 +1,7 @@
-// بوابة 6: التحقق من هجرة نسخة Super القديمة الحقيقية (`MTSBACKUP1`).
-// يستورد الملف بمفتاحه إلى مخزن ذاكرة ويطبع **إحصاءً فقط** — لا يطبع
-// أي رابط ولا اسم ملف ولا اعتماد (نفس قاعدة تعقيم السجلات م-32).
+// Gate 6: verifying the migration of a real legacy Super backup
+// (`MTSBACKUP1`). It imports the file with its key into an in-memory store
+// and prints **counts only**: no URL, no filename and no credential (the
+// same sanitising rule as the diagnostic log).
 //
 // dart tool/verify_legacy_backup.dart <backup.json> <key.txt>
 // ignore_for_file: avoid_print
@@ -34,9 +35,11 @@ Future<void> main(List<String> args) async {
   final contents = backup.readAsStringSync();
   print('الترويسة: ${BackupCrypto.headerOf(contents)}');
 
-  // المفتاح أولاً — نسخة من جهاز آخر لا تُفك بمفتاح هذا الجهاز.
-  // (`importKeyFile` أُزيل من الخدمة مع مفهوم المفتاح — 2026-09-04 —
-  // وهذه أداة تحقق يدوية تبذر المفتاح مباشرة في مخزن أسرار الذاكرة.)
+  // The key first: a backup from another device cannot be decrypted with
+  // this device's key. (`importKeyFile` was removed from the service along
+  // with the whole key concept in 2026-09-04, and this is a manual
+  // verification tool that seeds the key straight into an in-memory secret
+  // store.)
   final keyBase64 = BackupCrypto.decodeKeyFile(keyFile.readAsStringSync());
   if (keyBase64 == null) {
     print('ملف مفتاح غير صالح');
@@ -61,7 +64,7 @@ Future<void> main(List<String> args) async {
     '${await secrets.read(SecretKeys.username) != null}',
   );
 
-  // ماذا وصل فعلاً؟ عدّ فقط.
+  // What actually arrived? Counts only.
   final mutex = PrefsMutex();
   final playlists = await PlaylistsStore(store: store, mutex: mutex).readAll();
   final tags = TagsIndex(store: store, mutex: mutex);
@@ -88,7 +91,7 @@ Future<void> main(List<String> args) async {
   final keys = (await store.keys()).toList()..sort();
   print('كل المفاتيح المستعادة (${keys.length}): ${keys.join(', ')}');
 
-  // مفاتيح الإعدادات المهمة — القيم الحساسة تُخفى.
+  // The settings keys that matter; sensitive values are masked.
   for (final key in const [
     'server_url',
     'active_url',
@@ -110,7 +113,7 @@ Future<void> main(List<String> args) async {
   final positions = keys.where((k) => k.startsWith('playback_pos_')).length;
   print('مواضع استئناف: $positions');
 
-  // فحص سلامة JSON للقوائم بعد الاستعادة.
+  // Checks the playlists' JSON integrity after the restore.
   final raw = await store.getString(PlaylistsStore.prefsKey);
   if (raw != null) {
     final decoded = json.decode(raw);

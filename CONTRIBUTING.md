@@ -51,8 +51,16 @@ new palette field is filled in all four palettes (`superDay`, `superNight`,
 `liteDay`, `liteNight`) with real contrast, not a copied daylight value. Screens
 are reviewed in day **and** night.
 
-**Size limits.** 400 lines for a screen, 300 for anything else. Over the limit,
-split before finishing.
+**Size limits.** 400 lines for a screen, 300 for anything else, counting code
+and excluding comments. Over the limit, split before finishing.
+
+**Comments are in English, and they say why.** A comment that restates the code
+adds nothing; the ones worth writing record what a defect was, what was measured
+and on which device. That is most of what this file is asking you to preserve.
+
+**Device matrix.** Every new screen or sheet passes through `expectNoOverflow`
+in `apps/*/test/device_matrix.dart`: five screen sizes and three text scales.
+Layout is what breaks on other people's phones and it does not show on yours.
 
 **Layers.** `apps → mt_media → mt_core`. `mt_core` is pure Dart with no Flutter
 import. `mt_ui` knows nothing about the server. All networking lives in

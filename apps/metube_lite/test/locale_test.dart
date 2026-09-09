@@ -6,12 +6,14 @@ import 'package:metube_lite/features/settings/settings_state.dart';
 import 'package:mt_core/mt_core.dart';
 import 'package:mt_ui/mt_ui.dart';
 
-/// **حارس م-50 (قرار المالك 2026-09-06): «اتبع لغة النظام» بابٌ يُفتح.**
+/// **The "follow the system language" guard (decision 2026-09-06): a door
+/// that opens.**
 ///
-/// `locale: null` في `app.dart` كان يتبع لغة الهاتف فعلاً، لكن أول لمسة
-/// للمبدّل تثبّت لغةً **إلى الأبد**: لا خيار ثالث يعيد القيمة فارغة،
-/// فالرجوع للتلقائي كان يحتاج حذف بيانات التطبيق — ومعها المكتبة
-/// والمفضلة.
+/// `locale: null` in `app.dart` did follow the phone's language, but the
+/// first touch of the switch pinned a language **forever**: there was no
+/// third option to set the value back to empty, so returning to automatic
+/// required clearing the app's data, and with it the library and the
+/// favourites.
 void main() {
   late MemoryKeyValueStore store;
 
@@ -46,9 +48,10 @@ void main() {
 
     await notifier.setLocale(null);
 
-    // **الحارس**: `copyWith` القديم كان `localeCode ?? this.localeCode`
-    // فيبتلع الـnull ويُبقي 'en' — أي أن الخيار الثالث يبدو أنه يعمل
-    // ولا يعمل. و`clearLocale` هو ما يميّز «امسح» عن «لا تغيّر».
+    // **The guard**: the old `copyWith` was `localeCode ??
+    // this.localeCode`, which swallowed the null and kept 'en', so the
+    // third option looked as though it worked and did not. `clearLocale` is
+    // what distinguishes "clear" from "do not change".
     expect(
       container.read(settingsProvider).localeCode,
       isNull,
@@ -69,12 +72,13 @@ void main() {
     expect(settings.localeCode, isNull);
   });
 
-  /// **الخطر الحقيقي في هذا التعديل ليس المنطق بل العرض**: شريحة ثالثة
-  /// في زرّ مقسّم على شاشة 360dp قد تفيض — والفيض في وضع الإصدار
-  /// شريطٌ أصفر لا يظهر، بل نصٌّ مقصوص.
+  /// **The real risk in this change is presentation, not logic**: a third
+  /// segment in a divided button on a 360dp screen may overflow, and an
+  /// overflow in release mode is not a yellow stripe, which does not
+  /// appear, but truncated text.
   testWidgets('المبدّل الثلاثي يسع شاشة ضيقة بالعربية', (tester) async {
     tester.view.physicalSize = const Size(1080, 2400);
-    tester.view.devicePixelRatio = 3; // 360dp عرضاً
+    tester.view.devicePixelRatio = 3; // 360dp wide
     addTearDown(tester.view.reset);
 
     final container = makeContainer(initialLocale: 'ar');

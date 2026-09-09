@@ -1,4 +1,4 @@
-// سبر تشخيصي مؤقت — لا يدخل git.
+// A temporary diagnostic probe; not meant for the repository.
 import 'package:mt_core/mt_core.dart';
 
 Future<void> main(List<String> args) async {

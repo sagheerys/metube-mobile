@@ -3,16 +3,18 @@ import 'dart:io';
 import 'package:mt_core/mt_core.dart';
 import 'package:test/test.dart';
 
-/// **حرّاس المخزن الدوّار** (طلب المالك 2026-09-04: «٧ نسخ تلقائياً
-/// ويحذف القديم»)، وكل واحد منها يوثّق عطلاً لا تفضيلاً.
+/// **Guards for the rotating store** (requested 2026-09-04: "seven copies
+/// automatically, deleting the oldest"), and each one documents a defect
+/// rather than a preference.
 void main() {
   late Directory temp;
   late BackupRotation rotation;
 
   setUp(() async {
     temp = await Directory.systemTemp.createTemp('mtf_rotation_');
-    // **التباعد معطَّل هنا عمداً**: هذه الحرّاس تختبر آلية الحدّ
-    // والذرّية والبادئة، وأزمنتها دقائق. التباعد له حرّاسه أدناه.
+    // **Spacing is disabled here on purpose**: these guards test the limit,
+    // the atomicity and the prefix, and their timestamps are minutes apart.
+    // Spacing has its own guards below.
     rotation = BackupRotation(
       directory: temp.path,
       prefix: 'metube_lite',
@@ -35,8 +37,9 @@ void main() {
   });
 
   test('اسم لا يتبع النمط لا يُقرأ ولا يُلمس', () async {
-    // **ملف التثبيت السابق**: أندرويد 11+ يمنع الكتابة فوقه أو حذفه
-    // (`errno 13` بلقطة المالك). تجاهله هو ما يجعل التعارض مستحيلاً.
+    // **A file from an earlier install**: Android 11+ forbids writing over
+    // it or deleting it (`errno 13`, seen in a screenshot). Ignoring it is
+    // what makes the conflict impossible.
     await File('${temp.path}/metube_lite_backup.json').writeAsString('{}');
     await File('${temp.path}/ملف عشوائي.txt').writeAsString('x');
     expect(rotation.dateOf('metube_lite_backup.json'), isNull);
@@ -66,7 +69,8 @@ void main() {
     await rotation.write('{"a":1}', at: at(1));
     await rotation.write('{"a":2}', at: at(2));
 
-    // بلا هذا الحارس تصير السبع «سبع لحظات» لا سبعة تغييرات.
+    // Without this guard the seven become seven moments rather than seven
+    // changes.
     expect(await rotation.write('{"a":2}', at: at(3)), isNull);
     expect(await rotation.list(), hasLength(2));
 
@@ -134,8 +138,8 @@ void main() {
     });
 
     test('دفعة تحميل كاملة تبقى خانة واحدة تحمل آخر حالة', () async {
-      // الحالة الحقيقية: سبعة تغييرات في ست دقائق التهمت الخانات
-      // السبع، فصارت كل الذاكرة الاحتياطية تغطي ست دقائق.
+      // The real case: seven changes in six minutes consumed all seven
+      // slots, so the entire backup history covered six minutes.
       for (var i = 0; i < 7; i++) {
         await spaced.write('{"n":$i}', at: at(i));
       }
@@ -153,12 +157,13 @@ void main() {
       await spaced.write('{"a":2}', at: DateTime(2026, 9, 5, 10, 30));
       expect(await spaced.list(), hasLength(1));
 
-      // شبكة ثابتة: ساعة تقويمية جديدة ⇒ خانة جديدة، ولو لم يمضِ
-      // ستون دقيقة على آخر كتابة (10:30 ⇒ 11:01).
+      // A fixed grid: a new calendar hour means a new slot, even if sixty
+      // minutes have not passed since the last write (10:30 then 11:01).
       await spaced.write('{"a":3}', at: DateTime(2026, 9, 5, 11, 1));
       expect(await spaced.list(), hasLength(2));
 
-      // نشاط متصل كل نصف ساعة يبقى تاريخاً لا خانة زاحفة.
+      // Continuous activity every half hour stays a history rather than one
+      // creeping slot.
       await spaced.write('{"a":5}', at: DateTime(2026, 9, 5, 11, 40));
       await spaced.write('{"a":6}', at: DateTime(2026, 9, 5, 12, 10));
       expect(await spaced.list(), hasLength(3));
@@ -184,8 +189,8 @@ void main() {
 
     test('الاستبدال لا يترك المستخدم بلا نسخة لحظةً واحدة', () async {
       await spaced.write('{"a":1}', at: at(1));
-      // النسخة القديمة تُحذف **بعد** نجاح كتابة البديل: الملفات
-      // المرئية لا تنقص أبداً عن واحدة.
+      // The old copy is deleted **after** the replacement is written
+      // successfully: the number of visible files never drops below one.
       final result = await spaced.write('{"a":2}', at: at(2));
       expect(result, isNotNull);
       final files = temp.listSync().map((e) => e.path).toList();

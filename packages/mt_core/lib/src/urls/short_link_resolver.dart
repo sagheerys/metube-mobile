@@ -30,7 +30,7 @@ class ShortLinkResolver {
         current = Uri.parse(current).resolve(next).toString();
       }
     } catch (_) {
-      return url; // فشل الحل ⇒ الرابط الأصلي يُمرَّر للسيرفر كما هو.
+      return url; // resolution failed, so the original URL goes to the server unchanged.
     }
 
     final resolvedIsHttps = current.toLowerCase().startsWith('https://');

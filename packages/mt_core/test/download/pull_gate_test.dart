@@ -5,7 +5,7 @@ import 'package:test/test.dart';
 
 import 'fake_api.dart';
 
-/// م-42 «Wi‑Fi فقط» + م-43 «قابلية إعادة المحاولة».
+/// "Wi-Fi only" plus retry eligibility.
 void main() {
   late Directory tempDir;
   setUp(() async {
@@ -18,7 +18,7 @@ void main() {
 
   FakeApi apiWithDone() => FakeApi(
     historyScript: [
-      historyWith(), // لقطة ما قبل الإضافة (ح-3)
+      historyWith(), // the snapshot from before the add (defect ح-3)
       historyWith(
         done: [
           {
@@ -67,7 +67,8 @@ void main() {
       final task = engine.submit(inputUrl, Quality.best);
 
       await _tick(30);
-      // **الانتظار حالة مشروعة**: لا اكتمال ولا فشل ما دامت البوابة مغلقة.
+      // **Waiting is a legitimate state**: neither completion nor failure
+      // while the gate is closed.
       expect(phases.last, TaskPhase.waitingForNetwork);
       expect(phases, isNot(contains(TaskPhase.completed)));
       expect(phases, isNot(contains(TaskPhase.failed)));
@@ -88,8 +89,9 @@ void main() {
       await _tick(30);
       expect(phases.last, TaskPhase.waitingForNetwork);
 
-      // الإلغاء أثناء الركن يُعلن **فوراً** (لا انتظار دورة عامل) — لذا
-      // نقرأ من المستمع القائم لا من `firstWhere` بعد الحدث.
+      // Cancelling while parked is announced **immediately**, with no
+      // worker cycle to wait for, so we read from the existing listener
+      // rather than from a `firstWhere` after the event.
       engine.cancel(task.id);
       await _tick(3);
       expect(engine.taskById(task.id)!.phase, TaskPhase.cancelled);

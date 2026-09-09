@@ -10,10 +10,11 @@ import 'package:metube_super/features/settings/settings_state.dart';
 import 'package:mt_core/mt_core.dart';
 import 'package:mt_ui/mt_ui.dart';
 
-/// **الوضع الرابع ومرشح المنصة** (طلب المالك 2026-09-08).
+/// **The fourth view mode and the platform filter** (requested 2026-09-08).
 ///
-/// ثلاثة حرّاس مستقلة: هجرة وضع العرض من المفتاحين القديمين، وحساب
-/// عرض فكّ الترميز، وظهور المنصة المفعّلة في الصف الأول.
+/// Three independent guards: migrating the view mode from the two old keys,
+/// computing the decode width, and the active platform appearing in the
+/// first row.
 void main() {
   late MemoryKeyValueStore store;
 
@@ -41,7 +42,8 @@ void main() {
       expect((await restored(container())).mode, LibraryViewMode.list);
     });
 
-    /// **الحارس**: من يحدّث التطبيق وهو على «شبكي» يجب أن يجده كما تركه.
+    /// **The guard**: someone updating the app while on grid must find it
+    /// as they left it.
     test('هجرة من المفتاح القديم library_grid_view', () async {
       await store.setBool('library_grid_view', true);
       final options = await restored(container());
@@ -93,9 +95,9 @@ void main() {
       expect(mtDecodeWidth(ctx, 210), 630);
     });
 
-    /// **الحارس**: صندوق 98×62 أعرض نسبةً من 16:9، فـ`cover` يشتق
-    /// المقياس من الارتفاع. الفك عند 98 وحده يعطي صورة ارتفاعها 55
-    /// تُمطّ إلى 62 — ضبابية مضافة بأيدينا.
+    /// **The guard**: a 98x62 box is proportionally wider than 16:9, so
+    /// `cover` derives its scale from the height. Decoding at 98 alone
+    /// gives an image 55 tall stretched to 62, blur we added ourselves.
     testWidgets('الارتفاع يرفع العرض حين يفرضه cover', (tester) async {
       await host(tester, 2);
       expect(mtDecodeWidth(ctx, 98, 62), (62 * 16 / 9 * 2).ceil());
@@ -139,8 +141,9 @@ void main() {
       expect(find.byType(InputChip), findsNothing);
     });
 
-    /// **الحارس**: تصفيةٌ فعّالة مخبوءة خلف زر تجعل المكتبة تبدو ناقصة
-    /// بلا سبب ظاهر — الرقاقة هي ما يجعلها مرئية وقابلة للإلغاء.
+    /// **The guard**: an active filter hidden behind a button makes the
+    /// library look incomplete for no visible reason. The chip is what
+    /// makes it visible and cancellable.
     testWidgets('المنصة المفعّلة تظهر رقاقةً تُزال بنقرة', (tester) async {
       await tester.pumpWidget(app(items));
       await tester.pumpAndSettle();

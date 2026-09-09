@@ -3,9 +3,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mt_media/src/widgets/mt_drag_to_dismiss.dart';
 import 'package:mt_ui/mt_ui.dart';
 
-/// **حارس «السحب لأسفل يعيد شاشة الصوت إلى المشغل المصغر»** (طلب
-/// المالك 2026-09-04). السحب القصير يعود لمكانه، والطويل أو القذفة
-/// يُغلقان.
+/// **The guard for "dragging down returns the audio screen to the mini
+/// player"** (requested 2026-09-04). A short drag returns to place; a long
+/// one or a fling closes.
 void main() {
   Future<void> pumpPage(WidgetTester tester) async {
     await tester.pumpWidget(

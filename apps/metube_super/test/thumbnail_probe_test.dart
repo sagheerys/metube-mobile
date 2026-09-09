@@ -14,13 +14,15 @@ import 'package:metube_super/features/shared/error_report.dart';
 import 'package:mt_core/mt_core.dart';
 import 'package:mt_media/mt_media.dart';
 
-/// **حرّاس عطل المصغرات (قياس على جهاز المالك 2026-09-07).**
+/// **Guards for the thumbnail defect (measured on a real device
+/// 2026-09-07).**
 ///
-/// مكتبة السيرفر كانت بلا مصغرات إلا ليوتيوب (وهي مشتقّة من المعرّف لا
-/// مسبورة). السبب المقيس: **سجلٌّ واحد** في `/history` لملف حُذف من قرص
-/// السيرفر (١ من ٢٦٩) — وتسليمُ رابطه إلى `MediaMetadataRetriever` يجعل
-/// منصة أندرويد تعيد المحاولة **عشراً بمهلة 8s**، فتتجمّد بقية العناصر
-/// خلفه أكثر من ٨٠ ثانية في كل جلسة. والإخفاق كان يُبتلع بصمت.
+/// The server library had no thumbnails except YouTube's, which are derived
+/// from the id rather than probed. The measured cause: **one record** in
+/// `/history` for a file deleted from the server's disk (1 out of 269).
+/// Handing its URL to `MediaMetadataRetriever` makes the Android platform
+/// retry **ten times on an 8s timeout**, so everything behind it froze for
+/// over 80 seconds every session. And the failure was swallowed silently.
 void main() {
   late MemoryKeyValueStore store;
   late MTLogger logger;
@@ -46,7 +48,7 @@ void main() {
     try {
       if (await logFile.exists()) await logFile.delete();
     } on FileSystemException {
-      // ويندوز قد يقفله لحظة كتابة متأخرة.
+      // Windows may lock it for a moment during a late write.
     }
   });
 
@@ -88,14 +90,16 @@ void main() {
         probe: probe,
       ).enrich(const [item]);
 
-      // **الحارس الأول**: بلا الفحص المسبق كان الرابط الميت يذهب إلى
-      // `MediaMetadataRetriever` فيجمّد الطابور ٨٠ ثانية.
+      // **The first guard**: without the pre-check the dead URL went to
+      // `MediaMetadataRetriever` and froze the queue for 80 seconds.
       expect(probe.calls, isEmpty, reason: 'رابط ميت لا يُسلَّم للمنصة');
 
-      // **الحارس الثاني**: الإخفاق يُكتب — كان يُبتلع بصمت تاماً.
+      // **The second guard**: the failure is written down; it used to be
+      // swallowed in complete silence.
       expect(await logger.readAll(), contains('file missing on server'));
 
-      // **الحارس الثالث**: يُؤجَّل يوماً فلا يُعاد كل إقلاع.
+      // **The third guard**: it is deferred by a day, so it is not retried
+      // at every launch.
       final failures = await container
           .read(probeFailureIndexProvider)
           .readAll();
@@ -108,7 +112,7 @@ void main() {
     await index.put(item.canonicalUrl, DateTime.now());
 
     final probe = _RecordingProbe();
-    final container = containerWith(206, probe); // السيرفر سليم الآن
+    final container = containerWith(206, probe); // the server is healthy now
     addTearDown(container.dispose);
 
     await LibraryEnricher(
@@ -142,14 +146,16 @@ void main() {
 
   test('غلافٌ اختفى من القرص ⇒ يُنسى ويُعاد سبره', () async {
     final artwork = ArtworkIndex(store: store, mutex: PrefsMutex());
-    // مسار في مجلد كاش مُسح — هذا ما فعله أندرويد بمصغرات المالك.
+    // A path in a cache folder that was wiped: this is what Android did to
+    // the thumbnails.
     await artwork.put(item.canonicalUrl, '/data/cache/thumbs/gone.jpg');
 
     final probe = _RecordingProbe();
     final container = containerWith(206, probe);
     addTearDown(container.dispose);
 
-    // العنصر يحمل غلافاً في نموذجه، فبلا التنظيف لا يُرشَّح للسبر أبداً.
+    // The item carries a cover in its model, so without the cleanup it is
+    // never a candidate for probing.
     const withThumb = LibraryItem(
       canonicalUrl: 'https://instagram.com/reel/abc',
       title: 'Video by someone',
@@ -165,7 +171,7 @@ void main() {
     ).enrich(const [withThumb]);
 
     expect(probe.calls, hasLength(1), reason: 'يُعاد سبره في نفس الجولة');
-    // المسار الميت زال، وحلّ محلّه ما أعطاه السبر الجديد.
+    // The dead path is gone, replaced by what the new probe produced.
     expect(
       (await artwork.readAll())[item.canonicalUrl],
       isNot('/data/cache/thumbs/gone.jpg'),
@@ -173,7 +179,8 @@ void main() {
   });
 }
 
-/// وصول إلى `Ref` من داخل الحاوية — `LibraryEnricher` يأخذ `Ref` لا حاوية.
+/// Reaching a `Ref` from inside the container: `LibraryEnricher` takes a
+/// `Ref`, not a container.
 final _refProvider = Provider<Ref>((ref) => ref);
 
 class _RecordingProbe extends MediaProbe {

@@ -6,10 +6,11 @@ import 'package:package_info_plus/package_info_plus.dart';
 
 import 'device_matrix.dart';
 
-/// **شاشة «حول» بعد فتح المصدر (بلاغ المالك 2026-09-09).**
+/// **The About screen after open-sourcing (field report 2026-09-09).**
 ///
-/// كانت تقول «جميع الحقوق محفوظة» ولا تذكر الرخصة ولا تنفي الانتساب
-/// لمشروع MeTube، وتطبع رقم البناء `+1` في وجه المستخدم.
+/// It said "all rights reserved", named neither the licence nor the absence
+/// of any affiliation with the MeTube project, and printed the build number
+/// `+1` in the user's face.
 void main() {
   setUp(
     () => PackageInfo.setMockInitialValues(
@@ -29,8 +30,9 @@ void main() {
     home: const AboutScreen(),
   );
 
-  /// **سطح اختبار طويل**: `ListView` كسولة، وأقسام «حول» الأخيرة لا
-  /// تُبنى أصلاً على 600 نقطة — فيفشل البحث عنها بلا أن يكون في الشاشة عطل.
+  /// **A tall test surface**: the `ListView` is lazy and About's last
+  /// sections are not built at all at 600 points, so searching for them
+  /// fails without anything being wrong with the screen.
   Future<void> open(WidgetTester tester) async {
     tester.view.devicePixelRatio = 1;
     tester.view.physicalSize = const Size(900, 2600);
@@ -44,7 +46,8 @@ void main() {
     final l10n = tester.element(find.byType(AboutScreen)).mtl;
 
     expect(find.text('${l10n.version} 2.0.0'), findsOneWidget);
-    // **الحارس**: كان النصّ `2.0.0+7` — رقم البناء عدّاد داخلي لأندرويد.
+    // **The guard**: the text used to be `2.0.0+7`, and the build number is
+    // an internal Android counter.
     expect(find.textContaining('+7'), findsNothing);
   });
 
@@ -71,7 +74,8 @@ void main() {
     await open(tester);
 
     final image = tester.widget<Image>(find.byType(Image).first);
-    // `Image.asset` مع `cacheWidth` تلفّ المزوّد في `ResizeImage`.
+    // `Image.asset` with `cacheWidth` wraps the provider in a
+    // `ResizeImage`.
     final provider = image.image;
     final asset = provider is ResizeImage ? provider.imageProvider : provider;
     expect((asset as AssetImage).assetName, 'assets/icons/icon.png');

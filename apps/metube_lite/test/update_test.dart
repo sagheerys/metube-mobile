@@ -15,10 +15,11 @@ import 'package:package_info_plus/package_info_plus.dart';
 
 import 'device_matrix.dart';
 
-/// **التحديث الذاتي من GitHub (م-66)** — حرّاس طبقة التطبيق.
+/// **Self-update from GitHub** — the app layer's guards.
 ///
-/// النواة مُختبَرة في `mt_core/test/update`؛ هنا يُختبر ما يخصّ التطبيق:
-/// السياسة الصامتة، تخطّي إصدار، وما يعرضه صفّ الإعدادات.
+/// The core is tested in `mt_core/test/update`; what is tested here belongs
+/// to the app: the silent policy, skipping a version, and what the settings
+/// row displays.
 String releaseJson({String tag = 'v9.9.9'}) => json.encode({
   'tag_name': tag,
   'draft': false,
@@ -62,7 +63,8 @@ void main() {
       overrides: [
         keyValueStoreProvider.overrideWithValue(store),
         prefsMutexProvider.overrideWithValue(PrefsMutex()),
-        // `path_provider` قناة أصلية لا تعمل في اختبار ودجات.
+        // `path_provider` is a native channel and does not work in a widget
+        // test.
         updateCacheDirProvider.overrideWith((ref) => cacheDir.path),
         if (downloader != null)
           apkDownloaderProvider.overrideWithValue(downloader),
@@ -92,8 +94,9 @@ void main() {
     });
 
     test('**الحارس**: عطل الشبكة لا يرمي ولا يترك أثراً في الواجهة', () async {
-      // المستودع خاصٌّ اليوم ⇒ GitHub يردّ 404 عند كل إقلاع. أي استثناء
-      // هنا يصل إلى `initState` في الغلاف فيسقط أول إطار.
+      // The repository is private today, so GitHub answers 404 at every
+      // launch. Any exception here reaches `initState` in the shell and
+      // takes down the first frame.
       final c = container(failWith: Exception('404'));
       await c.read(updateControllerProvider.notifier).checkSilently();
       final state = c.read(updateControllerProvider);
@@ -123,7 +126,7 @@ void main() {
 
       await c.read(updateControllerProvider.notifier).checkSilently();
       expect(calls, 1);
-      // إقلاع ثانٍ بعد دقائق: الختم محفوظ في التخزين نفسه.
+      // A second launch minutes later: the stamp is kept in the same store.
       final second = ProviderContainer(
         overrides: [
           keyValueStoreProvider.overrideWithValue(store),
@@ -171,10 +174,10 @@ void main() {
     test('**الحارس**: لا يحترم التخطّي — من ضغط الزر يريد أن يعرف', () async {
       await store.setString(UpdatePrefs.skippedVersionKey, '9.9.9');
       final c = container();
-      // الصامت يكتمه…
+      // The silent check mutes it…
       await c.read(updateControllerProvider.notifier).checkSilently();
       expect(c.read(updateControllerProvider).release, isNull);
-      // …واليدوي يُظهره.
+      // …and the manual one shows it.
       await c.read(updateControllerProvider.notifier).checkNow();
       expect(c.read(updateControllerProvider).release, isNotNull);
     });
@@ -193,7 +196,8 @@ void main() {
     File apkFile() => File('${cacheDir.path}/${MTConstants.updateApkFileName}');
 
     test('**الحارس**: يُمسح بعد أن يصير التطبيق هو الإصدار المنزَّل', () async {
-      // بلا هذا يبقى ~40 م.ب في الكاش إلى الأبد بعد أول تحديث ناجح.
+      // Without this, about 40MB stays in the cache forever after the first
+      // successful update.
       apkFile().writeAsBytesSync(const [1, 2, 3]);
       await store.setString(UpdatePrefs.downloadedVersionKey, '2.0.0');
 
@@ -256,8 +260,8 @@ void main() {
 
       expect(find.text(l10n.updateAvailable), findsOneWidget);
       expect(find.text('9.9.9'), findsOneWidget);
-      // **الحارس**: اللون من اللوحة لا قيمة مثبتة — وإلا تسرّب لون
-      // أحد التطبيقين إلى الآخر.
+      // **The guard**: the colour comes from the palette rather than a
+      // literal, or one app's colour leaks into the other.
       final title = tester.widget<Text>(find.text(l10n.updateAvailable));
       expect(title.style!.color, MTThemeX.of(context).palette.accent);
     });
@@ -277,7 +281,7 @@ void main() {
         locale: const Locale('ar'),
         localizationsDelegates: MTLocalizations.localizationsDelegates,
         supportedLocales: MTLocalizations.supportedLocales,
-        // كما في التطبيق: الورقة ليست داخل ممرّر خارجي.
+        // As in the app: the sheet is not inside an outer scroll view.
         home: const Scaffold(body: UpdateSheet()),
       ),
     );
@@ -290,7 +294,8 @@ void main() {
       final l10n = tester.element(find.byType(UpdateSheet)).mtl;
 
       expect(find.text(l10n.updateVersionAvailable('9.9.9')), findsOneWidget);
-      // 12582912 بايت = 12.0 م.ب بالضبط — الحجم يُعرض لا يُخمَّن.
+      // 12582912 bytes is exactly 12.0 MB: the size is displayed, not
+      // guessed.
       expect(find.text(l10n.updateSizeMb('12.0')), findsOneWidget);
       expect(find.text('إصلاحات'), findsOneWidget);
       expect(find.text(l10n.updateNow), findsOneWidget);
@@ -326,8 +331,8 @@ void main() {
         find.byType(LinearProgressIndicator),
       );
       expect(bar.value, 0.42);
-      // **الحارس**: اللون من اللوحة — مسار Material الافتراضي يخرج
-      // مخضرّاً على كريمي «وهج».
+      // **The guard**: the colour comes from the palette; Material's
+      // default track comes out greenish over the Wahaj cream.
       expect(bar.valueColor!.value, MTThemeX.of(context).palette.accent);
       expect(find.text(l10n.cancel), findsOneWidget);
       expect(find.text(l10n.updateNow), findsNothing);
@@ -344,7 +349,8 @@ void main() {
   });
 }
 
-/// منزّل لا يكتمل — يثبّت الطور عند «قيد التنزيل» لفحص الواجهة وحدها.
+/// A download that never completes, pinning the phase at "downloading" so
+/// the interface alone can be inspected.
 class _StuckDownloader extends ApkDownloader {
   @override
   Future<String> download({

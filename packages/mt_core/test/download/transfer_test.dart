@@ -31,9 +31,10 @@ void main() {
       expect(progress, [0.5, 1.0]);
     });
 
-    // انحدار (بلاغ المالك 2026-09-02): «يظهر المقطع في المكتبة قبل
-    // اكتمال تحميله». مكتبة Lite تُبنى من **مسح المجلد**، وDio يكتب
-    // تدريجياً — فكان الملف النهائي موجوداً منذ أول بايت.
+    // A regression (field report 2026-09-02): "the clip appears in the
+    // library before it has finished downloading". Lite's library is built
+    // by **scanning the folder**, and Dio writes incrementally, so the
+    // final file existed from the first byte.
     test('الملف النهائي لا يظهر إلا بعد الاكتمال — الجزئي في .part', () async {
       final api = FakeApi();
       final finalPath = pathOf('a.mp4');
@@ -44,7 +45,8 @@ void main() {
         serverFilename: 'a.mp4',
         savePath: finalPath,
         onProgress: (_) {
-          // أثناء التقدم: الجزئي موجود والنهائي لا.
+          // While in progress: the partial file exists and the final one
+          // does not.
           if (File(finalPath).existsSync()) existedDuringPull = true;
         },
       );

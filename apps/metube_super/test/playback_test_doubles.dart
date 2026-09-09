@@ -2,7 +2,8 @@ import 'dart:async';
 
 import 'package:mt_media/mt_media.dart';
 
-/// مشغل وهمي لاختبارات الواجهة — لا قنوات منصة ولا صوت فعلي.
+/// A fake player for the interface tests: no platform channels and no real
+/// audio.
 class FakeMediaPlayer implements MediaPlayerPort {
   final _events = StreamController<void>.broadcast();
   final _states = StreamController<MediaPlaybackState>.broadcast();

@@ -119,7 +119,7 @@ class BackupRotation {
       if (entity is! File) continue;
       final name = entity.path.split(RegExp(r'[/\\]')).last;
       final at = dateOf(name);
-      if (at == null) continue; // ملفات قديمة أو غريبة لا تُلمس
+      if (at == null) continue; // old or foreign files are left alone
       out.add(
         BackupFile(
           path: entity.path,

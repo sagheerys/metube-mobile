@@ -78,8 +78,10 @@ class EndpointResolver {
   final ProbeFn _probe;
   final Duration probeTimeout;
 
-  /// The first **valid** endpoint in preference order: local first, then
-  /// the external ones. `null` means nothing was valid.
+  /// The same choice **together with the state of every candidate** from
+  /// the
+  /// same probing round, so the caller can say *why* it found nothing
+  /// without probing twice.
   Future<String?> resolveActive({
     String? localUrl,
     List<String> externalUrls = const [],

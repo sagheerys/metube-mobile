@@ -9,17 +9,20 @@ import 'package:metube_super/features/settings/auto_switch.dart';
 import 'package:metube_super/features/settings/settings_state.dart';
 import 'package:mt_core/mt_core.dart';
 
-/// انحدار م-28/ر-9 — **التبديل التلقائي لم يكن منفَّذاً أصلاً**: لا مستمع
-/// شبكة، و`adoptActiveUrl` لا يُستدعى إلا بنقرة يدوية. جهاز المالك كان
-/// يبث عبر النفق وهو على نفس شبكة السيرفر (أبطأ ٤١× بالقياس).
+/// An endpoint-switching regression: **it had never been implemented at
+/// all**. There was no network listener, and `adoptActiveUrl` was called
+/// only by a manual tap. A real device was streaming through the tunnel
+/// while on the same network as the server (41x slower by measurement).
 void main() {
-  // `start()` يسجّل `AppLifecycleListener` (عودة التطبيق للمقدمة محفّز).
+  // `start()` registers an `AppLifecycleListener`; the app returning to the
+  // foreground is a trigger.
   TestWidgetsFlutterBinding.ensureInitialized();
 
   const local = 'http://192.168.1.10:8086';
   const tunnel = 'https://metube.example.com';
 
-  /// حاوية بإعدادات مهيأة ومحلّل يُرجع ما نقرره لكل رابط.
+  /// A container with settings configured and a resolver returning whatever
+  /// we decide for each endpoint.
   (ProviderContainer, MemoryKeyValueStore) build({
     required Set<String> reachable,
     String activeUrl = tunnel,
@@ -46,8 +49,9 @@ void main() {
                 : MTEndpointStatus.unreachable,
           ),
         ),
-        // الفحص صار يسأل المحرك «هل من عمل جارٍ؟» قبل التبديل (ع-1)،
-        // والمحرك يحتاج السجل — يُتجاوز في main، فيُتجاوز هنا كذلك.
+        // Probing now asks the engine "is anything in flight?" before
+        // switching (defect ع-1), and the engine needs the logger, which is
+        // overridden in main and so is overridden here too.
         loggerProvider.overrideWithValue(
           MTLogger(filePath: '${Directory.systemTemp.path}/mtf_test.log'),
         ),
@@ -72,7 +76,8 @@ void main() {
     await service.resolveNow();
     expect(container.read(settingsProvider).activeUrl, local);
     expect(await store.getString('active_url'), local);
-    // الرابط المعتمد يُستعمل فعلاً في بناء العميل (لا في الحالة وحدها).
+    // The adopted endpoint is actually used to build the client, not just
+    // held in state.
     expect(container.read(settingsProvider).serverConfig?.baseUrl, local);
   });
 
@@ -89,14 +94,15 @@ void main() {
   });
 
   test('المعتمد لم يعد من المرشحين (عُدّل الرابط) ⇒ يُصحَّح', () async {
-    // انحدار: تعديل قائمة الروابط كان يترك التطبيق على عنوان محذوف.
+    // A regression: editing the endpoint list left the app on a deleted
+    // address.
     final (container, _) = build(
       reachable: {tunnel},
       activeUrl: 'http://192.168.1.10:8086',
     );
     await container
         .read(settingsProvider.notifier)
-        .setLocalUrl('http://192.168.1.99:8086'); // عنوان ميت
+        .setLocalUrl('http://192.168.1.99:8086'); // a dead address
     final service = AutoSwitchService(
       _RefFor(container),
       networkChanges: const Stream.empty(),
@@ -195,7 +201,8 @@ void main() {
   });
 }
 
-/// [AutoSwitchService] يحتاج `Ref` للقراءة فقط — الحاوية تكفي.
+/// [AutoSwitchService] needs a `Ref` for reading only, so the container is
+/// enough.
 class _RefFor implements Ref {
   _RefFor(this._container);
 

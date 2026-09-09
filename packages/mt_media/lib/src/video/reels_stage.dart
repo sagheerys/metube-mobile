@@ -74,7 +74,9 @@ class ReelsOverlayLayer extends StatelessWidget {
   final int total;
   final bool favorite;
 
-  /// `null` means no favourite button in the column (see [MTReelsRail]).
+  /// **The chrome hides after a moment and returns on a touch** (requested
+  /// 2026-09-02). The progress bar alone is always visible, which is why it
+  /// lives outside this layer.
   final VoidCallback? onToggleFavorite;
   final List<MTPlayerAction> actions;
   final String? subtitle;

@@ -76,13 +76,14 @@ void main() {
     });
   });
 
-  /// **بلاغ المالك 2026-09-08 — ألبوم نزل كاملاً بلا شاشة اختيار.**
+  /// **Field report 2026-09-08: a whole album downloaded with no selection
+  /// screen.**
   ///
-  /// زرّ المشاركة في تطبيق ساوندكلاود يعطي `on.soundcloud.com/…`، وهو
-  /// لا يحوي `/sets/` فيراه `PlaylistDetector` مقطعاً مفرداً. فمرّ إلى
-  /// السيرفر، وفكّه yt-dlp هناك إلى **٢٠ مقطعاً** نزلت كلها، بينما
-  /// التطبيق لا يعرف إلا مهمة واحدة. القرار يجب أن يقع على الرابط
-  /// النهائي.
+  /// SoundCloud's share button gives `on.soundcloud.com/…`, which contains
+  /// no `/sets/`, so `PlaylistDetector` sees a single clip. It passed to
+  /// the server, yt-dlp expanded it into **20 clips** and all of them
+  /// downloaded, while the app knew of one task. The decision has to be
+  /// made on the final URL.
   group('resolveForRouting — القرار على الرابط النهائي', () {
     const short = 'https://on.soundcloud.com/AbCdEf';
     const album = 'https://soundcloud.com/artist/sets/my-album';

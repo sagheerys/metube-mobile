@@ -46,8 +46,9 @@ void main() {
       initialSettingsProvider.overrideWithValue(const SuperSettings()),
       playbackResolverProvider.overrideWithValue(handler.resolver),
       audioHandlerProvider.overrideWithValue(handler),
-      // الغلاف صار يقود إشعارات التحميل (2026-09-06) وهي تسجّل
-      // إخفاقاتها — فالسجل صار جزءاً من إقلاع التطبيق.
+      // The shell now drives the download notifications (2026-09-06) and
+      // they log their failures, so the logger became part of the app's
+      // startup.
       loggerProvider.overrideWithValue(
         MTLogger(filePath: '${Directory.systemTemp.path}/mtf_ui.log'),
       ),
@@ -88,7 +89,7 @@ void main() {
     await tester.pumpWidget(app());
     await tester.pump(const Duration(milliseconds: 100));
 
-    // عمل غير متزامن حقيقي خارج الساعة الوهمية (وإلا تجمّد الانتظار).
+    // Real asynchronous work outside the fake clock, or the wait deadlocks.
     await tester.runAsync(
       () => handler.playItems(const [
         PlaylistItem(
@@ -105,8 +106,9 @@ void main() {
 
     await tester.runAsync(handler.stop);
     await tester.pump();
-    // المشغل المصغر يختفي بتلاشٍ وانكماش (تلميع 2026-09-04) — ننتظر
-    // مدة الحركة كاملةً ثم نؤكد أنه زال فعلاً لا أنه يتلاشى.
+    // The mini player disappears with a fade and a shrink (polish
+    // 2026-09-04), so we wait the full animation and then confirm it is
+    // actually gone rather than fading.
     await tester.pump(MTMotion.reveal + const Duration(milliseconds: 50));
     expect(find.text('مقطع صوتي'), findsNothing);
   });

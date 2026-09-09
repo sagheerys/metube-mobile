@@ -4,12 +4,12 @@ import 'dart:io';
 import 'package:mt_core/mt_core.dart';
 import 'package:test/test.dart';
 
-/// **بلاغ المالك 2026-09-02: «القائمة تظهر صفحة فارغة».**
+/// **Field report 2026-09-02: "the playlist shows an empty page".**
 ///
-/// السبب المثبت بالتشغيل الحقيقي: `youtube_explode_dart` يبثّ **صفر
-/// عناصر** لقائمة عدّادها 19 (في 2.5.3 و3.1.0 معاً) لأن يوتيوب استبدل
-/// `playlistVideoRenderer` بـ`lockupViewModel`. الاختبارات هنا على
-/// **ردّ InnerTube حقيقي محفوظ** (القاعدة 8).
+/// The cause, proven by running it: `youtube_explode_dart` emits **zero
+/// items** for a playlist counting 19 (in 2.5.3 and 3.1.0 alike), because
+/// YouTube replaced `playlistVideoRenderer` with `lockupViewModel`. These
+/// tests run against **a real saved InnerTube response** (rule 8).
 void main() {
   final raw = File('test/fixtures/real/youtube_browse.json').readAsStringSync();
   final browse = json.decode(raw);
@@ -74,10 +74,10 @@ void main() {
           expect(uri.host, 'www.youtube.com');
           if (calls == 1) {
             expect(payload['browseId'], 'VLPLtest');
-            return raw; // صفحة أولى برمز استمرار
+            return raw; // a first page with a continuation token
           }
           expect(payload['continuation'], isNotNull);
-          return json.encode({'contents': []}); // لا مزيد
+          return json.encode({'contents': []}); // no more
         },
       );
 
@@ -102,7 +102,7 @@ void main() {
 
   group('PlaylistDetector — ما هو قائمة حقاً', () {
     test('رابط فيديو مفرد بلا list ليس قائمة', () {
-      // الرابط الذي أرسله المالك — لا `list=` فيه أصلاً.
+      // The URL that was reported: it has no `list=` in it at all.
       expect(
         PlaylistDetector.detect('https://youtu.be/i_OHQH4-M2Y?si=jnr8PIx'),
         PlaylistKind.none,

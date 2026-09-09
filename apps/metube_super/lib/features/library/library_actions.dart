@@ -154,7 +154,7 @@ class LibraryActions {
     _ref.read(playlistsRevisionProvider.notifier).state++;
   }
 
-  /// Removes the local copy only; it stays on the server.
+  /// Deletes a local-only item for good.
   Future<void> removeLocalCopy(LibraryItem item) async {
     final path = item.localPath;
     if (path != null) {

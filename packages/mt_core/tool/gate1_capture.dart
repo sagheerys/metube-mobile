@@ -1,6 +1,6 @@
-// بوابة 1: testConnection على السيرفر الحقيقي (المحلي والخارجي) +
-// التقاط fixtures حقيقية من /history (خطوة 1.4).
-// التشغيل: dart tool/gate1_capture.dart <localUrl> <externalUrl>
+// Gate 1: testConnection against a real server, local and external, plus
+// capturing real fixtures from /history (step 1.4).
+// Usage: dart tool/gate1_capture.dart <localUrl> <externalUrl>
 // ignore_for_file: avoid_print
 
 import 'dart:convert';
@@ -32,22 +32,22 @@ Future<void> main(List<String> args) async {
     exit(1);
   }
 
-  // لقطة /history الحالية كما هي (fixture حقيقية "مكتمل")
+  // The current /history snapshot as it is: a real "completed" fixture.
   final history = await working.fetchHistory();
   print(
     'history: done=${history.done.length} '
     'queue=${history.queue.length} pending=${history.pending.length}',
   );
 
-  // الخام للحفظ حرفياً
-  final dio = working; // نلتقط الخام عبر طلب مباشر بنفس العميل
+  // The raw body, saved verbatim.
+  final dio = working; // capture the raw body with a direct request through the same client
   final raw = await _rawHistory(working.config);
   const dir = 'test/fixtures/real';
   Directory(dir).createSync(recursive: true);
   File('$dir/history_real_done.json').writeAsStringSync(raw);
   print('حُفظت: $dir/history_real_done.json (${raw.length} بايت)');
 
-  // فحص التحليل المتسامح على العينة الحقيقية
+  // Checks tolerant parsing against the real sample.
   for (final item in history.done.take(3)) {
     print(
       '  عينة: url=${item.canonicalUrl.substring(0, 40)}… '

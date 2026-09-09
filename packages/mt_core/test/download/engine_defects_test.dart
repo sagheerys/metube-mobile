@@ -5,16 +5,18 @@ import 'package:test/test.dart';
 
 import 'fake_api.dart';
 
-/// اختبارات أعطال 2026-09-02 — كل اختبار هنا **يفشل قبل إصلاحه**:
-/// ح-3 (الاستطلاع يلتقط عنصراً قديماً)، ع-2 (خطأ محلي يقتل العامل)،
-/// ع-6 (فشل التنظيف يطيح بنقل ناجح)، ع-7 (يتيم السيرفر بعد الإلغاء).
+/// Defect tests from 2026-09-02. Every test here **fails before its fix**:
+/// ح-3 (polling picks up an old item), ع-2 (a local error kills the
+/// worker), ع-6 (a failed cleanup destroys a successful transfer), ع-7 (a
+/// server orphan after cancellation).
 void main() {
   late Directory tempDir;
   setUp(() async {
     tempDir = await Directory.systemTemp.createTemp('mtf_defects_');
   });
   tearDown(() async {
-    // ويندوز يرفض حذف مجلد ما زال ملفه مفتوحاً لحظةً بعد النقل.
+    // Windows refuses to delete a folder whose file is still open for a
+    // moment after the transfer.
     try {
       await tempDir.delete(recursive: true);
     } on FileSystemException {
@@ -81,9 +83,13 @@ void main() {
       () async {
         final api = FakeApi(
           historyScript: [
-            historyWith(done: [errorItem()]), // اللقطة: الخطأ موجود قبلنا
-            historyWith(done: [errorItem()]), // ما زال كما هو ⇒ يُتجاهل
-            historyWith(done: [errorItem(), doneItem()]), // عمليتنا اكتملت
+            historyWith(
+              done: [errorItem()],
+            ), // the snapshot: the error existed before us
+            historyWith(done: [errorItem()]), // unchanged, so it is ignored
+            historyWith(
+              done: [errorItem(), doneItem()],
+            ), // our own operation completed
           ],
         );
         final engine = makeEngine(api);
@@ -103,7 +109,7 @@ void main() {
       final old = doneItem(filename: 'قناة.480.mp4');
       final api = FakeApi(
         historyScript: [
-          historyWith(done: [old]), // 480 موجود من قبل
+          historyWith(done: [old]), // 480 was already there
           historyWith(done: [old]),
           historyWith(done: [doneItem(filename: 'قناة.1080.mp4')]),
         ],
@@ -123,9 +129,9 @@ void main() {
   test('ع-2 — خطأ محلي غير مصنف يُفشل مهمته ولا يجمّد الطابور', () async {
     final api = FakeApi(
       historyScript: [
-        historyWith(), // لقطة الأولى
-        historyWith(done: [doneItem()]), // اكتملت على السيرفر
-        historyWith(done: [doneItem()]), // لقطة الثانية
+        historyWith(), // the first one's snapshot
+        historyWith(done: [doneItem()]), // completed on the server
+        historyWith(done: [doneItem()]), // the second one's snapshot
         historyWith(done: [doneItem(), secondItem()]),
       ],
     );
@@ -194,7 +200,7 @@ void main() {
   test('ع-7 — الإلغاء أثناء الاستطلاع يكنس يتيم السيرفر', () async {
     final api = FakeApi(
       historyScript: [
-        historyWith(), // لقطة فارغة
+        historyWith(), // an empty snapshot
         historyWith(
           queue: [
             {'url': canonical, 'status': 'downloading', 'percent': 10},
@@ -210,7 +216,7 @@ void main() {
 
     final result = await awaitFinished(engine, task.id);
     expect(result.phase, TaskPhase.cancelled);
-    // الكنس غير متزامن — ننتظر دورة أحداث قصيرة.
+    // The sweep is asynchronous, so we wait a short event loop.
     await Future<void>.delayed(const Duration(milliseconds: 50));
     expect(
       api.deletes,
@@ -223,7 +229,7 @@ void main() {
   test('ع-7 — الكنس لا يمسّ عنصراً كان موجوداً قبل المهمة', () async {
     final api = FakeApi(
       historyScript: [
-        historyWith(done: [doneItem()]), // موجود قبلنا
+        historyWith(done: [doneItem()]), // existed before us
         historyWith(done: [doneItem()]),
       ],
     );
@@ -244,7 +250,7 @@ void main() {
       historyScript: [
         historyWith(),
         historyWith(done: [doneItem()]),
-        historyWith(done: [doneItem()]), // لقطة الثانية
+        historyWith(done: [doneItem()]), // the second one's snapshot
         historyWith(done: [doneItem(), secondItem()]),
       ],
     );
@@ -259,7 +265,8 @@ void main() {
       (t) => t.id == blocked.id && t.phase == TaskPhase.waitingForNetwork,
     );
 
-    // الثانية تمرّ بالسيرفر رغم بقاء الأولى منتظرة الشبكة.
+    // The second passes through the server even though the first is still
+    // waiting on the network.
     final second = engine.submit(secondUrl, Quality.best);
     await engine.updates
         .firstWhere(
@@ -276,7 +283,7 @@ void main() {
     final result = await awaitFinished(engine, blocked.id);
     expect(result.phase, TaskPhase.completed);
     await awaitFinished(engine, second.id);
-    await engine.dispose(); // يوقف نبض البوابة قبل حذف المجلد المؤقت
+    await engine.dispose(); // stops the gate tick before the temporary folder is deleted
   });
 
   test('ع-1 — التصريف يكسر حلقة الاستطلاع ولا يبثّ في stream مغلق', () async {

@@ -3,7 +3,8 @@ import 'dart:convert';
 import 'package:mt_core/mt_core.dart';
 import 'package:test/test.dart';
 
-/// ردّ GitHub على `releases/latest` بالحقول التي يقرؤها المحلّل فعلاً.
+/// GitHub's `releases/latest` response, with the fields the parser actually
+/// reads.
 String release({
   String tag = 'v2.1.0',
   bool draft = false,
@@ -39,8 +40,8 @@ UpdateChecker checkerOf(String body, {String marker = 'super'}) =>
 void main() {
   group('اختيار الأصل', () {
     test('**الحارس**: كل تطبيق يأخذ ملفه لا ملف أخيه', () async {
-      // الإصدار الواحد يحمل APK التطبيقين؛ بلا مطابقة العلامة يثبّت
-      // مالك Lite نسخة Super (أول أصل في القائمة).
+      // One release carries both apps' APKs; without matching the marker a
+      // Lite user installs Super, the first asset in the list.
       final superRelease = await checkerOf(release())
           .check(currentVersion: '2.0.0');
       expect(superRelease!.apkUrl, 'https://x/super.apk');
@@ -111,7 +112,8 @@ void main() {
         await c.check(currentVersion: '2.0.0', skippedVersion: '2.1.0'),
         isNull,
       );
-      // إصدار أحدث من المتخطّى يظهر — التخطّي ليس تعطيلاً دائماً.
+      // A release newer than the skipped one appears: skipping is not a
+      // permanent disable.
       final next = checkerOf(release(tag: 'v2.2.0'));
       final r = await next.check(
         currentVersion: '2.0.0',
@@ -127,8 +129,9 @@ void main() {
 
   group('فاشل-آمن', () {
     test('**الحارس**: أي عطل شبكة يعيد null ولا يرمي', () async {
-      // المستودع خاصٌّ الآن ⇒ GitHub يردّ 404 عند كل فحص تلقائي.
-      // رميُ استثناء هنا يعني رسالة خطأ في وجه المستخدم عند كل إقلاع.
+      // The repository is private today, so GitHub answers 404 on every
+      // automatic check. Throwing here would mean an error message in the
+      // user's face at every launch.
       final c = UpdateChecker(
         fetch: (_) async => throw Exception('404'),
         assetMarker: 'super',
@@ -139,8 +142,9 @@ void main() {
     test(
       '**الحارس**: الفحص اليدوي يميّز «لا جديد» عن «تعذّر الوصول»',
       () async {
-        // في `check` النتيجتان `null` واحدة، فلو بُني الزر اليدوي عليها
-        // قال «أنت على أحدث إصدار» والشبكة مقطوعة أصلاً.
+        // In `check` the two results are both `null`, so a manual button
+        // built on it would say "you are on the latest version" while the
+        // network was down.
         final broken = UpdateChecker(
           fetch: (_) async => throw Exception('offline'),
           assetMarker: 'super',
@@ -182,8 +186,9 @@ void main() {
     });
 
     test('**الحارس**: ساعة راجعة للوراء لا تجمّد الفحص للأبد', () {
-      // تغيير المنطقة أو مزامنة NTP قد يجعل آخر فحص «في المستقبل»؛
-      // بلا هذا الفرع يبقى الفرق سالباً فلا يحين الفحص أبداً.
+      // A timezone change or an NTP sync can leave the last check "in the
+      // future"; without this branch the difference stays negative and a
+      // check is never due again.
       final future = now.add(const Duration(days: 400));
       expect(UpdateChecker.isDue(future, now), isTrue);
     });
