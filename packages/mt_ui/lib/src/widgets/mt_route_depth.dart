@@ -2,25 +2,30 @@ import 'package:flutter/widgets.dart';
 
 import '../tokens/tokens.dart';
 
-/// **عمق المسارات فوق الغلاف** (بلاغ المالك 2026-09-02).
+/// **How many routes are stacked above the shell** (field report
+/// 2026-09-02).
 ///
-/// زر الإضافة العائم يعيش في `Scaffold` الغلاف، فيبقى مرسوماً فوق **كل**
-/// ورقة سفلية وحوار — يحجب رابط «حول المقطع» ويزاحم أفعال الورقة. ولا
-/// يكفي فحص `ModalRoute.of(context).isCurrent` لأنه لا يُطلق إعادة بناء.
+/// The floating add button lives in the shell's `Scaffold`, so it stayed
+/// drawn over **every** bottom sheet and dialog: it covered the "about
+/// this clip" link and crowded each sheet's own actions. Checking
+/// `ModalRoute.of(context).isCurrent` is not enough, because it does not
+/// trigger a rebuild.
 ///
-/// هذا المراقب يُسجَّل في الراوتر مرة، فيَعرف كل من يريد كم مساراً فُتح
-/// فوق الجذر — فيخفي نفسه عند أول واحد.
+/// This observer is registered once in the router, so anyone who needs it
+/// knows how many routes are open above the root, and hides itself at the
+/// first one.
 class MTRouteDepth extends NavigatorObserver {
   MTRouteDepth._();
 
-  /// نسخة واحدة يشترك فيها الراوتر والغلاف.
+  /// A single instance shared by the router and the shell.
   static final MTRouteDepth instance = MTRouteDepth._();
 
-  /// عدد المسارات المكدّسة فوق الجذر. 0 = لا شيء يغطي الغلاف.
+  /// Routes stacked above the root. 0 means nothing covers the shell.
   static final ValueNotifier<int> depth = ValueNotifier<int>(0);
 
-  /// الأوراق والحوارات لا تُحسب مساراً «مرئياً» في بعض الأطر — هنا كل
-  /// ما يُدفع على الملّاح يُحسب، وهو المطلوب بالضبط.
+  /// Sheets and dialogs do not count as a "visible" route in some
+  /// frameworks. Here everything pushed onto the navigator counts, which is
+  /// exactly what is wanted.
   void _set(int value) => depth.value = value < 0 ? 0 : value;
 
   @override
@@ -38,31 +43,37 @@ class MTRouteDepth extends NavigatorObserver {
 
   @override
   void didReplace({Route<dynamic>? newRoute, Route<dynamic>? oldRoute}) {
-    // استبدال لا يغيّر العمق.
+    // A replacement does not change the depth.
   }
 }
 
-/// يُظهر [child] فقط حين لا شيء مكدّس فوق الغلاف — **تلاشٍ خالص**.
+/// Shows [child] only while nothing is stacked above the shell, as a
+/// **pure fade**.
 ///
-/// ثلاث محاولات وصلت إلى هذا (بلاغات المالك 2026-09-02 ثم 09-04 ثم
+/// Three attempts led here (field reports 2026-09-02, then 09-04, then
 /// 09-05):
 ///
-/// 1. انكماش إلى **صفر**: الاختفاء يُقرأ تلاشياً، لكن العودة من الصفر
-///    «تكبيرٌ من نقطة» — حركة بوربوينت.
-/// 2. انكماش خفيف (0.92) بمنحنيَين مختلفين للدخول والخروج: أهدأ، لكن
-///    القفزة تبقى محسوسة ومنحنى الدخول القوي يعطيها «نبضة».
-/// 3. **تلاشٍ وحده بمنحنى واحد في الاتجاهين** — لا حجم يتغير ولا فرق
-///    بين الظهور والاختفاء إلا اتجاه الشفافية.
+/// 1. 1. Shrinking to **zero**: the disappearance reads as a fade, but
+/// coming back from zero is "growing out of a point", a slide-deck move.
+/// 2. 2. A light shrink (0.92) with different curves in and out: calmer,
+///    but
+/// the jump is still felt and the strong entry curve gives it a pulse.
+/// 3. 3. **A fade alone, one curve in both directions**: no size change,
+///    and
+/// no difference between appearing and disappearing except the direction
+/// of the opacity.
 ///
-/// ولم تكفِ الثالثة (بلاغ المالك 2026-09-05) — **لأن الحركة المزعجة لم
-/// تكن حركتنا أصلاً**: `Scaffold` يحرّك فتحة الزر العائم بمحرّكه
-/// الافتراضي `_ScalingFabMotionAnimator`، وفيه بنصّ مصدر Flutter:
-/// «This rotation will turn on the way **in**, but not on the way out»
-/// — دورانٌ عند الظهور وحده. وهذا بالضبط وصف المالك: الظهور غريب
-/// والاختفاء عادي. الحلّ في الغلاف: `FloatingActionButtonAnimator
-/// .noAnimation` مع إبقاء الزر **مركّباً دائماً** في الفتحة، فلا يرى
-/// `Scaffold` تبديلاً يحرّكه، ويبقى التلاشي وحده. و[visible] هي ما
-/// يخفيه في تبويب الإعدادات بدل تمرير `null`.
+/// And the third was still not enough (field report 2026-09-05), **because
+/// the motion that annoyed was never ours**: `Scaffold` animates the
+/// floating action button slot with its own default
+/// `_ScalingFabMotionAnimator`, which says verbatim in the Flutter source:
+/// "This rotation will turn on the way **in**, but not on the way out".
+/// A rotation on appearance only. That matches the report exactly:
+/// appearing looked odd, disappearing looked normal. The fix lives in the
+/// shell: `FloatingActionButtonAnimator.noAnimation` while keeping the
+/// button **always mounted** in the slot, so `Scaffold` never sees a swap
+/// to animate and only the fade remains. [visible] is what hides it on the
+/// settings tab, instead of passing `null`.
 class MTHiddenUnderRoutes extends StatelessWidget {
   const MTHiddenUnderRoutes({
     super.key,
@@ -72,8 +83,9 @@ class MTHiddenUnderRoutes extends StatelessWidget {
 
   final Widget child;
 
-  /// شرط إضافي فوق «لا مسار فوق الغلاف» — تمرير `false` يخفيه بنفس
-  /// التلاشي بدل نزعه من الشجرة (فيدور محرّك `Scaffold`).
+  /// An extra condition on top of "no route above the shell". Passing
+  /// `false` hides it with the same fade instead of removing it from the
+  /// tree, which would wake the `Scaffold` animator.
   final bool visible;
 
   @override

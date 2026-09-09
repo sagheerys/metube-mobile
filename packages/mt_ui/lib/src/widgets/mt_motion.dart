@@ -2,34 +2,41 @@ import 'package:flutter/material.dart';
 
 import '../tokens/tokens.dart';
 
-/// **حركة «وهج»** — كل الأزمنة والمسافات من [MTMotion] في `tokens.dart`،
-/// صفر قيمة مثبتة هنا.
+/// **Wahaj motion.** Every duration and distance comes from [MTMotion] in
+/// `tokens.dart`; no literal values here.
 ///
-/// **المراجعة الثانية (بلاغ المالك 2026-09-02: «الحركات غير متزنة،
-/// خففها واجعلها أكثر سلاسة»).** المحاولة الأولى كانت تحرّك **كل بطاقة
-/// عند إنشائها**، و`SliverList.builder` ينشئ البطاقات وأنت تمرّر — فكل
-/// صف يدخل الشاشة كان يبدأ تلاشياً وانزلاقاً من جديد. النتيجة قائمة
-/// «تنطّ» طوال التمرير، وهي بالضبط ما وصفه المالك.
+/// **The second revision** (field report 2026-09-02: "the motion is
+/// unbalanced, calm it down and make it smoother"). The first attempt
+/// animated **every card as it was created**, and `SliverList.builder`
+/// creates cards while you scroll, so every row entering the screen
+/// started its own fade and slide. The result was a list that bounced
+/// throughout the scroll, which is precisely what was reported.
 ///
-/// العلاج مبدئي لا تجميلي: **الشاشة تدخل مرة واحدة، لا عناصرها.**
-/// [MTRevealOnce] يحرّك الكتلة كلها عند أول ظهور ثم يزيح نفسه من
-/// الشجرة، فلا يبقى أي `AnimationController` ولا أي عمل أثناء التمرير.
+/// The fix is structural, not cosmetic: **the screen enters once, its
+/// items do not.** [MTRevealOnce] animates the whole block on first
+/// appearance and then removes itself from the tree, leaving no
+/// `AnimationController` and no work at all during scrolling.
 ///
-/// الحركات الثلاث الباقية:
-/// 1. [MTRevealOnce] — دخول محتوى الشاشة مرة واحدة.
-/// 2. [MTSlidePageTransition] — انتقال الشاشات باتجاه اللغة.
-/// 3. [MTAnimatedSwap] — تبدّل محتوى في مكانه.
+/// The three remaining animations:
+/// 1. 1. [MTRevealOnce] for screen content entering once.
+/// 2. 2. [MTSlidePageTransition] for screen changes, following text
+/// direction.
+/// 3. 3. [MTAnimatedSwap] for content changing in place.
 
-/// ظهور **لمرة واحدة** لكتلة محتوى: تلاشٍ + إزاحة قصيرة جداً.
+/// A **once-only** appearance for a block of content: a fade and a very
+/// short offset.
 ///
-/// بعد انتهاء الحركة يعيد [child] عارياً — لا `Transform` ولا
-/// `FadeTransition` باقيان في الشجرة، فلا كلفة على التمرير بعدها.
+/// When the animation ends it returns [child] bare. No `Transform` and no
+/// `FadeTransition` are left in the tree, so scrolling afterwards costs
+/// nothing.
 class MTRevealOnce extends StatefulWidget {
   const MTRevealOnce({super.key, required this.child, this.delay});
 
   final Widget child;
 
-  /// تأخير اختياري لتتابع خفيف بين كتلتين (لا بين عشرات العناصر).
+  /// An optional delay for a light stagger between two blocks, never
+  /// between
+  /// dozens of items.
   final Duration? delay;
 
   @override
@@ -43,8 +50,10 @@ class _MTRevealOnceState extends State<MTRevealOnce>
     duration: MTMotion.reveal,
   );
 
-  /// **يُنشأ مرة واحدة لا كل إطار (إصلاح م-2/ب):** `CurvedAnimation` في
-  /// `build` كان يُخلق ويُهمل ٦٠ مرة بالثانية بلا تصريف.
+  /// **Built once rather than every frame** (fix م-2/b): a
+  /// `CurvedAnimation`
+  /// in `build` was created and abandoned sixty times a second without ever
+  /// being disposed.
   late final CurvedAnimation _curved =
       CurvedAnimation(parent: _controller, curve: MTMotion.entrance);
 
@@ -64,7 +73,8 @@ class _MTRevealOnceState extends State<MTRevealOnce>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // احترام «تقليل الحركة» في إعدادات النظام — شرط وصول لا تحسين.
+    // Honours "reduce motion" in the system settings: an accessibility
+    // requirement, not a refinement.
     if (MediaQuery.disableAnimationsOf(context)) _controller.value = 1;
   }
 
@@ -75,11 +85,13 @@ class _MTRevealOnceState extends State<MTRevealOnce>
     super.dispose();
   }
 
-  /// **شكل الشجرة ثابت من أول إطار لآخره (إصلاح م-2/أ).** كان الودجت
-  /// يستبدل الغلاف كله بـ`widget.child` عند انتهاء الحركة، فيتغير عمق
-  /// العناصر ويُعاد بناء الشجرة تحته: تمرير أو كتابة بدآ خلال أول
-  /// 220ms كانا يُفقدان. الآن ينتهي المتحكم عند 1 فيتوقف إعادة البناء
-  /// وحده بلا لمس الشكل.
+  /// **The tree keeps its shape from the first frame to the last** (fix
+  /// م-2/a). The widget used to replace the whole wrapper with
+  /// `widget.child` when the animation ended, which changed the depth of
+  /// every element and rebuilt the subtree: a scroll or a keystroke that
+  /// began during the first 220ms was lost. Now the controller simply
+  /// reaches 1, rebuilding stops on its own, and the shape is never
+  /// touched.
   @override
   Widget build(BuildContext context) => AnimatedBuilder(
         animation: _curved,
@@ -94,8 +106,8 @@ class _MTRevealOnceState extends State<MTRevealOnce>
       );
 }
 
-/// تبدّل محتوى في مكانه بتلاشٍ متقاطع — لا انزلاق: العنصر لم ينتقل،
-/// بل تغيّر.
+/// Content changing in place with a cross-fade, never a slide: the element
+/// did not move, it changed.
 class MTAnimatedSwap extends StatelessWidget {
   const MTAnimatedSwap({super.key, required this.child});
 
@@ -110,11 +122,13 @@ class MTAnimatedSwap extends StatelessWidget {
       );
 }
 
-/// انتقال الشاشات: تلاشٍ + إزاحة **قصيرة** باتجاه اللغة.
+/// Screen transitions: a fade plus a **short** offset following the text
+/// direction.
 ///
-/// الافتراضي في أندرويد صعودٌ رأسي لا يقول شيئاً عن علاقة الشاشتين؛
-/// الإزاحة الأفقية تقول «دخلتُ أعمق» و«رجعتُ». والمسافة صغيرة عمداً
-/// (`pageSlide`): الانزلاق الطويل هو ما يُقرأ «قفزة».
+/// The Android default is a vertical rise that says nothing about how the
+/// two screens relate; a horizontal offset says "I went deeper" and "I
+/// came back". The distance is deliberately small (`pageSlide`), because a
+/// long slide is what reads as a jump.
 class MTSlidePageTransition extends PageTransitionsBuilder {
   const MTSlidePageTransition();
 
@@ -137,7 +151,8 @@ class MTSlidePageTransition extends PageTransitionsBuilder {
 
     return SlideTransition(
       position: enter,
-      // التلاشي هو الحامل الأساسي للانتقال، والإزاحة تلميح اتجاه فقط.
+      // The fade carries the transition; the offset only hints at
+      // direction.
       child: FadeTransition(
         opacity: CurvedAnimation(parent: animation, curve: MTMotion.entrance),
         child: child,
@@ -146,7 +161,7 @@ class MTSlidePageTransition extends PageTransitionsBuilder {
   }
 }
 
-/// يُركَّب على `ThemeData.pageTransitionsTheme` في كلا التطبيقين.
+/// Installed on `ThemeData.pageTransitionsTheme` in both apps.
 const mtPageTransitionsTheme = PageTransitionsTheme(builders: {
   TargetPlatform.android: MTSlidePageTransition(),
   TargetPlatform.iOS: MTSlidePageTransition(),

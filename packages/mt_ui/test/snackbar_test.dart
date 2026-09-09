@@ -2,15 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mt_ui/mt_ui.dart';
 
-/// **حارس: الشريط يختفي وحده — بفعل أو بلا فعل.**
+/// **Guard: the bar dismisses itself, with or without an action.**
 ///
-/// بلاغ المالك 2026-09-04: «الإشعارات التي تأتي فوق زر إضافة رابط لا
-/// تذهب، لا يوجد لديها مؤقت — أريدها مثل زمن إشعار أُضيفت في المفضلة».
+/// Field report 2026-09-04: "the notices that appear over the add-link
+/// button never go away, they have no timer. I want them to behave like
+/// the added-to-favourites notice."
 ///
-/// السبب في Flutter نفسه: `SnackBar.persist = persist ?? action != null`،
-/// أي أن **كل شريط له زر يبقى للأبد** حتى يُزيحه المستخدم. «أُضيف
-/// للمفضلة» بلا زر فيختفي — و«بدأ التحميل · تغيير الجودة» له زر فيبقى.
-/// هذا الاختبار يسقط إن عاد `persist` إلى قيمته الضمنية.
+/// The cause is in Flutter itself: `SnackBar.persist = persist ?? action
+/// != null`, meaning **every bar with a button stays forever** until the
+/// user dismisses it. "Added to favourites" has no button and disappears;
+/// "download started · change quality" has one and stays. This test fails
+/// if `persist` ever falls back to its implicit value.
 void main() {
   Widget host(void Function(BuildContext context) onPressed) => MaterialApp(
         theme: mtTheme(MTVariant.lite, Brightness.light),
@@ -35,8 +37,9 @@ void main() {
           onAction: actionLabel == null ? null : () {},
         )));
     await tester.tap(find.text('اعرض'));
-    // **حتى تكتمل حركة الدخول**: `ScaffoldMessenger` لا يجدول مؤقت
-    // الإخفاء إلا بعد `isCompleted` — نبضة واحدة تُظهر الشريط بلا مؤقت.
+    // **Until the entrance animation completes**: `ScaffoldMessenger` only
+    // schedules the hide timer after `isCompleted`, so a single pump shows
+    // the bar with no timer at all.
     await tester.pumpAndSettle();
     expect(find.text('رسالة'), findsOneWidget);
   }

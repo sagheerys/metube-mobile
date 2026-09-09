@@ -3,12 +3,16 @@ import 'package:flutter/material.dart';
 import '../theme/mt_theme.dart';
 import '../tokens/tokens.dart';
 
-/// شريط «رابط جاهز في الحافظة» — يجلس فوق المشغل المصغر.
+/// The "a link is ready in the clipboard" bar, which sits above the mini
+/// player.
 ///
-/// عرض بحت: النصوص والأفعال كلها من التطبيق (mt_ui لا يعرف السيرفر).
-/// **الفعلان معاً بقصد**: «تحميل» للحالة الشائعة، و«خيارات» لمن يريد
-/// جودة مختلفة — لأن التحميل الفوري بلا مخرج يخيف من يشك في جودته.
-/// و«تجاهل» شرط: شريط يعود بعد كل رفض يتحول من مساعدة إلى مضايقة.
+/// Presentation only: every string and action comes from the app, since
+/// mt_ui does not know the server exists. **Both actions are offered on
+/// purpose**: "download" for the common case and "options" for whoever
+/// wants a different quality, because an immediate download with no way
+/// out unsettles anyone unsure of the result. "Dismiss" is a condition: a
+/// bar that returns after every refusal stops being help and becomes
+/// nagging.
 class MTClipboardBanner extends StatelessWidget {
   const MTClipboardBanner({
     super.key,
@@ -49,8 +53,11 @@ class MTClipboardBanner extends StatelessWidget {
                 children: [
                   Text(title,
                       style: text.labelMedium!.copyWith(color: p.accentInk)),
-                  // الرابط **LTR دائماً** ومقصوص من أوله: ذيله (معرّف
-                  // المقطع) هو ما يميّزه، وصدره `https://www.` مكرر.
+                  // The URL is **always LTR** and truncated from the front:
+                  // its tail, the
+                  // clip id, is what distinguishes it, while its head
+                  // `https://www.` is the
+                  // same every time.
                   Text(
                     url,
                     maxLines: 1,

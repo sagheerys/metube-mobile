@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import '../tokens/tokens.dart';
 import '../widgets/mt_motion.dart';
 
-/// امتداد الثيم — يوصل لوحة «وهج» لكل ودجت عبر
-/// `MTThemeX.of(context)` بدل أي لون مثبت (القاعدة 5).
+/// Theme extension: carries the Wahaj palette to every widget through
+/// `MTThemeX.of(context)` instead of any literal colour (rule 5).
 class MTThemeX extends ThemeExtension<MTThemeX> {
   const MTThemeX({required this.palette, required this.variant});
 
@@ -24,13 +24,15 @@ class MTThemeX extends ThemeExtension<MTThemeX> {
   MTThemeX lerp(MTThemeX? other, double t) => t < 0.5 ? this : other ?? this;
 }
 
-/// ثيم «وهج» — **الدرس الموثق**: تعيين أدوار surfaceContainer* الخمسة
-/// صراحة وإلا فرضت M3 رمادياتها فوق الكريمي.
+/// The Wahaj theme. **A documented lesson**: the five surfaceContainer*
+/// roles must be set explicitly, or Material 3 imposes its own greys over
+/// the cream ground.
 ThemeData mtTheme(MTVariant variant, Brightness brightness) {
   final p = MTPalette.of(variant, brightness);
   final isDark = brightness == Brightness.dark;
 
-  // سلم الأسطح الحار — مشتق من bg→card→cardAlt بنفس درجة اللوحة.
+  // The warm surface ladder, derived from bg to card to cardAlt at the
+  // palette's own hue.
   final (lowest, low, container, high, highest) = isDark
       ? variant == MTVariant.lite
           ? (
@@ -110,8 +112,9 @@ ThemeData mtTheme(MTVariant variant, Brightness brightness) {
     scaffoldBackgroundColor: p.bg,
     fontFamily: 'packages/${MTType.package}/${MTType.body}',
     splashFactory: InkSparkle.splashFactory,
-    // انتقال الشاشات: انزلاق أفقي يحترم اتجاه اللغة بدل الصعود الرأسي
-    // الافتراضي الذي لا يقول شيئاً عن علاقة الشاشتين (طلب المالك).
+    // Screen transitions slide horizontally and respect the text direction,
+    // instead of the default vertical rise that says nothing about how the
+    // two screens relate.
     pageTransitionsTheme: mtPageTransitionsTheme,
     dividerTheme: DividerThemeData(color: p.line, thickness: 1, space: 1),
     textTheme: TextTheme(
@@ -148,11 +151,14 @@ ThemeData mtTheme(MTVariant variant, Brightness brightness) {
       backgroundColor: Colors.transparent,
       selectedColor: p.ink,
       side: BorderSide(color: p.line2),
-      // **لون النص يتبع الحالة** (فحص شامل 2026-09-02): الرقاقة المحددة
-      // خلفيتها `p.ink` وكان نصها `p.ink2` — حبر داكن على حبر داكن، أي
-      // **وسم محدد لا يُقرأ**. الشاشات التي مرّرت `labelStyle` بنفسها
-      // كانت تُخفي العطل، وورقة الوسوم التي تستعمل `FilterChip` عارية
-      // كشفته (وهو جزء من «الوسوم تسبب ربكة»).
+      // **Label colour follows the state** (full review 2026-09-02): a
+      // selected
+      // chip is painted with `p.ink` as its background and its label was
+      // `p.ink2`, dark ink on dark ink, so **a selected tag could not be
+      // read**.
+      // Screens that passed their own `labelStyle` were hiding the defect;
+      // the
+      // tags sheet, which uses a bare `FilterChip`, exposed it.
       labelStyle: body(12.5, FontWeight.w500).copyWith(
         color: WidgetStateColor.resolveWith(
           (states) =>
@@ -197,8 +203,9 @@ ThemeData mtTheme(MTVariant variant, Brightness brightness) {
             horizontal: MTSpace.xl, vertical: MTSpace.md),
       ),
     ),
-    // M3 يلوّن المحدد بـ secondaryContainer وهو الزيتوني = «دون اتصال»
-    // في لغة المعنى (سجل §4) — يُصحَّح للون الفعل.
+    // Material 3 tints the selected state with secondaryContainer, which is
+    // the olive that means "offline" in this design language (log §4).
+    // Corrected to the accent colour.
     segmentedButtonTheme: SegmentedButtonThemeData(
       style: ButtonStyle(
         backgroundColor: WidgetStateProperty.resolveWith(
@@ -229,10 +236,13 @@ ThemeData mtTheme(MTVariant variant, Brightness brightness) {
     bottomSheetTheme: BottomSheetThemeData(
       backgroundColor: p.card,
       surfaceTintColor: Colors.transparent,
-      // **مقبض سحب موحّد لكل الأوراق الثماني عشرة** (فحص 2026-09-02:
-      // لم يكن في أي ورقة مقبض إطلاقاً). ضبطه في الثيم لا في كل ورقة
-      // يمنع أن تُبنى الورقة التاسعة عشرة بلا مقبض — وهو ما يجعل
-      // الواجهة تبدو مجمّعة من أطوار مختلفة.
+      // **One drag handle for all eighteen sheets** (review 2026-09-02: not
+      // a
+      // single sheet had one). Setting it in the theme rather than in each
+      // sheet is what stops the nineteenth sheet from being built without
+      // one,
+      // which is exactly how an interface starts to look assembled from
+      // different eras.
       showDragHandle: true,
       dragHandleColor: p.line2,
       dragHandleSize: const Size(38, 4),

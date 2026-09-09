@@ -11,8 +11,9 @@ import '../widgets/mt_queue_panel.dart';
 import '../widgets/mt_up_next_list.dart';
 import 'video_info_sheet.dart';
 
-/// فعل من أفعال المشغل العمودي (دون اتصال / مشاركة / لقائمة …) —
-/// يقدّمها التطبيق لأن mt_media لا يعرف السيرفر ولا الفهارس.
+/// One action in the portrait player (offline, share, add to a list…).
+/// The app supplies them, because mt_media knows neither the server nor
+/// the indexes.
 class MTPlayerAction {
   const MTPlayerAction({
     required this.icon,
@@ -27,9 +28,10 @@ class MTPlayerAction {
   final bool highlighted;
 }
 
-/// مشغل الفيديو العمودي (م-20 · مرجع «وهج» B): الفيديو يتصدر وتحته
-/// ورقة كريمية — العنوان ← الأفعال ← الوضع ← قائمة «التالي».
-/// الرجوع يعرض «متابعة صوتاً بالخلفية؟» من نفس الثانية (م-23).
+/// The portrait video player (Wahaj reference B): the video leads with a
+/// cream sheet beneath it, running title, then actions, then mode, then
+/// the "up next" list. Going back offers "continue as background audio?"
+/// from the same second.
 class MTVideoScreen extends StatelessWidget {
   const MTVideoScreen({
     super.key,
@@ -48,39 +50,46 @@ class MTVideoScreen extends StatelessWidget {
   final List<MTPlayerAction> actions;
   final MTArtworkBuilder? artwork;
 
-  /// سطر البيانات تحت العنوان (المنصة · الناشر) — من التطبيق.
+  /// The meta line under the title (platform, uploader), supplied by the
+  /// app.
   final String Function(BuildContext context, PlaylistItem item)?
       subtitleBuilder;
   final VoidCallback? onShowPlaylist;
 
-  /// م-23: المزامنة الذكية — متابعة نفس العنصر صوتاً من نفس الثانية.
-  /// **يُنتظر قبل إغلاق الشاشة (العطل ط-5):** كان يُستدعى بلا انتظار ثم
-  /// يُغلق المشغل فوراً، فيُصرَّف مزوّد الجلسة (autoDispose) بينما النقل
-  /// واقف على `await` — فإما `StateError` فلا يبدأ الصوت أصلاً، وإما
-  /// تصير `duration` عدماً فيُحفظ موضع قرب النهاية **بدل مسحه** ويظل
-  /// المقطع «يستأنف» عند الاعتمادات للأبد.
+  /// Smart handover: continue the same item as audio from the same second.
+  /// **Awaited before closing the screen (defect ط-5):** it used to be
+  /// called without awaiting and the player closed immediately, so the
+  /// session provider was disposed (autoDispose) while the handover sat on
+  /// an `await`. Either a `StateError` meant the audio never started, or
+  /// `duration` became nothing, so a position near the end was **saved
+  /// rather than cleared** and the clip "resumed" at the credits forever.
   final Future<void> Function(PlaylistItem item, Duration position)?
       onContinueAsAudio;
 
-  /// **متى يُسأل السؤال** (بلاغ المالك 2026-09-02: «بعد المتابعة في
-  /// الخلفية والضغط رجوع تظهر الرسالة، المفترض لا تظهر»). كان الشرط
-  /// `onContinueAsAudio == null` وحده، أي يُسأل في كل خروج — حتى بعد أن
-  /// يكون المستخدم قد نقل المقطع للصوت فعلاً. التطبيق وحده يعرف حالة
-  /// مشغل الصوت، فهو من يقرر.
+  /// **When the question is asked** (field report 2026-09-02: "after
+  /// continuing in the background and pressing back the message appears; it
+  /// should not"). The condition used to be `onContinueAsAudio == null`
+  /// alone, so it asked on every exit, even after the user had already
+  /// moved
+  /// the clip to audio. Only the app knows the audio player's state, so the
+  /// app decides.
   final bool Function()? shouldOfferContinueAsAudio;
   final String? playlistName;
 
-  /// **انتماء المقطع** (بلاغ المالك 2026-09-04): «في أي وسم يتبع أو في
-  /// أي قائمة مضاف». يظهر في الوضع العرضي تحت العنوان — العمودي يعرضه
-  /// عبر [subtitleBuilder] في ورقة المعلومات.
+  /// **Where the clip belongs** (field report 2026-09-04): "which tag it is
+  /// under, or which playlist it was added to". Shown in landscape beneath
+  /// the title; portrait shows it through [subtitleBuilder] in the info
+  /// sheet.
   final String? membershipLine;
 
   bool get _offersAudio =>
       onContinueAsAudio != null &&
       (shouldOfferContinueAsAudio?.call() ?? true);
 
-  /// **الإمالة تفتح الملء التام والإمالة العكسية تغلقه** (قرار المالك
-  /// 2026-09-05) — والزر يبقى لمن أقفل التدوير في نظامه.
+  /// **A tilt opens full screen and tilting back closes it** (decision
+  /// 2026-09-05), and the button stays for anyone who has locked rotation
+  /// in
+  /// their system settings.
   @override
   Widget build(BuildContext context) => MTRotationScope(
         open: (byRotation) => _openFullscreen(context, byRotation),
@@ -93,19 +102,29 @@ class MTVideoScreen extends StatelessWidget {
           if (!didPop) _askContinueAsAudio(context);
         },
         child: Scaffold(
-          // **شريط النظام يتبع الثيم** (بلاغ المالك 2026-09-05: «شريط
-          // الساعة داكن نهاراً فيبدو غريباً»). الفيديو نفسه يبقى على
-          // أرضية داكنة — لكن الشريط فوقه كان يأخذ لون الصفحة، وكانت
-          // «داكنة دائماً» فيظهر نهاراً شريطٌ ليلي فوق واجهة كريمية.
+          // **The system bar follows the theme** (field report 2026-09-05:
+          // "the
+          // clock bar is dark during the day and looks strange"). The video
+          // itself
+          // stays on a dark ground, but the bar above it took the page's
+          // colour,
+          // and that was "always dark", so a night bar appeared over a
+          // cream
+          // interface in daylight.
           backgroundColor: MTThemeX.of(context).palette.bg,
           body: ListenableBuilder(
             listenable: session,
-            // **عرضياً: الفيديو وحده يملأ الشاشة** (بلاغ المالك
-            // 2026-09-05: «أخرج من الملء التام والجهاز عرضي فيظهر
-            // التطبيق بالعرض»). الخروج اليدوي يُنزع تسليح الإمالة
-            // فلا يُعاد فتح الملء التام — وكانت النتيجة ورقةً كريمية
-            // وفيديو مضغوط في شاشة عريضة. الآن الوضع العرضي **شكلٌ**
-            // من أشكال هذه الشاشة لا خطأً فيها.
+            // **In landscape the video alone fills the screen** (field
+            // report
+            // 2026-09-05: "I leave full screen with the device in landscape
+            // and the
+            // app shows sideways"). Leaving manually disarms tilt so full
+            // screen is
+            // not reopened, and the result was a cream sheet with a
+            // squeezed video on
+            // a wide screen. Landscape is now **a form** of this screen
+            // rather than a
+            // fault in it.
             builder: (context, _) =>
                 MediaQuery.orientationOf(context) == Orientation.landscape
                     ? _VideoArea(
@@ -166,7 +185,9 @@ class MTVideoScreen extends StatelessWidget {
       currentIndex: ordered.indexWhere((i) => i.canonicalUrl == currentUrl),
       artwork: artwork,
       playlistName: playlistName,
-      // الجلسة تُخطر عند كل نبضة، فالورقة تعرف متى توقّف التشغيل.
+      // The session notifies on every tick, so the sheet knows when
+      // playback
+      // stopped.
       liveness: session,
       paused: () => !session.isPlaying,
       onShowAll: onShowPlaylist,
@@ -175,13 +196,16 @@ class MTVideoScreen extends StatelessWidget {
     );
   }
 
-  /// حوار المزامنة الذكية عند الخروج (م-23).
+  /// The smart handover dialog on exit.
   Future<void> _askContinueAsAudio(BuildContext context) async {
     final item = session.current;
     final navigator = Navigator.of(context);
-    // **لا نُسقط إلا صفحتنا** (بلاغ المالك 2026-09-03): النقل إلى الصوت
-    // قد يطول، وقد يكون المستخدم غادر بطريق آخر خلاله — فـ`pop()` عمياء
-    // بعده تُسقط **الغلاف نفسه** فلا يبقى شيء: شاشة سوداء.
+    // **We only pop our own page** (field report 2026-09-03): the handover
+    // to
+    // audio can take a while, and the user may have left another way in the
+    // meantime, so a blind `pop()` afterwards popped **the shell itself**
+    // and
+    // nothing was left: a black screen.
     final route = ModalRoute.of(context);
     void popSelf() {
       if (route == null || route.isCurrent) navigator.pop();
@@ -226,7 +250,7 @@ class _VideoArea extends StatelessWidget {
     this.fill = false,
   });
 
-  /// يملأ الشاشة (الوضع العرضي) بدل 32٪ من ارتفاعها.
+  /// Fills the screen in landscape instead of 32% of its height.
   final bool fill;
 
   final MTVideoSession session;

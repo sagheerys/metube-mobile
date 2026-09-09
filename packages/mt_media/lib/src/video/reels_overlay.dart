@@ -5,7 +5,7 @@ import '../models/playlist_item.dart';
 import '../screens/mt_video_screen.dart';
 import '../widgets/media_time.dart';
 
-/// شريط الريلز العلوي: عودة · «⚡ قِصار ٣ / ١٤» · المزيد.
+/// The reels top bar: back, "shorts 3 / 14", and more.
 class MTReelsTopBar extends StatelessWidget {
   const MTReelsTopBar({
     super.key,
@@ -43,7 +43,8 @@ class MTReelsTopBar extends StatelessWidget {
                 borderRadius: BorderRadius.circular(MTRadius.chip),
               ),
               child: Text(
-                // العدّاد معزول: «2 / 40» كانت تُعرض «40 / 2».
+                // The counter is isolated: "2 / 40" used to render as "40 /
+                // 2".
                 '⚡ ${l10n.shortsFilter}   ${mtLtrRun('$position / $total')}',
                 style: Theme.of(context).textTheme.labelSmall!
                     .copyWith(color: ink, fontWeight: FontWeight.w700),
@@ -64,12 +65,13 @@ class MTReelsTopBar extends StatelessWidget {
   }
 }
 
-/// عمود الأفعال الجانبي في متناول الإبهام (تفاصيل/أضف إلى/مشاركة).
+/// The side action column, within thumb reach: details, add to, share.
 ///
-/// **زر المفضلة اختياري** (بلاغ المالك 2026-09-04): التطبيقان يقدّمان
-/// بدله زر «أضف إلى…» الذي يجمع المفضلة والوسم والقائمة في مكان واحد،
-/// فبقاء قلبٍ مستقل كان تكراراً لفعل موجود. `onToggleFavorite = null`
-/// ⇒ لا قلب — والضغطة المزدوجة على المقطع تبقى كما هي (م-36).
+/// **The favourite button is optional** (field report 2026-09-04): both
+/// apps offer an "add to…" button instead, which gathers favourites, tags
+/// and playlists in one place, so a separate heart repeated an action that
+/// already existed. `onToggleFavorite = null` means no heart, and the
+/// double tap on the clip stays as it was.
 class MTReelsRail extends StatelessWidget {
   const MTReelsRail({
     super.key,
@@ -164,7 +166,8 @@ class _RailButton extends StatelessWidget {
   }
 }
 
-/// كتلة المعلومات أسفل الشاشة: رقاقة المصدر والمدة، العنوان، الناشر.
+/// The information block at the bottom: the source and duration chip, the
+/// title, the uploader.
 class MTReelsInfo extends StatelessWidget {
   const MTReelsInfo({super.key, required this.item, this.subtitle});
 
@@ -217,7 +220,8 @@ class MTReelsInfo extends StatelessWidget {
   }
 }
 
-/// بطاقة نهاية المسار: «انتهت القِصار» + عودة / متابعة بقية القائمة.
+/// The end-of-lane card: "shorts finished", with back or continue with the
+/// rest of the list.
 class MTReelsEndCard extends StatelessWidget {
   const MTReelsEndCard({
     super.key,

@@ -2,14 +2,16 @@ import 'dart:io';
 
 import 'transfer.dart';
 
-/// **كنس الملفات الجزئية اليتيمة (إصلاح خ-3).**
+/// **Sweeping orphaned partial files (fix خ-3).**
 ///
-/// قتلُ التطبيق في منتصف سحب كبير يترك `<اسم>.part` على القرص، والاسم
-/// الجديد بعد إعادة المحاولة مختلف (طابع `HHmmss`) فلا ينظّف القديم
-/// أحد — **ولا كنس إقلاع في أي من التطبيقين**. مسح المكتبة يتجاهل
-/// `.part` عمداً، فالمساحة تضيع بلا أن يراها المستخدم.
+/// Killing the app in the middle of a large pull leaves `<name>.part` on
+/// disk, and the new name after a retry differs because of the `HHmmss`
+/// stamp, so nobody ever cleans the old one — and **neither app swept at
+/// startup**. The library scan skips `.part` on purpose, so the space is
+/// lost without the user ever seeing it.
 ///
-/// [olderThan] يحمي سحباً **جارياً الآن** من أن يُكنس تحت أقدامه.
+/// [olderThan] protects a pull **happening right now** from being swept
+/// out from under it.
 Future<int> sweepPartialFiles(
   String directoryPath, {
   Duration olderThan = const Duration(hours: 6),
@@ -28,11 +30,13 @@ Future<int> sweepPartialFiles(
         await entity.delete();
         removed++;
       } on FileSystemException {
-        // ملف مقفل أو حُذف بيننا — لا شيء يُفعل.
+        // A locked file, or one deleted between the listing and here.
+        // Nothing to
+        // do.
       }
     }
   } on FileSystemException {
-    // مجلد بلا صلاحية قراءة ⇒ لا كنس، ولا انهيار إقلاع.
+    // A folder with no read permission: no sweep, and no crash at startup.
   }
   return removed;
 }

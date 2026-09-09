@@ -1,14 +1,16 @@
-/// **عزل الاتجاه للأرقام في نصّ عربي.**
+/// **Direction isolation for numbers inside Arabic text.**
 ///
-/// العربية RTL، والمحارف المحايدة (`/` و`-` و`#`) تلتصق بالطرف الخطأ
-/// من عبارة عددية فتقلب معناها. مقيس على جهاز المالك 2026-09-05:
-/// «2 / 40» في الريلز تُعرض «40 / 2»، و«-50:49» تُعرض «50:49-».
+/// Arabic runs right to left, and neutral characters (`/`, `-`, `#`)
+/// attach to the wrong end of a numeric phrase, inverting its meaning.
+/// Measured on a real device 2026-09-05: "2 / 40" in reels rendered as
+/// "40 / 2", and "-50:49" rendered as "50:49-".
 ///
-/// `\u2066` (LRI) و`\u2069` (PDI) يعزلان المقطع فيُقرأ من اليسار مهما
-/// كان اتجاه الفقرة حوله — بلا `Directionality` يلفّ الودجت، وبلا أن
-/// يغيّر شيئاً في الإنجليزية.
+/// `\u2066` (LRI) and `\u2069` (PDI) isolate the run so it reads left to
+/// right whatever the surrounding paragraph does. No `Directionality`
+/// widget to wrap, and no effect at all in English.
 String mtLtrRun(String text) => '\u2066$text\u2069';
 
-/// أول محرف عزل — للاختبارات ولمن يحتاج البناء بنفسه.
+/// The opening isolate character, for tests and for callers that build
+/// the string themselves.
 const String mtLtrIsolate = '\u2066';
 const String mtPopIsolate = '\u2069';

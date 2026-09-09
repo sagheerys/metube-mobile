@@ -1,20 +1,22 @@
 import '../models/playback_source.dart';
 
-/// حالة المشغل كما يراها منطقنا — مستقلة عن حزمة التشغيل.
+/// The player state as our logic sees it, independent of the playback
+/// package.
 enum MediaPlaybackState { idle, loading, buffering, ready, completed }
 
-/// المنفذ الذي يكلّم به [MTAudioHandler] أي مشغل فعلي.
+/// The port through which [MTAudioHandler] talks to any real player.
 ///
-/// وجوده متعمَّد: منطق القائمة والأوضاع وحفظ الموضع و«لا مشغل شبح»
-/// يُختبر كاملاً بلا قنوات منصة (TRD §3.2)، وحزمة التشغيل تبقى تفصيلاً
-/// قابلاً للاستبدال في مكان واحد.
+/// It exists deliberately: the queue logic, the modes, position saving and
+/// "no ghost player" are all tested without platform channels (TRD §3.2),
+/// and the playback package stays a detail replaceable in one place.
 abstract interface class MediaPlayerPort {
   Future<void> setSource(PlaybackSource source, {Duration initialPosition});
 
-  /// **عقدها «أصدر أمر التشغيل» لا «شغّل حتى النهاية»** — يكتمل
-  /// مستقبلها حين يُقبل الأمر. حزمة `just_audio` تفعل العكس (مستقبلها
-  /// يكتمل عند التوقف)، فتغليفها هو ما يحفظ هذا العقد. كسرُه علّق شاشة
-  /// الفيديو وأسقط الغلاف لاحقاً (بلاغ المالك 2026-09-03).
+  /// **Its contract is "issue the play command", not "play to the end"**:
+  /// its future completes when the command is accepted. `just_audio` does
+  /// the opposite, completing on stop, and wrapping it is what preserves
+  /// this contract. Breaking it hung the video screen and popped the shell
+  /// later (field report 2026-09-03).
   Future<void> play();
   Future<void> pause();
   Future<void> stop();
@@ -28,12 +30,14 @@ abstract interface class MediaPlayerPort {
   bool get playing;
   MediaPlaybackState get state;
 
-  /// أي تغيّر يستوجب إعادة بث حالة الإشعار.
+  /// Any change that requires the notification state to be rebroadcast.
   Stream<void> get events;
   Stream<MediaPlaybackState> get stateStream;
   Stream<Duration> get positionStream;
 
-  /// أخطاء التشغيل (مصدر معطوب، شبكة منقطعة) ⇒ تخطي تلقائي (م-21).
+  /// Playback errors, a broken source or a dropped network, which trigger
+  /// an
+  /// automatic skip.
   Stream<Object> get errors;
 
   Future<void> dispose();

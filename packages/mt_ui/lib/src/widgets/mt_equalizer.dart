@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import '../theme/mt_theme.dart';
 import '../tokens/tokens.dart';
 
-/// مؤشر «قيد التشغيل الآن»: 4 أعمدة متمايلة بلون الفعل — من مرجع وهج.
+/// The "now playing" indicator: four swaying bars in the accent colour,
+/// from the Wahaj reference.
 class MTEqualizer extends StatefulWidget {
   const MTEqualizer({super.key, this.size = 14, this.animate = true});
 
@@ -30,10 +31,12 @@ class _MTEqualizerState extends State<MTEqualizer>
     if (widget.animate) _controller.repeat(reverse: true);
   }
 
-  /// **يتوقف فعلاً عند الإيقاف المؤقت** (بلاغ المالك 2026-09-04:
-  /// «التأثير يستمر بعد إيقاف المقطع فيوحي أنه يعمل»). العلم كان
-  /// يُقرأ في `initState` فقط، فتغيّره لاحقاً لا يوقف المتحكم — يبقى
-  /// يعيد البناء ستين مرة في الثانية على مقطع ساكن.
+  /// **It actually stops when playback pauses** (field report 2026-09-04:
+  /// the effect kept running after the clip stopped, suggesting it was
+  /// still
+  /// playing). The flag was only read in `initState`, so changing it later
+  /// did not stop the controller, which went on rebuilding sixty times a
+  /// second over a silent clip.
   @override
   void didUpdateWidget(MTEqualizer oldWidget) {
     super.didUpdateWidget(oldWidget);

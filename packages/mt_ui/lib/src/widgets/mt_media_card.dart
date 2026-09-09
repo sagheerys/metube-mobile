@@ -10,11 +10,13 @@ import 'mt_platform_chip.dart';
 import 'mt_location_badge.dart';
 import 'mt_polish.dart';
 
-/// موقع العنصر — يلوّن شارته: «دون اتصال» زيتوني · «على السيرفر» وهج soft.
+/// Where the item lives, which colours its badge: olive for "offline",
+/// soft ember for "on the server".
 enum MTMediaLocation { none, offline, onServer, both }
 
-/// بطاقة الوسائط «وهج»: صف مفصول بخيط شعري (لا صندوق) — كاملة أو مضغوطة.
-/// عرض بحت: كل البيانات نصوص وأعلام جاهزة من طبقة التطبيق.
+/// The Wahaj media card: a row separated by a hairline rather than a box,
+/// full or compact. Presentation only: every value arrives as a ready
+/// string or flag from the app layer.
 class MTMediaCard extends StatelessWidget {
   const MTMediaCard({
     super.key,
@@ -39,7 +41,8 @@ class MTMediaCard extends StatelessWidget {
 
   final String title;
 
-  /// المصغرة يقدمها التطبيق (cached_network_image / ملف محلي).
+  /// The app supplies the thumbnail, from cached_network_image or a local
+  /// file.
   final Widget? thumbnail;
   final String? duration;
   final MTPlatformKind platform;
@@ -49,18 +52,23 @@ class MTMediaCard extends StatelessWidget {
   final bool compact;
   final bool selected;
 
-  /// **توهّج واحد يتلاشى** — «انظر هنا»، لا «هذا محدد».
+  /// **One highlight that fades**, meaning "look here", not "this is
+  /// selected".
   ///
-  /// كان المنادي يمرّر `selected: true` ليبرز عنصراً وصله المستخدم من
-  /// نقرة إشعار أو اكتمل تحميله للتو. لكن `selected` تعني في كل مكان
-  /// آخر «داخل التحديد الجماعي»، فبدا العنصر عالقاً في وضع تحديد لا
-  /// يخرج منه — وهو بالضبط ما وصفه المالك بـ«يظل مؤشراً على طول».
-  /// الآن حالتان مختلفتان بصرياً ودلالياً: التحديد يثبت، والتوهج يمضي.
+  /// Callers used to pass `selected: true` to draw attention to an item the
+  /// user had reached from a notification tap, or that had just finished
+  /// downloading. But `selected` everywhere else means "inside a
+  /// multi-select",
+  /// so the item looked stuck in a selection it could not leave, which is
+  /// exactly what was described as "it stays marked forever". There are now
+  /// two states, distinct visually and in meaning: selection holds, a
+  /// highlight passes.
   final bool highlighted;
   final bool playing;
 
-  /// [playing] يعني «هذا هو العنصر الحالي»؛ [paused] يعني أنه متوقف
-  /// مؤقتاً — فيظهر المؤشر ساكناً بدل أن يرقص على مقطع لا يعمل.
+  /// [playing] means "this is the current item"; [paused] means it is
+  /// suspended, so the indicator shows still instead of dancing over a clip
+  /// that is not running.
   final bool paused;
   final bool favorite;
   final VoidCallback? onTap;
@@ -68,8 +76,9 @@ class MTMediaCard extends StatelessWidget {
   final VoidCallback? onFavoriteToggle;
   final VoidCallback? onMore;
 
-  /// وصف قارئ الشاشة: العنوان ثم ما يميّز حالة البطاقة (م-2.7 «RTL
-  /// وSemantics»). يُبنى نصاً واحداً لأن القارئ يقرأ البطاقة كوحدة.
+  /// The screen-reader description: the title, then whatever distinguishes
+  /// this card's state. Built as a single string because a reader announces
+  /// the card as one unit.
   String _semanticsLabel(MTLocalizations l10n) => [
     title,
     ?subtitle,
@@ -91,7 +100,9 @@ class MTMediaCard extends StatelessWidget {
       button: onTap != null,
       selected: selected,
       label: _semanticsLabel(l10n),
-      // الأزرار الداخلية تحتفظ بدلالتها؛ النصوص تُستبدل بالوصف الموحّد.
+      // Inner buttons keep their own semantics; their labels are replaced
+      // by
+      // the combined description.
       explicitChildNodes: true,
       child: MTHighlightSurface(
         selected: selected,
@@ -101,7 +112,8 @@ class MTMediaCard extends StatelessWidget {
           onLongPress: onLongPress == null
               ? null
               : () {
-                  // ر-6: الدخول لوضع التحديد يستحق نبضة تأكيد.
+                  // Rule 6: entering selection mode deserves a confirming
+                  // pulse.
                   HapticFeedback.selectionClick();
                   onLongPress!();
                 },
@@ -139,8 +151,10 @@ class MTMediaCard extends StatelessWidget {
                       SizedBox(height: compact ? 3 : 6),
                       Row(
                         children: [
-                          // المنصة المجهولة لا تستحق رمزاً ولا فاصلاً:
-                          // «• · منذ ٣ دقائق» ضجيج بصري (تدقيق 8.1).
+                          // An unknown platform deserves neither an icon
+                          // nor a separator: a bullet
+                          // followed by "3 minutes ago" is visual noise
+                          // (audit 8.1).
                           if (platform != MTPlatformKind.other)
                             MTPlatformChip(kind: platform),
                           if (subtitle != null) ...[
@@ -186,7 +200,9 @@ class MTMediaCard extends StatelessWidget {
                       onFavoriteToggle!();
                     },
                     visualDensity: VisualDensity.compact,
-                    // ♡ ⇄ ♥ بتلاشٍ وتوسّع بدل القفزة (تلميع 2026-09-04).
+                    // The favourite heart fades and expands rather than
+                    // jumping (polish
+                    // 2026-09-04).
                     icon: MTIconSwap(
                       icon: favorite
                           ? Icons.favorite_rounded

@@ -10,8 +10,9 @@ import 'mt_orientation.dart';
 import 'mt_video_controls.dart';
 import 'mt_video_session.dart';
 
-/// الوضع العرضي الغامر (مرجع «وهج» C/D): الفيديو ملء الشاشة، الأدوات
-/// تظهر بلمسة وتختفي، وقائمة الانتظار **لوحة جانبية منزلقة** (م-38).
+/// Immersive landscape (Wahaj references C and D): the video fills the
+/// screen, the chrome appears on a touch and hides again, and the queue is
+/// **a sliding side panel**.
 class MTVideoFullscreenPage extends StatefulWidget {
   const MTVideoFullscreenPage({
     super.key,
@@ -28,12 +29,16 @@ class MTVideoFullscreenPage extends StatefulWidget {
   final VoidCallback? onShowPlaylist;
   final String? playlistName;
 
-  /// انتماء المقطع (وسوم/قوائم) — يُعرض تحت العنوان في الوضع العرضي.
+  /// Where the clip belongs (tags and playlists), shown under the title in
+  /// landscape.
   final String? membershipLine;
 
-  /// **دخلنا بإمالة الجهاز لا بالزر.** الفرق سلوكي: الداخل بالإمالة
-  /// يخرج بالإمالة العكسية (يوتيوب)، والداخل بالزر يبقى عرضياً حتى
-  /// يضغط الخروج — لأن قافل التدوير لا يستطيع أن يميل أصلاً.
+  /// **We entered by tilting the device rather than by the button.** The
+  /// difference is behavioural: entering by tilt leaves on the opposite
+  /// tilt
+  /// (as YouTube does), while entering by the button stays landscape until
+  /// exit is pressed, because someone with rotation locked cannot tilt at
+  /// all.
   final bool byRotation;
 
   @override
@@ -57,8 +62,10 @@ class _MTVideoFullscreenPageState extends State<MTVideoFullscreenPage> {
   @override
   void dispose() {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-    // **لا نقفل الطولي هنا**: المشغل العمودي تحتنا ما زال قائماً وهو
-    // صاحب السياسة — قفلُنا كان يثبّت التطبيق كله على الطولي للأبد.
+    // **We do not lock portrait here**: the portrait player beneath us is
+    // still alive and owns the policy. Locking from here pinned the whole
+    // app
+    // to portrait forever.
     MTOrientation.allow();
     super.dispose();
   }
@@ -66,7 +73,7 @@ class _MTVideoFullscreenPageState extends State<MTVideoFullscreenPage> {
   @override
   Widget build(BuildContext context) {
     final session = widget.session;
-    // الخروج بالإمالة العكسية — لمن دخل بها.
+    // Leaving on the opposite tilt, for whoever entered that way.
     if (widget.byRotation &&
         MediaQuery.orientationOf(context) == Orientation.portrait) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -118,7 +125,8 @@ class _MTVideoFullscreenPageState extends State<MTVideoFullscreenPage> {
   }
 }
 
-/// لوحة القائمة الجانبية: تنزلق من جهة البداية فوق الفيديو المعتم.
+/// The queue side panel: it slides in from the leading edge over the
+/// dimmed video.
 class _SidePanel extends StatelessWidget {
   const _SidePanel({
     required this.session,

@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../theme/mt_theme.dart';
 
-/// حقل البحث الدائم (النموذج أ: البحث ظاهر دائماً لا خلف أيقونة).
+/// The always-visible search field: search is on screen, not behind an
+/// icon.
 class MTSearchField extends StatelessWidget {
   const MTSearchField({
     super.key,

@@ -1,7 +1,8 @@
 import 'history_item.dart';
 
-/// استجابة `GET /history` كاملة: `{done, queue, pending}` — القوائم الغائبة
-/// تصبح فارغة، والعناصر غير الصالحة تُتجاوز بصمت (تحليل متسامح).
+/// The complete `GET /history` response: `{done, queue, pending}`. Missing
+/// lists become empty, and invalid items are skipped silently (tolerant
+/// parsing).
 class HistoryResponse {
   const HistoryResponse({
     this.done = const [],
@@ -13,13 +14,14 @@ class HistoryResponse {
   final List<HistoryItem> queue;
   final List<HistoryItem> pending;
 
-  /// كل الجاري (queue + pending) — للعرض الحي وبطاقات التقدم.
+  /// Everything in flight (queue plus pending), for the live view and the
+  /// progress cards.
   List<HistoryItem> get active => [...queue, ...pending];
 
   bool get isEmpty => done.isEmpty && queue.isEmpty && pending.isEmpty;
 
-  /// صحة الاستكشاف (§2.1): Map يحوي `done` و`queue` معاً — وإلا فليس
-  /// سيرفر MeTube (استجابة HTML مثلاً).
+  /// The discovery check (§2.1): a map carrying both `done` and `queue`.
+  /// Anything else is not a MeTube server, an HTML response for example.
   static bool looksLikeMeTube(dynamic decoded) =>
       decoded is Map && decoded.containsKey('done') && decoded.containsKey('queue');
 

@@ -2,12 +2,13 @@ import 'dart:async';
 
 import '../models/history_item.dart';
 
-/// ركن المهام التي أوقفتها بوابة الشبكة (م-42) — **إصلاح م-10**.
+/// Parking tasks the network gate stopped.
 ///
-/// كان العامل الواحد يقف على مهمة محجوزة بـ«Wi‑Fi فقط» في رأس الطابور،
-/// فتتوقف حتى *إضافة* ما بعدها إلى السيرفر وتظهر «في الانتظار» بلا
-/// تفسير. الآن تُركن جانباً بعنصر سجلها جاهزاً، ويكمل الطابور، ويوقظها
-/// نبض دوري حين تأذن البوابة.
+/// The single worker used to stall on a task held by "Wi-Fi only" at the
+/// head of the queue, so everything behind it stopped even being *added*
+/// to the server and simply showed "waiting" with no explanation. Now such
+/// a task is parked aside with its history item ready, the queue
+/// continues, and a periodic tick wakes it when the gate allows.
 class PullGateParking {
   PullGateParking({required this.pollInterval, required this.onWake});
 
@@ -28,7 +29,8 @@ class PullGateParking {
     });
   }
 
-  /// أول مهمة مركونة إن أذنت [gate] — تُنزع قبل تشغيلها فلا تُشغَّل مرتين.
+  /// The first parked task if [gate] allows. It is removed before it runs,
+  /// so it can never run twice.
   (String, HistoryItem)? takeIfOpen(bool Function() gate) {
     if (_items.isEmpty || !gate()) return null;
     final id = _items.keys.first;

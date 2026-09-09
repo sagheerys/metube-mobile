@@ -1,29 +1,27 @@
 part of 'audio_handler.dart';
 
-/// **التعافي والاستمرار** — سياسة تخطي العنصر المعطوب، وحفظ الموضع
-/// ولقطة الجلسة.
+/// **Recovery and continuity**: the policy for skipping a broken item, and
+/// saving the position and the session snapshot.
 ///
-/// **ملف `part` لا مكتبة مستقلة** (القاعدة 4 — حدّ الأسطر): هذه الدوال
-/// تعمل على الطابور الخاص (`_queue`، `_consecutiveErrors`)، وامتدادٌ في
-/// مكتبة أخرى لا يصل للأعضاء الخاصة.
-///
-/// **ولا تُنقل هنا أي دالة تحمل `@override`:** الامتداد لا يتجاوز دالة
-/// الأصل، وكان `audio_service` سينادي نسخة `BaseAudioHandler` بدلاً منها
-/// — خطأ صحّة لا تنسيق (اكتُشف في الفحص الشامل 2026-09-02).
+/// **A `part` file rather than its own library** (rule 4, the size limit):
+/// these functions work on the private queue (`_queue`,
+/// `_consecutiveErrors`), and an extension in another library cannot reach
+/// private members.
 extension MTAudioHandlerRecovery on MTAudioHandler {
-  /// أقصى تخطٍّ متتالٍ قبل الاستسلام — العطب المنهجي (شبكة مقطوعة أو
-  /// cleartext محظور) يُفشل كل العناصر، فالمرور على مئة عنصر بصمت أسوأ
-  /// من التوقف الصريح.
+  /// The maximum number of consecutive skips before giving up. A systemic
+  /// fault, a dead network or blocked cleartext, fails every item, and
+  /// marching silently through a hundred of them is worse than stopping
+  /// plainly.
   static const int maxConsecutiveSkips = 5;
 
-  /// تخطي تلقائي للعنصر المعطوب (م-21) — وإن تكرر العطب نتوقف بدل
-  /// الدوران بلا نهاية.
+  /// Automatically skips a broken item, and stops if the fault repeats
+  /// rather than looping forever.
   ///
-  /// **[autoPlay] يُورَّث من المسار الذي استدعانا (إصلاح ع-5):** كان
-  /// مثبّتاً على `true`، فإن تعذّر أول عناصر الجلسة المستعادة عند
-  /// الإقلاع (ملف حُذف، سيرفر غير متاح لحظتها) **بدأ العنصر التالي
-  /// يعزف بصوت مسموع بلا أي نقرة** — خرقاً لقاعدة م-21 «الاستعادة بلا
-  /// تشغيل تلقائي».
+  /// **[autoPlay] is inherited from the path that called us (fix ع-5):** it
+  /// used to be hard-coded to `true`, so if the first item of a restored
+  /// session failed at startup, a deleted file or a server briefly
+  /// unreachable, **the next item started playing out loud with no tap at
+  /// all**, breaking the rule that restoration never autoplays.
   Future<void> _onError({bool autoPlay = true}) async {
     _consecutiveErrors++;
     if (_queue.isEmpty ||
@@ -51,7 +49,7 @@ extension MTAudioHandlerRecovery on MTAudioHandler {
     );
   }
 
-  /// حفظ دوري: الموضع + لقطة الجلسة (م-21).
+  /// Periodic saving: the position plus the session snapshot.
   Future<void> persist() async {
     if (_queue.isEmpty) return;
     await savePosition();
@@ -98,6 +96,7 @@ extension MTAudioHandlerRecovery on MTAudioHandler {
     }
   }
 
-  /// هل سبقنا تحميلٌ أحدث (أو إيقاف)؟ ⇒ لا نلمس حالة مشتركة بعدها.
+  /// Has a newer load, or a stop, overtaken us? If so we touch no shared
+  /// state afterwards.
   bool _isStale(int generation) => generation != _generation;
 }

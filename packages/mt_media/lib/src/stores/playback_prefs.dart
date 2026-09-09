@@ -2,9 +2,10 @@ import 'package:mt_core/mt_core.dart';
 
 import '../models/play_mode.dart';
 
-/// تفضيلات المشغلات المحفوظة (§5.1): وضع التشغيل، السرعة، العشوائي.
-/// وضع التشغيل يقبل مفتاحاً فرعياً لكل قائمة (`player_play_mode_<id>`)
-/// كما في المخطط، والافتراض العام حين لا يوجد مخصص.
+/// The saved player preferences (§5.1): play mode, speed, shuffle. The
+/// play mode accepts a per-playlist sub-key (`player_play_mode_<id>`) as
+/// the schema specifies, with the general one as the default when there is
+/// no specific value.
 class PlaybackPrefs {
   PlaybackPrefs({required this.store, required this.mutex});
 

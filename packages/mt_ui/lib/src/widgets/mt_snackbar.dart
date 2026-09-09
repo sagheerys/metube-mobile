@@ -4,10 +4,12 @@ import '../theme/mt_theme.dart';
 
 enum MTSnackType { info, success, error }
 
-/// زمن ظهور الشريط — واحد لكل الأشرطة، بفعل أو بلا فعل.
+/// How long a snack bar stays: one duration for all of them, with or
+/// without an action.
 const mtSnackDuration = Duration(seconds: 4);
 
-/// SnackBar موحد «قطعة معكوسة» بأيقونة دلالية وزر تراجع اختياري.
+/// One SnackBar style, an inverted slab with a meaningful icon and an
+/// optional undo.
 void showMTSnack(
   BuildContext context,
   String message, {
@@ -26,9 +28,10 @@ void showMTSnack(
       duration: duration,
     );
 
-/// نفسه بمُراسِل **ملتقط مسبقاً**: يُستعمل حين يكون السياق الأصلي قد
-/// أُبطِل (ورقة سفلية أُغلقت للتو) — البحث عن `ScaffoldMessenger` بسياق
-/// مُبطَّل يفجّر تأكيد `_dependents.isEmpty` (درس المرحلتين 6 و7).
+/// The same, with a **pre-captured** messenger. Used when the original
+/// context has already been deactivated, such as a bottom sheet that just
+/// closed: looking up `ScaffoldMessenger` through a deactivated context
+/// trips the `_dependents.isEmpty` assertion.
 void showMTSnackOn(
   ScaffoldMessengerState messenger,
   String message, {
@@ -48,12 +51,18 @@ void showMTSnackOn(
     ..hideCurrentSnackBar()
     ..showSnackBar(
       SnackBar(
-        // **يختفي وحده حتى مع وجود فعل** (بلاغ المالك 2026-09-04:
-        // «الإشعارات التي تأتي فوق زر إضافة رابط لا تذهب»).
-        // في Flutter: `persist = persist ?? action != null` — فكل شريط
-        // له زر (مثل «بدأ التحميل · تغيير الجودة») كان **يبقى للأبد**
-        // حتى يُزيحه المستخدم بيده، بينما «أُضيف للمفضلة» بلا فعل
-        // يختفي بعد أربع ثوانٍ. القرار: زمن واحد للجميع.
+        // **It dismisses itself even when it has an action** (field report
+        // 2026-09-04: "the notices that appear over the add-link button
+        // never go
+        // away"). In Flutter, `persist = persist ?? action != null`, so
+        // every bar
+        // with a button, such as "download started · change quality",
+        // stayed
+        // **forever** until the user swiped it away, while "added to
+        // favourites"
+        // with no action vanished after four seconds. The decision: one
+        // duration
+        // for all.
         persist: false,
         duration: duration,
         content: Row(

@@ -4,12 +4,13 @@ import 'package:video_player/video_player.dart';
 
 import '../widgets/media_time.dart';
 
-/// شريط تقدّم الريلز — **قابل للسحب** (بلاغ المالك 2026-09-02: «لا
-/// تستطيع التقديم والترجيع ولا إمساك العداد»).
+/// The reels progress bar, **draggable** (field report 2026-09-02: "you
+/// cannot seek forward or back, or grab the counter").
 ///
-/// أثناء السحب نعرض موضع الإصبع لا موضع المشغل، وإلا قفز المؤشر للخلف
-/// مع كل تحديث من المشغل فبدا الشريط «يقاوم» الإصبع. ومنطقة اللمس
-/// **٢٤ نقطة** حول خيط سمكه ٣ — الشريط النحيل جميل ولا يُمسك.
+/// While dragging we show the finger's position rather than the player's,
+/// or the marker jumped back with every player update and the bar seemed
+/// to "resist" the finger. And the touch area is **24 points** around a
+/// 3-point line: a thin bar is pretty and impossible to grab.
 class ReelsProgressBar extends StatefulWidget {
   const ReelsProgressBar({
     super.key,
@@ -20,9 +21,11 @@ class ReelsProgressBar extends StatefulWidget {
 
   final VideoPlayerController? controller;
 
-  /// **الشريط لا يشغّل ولا يوقف بنفسه (العطل ط-3):** مالك الحالة وحده
-  /// يعرف تركيز الصوت وقفل الشاشة. [onScrubEnd] يُستدعى عند نهاية
-  /// السحب **وعند إلغائه** فلا يبقى المقطع موقوفاً بلا مؤشر.
+  /// **The bar never plays or pauses by itself (defect ط-3):** only the
+  /// state owner knows about audio focus and the wake lock. [onScrubEnd] is
+  /// called at the end of a drag **and on its cancellation**, so the clip
+  /// is
+  /// never left paused with no indicator.
   final VoidCallback? onScrubStart;
   final VoidCallback? onScrubEnd;
 
@@ -43,15 +46,16 @@ class _ReelsProgressBarState extends State<ReelsProgressBar> {
     controller.seekTo(total * fraction.clamp(0, 1));
   }
 
-  /// الكسر من إحداثي أفقي — **يحترم RTL**: أقصى «بداية» الاتجاه = 0.
+  /// The fraction from a horizontal coordinate, **respecting RTL**: the
+  /// extreme "start" of the direction is 0.
   double _fractionFrom(Offset local, double width) {
     if (width <= 0) return 0;
     final raw = (local.dx / width).clamp(0.0, 1.0);
     return Directionality.of(context) == TextDirection.rtl ? 1 - raw : raw;
   }
 
-  /// تبديل الصفحة أثناء السحب كان يترك [_dragFraction] عالقاً، فيتجمد
-  /// شريط المقطع التالي على كسر قديم.
+  /// Changing page mid-drag used to leave [_dragFraction] stuck, freezing
+  /// the next clip's bar at an old fraction.
   @override
   void didUpdateWidget(ReelsProgressBar oldWidget) {
     super.didUpdateWidget(oldWidget);
@@ -90,7 +94,7 @@ class _ReelsProgressBarState extends State<ReelsProgressBar> {
             setState(() => _dragFraction = null);
             widget.onScrubEnd?.call();
           },
-          // نقرة على الشريط = قفزة مباشرة (بلا سحب).
+          // A tap on the bar is a direct jump, with no drag.
           onTapDown: (d) {
             final fraction = _fractionFrom(d.localPosition, width);
             _seekToFraction(fraction);
@@ -115,7 +119,8 @@ class _ReelsProgressBarState extends State<ReelsProgressBar> {
                           borderRadius: BorderRadius.circular(3),
                           child: LinearProgressIndicator(
                             value: shown,
-                            // يثخن تحت الإصبع: تأكيد أن السحب أُمسك.
+                            // It thickens under the finger: confirmation
+                            // that the drag was caught.
                             minHeight: dragging ? 6 : 3,
                             backgroundColor: MTPalette.serverCardInk
                                 .withValues(alpha: 0.25),

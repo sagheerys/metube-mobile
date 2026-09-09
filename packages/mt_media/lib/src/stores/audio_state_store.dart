@@ -4,7 +4,8 @@ import 'package:mt_core/mt_core.dart';
 
 import '../models/playlist_item.dart';
 
-/// لقطة جلسة الصوت المحفوظة (م-21: استعادة القائمة بعد إعادة التشغيل).
+/// A snapshot of the saved audio session, for restoring the queue after a
+/// restart.
 class AudioSessionSnapshot {
   const AudioSessionSnapshot({
     required this.items,
@@ -17,7 +18,7 @@ class AudioSessionSnapshot {
   final int index;
   final Duration position;
 
-  /// معرف القائمة المحفوظة التي جاءت منها الجلسة (إن وُجدت).
+  /// The id of the saved playlist the session came from, if any.
   final String? playlistId;
 
   bool get isEmpty => items.isEmpty;
@@ -30,8 +31,9 @@ class AudioSessionSnapshot {
       };
 }
 
-/// تخزين `audio_state` (§5.1) — يُكتب دورياً وعند كل تغيير عنصر،
-/// ويُقرأ عند الإقلاع لإحياء المشغل المصغر بلا تشغيل تلقائي.
+/// The `audio_state` store (§5.1): written periodically and on every item
+/// change, and read at startup to revive the mini player without
+/// autoplaying.
 class AudioStateStore {
   AudioStateStore({required this.store, required this.mutex});
 
@@ -75,6 +77,6 @@ class AudioStateStore {
         () => store.setString(key, json.encode(snapshot.toJson())),
       );
 
-  /// يُمسح عند `stop()` — وإلا عاد «المشغل الشبح» بعد إعادة التشغيل.
+  /// Cleared on `stop()`, or the ghost player returns after a restart.
   Future<void> clear() => mutex.run(() => store.remove(key));
 }

@@ -4,10 +4,11 @@ import 'package:mt_ui/mt_ui.dart';
 import '../models/playlist_item.dart';
 import 'mt_up_next_list.dart';
 
-/// محتوى قائمة الانتظار — نفس المحتوى في الأشكال الثلاثة (م-38):
-/// ورقة سفلية (صوتي) · قسم «التالي» (فيديو عمودي) · لوحة جانبية (عرضي).
-/// في كلها زر «احفظ هذه القائمة» ورابط «عرض الكل ↩» — والزر يغيب
-/// حين يكون المصدر قائمةً محفوظة أصلاً ([playlistName] غير فارغ).
+/// The queue contents, the same in all three shapes: a bottom sheet for
+/// audio, an "up next" section for portrait video, a side panel for
+/// landscape. All three carry a "save this queue" button and a "show all"
+/// link, and the button is absent when the source is already a saved
+/// playlist ([playlistName] non-empty).
 class MTQueuePanel extends StatelessWidget {
   const MTQueuePanel({
     super.key,
@@ -22,29 +23,31 @@ class MTQueuePanel extends StatelessWidget {
     this.nested = false,
   });
 
-  /// العناصر بترتيب التشغيل الفعلي.
+  /// The items in actual play order.
   final List<PlaylistItem> items;
 
-  /// فهرس الحالي داخل [items].
+  /// The current index inside [items].
   final int currentIndex;
   final ValueChanged<int> onSelect;
   final MTArtworkBuilder? artwork;
 
-  /// م-38: تحويل جلسة التشغيل الحالية لقائمة دائمة.
+  /// Turns the current playback session into a permanent playlist.
 
-  /// م-38: القفز لتفاصيل القائمة في تبويبها.
+  /// Jumps to the playlist's detail page in its own tab.
   final VoidCallback? onShowAll;
   final String? playlistName;
   final bool dark;
 
-  /// العنصر الحالي موقوف مؤقتاً — يُمرَّر لمؤشر التوازن فيسكن.
+  /// The current item is paused, which is passed to the equaliser so it
+  /// stands still.
   final bool paused;
 
-  /// **داخل أب قابل للتمرير؟** (بلاغ المالك 2026-09-02: «لا تستطيع تمرير
-  /// قائمة الفيديوهات السفلية»). القائمة الداخلية كانت `shrinkWrap` بلا
-  /// `physics`، أي مجرى تمرير مستقل بارتفاع محتواها بالضبط ⇒ لا مدى
-  /// لديه ليتحرك، **ويبتلع السحب** فلا يصل للأب. الحل ليس إلغاء
-  /// `shrinkWrap` بل تعطيل فيزياء الابن ليمرّر الأبُ الكلَّ.
+  /// **Inside a scrollable parent?** (field report 2026-09-02: "you cannot
+  /// scroll the video list at the bottom"). The inner list was `shrinkWrap`
+  /// with no `physics`, an independent scroll view exactly as tall as its
+  /// content, so it had no range to move **and it swallowed the drag**,
+  /// which never reached the parent. The answer is not to drop `shrinkWrap`
+  /// but to disable the child's physics so the parent scrolls everything.
   final bool nested;
 
   @override
@@ -105,7 +108,8 @@ class MTQueuePanel extends StatelessWidget {
 }
 
 
-/// يفتح ورقة قائمة الانتظار السفلية (شاشة الصوت والمشغل العمودي).
+/// Opens the queue bottom sheet, for the audio screen and the portrait
+/// player.
 Future<void> showMTQueueSheet(
   BuildContext context, {
   required List<PlaylistItem> items,
@@ -127,9 +131,10 @@ Future<void> showMTQueueSheet(
         constraints: BoxConstraints(
           maxHeight: MediaQuery.sizeOf(sheetContext).height * 0.72,
         ),
-        // **الورقة تُبنى مرة ولا تعرف أن التشغيل توقّف** — لذلك
-        // تُعاد بناؤها على [liveness] (جلسة الفيديو أو مُنبّه مشغل
-        // الصوت)، وإلا بقي مؤشر التوازن يرقص على مقطع ساكن.
+        // **The sheet is built once and does not know playback stopped**,
+        // so it
+        // is rebuilt on [liveness], the video session or the audio player's
+        // notifier, or the equaliser keeps dancing over a silent clip.
         child: _LiveQueue(
           liveness: liveness,
           builder: (context) => MTQueuePanel(
@@ -150,8 +155,8 @@ Future<void> showMTQueueSheet(
   ),
 );
 
-/// يعيد بناء محتوى الورقة كلما تغيّرت [liveness] — أو مرة واحدة إن
-/// لم يُمرَّر مصدر حياة.
+/// Rebuilds the sheet's contents whenever [liveness] changes, or once when
+/// no liveness source is supplied.
 class _LiveQueue extends StatelessWidget {
   const _LiveQueue({required this.builder, this.liveness});
 

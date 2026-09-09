@@ -1,14 +1,17 @@
 part of 'mt_video_session.dart';
 
-/// أوامر [MTVideoSession]: القفز والتخطي والوضع والسرعة.
+/// [MTVideoSession] commands: seeking, skipping, mode and speed.
 ///
-/// **ملف `part`** (القاعدة 4 — حدّ الأسطر): الأوامر تمسّ الطابور الخاص
-/// `_queue` و`_playMode`، فلا يصلح امتداد في مكتبة أخرى. والجلسة نفسها
-/// تحتفظ بالتحميل ودورة الحياة — وهي جوهرها.
+/// **A `part` file** (rule 4, the size limit): the commands touch the
+/// private `_queue` and `_playMode`, so an extension in another library
+/// will not do. The session itself keeps loading and the lifecycle, which
+/// are its essence.
 extension MTVideoSessionCommands on MTVideoSession {
   Future<void> seek(Duration to) async => _controller?.seekTo(to);
 
-  /// نقرة مزدوجة يمين/يسار = ±١٠ ثوانٍ (مرجع المشغل العرضي).
+  /// A double tap on the right or left seeks ten seconds, from the
+  /// landscape
+  /// player reference.
   Future<void> seekBy(Duration delta) async {
     final controller = _controller;
     if (controller == null) return;
@@ -58,10 +61,13 @@ extension MTVideoSessionCommands on MTVideoSession {
     notifyFromCommands();
   }
 
-  /// **القِصار بلا استئناف (م-35 — العطل ط-4):** لا فحص `isShortForm`
-  /// كان هنا إطلاقاً، فقائمة مختلطة تتقدم تلقائياً إلى مقطع قصير (أو
-  /// قائمة تُفتح في `/player`) تكتب `playback_pos_<url>` لقصير —
-  /// والريلز لا يمسحه أبداً لأنه لا يلمس مخزن المواضع: قيد ميت للأبد.
+  /// **Shorts have no resume position (defect ط-4):** there was no
+  /// `isShortForm` check here at all, so a mixed list advancing
+  /// automatically
+  /// into a short clip, or a list opened at `/player`, wrote
+  /// `playback_pos_<url>` for a short. Reels never clears it, because it
+  /// does
+  /// not touch the position store: a dead entry forever.
   Future<void> savePosition() async {
     final item = _queue.current;
     final controller = _controller;
@@ -76,9 +82,10 @@ extension MTVideoSessionCommands on MTVideoSession {
     );
   }
 
-  /// **الإسكات أولاً ثم التصريف (العطل ط-2/3):** التصريف ليس فورياً،
-  /// فكان صوت المقطعين يتداخل عند كل تخطٍّ — نفس الفخ الذي أُصلح في
-  /// الريلز ولم ينل الجلسة.
+  /// **Silence first, then dispose (defect ط-2/3):** disposal is not
+  /// immediate, so the audio of two clips overlapped on every skip. The
+  /// same
+  /// trap that was fixed in reels and never reached the session.
   Future<void> _disposePlayers() async {
     final controller = _controller;
     _controller = null;
@@ -87,21 +94,24 @@ extension MTVideoSessionCommands on MTVideoSession {
       try {
         await controller.pause();
       } on Object {
-        // متحكم مات قبلنا — التصريف تالياً يكفي.
+        // A controller that died before us; the disposal that follows is
+        // enough.
       }
       await controller.dispose();
     }
     await _setWakelock(false);
   }
 
-  /// إبقاء الشاشة مضاءة أثناء التشغيل فقط (م-20) — لا تُترك مفعّلة أبداً.
+  /// Keeps the screen awake during playback only. It is never left enabled.
   Future<void> _setWakelock(bool enabled) async {
     if (_wakelockOn == enabled) return;
     _wakelockOn = enabled;
     try {
       await WakelockPlus.toggle(enable: enabled);
     } on Object {
-      // منصة بلا دعم ⇒ التشغيل يستمر بلا إبقاء الشاشة.
+      // An unsupported platform: playback continues without keeping the
+      // screen
+      // awake.
     }
   }
 }

@@ -3,13 +3,15 @@ import 'dart:io';
 import '../constants/mt_constants.dart';
 import 'url_kit.dart';
 
-/// خطوة واحدة من تتبع redirect: تعيد رابط `Location` التالي أو null
-/// إن لم يكن هناك تحويل. تُحقن للاختبار — التنفيذ الافتراضي [ioRedirectStep].
+/// One step of redirect following: returns the next `Location` URL, or
+/// null when there is no redirect. Injected for testing; the default
+/// implementation is [ioRedirectStep].
 typedef RedirectStep = Future<String?> Function(String url);
 
-/// حلّ الروابط القصيرة (vm./vt.tiktok، fb.watch، facebook /share/،
-/// on.soundcloud) بتتبع redirect — مع **منع الهبوط HTTPS→HTTP**
-/// (`05-DATA-SCHEMA.md` §4): عند أي فشل أو هبوط يُعاد الرابط الأصلي كما هو.
+/// Resolves short links (vm./vt.tiktok, fb.watch, facebook /share/,
+/// on.soundcloud) by following redirects, while **refusing an HTTPS to
+/// HTTP downgrade** (`05-DATA-SCHEMA.md` §4). On any failure or downgrade
+/// the original URL is returned unchanged.
 class ShortLinkResolver {
   ShortLinkResolver({RedirectStep? redirectStep})
       : _redirectStep = redirectStep ?? ioRedirectStep;
@@ -36,23 +38,27 @@ class ShortLinkResolver {
     return current;
   }
 
-  /// **حلٌّ بسقف زمني، لقرار التوجيه قبل التنزيل** (بلاغ المالك
-  /// 2026-09-08).
+  /// **Resolution with a time ceiling, for the routing decision before
+  /// downloading** (field report 2026-09-08).
   ///
-  /// `on.soundcloud.com/…` — وهو ما يعطيه زرّ المشاركة في تطبيق
-  /// ساوندكلاود — لا يحوي `/sets/`، فكان `PlaylistDetector` يراه مقطعاً
-  /// مفرداً ويمرّره للسيرفر، فيفكّه yt-dlp هناك إلى **ألبوم كامل**:
-  /// عشرون مقطعاً نزلت بلا شاشة اختيار، والتطبيق لا يعرف إلا مهمة
-  /// واحدة. القرار يجب أن يقع على الرابط **النهائي** لا المُدخل.
+  /// `on.soundcloud.com/…`, which is what the share button in the
+  /// SoundCloud
+  /// app produces, contains no `/sets/`, so `PlaylistDetector` saw a single
+  /// clip and passed it to the server, where yt-dlp expanded it into a
+  /// **whole album**: twenty tracks downloaded with no selection screen,
+  /// while the app knew of one task. The decision has to be made on the
+  /// **final** URL, not the entered one.
   ///
-  /// والسقف ضروري: القرار هنا يقع والمستخدم ينتظر — بخلاف الحلّ داخل
-  /// المحرك الذي يجري بعد أن بدأت المهمة.
+  /// The ceiling is necessary: this decision happens while the user waits,
+  /// unlike resolution inside the engine, which runs after the task has
+  /// already started.
   Future<String> resolveForRouting(String url) => resolve(url)
       .timeout(MTConstants.routingResolveTimeout, onTimeout: () => url);
 }
 
-/// التنفيذ الافتراضي بـ dart:io — طلب GET بلا تتبع تلقائي، يقرأ ترويسة
-/// Location فقط ويغلق الاستجابة (لا يسحب الجسم).
+/// The default dart:io implementation: a GET with no automatic following,
+/// reading the Location header only and closing the response without
+/// pulling the body.
 Future<String?> ioRedirectStep(String url) async {
   final client = HttpClient()
     ..connectionTimeout = MTConstants.testConnectionTimeout;

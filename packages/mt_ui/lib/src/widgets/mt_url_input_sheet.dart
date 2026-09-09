@@ -5,16 +5,18 @@ import '../tokens/tokens.dart';
 import 'mt_platform_chip.dart';
 import 'mt_system_bars.dart';
 
-/// خيار جودة معروض في الورقة — القيم والنص من التطبيق (mt_ui لا يعرف
-/// عقد السيرفر): الرقمية تُمرَّر فقط عندما يكون الرابط YouTube (م-1).
+/// A quality option shown in the sheet. Values and labels come from the
+/// app, since mt_ui does not know the server contract: numeric qualities
+/// are only passed through when the link is a YouTube one.
 class MTQualityOption {
   const MTQualityOption({required this.value, required this.label});
   final String value;
   final String label;
 }
 
-/// ورقة «إضافة رابط» السفلية (قطر 28): حقل الرابط + شارة المنصة
-/// المكتشفة + رقاقات الجودة + زر البدء. منطق اللصق والكشف في التطبيق.
+/// The "add link" bottom sheet: a URL field, a detected-platform badge,
+/// quality chips and a start button. Paste and detection logic lives in
+/// the app.
 class MTUrlInputSheet extends StatelessWidget {
   const MTUrlInputSheet({
     super.key,
@@ -54,16 +56,18 @@ class MTUrlInputSheet extends StatelessWidget {
         left: MTSpace.xl,
         right: MTSpace.xl,
         top: MTSpace.md,
-        // لوحة المفاتيح **أو** شريط أزرار النظام — أيهما ظاهر.
+        // Whichever is showing: the keyboard **or** the system button bar.
         bottom: mtSheetBottomPad(context),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // **لا مقبض سحب هنا**: الثيم يضبط `showDragHandle: true` لكل
-          // ورقة سفلية، فرسم مقبض ثانٍ كان يُظهر خطين فوق بعضهما
-          // (لقطة المالك 2026-09-04).
+          // **No drag handle here**: the theme sets `showDragHandle: true`
+          // for
+          // every bottom sheet, so drawing a second one showed two bars
+          // stacked on
+          // top of each other (screenshot 2026-09-04).
           Row(
             children: [
               Expanded(child: Text(title, style: text.titleLarge)),

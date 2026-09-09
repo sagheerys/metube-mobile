@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mt_ui/mt_ui.dart';
 
-/// **حرّاس التلميع (طلب المالك 2026-09-04)** — الحركة تُلمَح لا تُشاهَد:
-/// أزمنة من `MTMotion`، ولا شيء منها يعمل حين يطلب النظام تقليل الحركة.
+/// **Polish guards** (requested 2026-09-04). Motion is glimpsed, not
+/// watched: durations come from `MTMotion`, and none of it runs when the
+/// system asks to reduce motion.
 void main() {
   Widget host(Widget child, {bool reduceMotion = false}) => MediaQuery(
     data: MediaQueryData(disableAnimations: reduceMotion),
@@ -34,7 +35,7 @@ void main() {
       set(() => icon = Icons.pause_rounded);
       await tester.pump();
       await tester.pump(MTMotion.tap ~/ 2);
-      // في منتصف الحركة الاثنتان موجودتان: هذا هو التلاشي المتقاطع.
+      // Halfway through, both are present: that is what a cross-fade is.
       expect(find.byIcon(Icons.play_arrow_rounded), findsOneWidget);
       expect(find.byIcon(Icons.pause_rounded), findsOneWidget);
 
@@ -125,8 +126,9 @@ void main() {
       expect(fade().opacity, 1);
       final showCurve = fade().curve;
 
-      // **الحارس**: لا `AnimatedScale` في المسار — القفزة الحجمية هي
-      // ما وصفه المالك بـ«الغريب وغير المريح» (2026-09-05).
+      // **The guard**: no `AnimatedScale` anywhere on this path. The size
+      // jump
+      // is what was described as "strange and uncomfortable" (2026-09-05).
       expect(inside(AnimatedScale), findsNothing);
 
       MTRouteDepth.depth.value = 1;
@@ -134,7 +136,7 @@ void main() {
       expect(fade().opacity, 0);
       expect(fade().curve, showCurve, reason: 'منحنى واحد في الاتجاهين');
 
-      // ولا يبتلع اللمسات وهو مخفي.
+      // And it does not swallow taps while hidden.
       expect(
         tester.widget<IgnorePointer>(inside(IgnorePointer)).ignoring,
         isTrue,
@@ -151,8 +153,10 @@ void main() {
         ),
       ));
 
-      // **الحارس**: نزعه من فتحة `Scaffold` (تمرير `null`) يوقظ محرّكه
-      // الافتراضي وفيه دورانٌ عند الظهور — وهو ما اشتكى منه المالك.
+      // **The guard**: removing it from the `Scaffold` slot by passing
+      // `null`
+      // wakes the default animator, which rotates on appearance, and that
+      // rotation is what was reported.
       expect(find.text('أضف رابطاً', skipOffstage: false), findsOneWidget);
       expect(
         tester

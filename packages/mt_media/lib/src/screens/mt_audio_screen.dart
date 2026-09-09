@@ -12,8 +12,8 @@ import '../widgets/mt_tilted_artwork.dart';
 import '../widgets/mt_drag_to_dismiss.dart';
 import '../widgets/mt_up_next_list.dart';
 
-/// شاشة الصوت الكاملة (م-22 · ر-4 خطوة 4) — غلاف مائل، شريط تقدم
-/// قابل للسحب، السابق/التالي، الأوضاع والعشوائي، وزر قائمة الانتظار.
+/// The full audio screen: a tilted cover, a draggable progress bar,
+/// previous and next, the modes and shuffle, and a queue button.
 class MTAudioScreen extends StatelessWidget {
   const MTAudioScreen({
     super.key,
@@ -29,15 +29,18 @@ class MTAudioScreen extends StatelessWidget {
   final MTArtworkBuilder? artwork;
   final VoidCallback? onShowPlaylist;
 
-  /// **تفاصيل المقطع** — حلّت محلّ زر قائمة الانتظار في الترويسة
-  /// (بلاغ المالك 2026-09-05): القائمة لها زرها الظاهر أسفل الشاشة،
-  /// وزرٌّ ثانٍ لها في الأعلى تكرارٌ لا يضيف شيئاً.
+  /// **Clip details**, which replaced the queue button in the header (field
+  /// report 2026-09-05): the queue already has its visible button at the
+  /// bottom of the screen, and a second one at the top repeats it without
+  /// adding anything.
   final VoidCallback? onDetails;
   final String? playlistName;
 
-  /// **رقاقة المصدر «بث من السيرفر / تشغيل من جهازك»** — معلومة تفرّق
-  /// في Super حيث يتعايش المصدران، وصفريةٌ في Lite: كل ما في مكتبته
-  /// على الجهاز أصلاً (بلاغ المالك 2026-09-04).
+  /// **The source chip, "streaming from the server" or "playing from your
+  /// device"**: information that matters in Super where both sources
+  /// coexist,
+  /// and means nothing in Lite, where everything in the library is already
+  /// on the device (field report 2026-09-04).
   final bool showSourceChip;
 
   @override
@@ -49,14 +52,19 @@ class MTAudioScreen extends StatelessWidget {
       if (media == null || item == null) {
         return const _EmptyPlayer();
       }
-      // **السحب لأسفل يعيدها إلى المشغل المصغر** (طلب المالك
-      // 2026-09-04) — الشاشة صعدت منه كورقة، فمن الطبيعي أن تُسحب
-      // إليه. الشريط الأفقي والأزرار لا تتأثر: الإيماءة عمودية.
+      // **Dragging down returns it to the mini player** (requested
+      // 2026-09-04): the screen rose out of it like a sheet, so it is
+      // natural
+      // to drag it back. The scrubber and the buttons are unaffected, since
+      // the
+      // gesture is vertical.
       //
-      // **الـ Scaffold كله يتحرك لا محتواه** (بلاغ المالك بلقطة):
-      // تحريك المحتوى وحده كان يترك خلفية الشاشة ثابتةً فيظهر فراغ
-      // داكن فوقه — والمطلوب أن يظهر الغلاف والمشغل المصغر خلفها كأنها
-      // ورقة تُسحب (مسارها غير معتم في الراوتر لهذا السبب).
+      // **The whole Scaffold moves, not its content** (reported with a
+      // screenshot): moving the content alone left the screen background in
+      // place, showing a dark void above it, whereas what is wanted is the
+      // cover and the mini player showing behind it like a sheet being
+      // dragged
+      // away. That is why its route is non-opaque in the router.
       return MTDragToDismiss(
         child: Scaffold(
           body: SafeArea(

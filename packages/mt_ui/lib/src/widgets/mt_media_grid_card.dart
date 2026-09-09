@@ -11,19 +11,21 @@ import 'mt_media_card.dart' show MTMediaLocation;
 import 'mt_platform_chip.dart';
 import 'mt_polish.dart';
 
-/// بطاقة المكتبة **بغلاف متصدّر**: المصغرة أولاً بنسبة 16:9 والعنوان
-/// تحتها سطران. تخدم وضعين:
+/// The library card **led by its cover**: a 16:9 thumbnail first, with two
+/// lines of title underneath. It serves two modes:
 ///
-/// - **الشبكي** (الافتراضي): عمودان، فالصف يعرض ضعف ما تعرضه القائمة
-///   والمسح البصري للفيديو أسرع بكثير.
-/// - **البطاقات** ([feed] — طلب المالك 2026-09-08، نمط يوتيوب): عمود
-///   واحد بغلاف عريض ونصٍّ أكبر، للتصفح المتأني.
+/// - - **Grid**, the default: two columns, so a row shows twice what the
+/// list shows and scanning video visually is far quicker.
+/// - - **Cards** ([feed], requested 2026-09-08, the YouTube pattern): one
+/// column with a wide cover and larger text, for unhurried browsing.
 ///
-/// **الوضعان يتشاركان الغلاف عمداً**: المدة والمفضلة و«المزيد» تعيش
-/// كلها فوق المصغرة، ونسختان من ذلك كانتا ستفترقان عند أول تعديل.
-/// الفرق بينهما مقاسات نصٍّ وحضور شارة المكان فقط.
+/// **The two modes share the cover on purpose**: duration, favourite and
+/// "more" all live over the thumbnail, and two copies of that would
+/// diverge at the first edit. The only differences are text sizes and
+/// whether the location badge is shown.
 ///
-/// عرض بحت مثل [MTMediaCard] تماماً: لا تعرف سيرفراً ولا فهرساً.
+/// Presentation only, exactly like [MTMediaCard]: it knows nothing of a
+/// server or an index.
 class MTMediaGridCard extends StatelessWidget {
   const MTMediaGridCard({
     super.key,
@@ -57,12 +59,14 @@ class MTMediaGridCard extends StatelessWidget {
   final bool highlighted;
   final bool playing;
 
-  /// [playing] يعني «هذا هو العنصر الحالي»؛ [paused] يعني أنه متوقف
-  /// مؤقتاً — فيظهر المؤشر ساكناً بدل أن يرقص على مقطع لا يعمل.
+  /// [playing] means "this is the current item"; [paused] means it is
+  /// suspended, so the indicator shows still instead of dancing over a clip
+  /// that is not running.
   final bool paused;
   final bool favorite;
 
-  /// وضع «البطاقات»: عمود واحد — نصٌّ أكبر وشارة مكان، فالعرض يتّسع لهما.
+  /// Cards mode: a single column, so there is room for larger text and a
+  /// location badge.
   final bool feed;
   final VoidCallback? onTap;
   final VoidCallback? onLongPress;
@@ -144,8 +148,10 @@ class MTMediaGridCard extends StatelessWidget {
                               .copyWith(color: p.ink3),
                         ),
                       ),
-                    // شارة المكان في البطاقات وحدها: الشبكة عرضها
-                    // نصف الشاشة وقد ازدحمت بالرقاقة والسطر أصلاً.
+                    // The location badge appears in cards mode only: a grid
+                    // cell is half a
+                    // screen wide and already carries the chip and the meta
+                    // line.
                     if (feed &&
                         location != MTMediaLocation.none &&
                         locationLabel != null) ...[
@@ -163,8 +169,9 @@ class MTMediaGridCard extends StatelessWidget {
   }
 }
 
-/// المصغرة 16:9 وفوقها المدة والمفضلة والمزيد — أفعال البطاقة كلها
-/// تعيش على الغلاف لأن الشبكة لا تملك عرضاً لصف أزرار جانبي.
+/// A 16:9 thumbnail carrying duration, favourite and more. Every card
+/// action lives on the cover because a grid cell has no width for a column
+/// of buttons beside it.
 class _Cover extends StatelessWidget {
   const _Cover({
     required this.duration,
@@ -251,9 +258,11 @@ class _Cover extends StatelessWidget {
                       tooltip: favorite
                           ? l10n.removeFromFavorites
                           : l10n.addToFavorites,
-                      // **أبيض ثابت لا `p.bg` (العطل م-3):** الرقاقة فوق
-                      // غلاف داكن دائماً، فكان لون خلفية الثيم يجعلها
-                      // ليلاً داكنة على داكن — شبه مخفية.
+                      // **A fixed white, not `p.bg`** (defect م-3): the
+                      // chip always sits over a
+                      // dark cover, so the theme background colour made it
+                      // dark on dark at
+                      // night, all but invisible.
                       color: favorite ? p.favorite : Colors.white,
                       onTap: () {
                         HapticFeedback.selectionClick();
@@ -298,13 +307,15 @@ class _CoverButton extends StatelessWidget {
       customBorder: const CircleBorder(),
       child: Padding(
         padding: const EdgeInsets.all(MTSpace.xs),
-        // ♡ ⇄ ♥ بتلاشٍ وتوسّع بدل القفزة (تلميع 2026-09-04).
+        // The favourite heart fades and expands rather than jumping (polish
+        // 2026-09-04).
         child: MTIconSwap(
           icon: icon,
           size: 17,
           color: color,
-          // الأيقونات فوق مصغرة مجهولة اللون: ظل خفيف يضمن قراءتها
-          // على غلاف فاتح وداكن معاً.
+          // Icons over a thumbnail of unknown colour: a light shadow keeps
+          // them
+          // legible over both pale and dark covers.
           shadows: const [Shadow(color: Color(0x99000000), blurRadius: 5)],
         ),
       ),

@@ -2,21 +2,24 @@ import 'package:flutter/material.dart';
 
 import '../tokens/tokens.dart';
 
-/// **لمسات «وهج» الخفيفة** (طلب المالك 2026-09-04: «حركات لبعض
-/// الأيقونات، لمسات خفيفة جميلة ومتناسقة ومناسبة للتطبيقين»).
+/// **Light Wahaj touches** (requested 2026-09-04: "motion on some icons,
+/// light touches, pretty and consistent and suited to both apps").
 ///
-/// ثلاثة مكوّنات صغيرة تُستعمل في التطبيقين معاً، كلها بأزمنة
-/// [MTMotion] وبلا ارتداد (سجل §4: `elasticOut`/`bounceOut` ممنوعة)،
-/// وكلها تُطفئ نفسها مع «تقليل الحركة» في إعدادات النظام.
+/// Three small components used by both apps. All of them take their
+/// durations from [MTMotion], none of them bounces (log §4: `elasticOut`
+/// and `bounceOut` are forbidden), and all of them switch themselves off
+/// when the system asks to reduce motion.
 
-/// المدة الفعلية: صفر حين يطلب النظام تقليل الحركة.
+/// The effective duration: zero when the system asks to reduce motion.
 Duration mtMotionDuration(BuildContext context, Duration duration) =>
     MediaQuery.disableAnimationsOf(context) ? Duration.zero : duration;
 
-/// **انكماش خفيف عند الضغط** — يقول «هذا زر» قبل أن يفعل شيئاً.
+/// **A light shrink while pressed**, which says "this is a button" before
+/// it does anything.
 ///
-/// لا يستبدل `InkWell` بل يغلّفه: الموجة تبقى، والانكماش يُضاف.
-/// يعمل بمستوى المؤشر لا `GestureDetector` كي لا يتنافس على النقرة.
+/// It wraps `InkWell` rather than replacing it: the ripple stays and the
+/// shrink is added. It listens at the pointer level rather than through a
+/// `GestureDetector`, so it never competes for the tap.
 class MTPressable extends StatefulWidget {
   const MTPressable({
     super.key,
@@ -50,17 +53,18 @@ class _MTPressableState extends State<MTPressable> {
     child: AnimatedScale(
       scale: _down ? widget.scale : 1,
       duration: mtMotionDuration(context, MTMotion.tap),
-      // الخروج حاسم عند الضغط، والعودة هادئة عند الرفع.
+      // Decisive on the way down, calm on the way back up.
       curve: _down ? MTMotion.exit : MTMotion.entrance,
       child: widget.child,
     ),
   );
 }
 
-/// **تبديل أيقونة في مكانها**: القديمة تتلاشى منكمشةً والجديدة تتسع من
-/// [MTMotion.iconSwapScale] إلى حجمها — لا قفزة بين ▶ و⏸، ولا بين ♡ و♥.
+/// **Swapping an icon in place**: the old one fades while shrinking and
+/// the new one grows from [MTMotion.iconSwapScale] to full size. No jump
+/// between play and pause, or between an empty and a filled heart.
 ///
-/// المفتاح هو الأيقونة نفسها، فلا حركة ما لم تتغير.
+/// The icon itself is the key, so nothing animates unless it changes.
 class MTIconSwap extends StatelessWidget {
   const MTIconSwap({
     super.key,
@@ -103,12 +107,14 @@ class MTIconSwap extends StatelessWidget {
   );
 }
 
-/// **انتقال «ورقة صاعدة»**: الشاشة تصعد من أسفل كاملةً بينما تخفت التي
-/// تحتها قليلاً — للشاشات التي «تتوسّع» من عنصر سفلي (المشغل المصغر ⇒
-/// شاشة الصوت). الرجوع يعكسه فيبدو أنها عادت إلى مكانها.
+/// **A "rising sheet" transition**: the screen rises whole from the bottom
+/// while the one beneath it dims slightly. For screens that expand out of
+/// a bottom element, such as the mini player opening the audio screen.
+/// Going back reverses it, so it looks like it returned where it came
+/// from.
 ///
-/// يُستعمل مع `CustomTransitionPage` في جدول المسارات — لا يستبدل
-/// انتقال الشاشات الأفقي المعتمد لبقية المسارات.
+/// Used with `CustomTransitionPage` in the route table. It does not
+/// replace the horizontal screen transition used everywhere else.
 Widget mtSheetPageTransition(
   BuildContext context,
   Animation<double> animation,

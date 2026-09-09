@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-/// **سياسة الاتجاه (قرار المالك 2026-09-05): التطبيق طولي، والمشغل وحده
-/// يدور** — وهو سلوك يوتيوب نفسه على الهاتف.
+/// **The orientation policy (decision 2026-09-05): the app is portrait and
+/// only the player rotates**, which is what YouTube itself does on a
+/// phone.
 ///
-/// السبب ليس كسلاً: المكتبة عرضياً على هاتف تعطي سطرين ونصف وشريطاً
-/// علوياً يأكل ثلث الارتفاع. أما الفيديو فالعرضي شكله الطبيعي.
-/// (اللوحي مسألة **عرض** لا اتجاه — دفعة مستقلة، وحينها يُرفع هذا
-/// القفل عن الشاشات الكبيرة.)
+/// The reason is not laziness: the library in landscape on a phone gives
+/// two and a half rows with a top bar eating a third of the height, while
+/// for video, landscape is its natural shape. (A tablet is a question of
+/// **width**, not orientation. That is a separate batch, and this lock
+/// will be lifted for large screens then.)
 abstract final class MTOrientation {
-  /// `portraitDown` مستثنى عمداً: لا أحد يمسك هاتفه مقلوباً.
+  /// `portraitDown` is excluded on purpose: nobody holds a phone upside
+  /// down.
   static const portrait = <DeviceOrientation>[DeviceOrientation.portraitUp];
   static const landscape = <DeviceOrientation>[
     DeviceOrientation.landscapeLeft,
@@ -29,14 +32,14 @@ abstract final class MTOrientation {
       SystemChrome.setPreferredOrientations(free);
 }
 
-/// **نطاق التدوير حول المشغل العمودي**: يفكّ قفل الطولي ما دام المشغل
-/// مفتوحاً، ويفتح الملء التام حين تُمال الجهاز، ويعيد القفل عند
-/// المغادرة.
+/// **The rotation scope around the portrait player**: it unlocks portrait
+/// while the player is open, opens full screen when the device is tilted,
+/// and restores the lock on leaving.
 ///
-/// كان `setPreferredOrientations([portraitUp])` في `dispose` الملء
-/// التام **يثبّت التطبيق كله على الطولي إلى أن يُقتل** (بلاغ المالك
-/// 2026-09-05: «وضع العرض لا يعمل ولم يُطبَّق») — الأمر عام على
-/// التطبيق ولا ينتهي بإغلاق الشاشة التي نادته.
+/// `setPreferredOrientations([portraitUp])` in full screen's `dispose`
+/// **pinned the entire app to portrait until it was killed** (field report
+/// 2026-09-05: "landscape does not work and was never applied"): the call
+/// is app-wide and does not end with the screen that made it.
 class MTRotationScope extends StatefulWidget {
   const MTRotationScope({
     super.key,
@@ -44,9 +47,10 @@ class MTRotationScope extends StatefulWidget {
     required this.builder,
   });
 
-  /// يفتح صفحة الملء التام ويكتمل عند إغلاقها. `byRotation` تخبر
-  /// الصفحة كيف دخلت: بالإمالة (فتخرج بالإمالة العكسية) أم بالزر
-  /// (فتفرض العرضي لأن المستخدم قد يكون قافلاً التدوير أصلاً).
+  /// Opens the full-screen page and completes when it closes. `byRotation`
+  /// tells the page how it was entered: by a tilt, so it leaves on the
+  /// opposite tilt, or by the button, so it forces landscape because the
+  /// user may have rotation locked.
   final Future<void> Function(bool byRotation) open;
 
   final Widget Function(BuildContext context, VoidCallback openFullscreen)
@@ -59,10 +63,11 @@ class MTRotationScope extends StatefulWidget {
 class _MTRotationScopeState extends State<MTRotationScope> {
   bool _open = false;
 
-  /// **مسلَّح = مستعد للفتح بالإمالة.** يُنزع التسليح عند كل فتح ولا
-  /// يعود إلا برؤية الطولي: بدونه يخرج المستخدم من الملء التام بالزر
-  /// والجهاز ما يزال عرضياً، فيراه هذا النطاق عرضياً ويعيد الفتح فوراً
-  /// — حلقة لا يخرج منها.
+  /// **Armed means ready to open on a tilt.** It is disarmed on every open
+  /// and only rearms once portrait is seen again: without that, a user
+  /// leaves full screen with the button while the device is still
+  /// landscape, this scope sees landscape and reopens immediately, a loop
+  /// with no way out.
   bool _armed = true;
 
   @override
@@ -95,7 +100,7 @@ class _MTRotationScopeState extends State<MTRotationScope> {
     if (!landscape) {
       _armed = true;
     } else if (_armed && !_open) {
-      // لا يُدفع مسار من داخل `build`.
+      // A route is never pushed from inside `build`.
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) _openFullscreen(true);
       });

@@ -14,9 +14,10 @@ import '../stores/playback_prefs.dart';
 
 part 'mt_video_session_commands.dart';
 
-/// جلسة مشغل الفيديو (م-20): تملك المتحكم والطابور والأوضاع، وتطبق
-/// **القاعدة الذهبية** (م-19) في اختيار المصدر مثل مشغل الصوت تماماً،
-/// وتتشارك معه مفتاح الموضع فيستأنف كلٌّ من حيث وقف الآخر (م-23).
+/// The video player session: it owns the controller, the queue and the
+/// modes, applies **the golden rule** when choosing a source exactly as
+/// the audio player does, and shares the position key with it, so each
+/// resumes where the other stopped.
 class MTVideoSession extends ChangeNotifier {
   MTVideoSession({
     required this.resolver,
@@ -42,19 +43,24 @@ class MTVideoSession extends ChangeNotifier {
   int _consecutiveErrors = 0;
   Timer? _saveTimer;
 
-  /// **مزلاج الاكتمال (العطل ط-2/4):** شرط النهاية يظل صحيحاً في كل
-  /// إشعار لاحق من المتحكم، فكان `onCompleted` يُستدعى مرتين: تخطي
-  /// عنصرين دفعة، **ومسح موضع استئناف عنصر لم يُشاهد قط**.
+  /// **The completion latch (defect ط-2/4):** the end condition stays true
+  /// in every later notification from the controller, so `onCompleted` was
+  /// called twice: two items skipped at once, **and the resume position of
+  /// an item nobody had watched was cleared**.
   String? _completedUrl;
 
-  /// **حارس السباق (خلل مصطاد على جهاز المالك 2026-09-01).** `_load`
-  /// ينتظر `initialize()` — ثوانٍ على شبكة بطيئة. تخطٍّ ثانٍ أثناء
-  /// الانتظار يبدأ تحميلاً موازياً، ويفوز آخر من ينتهي بـ `_controller`
-  /// بينما **يبقى الأول حياً يشتغل صوتاً بلا صورة**: مقطعان معاً.
+  /// **The race guard (caught on a real device 2026-09-01).** `_load`
+  /// awaits
+  /// `initialize()`, seconds on a slow network. A second skip during that
+  /// wait starts a parallel load, the last to finish wins `_controller`,
+  /// and
+  /// **the first stays alive playing audio with no picture**: two clips at
+  /// once.
   int _generation = 0;
 
-  /// يُستدعى قبل أي بدء تشغيل: يوقف مشغل الصوت الخلفي فلا يشتغل
-  /// المصدران معاً (م-19 — مخرج صوت واحد في كل لحظة).
+  /// Called before any playback starts: it stops the background audio
+  /// player
+  /// so two sources never run together (one audio output at any moment).
   Future<void> Function()? onTakeAudioFocus;
 
   VideoPlayerController? get controller => _controller;
@@ -71,7 +77,8 @@ class MTVideoSession extends ChangeNotifier {
   Duration get position => _controller?.value.position ?? Duration.zero;
   Duration? get duration => _controller?.value.duration;
 
-  /// فتح قائمة في المشغل — القائمة المعروضة وقت النقر (ر-4 خطوة 1).
+  /// Opening a list in the player: the list shown at the moment of the tap
+  /// (rule 4).
   Future<void> open(
     List<PlaylistItem> items, {
     int startIndex = 0,
@@ -89,8 +96,9 @@ class MTVideoSession extends ChangeNotifier {
     await _load();
   }
 
-  /// `notifyListeners` محمية ولا تُنادى من امتداد ولو في نفس المكتبة —
-  /// هذه نافذتها الوحيدة لملف الأوامر (`part`).
+  /// `notifyListeners` is protected and cannot be called from an extension
+  /// even in the same library. This is its only window into the commands
+  /// `part` file.
   void notifyFromCommands() => notifyListeners();
 
   Future<void> _load() async {
@@ -113,16 +121,19 @@ class MTVideoSession extends ChangeNotifier {
       await controller.initialize();
     } on Object {
       await controller.dispose();
-      // تحميل أحدث سبقنا ⇒ هذا الفشل لم يعد يخصّ الشاشة.
+      // A newer load overtook us, so this failure no longer concerns the
+      // screen.
       if (generation != _generation) return;
       return _failCurrent();
     }
     if (_disposed || generation != _generation) return controller.dispose();
 
-    // **النشر بعد اكتمال التهيئة لا قبلها (العطل ط-2/1).** كان
-    // `_controller` يُنشر ثم تأتي ثلاث `await` (موضع، seek، سرعة) بلا
-    // حارس بينها: تخطٍّ ثانٍ سريع يصرّف هذا المتحكم نفسه أثناءها فترمي
-    // `seekTo` بـ«controller was used after being disposed».
+    // **Publish after initialisation completes, not before (defect
+    // ط-2/1).**
+    // `_controller` was published and then three awaits followed (position,
+    // seek, speed) with no guard between them: a second quick skip disposed
+    // that very controller mid-way, so `seekTo` threw "controller was used
+    // after being disposed".
     _consecutiveErrors = 0;
     _completedUrl = null;
     final resume = await positions.positionOf(item.canonicalUrl);
@@ -143,8 +154,9 @@ class MTVideoSession extends ChangeNotifier {
     _rememberShape(item, controller);
   }
 
-  /// المدة والنسبة تُعرفان بعد التحضير — تُحفظان في العنصر لمسار
-  /// القِصار (م-35) في الجلسة الحالية.
+  /// The duration and ratio become known after preparation and are stored
+  /// on
+  /// the item for the shorts path in the current session.
   void _rememberShape(PlaylistItem item, VideoPlayerController controller) {
     final index = _queue.items.indexOf(item);
     if (index < 0) return;
@@ -156,7 +168,7 @@ class MTVideoSession extends ChangeNotifier {
     );
   }
 
-  /// يُبلَّغ الأعلى بأبعاد المقطع الحقيقية ليخزنها (م-35).
+  /// The real clip dimensions are reported upwards to be stored.
   void Function(String canonicalUrl, Duration duration, double aspectRatio)?
       onShapeKnown;
 
@@ -196,7 +208,7 @@ class MTVideoSession extends ChangeNotifier {
     notifyListeners();
   }
 
-  // ── الأوامر ──
+  // Commands.
 
   Future<void> playPause() async {
     final controller = _controller;
@@ -211,9 +223,11 @@ class MTVideoSession extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// إيقاف مؤقت صريح من الأعلى — م-23 «متابعة صوتاً» كان يشغّل الصوت
-  /// **والفيديو ما زال يعمل**، فيُسمع المقطع مرتين حتى يُغلق المشغل
-  /// (وعلى شبكة بطيئة يدوم التداخل ثوانيَ طويلة).
+  /// An explicit pause from above: "continue as audio" used to start the
+  /// audio **while the video was still running**, so the clip was heard
+  /// twice until the player closed, and on a slow network the overlap
+  /// lasted
+  /// several seconds.
   Future<void> pause() async {
     final controller = _controller;
     if (controller == null || !controller.value.isPlaying) return;
@@ -242,18 +256,21 @@ class MTVideoSession extends ChangeNotifier {
     _generation++; // يبطل أي تحميل معلّق فلا ينشر متحكماً بعد الموت
     _saveTimer?.cancel();
     _saveTimer = null;
-    // **الإسكات قبل الحفظ (ط-2/2):** بين إغلاق الشاشة واكتمال الحفظ كان
-    // الفيديو يبقى **مسموعاً فوق المكتبة**؛ وفشل الحفظ كان يمنع التصريف
-    // نهائياً فيبقى المتحكم حياً.
+    // **Silence before saving (defect ط-2/2):** between closing the screen
+    // and the save completing, the video stayed **audible over the
+    // library**;
+    // and a failed save prevented disposal entirely, so the controller
+    // stayed
+    // alive.
     try {
       await _controller?.pause();
     } on Object {
-      // لا شيء — التصريف تالياً على أي حال.
+      // Nothing to do; disposal follows anyway.
     }
     try {
       await savePosition();
     } on Object {
-      // الحفظ ليس سبباً لترك متحكم حي خلفنا.
+      // A failed save is no reason to leave a live controller behind us.
     }
     await _disposePlayers();
     super.dispose();

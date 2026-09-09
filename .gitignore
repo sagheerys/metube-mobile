@@ -46,7 +46,7 @@ desktop.ini
 logs/
 tmp/
 
-# مفاتيح التوقيع — لا تدخل git أبداً (نسخها في Y:\MTF-Keys و Z:\MTF-Keys)
+# مفاتيح التوقيع — لا تدخل git أبداً (نسخها في نسخة احتياطية أولى لمفاتيح التوقيع و نسخة احتياطية ثانية لمفاتيح التوقيع)
 keys/
 
 # مفاتيح النسخ الاحتياطية — لا تدخل git أبداً (المفتاح + النسخة = بيانات مكشوفة)
@@ -56,3 +56,24 @@ keys/
 # محتوى طرف ثالث (مصادره وبصماته في skills-lock.json) — لا يُعاد نشره من
 # هنا. استعِدها من مصادرها عند الحاجة.
 .claude/skills/
+
+# ── Local-only, archived out of the public repo (2026-09-09) ──
+# These stay on the maintainer's disk and in the maintainer backup drive; they are not
+# useful to anyone cloning the project and some carry local paths.
+CLAUDE.md
+RELEASE_NOTES.md
+backup.cmd
+checkpoint.cmd
+tool/auto-checkpoint.ps1
+tool/backup.ps1
+tool/build-apk.ps1
+tool/checkpoint.ps1
+tool/restore.ps1
+tool/build-lite.log
+tool/cmdtools-url.txt
+tool/flutter-url.txt
+.design/
+docs/reports/
+docs/proposals/
+docs/plan/_archive/
+docs/TEST-MATRIX.md

@@ -3,25 +3,29 @@ import 'package:dio/dio.dart' show CancelToken;
 import '../models/history_response.dart';
 import '../models/quality.dart';
 
-/// عقد سيرفر MeTube المجرد — [MeTubeApiClient] هو التنفيذ الوحيد في
-/// الإنتاج (القاعدة 1)، والواجهة تتيح محاكاة السيرفر في اختبارات المحرك.
+/// The abstract MeTube server contract. [MeTubeApiClient] is the only
+/// production implementation (rule 1); the interface exists so the engine
+/// tests can fake a server.
 abstract interface class MeTubeApi {
   Future<void> testConnection({Duration? timeout});
   Future<HistoryResponse> fetchHistory();
-  /// [compatibleVideo] يطلب **H.264/AAC في mp4** بدل ترك الخادم يختار
-  /// (§2.2) — لا يُرسل مع `audio` أبداً. انظر التنفيذ للسبب المقيس.
+  /// [compatibleVideo] asks for **H.264/AAC in mp4** instead of letting the
+  /// server choose (§2.2). It is never sent with `audio`. See the
+  /// implementation for the measured reason.
   Future<void> add(String url, Quality quality, {bool compatibleVideo});
   Future<void> delete(List<String> canonicalUrls, {String where});
   String downloadUrl(String serverFilename);
 
-  /// **هل الملف موجود فعلاً على السيرفر الآن؟** (بايت واحد بمهلة قصيرة)
+  /// **Does the file actually exist on the server right now?** One byte,
+  /// short timeout.
   ///
-  /// سجلٌّ في `/history` لا يعني ملفاً على القرص: عنصر واحد ميت عند
-  /// المالك كان يكفي لتجميد سبر المصغرات كله (2026-09-07).
+  /// A record in `/history` does not mean a file on disk: a single dead
+  /// item
+  /// was enough to freeze the entire thumbnail probe queue (2026-09-07).
   Future<bool> fileExists(String serverFilename, {Duration? timeout});
 
-  /// سحب ملف إلى مسار محلي بتقدم حي وإلغاء — تنفيذ واحد بلا إعادة
-  /// محاولة؛ منطق الإعادة في `Transfer`.
+  /// Pulls a file to a local path with live progress and cancellation. One
+  /// attempt, no retry; the retry logic lives in `Transfer`.
   Future<void> downloadTo(
     String serverFilename,
     String savePath, {

@@ -4,8 +4,9 @@ import 'palette.dart';
 
 export 'palette.dart';
 
-/// الأقطار «هادئة مطبوعة» (سجل §4): 28 أوراق · 16–18 بطاقات ·
-/// 12–13 حقول وأزرار أيقونية — لا حبوب كاملة إلا للرقاقات الدائرية.
+/// Radii are "quiet and printed" (log §4): 28 for sheets, 16 to 18 for
+/// cards, 12 to 13 for fields and icon buttons. Full pills only for round
+/// chips.
 abstract final class MTRadius {
   static const double sheet = 28;
   static const double card = 16;
@@ -20,7 +21,8 @@ abstract final class MTRadius {
   static const double pill = 999;
 }
 
-/// سلم المسافات — من إيقاع مراجع «وهج» (فراغ الصفحة 18، فجوة المحتوى 13).
+/// The spacing scale, taken from the rhythm of the Wahaj references: page
+/// gutter 18, content gap 13.
 abstract final class MTSpace {
   static const double xxs = 4;
   static const double xs = 7;
@@ -33,80 +35,92 @@ abstract final class MTSpace {
   static const double gap = 13;
 }
 
-/// الحركة — منحنى «وهج» الواحد.
+/// Motion: the single Wahaj curve.
 abstract final class MTMotion {
   static const Curve ease = Cubic(0.32, 0.72, 0, 1);
   static const Duration fast = Duration(milliseconds: 160);
   static const Duration medium = Duration(milliseconds: 320);
   static const Duration slow = Duration(milliseconds: 640);
 
-  // ── الحركة (سجل §4 · 2026-09-02 · **خُففت بطلب المالك: «غير متزنة،
-  // خففها واجعلها أكثر سلاسة»**) ─────────────────────────────────────
-  // المبدأ: **سريع عند الخروج، هادئ عند الدخول**، والحركة تُلمَح ولا
-  // تُشاهَد — «وهج» هوية تحريرية دافئة لا واجهة ألعاب.
+  // Motion (log §4, 2026-09-02). **Softened on request: "unbalanced, calm
+  // it down and make it smoother".**
   //
-  // الدرس من المحاولة الأولى: **المسافة هي ما يُتعب العين لا المدة.**
-  // انزلاق 14 نقطة للبطاقة و0.22 من عرض الشاشة للصفحة كانا يُقرآن
-  // «قفزة». القيم الآن نصف ذلك تقريباً، والاعتماد الأكبر على التلاشي.
+  // The principle: **quick on the way out, calm on the way in**. Motion is
+  // glimpsed, not watched. Wahaj is a warm editorial identity, not a game
+  // interface.
+  //
+  // The lesson from the first attempt: **distance tires the eye, not
+  // duration.** A 14-point card slide and a page slide of 0.22 of the
+  // screen width both read as a jump. The values are now roughly half of
+  // that, and the work is carried mostly by the fade.
 
-  /// دخول مؤكَّد: يتسارع ثم يستقر بلا تجاوز.
+  /// A confident entrance: accelerates, then settles without overshoot.
   static const Curve entrance = Cubic(0.2, 0, 0, 1);
 
-  /// خروج حاسم — المغادر لا يستحق انتباهاً.
+  /// A decisive exit. What is leaving does not deserve attention.
   static const Curve exit = Cubic(0.3, 0, 1, 1);
 
-  /// نبضة عنصر صغير (شارة، زر، رقاقة).
+  /// A small element's pulse: badge, button, chip.
   static const Duration tap = Duration(milliseconds: 160);
 
-  /// انتقال شاشة كاملة.
+  /// A full screen transition.
   static const Duration page = Duration(milliseconds: 240);
 
-  /// ظهور محتوى داخل الشاشة.
+  /// Content appearing inside a screen.
   static const Duration reveal = Duration(milliseconds: 220);
 
-  /// إزاحة انزلاق عنصر داخلي (نقاط) — صغيرة عمداً.
+  /// Slide offset for an element inside a screen, in points. Small on
+  /// purpose.
   static const double slideNudge = 7;
 
-  /// نسبة انزلاق الصفحة من عرضها.
+  /// Page slide distance as a fraction of the page width.
   static const double pageSlide = 0.06;
 
-  // ── تلميع 2026-09-04 (طلب المالك: «حركات لمسات خفيفة متناسقة») ────
+  // Polish pass 2026-09-04, on the request "light, consistent touch
+  // motion".
 
-  /// شاشة تصعد كورقة من أسفل (شاشة الصوت من المشغل المصغر) — أطول من
-  /// [page] لأن المسافة كاملة، وتحت سقف 320ms المعتمد.
+  /// A screen that rises like a sheet from the bottom, such as the audio
+  /// screen opened from the mini player. Longer than [page] because it
+  /// travels the full distance, and still under the agreed 320ms ceiling.
   static const Duration sheetPage = Duration(milliseconds: 300);
 
-  /// مقدار انكماش العنصر عند الضغط — يُلمَح لا يُشاهَد.
+  /// How far an element shrinks while pressed. Glimpsed, not watched.
   static const double pressScale = 0.97;
 
-  /// مقدار انكماش الأيقونة الخارجة في تبديل الأيقونات.
+  /// How far the outgoing icon shrinks when two icons swap.
   static const double iconSwapScale = 0.6;
 
-  /// سحبٌ لأسفل يتجاوزه ⇒ إغلاق شاشة الصوت (نقاط).
+  /// A downward drag past this distance closes the audio screen, in points.
   static const double dismissDragDistance = 120;
 
-  /// أو سرعةٌ تتجاوزها (نقطة/ثانية) — قذفة قصيرة تكفي.
+  /// Or a velocity past this, in points per second: a short flick is
+  /// enough.
   static const double dismissFlingVelocity = 700;
 }
 
-/// الطباعة المعتمدة: عناوين Noto Kufi Arabic (700/500) · نصوص Tajawal.
+/// The approved typography: Noto Kufi Arabic for headings (700/500) and
+/// Tajawal for body text.
 abstract final class MTType {
   static const String display = 'NotoKufiArabic';
   static const String body = 'Tajawal';
 
-  /// الخطوط داخل حزمة mt_ui — يلزم تمرير package لكل TextStyle.
+  /// The fonts live inside the mt_ui package, so every TextStyle has to
+  /// pass
+  /// `package`.
   static const String package = 'mt_ui';
 }
 
-/// أرقام **ثابتة العرض** للعدّادات الحية.
+/// **Fixed-width digits** for live counters.
 ///
-/// **فخ موثق (فحص 2026-09-02):** إضافة `FontFeature.tabularFigures()`
-/// وحدها لا تفعل شيئاً هنا — فحص ملفات الخطوط الثنائية أثبت أن
-/// **Tajawal بلا جدول `tnum`** بينما Noto Kufi Arabic يملكه. فالعدّاد
-/// المرسوم بخط النصوص يظل يرقص مع كل ثانية مهما طلبنا الميزة.
+/// **A documented trap (review 2026-09-02):** adding
+/// `FontFeature.tabularFigures()` on its own does nothing here. Inspecting
+/// the font binaries proved that **Tajawal has no `tnum` table** while Noto
+/// Kufi Arabic does. A counter drawn in the body font keeps dancing with
+/// every passing second however loudly the feature is requested.
 ///
-/// لذلك: العدّادات تُرسم بخط **العناوين** الذي يدعم الميزة فعلاً. تُطبَّق
-/// على الأرقام المتغيرة وحدها (الزمن، الحجم، السرعة) — لا على النصوص.
+/// So counters are drawn in the **heading** font, which actually supports
+/// the feature, and only on changing numbers: time, size, speed. Never on
+/// prose.
 extension MTTabularFigures on TextStyle {
   TextStyle get tabular => copyWith(
         fontFamily: MTType.display,
@@ -115,9 +129,10 @@ extension MTTabularFigures on TextStyle {
       );
 }
 
-/// الظلال الدافئة — منسوخة من قيم المراجع.
+/// Warm shadows, copied from the reference values.
 abstract final class MTShadow {
-  /// ظل البطاقة النهاري: 0 3 6 ٥٪ + 0 30 60 -22 ٢٢٪ بلون بُني دافئ.
+  /// Daylight card shadow: 0 3 6 at 5% plus 0 30 60 -22 at 22%, in a warm
+  /// brown.
   static const List<BoxShadow> card = [
     BoxShadow(
         color: Color(0x0D50371E), blurRadius: 6, offset: Offset(0, 3)),
@@ -128,7 +143,7 @@ abstract final class MTShadow {
         spreadRadius: -22),
   ];
 
-  /// ظل FAB: 0 16 32 -10 بلون accentDeep ٥٥٪ — يُبنى من اللوحة.
+  /// FAB shadow: 0 16 32 -10 in accentDeep at 55%, built from the palette.
   static List<BoxShadow> fab(MTPalette p) => [
         BoxShadow(
           color: p.accentDeep.withValues(alpha: 0.55),
@@ -138,7 +153,7 @@ abstract final class MTShadow {
         ),
       ];
 
-  /// ظل المشغل المصغر: 0 18 40 -12 بحبر ٥٠٪.
+  /// Mini player shadow: 0 18 40 -12 in ink at 50%.
   static List<BoxShadow> mini(MTPalette p) => [
         BoxShadow(
           color: p.ink.withValues(alpha: 0.5),

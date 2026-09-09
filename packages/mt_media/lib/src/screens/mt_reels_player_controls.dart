@@ -1,14 +1,15 @@
 part of 'mt_reels_player.dart';
 
-/// **تحميل المقطع وأوامر التشغيل** لمشغل الريلز.
+/// **Clip loading and playback commands** for the reels player.
 ///
-/// **ملف `part` لا مكتبة مستقلة** (القاعدة 4 — حدّ الأسطر): هذه الدوال
-/// تعمل على حالة خاصة (`_controller`، `_generation`، `_disposed`)،
-/// وامتدادٌ في مكتبة أخرى لا يصل للأعضاء الخاصة. الشاشة نفسها تحتفظ
-/// بدورة الحياة والبناء — وهما جوهرها.
+/// **A `part` file rather than its own library** (rule 4, the size limit):
+/// these functions work on private state (`_controller`, `_generation`,
+/// `_disposed`), and an extension in another library cannot reach private
+/// members. The screen itself keeps its lifecycle and its build, which are
+/// its essence.
 extension _ReelsPlayback on _MTReelsPlayerState {
-  /// إسكات الريل حين يطلب مشغل الصوت التركيز (ع-4) — مع إطفاء قفل
-  /// الشاشة، فالمقطع لم يعد يُشاهَد.
+  /// Silences the reel when the audio player asks for focus (defect ع-4),
+  /// and releases the wake lock, since the clip is no longer being watched.
   Future<void> _pauseForAudioFocus() async {
     final controller = _controller;
     if (_disposed || controller == null || !controller.value.isPlaying) return;
@@ -20,18 +21,21 @@ extension _ReelsPlayback on _MTReelsPlayerState {
     }
   }
 
-  /// إبقاء الشاشة مضاءة أثناء التشغيل فقط — لا تُترك مفعّلة أبداً.
+  /// Keeps the screen awake during playback only. It is never left enabled.
   Future<void> _setWakelock(bool enabled) async {
     if (_wakelockOn == enabled) return;
     _wakelockOn = enabled;
     try {
       await WakelockPlus.toggle(enable: enabled);
     } on Object {
-      // منصة بلا دعم ⇒ التشغيل يستمر بلا إبقاء الشاشة.
+      // An unsupported platform: playback continues without keeping the
+      // screen
+      // awake.
     }
   }
 
-  /// إظهار الأدوات وإعادة تشغيل مؤقت الاختفاء (يُلغى إن كان متوقفاً).
+  /// Shows the chrome and restarts the hide timer, which is cancelled while
+  /// paused.
   void _showChrome() {
     _hideTimer?.cancel();
     if (_disposed) return;
@@ -43,7 +47,8 @@ extension _ReelsPlayback on _MTReelsPlayerState {
     }
   }
 
-  /// هل سبقنا تحميلٌ أحدث — أو مات المشغل؟ ⇒ لا نلمس حالة مشتركة بعدها.
+  /// Has a newer load overtaken us, or has the player died? Either way we
+  /// touch no shared state afterwards.
   bool _stale(int generation) => _disposed || generation != _generation;
 
   Future<void> _load(int index) async {
@@ -52,7 +57,9 @@ extension _ReelsPlayback on _MTReelsPlayerState {
     final old = _controller;
     _controller = null;
     if (!_disposed) applyState(() => _failed = false);
-    // إسكاته أولاً: `dispose()` قد ينتظر، والصوت يستمر طوال الانتظار.
+    // Silence it first: `dispose()` may take a while, and the audio
+    // continues
+    // for the whole wait.
     if (old != null) await _shutdownController(old);
     if (item == null) return;
 
@@ -72,21 +79,27 @@ extension _ReelsPlayback on _MTReelsPlayerState {
       if (!_stale(generation)) applyState(() => _failed = true);
       return;
     }
-    // سحبة أحدث سبقتنا ⇒ نتخلص من هذا المتحكم بدل أن نتركه يعمل.
+    // A newer swipe overtook us, so this controller is discarded rather
+    // than
+    // left running.
     if (_stale(generation)) return controller.dispose();
     await controller.setLooping(true); // يتكرر حتى السحب (م-35)
     await widget.onTakeAudioFocus?.call();
     if (_stale(generation)) return controller.dispose();
     await controller.play();
-    // **الحارس بعد آخر `await` أيضاً (العطل ط-1):** كان الفحص يقف سطراً
-    // واحداً قبل النهاية. رجوعٌ أثناء `play()` على شبكة بطيئة يعني:
-    // `setState` على شاشة ميتة، **ومتحكم مُفعّل عليه التكرار لا يصرّفه
-    // أحد فيعزف في حلقة لبقية عمر العملية**، وقفل شاشة يُعاد إشعاله بعد
-    // أن أطفأه الخروج.
+    // **The guard after the last `await` as well (defect ط-1):** the check
+    // used to stop one line short of the end. Going back during `play()` on
+    // a
+    // slow network meant `setState` on a dead screen, **a live looping
+    // controller nobody disposes, playing for the rest of the process's
+    // life**, and a wake lock switched back on after leaving had switched
+    // it
+    // off.
     if (_stale(generation)) return controller.dispose();
     applyState(() => _controller = controller);
     await _setWakelock(true);
-    // المقطع الجديد يعرّف بنفسه ثم ينسحب: العنوان والناشر يُقرآن أولاً.
+    // A new clip introduces itself and then withdraws: the title and the
+    // uploader are read first.
     _showChrome();
   }
 
@@ -101,8 +114,9 @@ extension _ReelsPlayback on _MTReelsPlayerState {
 
   Future<void> _onScrubEnd() async {
     final controller = _controller;
-    // الإلغاء (غلبة `PageView` العمودي على السحب) يمرّ من هنا أيضاً،
-    // وإلا بقي المقطع موقوفاً بلا أي مؤشر إيقاف ظاهر.
+    // Cancellation, when the vertical `PageView` wins the gesture, passes
+    // through here too, or the clip stays paused with no visible pause
+    // indicator.
     if (_disposed || controller == null || !_resumeAfterScrub) return;
     _resumeAfterScrub = false;
     await widget.onTakeAudioFocus?.call();
@@ -125,23 +139,26 @@ extension _ReelsPlayback on _MTReelsPlayerState {
     }
     if (_disposed) return;
     applyState(() {});
-    // بعد قلب الحالة: التشغيل يبدأ مؤقت الاختفاء، والإيقاف يثبّت الأدوات.
+    // After toggling: playing starts the hide timer, and pausing pins the
+    // chrome.
     _showChrome();
   }
 }
 
-/// **الإسكات قبل التصريف**: `dispose()` ليس فورياً على المنصة، والصوت
-/// يستمر طوال انتظاره. دالة عليا لا عضو ساكن في امتداد — الأخير لا
-/// يُنادى بلا تأهيل من داخل الصنف.
+/// **Silence before disposal**: `dispose()` is not immediate on the
+/// platform, and the audio continues for the whole wait. A top-level
+/// function rather than a static member on an extension, since the latter
+/// cannot be called unqualified from inside the class.
 Future<void> _shutdownController(VideoPlayerController controller) async {
   try {
     await controller.pause();
   } on Object {
-    // متحكم مات قبلنا — التصريف تالياً يكفي.
+    // A controller that died before us; the disposal that follows is
+    // enough.
   }
   try {
     await controller.dispose();
   } on Object {
-    // لا مستمع يهمه بعد الآن.
+    // No listener cares any more.
   }
 }

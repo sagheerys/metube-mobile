@@ -2,10 +2,10 @@ import 'package:uuid/uuid.dart';
 
 const _uuid = Uuid();
 
-/// عنصر داخل قائمة محفوظة — بمفتاح canonicalUrl (§5.1: عناصر
-/// `saved_playlists` هي `{canonicalUrl, serverFilename, cachedTitle,
-/// cachedThumb}`). [legacyPath] يحمل مسار صيغة Lite القديمة حتى يحلّه
-/// التطبيق إلى canonicalUrl عند الهجرة.
+/// An item inside a saved playlist, keyed by canonicalUrl (§5.1: entries
+/// in `saved_playlists` are `{canonicalUrl, serverFilename, cachedTitle,
+/// cachedThumb}`). [legacyPath] carries the old Lite format's file path
+/// until the app resolves it to a canonicalUrl during migration.
 class PlaylistEntry {
   const PlaylistEntry({
     required this.canonicalUrl,
@@ -40,7 +40,7 @@ class PlaylistEntry {
       );
 }
 
-/// قائمة تشغيل محفوظة (م-25) مع التثبيت وآخر تشغيل (م-37/ب).
+/// A saved playlist, with pinning and last-played time.
 class SavedPlaylist {
   SavedPlaylist({
     String? id,
@@ -71,13 +71,14 @@ class SavedPlaylist {
       };
 
   factory SavedPlaylist.fromJson(Map<String, dynamic> json) {
-    // صيغة Lite القديمة: {name, createdAt, videoPaths: [مسارات ملفات]}.
+    // The old Lite format: {name, createdAt, videoPaths: [file paths]}.
     if (json.containsKey('videoPaths')) {
       return SavedPlaylist.fromLegacyLite(json);
     }
-    // **هجرة مُثبتة على نسخة المالك الحقيقية (2026-09-01):** Super
-    // القديم يسمي مصفوفة العناصر `entries` بنفس حقولها — بلا هذا
-    // البديل تُستورد القوائم فارغة بصمت.
+    // **A migration confirmed against a real backup (2026-09-01):** the old
+    // Super names the item array `entries` with the same fields. Without
+    // this
+    // alternative, playlists imported silently empty.
     final rawItems = json['items'] as List? ?? json['entries'] as List?;
     return SavedPlaylist(
       id: json['id']?.toString(),
@@ -93,8 +94,8 @@ class SavedPlaylist {
     );
   }
 
-  /// هجرة صيغة Lite القديمة القائمة على مسارات الملفات — كل مسار يصبح
-  /// [PlaylistEntry.isLegacy] حتى يربطه التطبيق بالرابط المُقنون.
+  /// Migrates the old path-based Lite format: every path becomes a
+  /// [PlaylistEntry.isLegacy] until the app ties it to a canonical URL.
   factory SavedPlaylist.fromLegacyLite(Map<String, dynamic> json) =>
       SavedPlaylist(
         name: json['name']?.toString() ?? '',

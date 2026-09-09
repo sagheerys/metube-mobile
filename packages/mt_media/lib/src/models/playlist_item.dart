@@ -1,7 +1,8 @@
-/// العنصر الموحد لكل المشغلات (صوت/فيديو/ريلز) — **درس Super القديم:**
-/// كان في الشاشات صنفان متضاربان لنفس المفهوم فتفرقت أوضاع التشغيل.
-/// المفتاح الموحد هو [canonicalUrl] (`05-DATA-SCHEMA.md` §5.5) فيتشارك
-/// البثُّ والنسخةُ المحلية نفس موضع الاستئناف (م-19).
+/// The unified item for every player, audio, video and reels. **A lesson
+/// from the old Super:** the screens carried two conflicting classes for
+/// the same concept, so play modes drifted apart. The single key is
+/// [canonicalUrl] (`05-DATA-SCHEMA.md` §5.5), so a stream and a local copy
+/// share the same resume position.
 class PlaylistItem {
   const PlaylistItem({
     required this.canonicalUrl,
@@ -15,31 +16,34 @@ class PlaylistItem {
     this.aspectRatio,
   });
 
-  /// الرابط المُقنون من `/history` — مفتاح الموضع والوسوم والمفضلة.
+  /// The canonical URL from `/history`: the key for positions, tags and
+  /// favourites.
   final String canonicalUrl;
   final String title;
   final String? uploader;
   final String? artworkUrl;
 
-  /// مسار النسخة المحلية إن وُجدت — الأولوية في القاعدة الذهبية.
+  /// The local copy's path when one exists; it takes priority under the
+  /// golden rule.
   final String? localPath;
 
-  /// اسم الملف على السيرفر — مصدر البث البديل.
+  /// The filename on the server, the fallback streaming source.
   final String? serverFilename;
   final bool isAudio;
 
-  /// المدة إن عُرفت (من التشغيل السابق أو الفهرس) — لازمة لمسار القِصار.
+  /// The duration if known, from an earlier play or the index. Required for
+  /// the shorts path.
   final Duration? duration;
 
-  /// نسبة العرض/الارتفاع إن عُرفت — < 1 يعني فيديو عمودي (م-35).
+  /// The aspect ratio if known; below 1 means a portrait video.
   final double? aspectRatio;
 
   bool get hasLocal => localPath != null && localPath!.isNotEmpty;
   bool get hasServer => serverFilename != null && serverFilename!.isNotEmpty;
   bool get isPlayable => hasLocal || hasServer;
 
-  /// فيديو عمودي قصير ⇒ يدخل «مسار القِصار» في مشغل الريلز (م-35).
-  /// المجهول (لا مدة أو لا نسبة) **ليس** قصيراً — لا تخمين.
+  /// A short portrait video enters the shorts path in the reels player.
+  /// Unknown, with no duration or no ratio, is **not** short. No guessing.
   bool get isShortForm =>
       !isAudio &&
       duration != null &&
@@ -81,7 +85,8 @@ class PlaylistItem {
         if (aspectRatio != null) 'aspectRatio': aspectRatio,
       };
 
-  /// تحليل متسامح — العنصر بلا رابط غير صالح فيُهمل أعلى (null).
+  /// Tolerant parsing: an item with no URL is invalid and is dropped above
+  /// as null.
   static PlaylistItem? fromJson(Map<String, dynamic> json) {
     final url = json['url']?.toString() ?? '';
     if (url.isEmpty) return null;

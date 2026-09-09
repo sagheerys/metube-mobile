@@ -7,7 +7,8 @@ import '../widgets/mt_progress_slider.dart';
 import 'mt_video_session.dart';
 import 'video_buttons.dart';
 
-/// الشريط العلوي: عودة، عنوان وموضعه في القائمة، السرعة، القفل، ملء الشاشة.
+/// The top bar: back, the title and its position in the list, speed, lock,
+/// full screen.
 class MTVideoTopBar extends StatelessWidget {
   const MTVideoTopBar({
     super.key,
@@ -27,9 +28,9 @@ class MTVideoTopBar extends StatelessWidget {
   final VoidCallback? onLock;
   final String? playlistName;
 
-  /// **انتماء المقطع** (بلاغ المالك 2026-09-04): «في أي وسم يتبع أو في
-  /// أي قائمة مضاف» — يُبنى في التطبيق ويُعرض تحت العنوان في الوضع
-  /// العرضي حيث لا ورقة معلومات أصلاً.
+  /// **Where the clip belongs** (field report 2026-09-04): "which tag it is
+  /// under, or which playlist it was added to". Built in the app and shown
+  /// under the title in landscape, where there is no info sheet at all.
   final String? membershipLine;
 
   @override
@@ -104,7 +105,8 @@ class MTVideoTopBar extends StatelessWidget {
   }
 }
 
-/// وسط الشاشة: ±١٠ ثوانٍ حول زر تشغيل بلون الفعل.
+/// Screen centre: ten seconds back and forward around a play button in the
+/// accent colour.
 class MTVideoCenterControls extends StatelessWidget {
   const MTVideoCenterControls({super.key, required this.session});
 
@@ -114,8 +116,10 @@ class MTVideoCenterControls extends StatelessWidget {
   Widget build(BuildContext context) {
     final p = MTThemeX.of(context).palette;
     final l10n = context.mtl;
-    // نفس قاعدة شريط الصوت: رموز النقل والتقديم لا تنعكس مع اللغة،
-    // و`replay_10`/`forward_10` تحملان الرقم «10» فعكسها يقلبه.
+    // The same rule as the audio bar: transport glyphs do not mirror with
+    // the
+    // language, and `replay_10`/`forward_10` carry the number "10", which
+    // mirroring would invert.
     return Directionality(
       textDirection: TextDirection.ltr,
       child: Row(
@@ -173,7 +177,7 @@ class _Seek extends StatelessWidget {
   );
 }
 
-/// الشريط السفلي: التقدم والأزمنة وأوضاع التشغيل وزر القائمة.
+/// The bottom bar: progress, times, play modes and the queue button.
 class MTVideoBottomBar extends StatelessWidget {
   const MTVideoBottomBar({
     super.key,
@@ -213,8 +217,10 @@ class MTVideoBottomBar extends StatelessWidget {
               Text(
                 '${mtFormatDuration(session.position)} / '
                 '${mtFormatDuration(session.duration ?? Duration.zero)}',
-                // عدّاد حي كل إطار — بلا أرقام ثابتة العرض يتمدد النص
-                // ويتقلص فيرقص السطر كله (فحص 2026-09-02).
+                // A counter live on every frame. Without fixed-width digits
+                // the text
+                // stretches and shrinks and the whole line dances (review
+                // 2026-09-02).
                 style: text.labelSmall!.copyWith(color: inkMuted).tabular,
               ),
               const Spacer(),

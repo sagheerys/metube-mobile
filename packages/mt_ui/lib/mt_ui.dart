@@ -1,5 +1,6 @@
-/// نظام تصميم «وهج» — tokens، الثيمات، الودجات المشتركة، الترجمة.
-/// كل القيم البصرية من `docs/plan/04-UIUX-DESIGN-BRIEF.md` §4 حصراً.
+/// The Wahaj design system: tokens, themes, shared widgets, localisation.
+/// Every visual value comes from `docs/plan/04-UIUX-DESIGN-BRIEF.md` §4 and
+/// nowhere else.
 library;
 
 export 'src/gallery/gallery_screen.dart';

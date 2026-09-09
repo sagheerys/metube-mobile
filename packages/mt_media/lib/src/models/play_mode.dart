@@ -1,5 +1,5 @@
-/// أوضاع التشغيل (م-20): تلقائي للتالي / تكرار واحد / تكرار الكل /
-/// إيقاف عند النهاية. القيمة المخزنة نصية تحت `player_play_mode`.
+/// Play modes: auto-advance, repeat one, repeat all, stop at the end. The
+/// stored value is a string under `player_play_mode`.
 enum PlayMode {
   autoNext('auto'),
   repeatOne('repeat_one'),
@@ -15,11 +15,11 @@ enum PlayMode {
         orElse: () => PlayMode.autoNext,
       );
 
-  /// الدورة على الزر الواحد في المشغلات.
+  /// The cycle driven by the single button in the players.
   PlayMode get next => values[(index + 1) % values.length];
 }
 
-/// سرعات التشغيل المعروضة (م-20) — المحفوظة تُقصّ إلى هذا المدى.
+/// The playback speeds offered; a stored value is clamped to this range.
 class PlaybackSpeeds {
   const PlaybackSpeeds._();
 

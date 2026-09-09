@@ -1,14 +1,15 @@
 import '../models/playlist_preview.dart';
 import '../urls/playlist_detector.dart';
 
-/// تحليل خالص لاستجابة InnerTube (`/youtubei/v1/browse`) — بلا شبكة،
-/// فيُختبر بعينات JSON حقيقية.
+/// Pure parsing of an InnerTube response (`/youtubei/v1/browse`), with no
+/// network, so it can be tested against real JSON samples.
 ///
-/// **يوتيوب 2026 يستعمل «نماذج العرض» لا «المصيّرات»:** كل عنصر قائمة
-/// صار `lockupViewModel` بحقول مسطحة، ولم يعد `playlistVideoRenderer`
-/// موجوداً — وهذا سبب رجوع القوائم **فارغة**.
+/// **YouTube in 2026 uses view models rather than renderers:** every
+/// playlist item is now a `lockupViewModel` with flat fields, and
+/// `playlistVideoRenderer` no longer exists. That is why playlists came
+/// back **empty**.
 abstract final class InnertubeParser {
-  /// معرف الفيديو + عنوانه + مدته من `lockupViewModel`.
+  /// The video id, title and duration out of a `lockupViewModel`.
   static PlaylistPreview? parseBrowse(Object? data, {String? fallbackTitle}) {
     final tracks = <PlaylistTrack>[];
     String? title = fallbackTitle;
@@ -39,7 +40,8 @@ abstract final class InnertubeParser {
     );
   }
 
-  /// رمز الصفحة التالية — يوتيوب يغلّفه بعمقين مختلفين حسب الشكل.
+  /// The next-page token, which YouTube wraps at two different depths
+  /// depending on the shape.
   static String? continuationToken(Object? data) {
     String? token;
     walk(data, (map) {
@@ -70,12 +72,13 @@ abstract final class InnertubeParser {
       url: 'https://www.youtube.com/watch?v=$id',
       title: title ?? id,
       duration: _durationOf(lockup),
-      // غلاف مستقر بدل روابط `sqp=` المؤقتة التي تنتهي صلاحيتها.
+      // A stable cover instead of the temporary `sqp=` URLs, which expire.
       thumbnail: 'https://i.ytimg.com/vi/$id/mqdefault.jpg',
     );
   }
 
-  /// المدة تصل نصاً في شارة المصغّرة («16:09» أو «1:02:33»).
+  /// The duration arrives as text in the thumbnail badge ("16:09" or
+  /// "1:02:33").
   static Duration? _durationOf(Map<dynamic, dynamic> lockup) {
     String? text;
     walk(lockup['contentImage'], (map) {
@@ -85,7 +88,7 @@ abstract final class InnertubeParser {
     return parseClock(text);
   }
 
-  /// «mm:ss» أو «h:mm:ss» ⇒ [Duration]، وأي شيء آخر ⇒ null.
+  /// "mm:ss" or "h:mm:ss" becomes a [Duration]; anything else becomes null.
   static Duration? parseClock(String? text) {
     if (text == null) return null;
     final parts = text.trim().split(':');
@@ -98,8 +101,8 @@ abstract final class InnertubeParser {
             hours: numbers[0]!, minutes: numbers[1]!, seconds: numbers[2]!);
   }
 
-  /// جولة عميقة على JSON — بنية يوتيوب تتغير كثيراً، فالبحث بالمفتاح
-  /// أصلب من المسار الثابت.
+  /// A deep walk over the JSON: YouTube's structure changes often, so
+  /// searching by key is sturdier than a fixed path.
   static void walk(Object? node, void Function(Map<dynamic, dynamic>) onMap) {
     if (node is Map) {
       onMap(node);

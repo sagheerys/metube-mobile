@@ -2,9 +2,9 @@ import 'dart:convert';
 
 import 'key_value_store.dart';
 
-/// أساس مشترك للفهارس المخزنة كخريطة JSON تحت مفتاح واحد —
-/// **المفتاح الموحد دائماً canonicalUrl** (`05-DATA-SCHEMA.md` §5.5)،
-/// وكل تعديل قراءة-تعديل-كتابة داخل [PrefsMutex].
+/// The shared base for indexes stored as one JSON map under a single key.
+/// **The key is always canonicalUrl** (`05-DATA-SCHEMA.md` §5.5), and
+/// every read-modify-write runs inside [PrefsMutex].
 abstract base class UrlKeyedIndex<V> {
   UrlKeyedIndex({
     required this.store,
@@ -17,12 +17,15 @@ abstract base class UrlKeyedIndex<V> {
   final PrefsMutex mutex;
   final String prefsKey;
 
-  /// **يُنادى بعد كل كتابة ناجحة** — نقطة الاختناق الوحيدة للفهرس.
-  /// يستعملها التطبيق ليطلب نسخة تلقائية بدل نثر النداء في كل شاشة
-  /// تكتب (وكان نثره يعني نسيان واحدة حتماً).
+  /// **Called after every successful write**, the index's single choke
+  /// point. The app uses it to request an automatic backup rather than
+  /// scattering that call through every screen that writes, where
+  /// forgetting
+  /// one was inevitable.
   final void Function()? onChanged;
 
-  /// تحويل قيمة JSON الخام إلى [V] — تجاوز غير الصالح بإرجاع null.
+  /// Converts a raw JSON value into [V]; returning null skips an invalid
+  /// one.
   V? decodeValue(dynamic raw);
   dynamic encodeValue(V value);
 
@@ -52,7 +55,7 @@ abstract base class UrlKeyedIndex<V> {
   Future<void> removeKey(String canonicalUrl) =>
       mutate((map) => map.remove(canonicalUrl));
 
-  /// قراءة-تعديل-كتابة ذرّية تحت القفل.
+  /// An atomic read-modify-write under the lock.
   Future<void> mutate(void Function(Map<String, V> map) apply) =>
       mutex.run(() async {
         final map = await readAll();

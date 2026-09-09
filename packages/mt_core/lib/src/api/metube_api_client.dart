@@ -10,7 +10,8 @@ import '../urls/url_kit.dart';
 import 'api_exceptions.dart';
 import 'metube_api.dart';
 
-/// إعدادات الاتصال بسيرفر MeTube — الرابط يُطبَّع بإزالة الشرطات الأخيرة.
+/// Connection settings for a MeTube server. The URL is normalised by
+/// stripping trailing slashes.
 class ServerConfig {
   ServerConfig({required String baseUrl, this.username, this.password})
       : baseUrl = normalizeBaseUrl(baseUrl);
@@ -25,7 +26,8 @@ class ServerConfig {
   bool get hasCredentials =>
       (username?.isNotEmpty ?? false) || (password?.isNotEmpty ?? false);
 
-  /// قيمة ترويسة `Authorization` أو null بلا اعتمادات.
+  /// The `Authorization` header value, or null when there are no
+  /// credentials.
   String? get basicAuthHeader => hasCredentials
       ? 'Basic ${base64Encode(utf8.encode('${username ?? ''}:${password ?? ''}'))}'
       : null;
@@ -41,15 +43,18 @@ class ServerConfig {
   int get hashCode => Object.hash(baseUrl, username, password);
 }
 
-/// عميل MeTube الوحيد — **كل** الشبكة نحو السيرفر من هنا (القاعدة 1).
-/// النقاط الأربع + testConnection حسب `05-DATA-SCHEMA.md` §2 حرفياً.
+/// The one MeTube client. **All** network traffic towards the server goes
+/// through here (rule 1). The four endpoints plus testConnection follow
+/// `05-DATA-SCHEMA.md` §2 exactly.
 class MeTubeApiClient implements MeTubeApi {
   MeTubeApiClient({required this.config, Dio? dio})
       : _dio = dio ?? Dio() {
     _dio.options = BaseOptions(
       connectTimeout: MTConstants.connectTimeout,
       receiveTimeout: MTConstants.receiveTimeout,
-      // الاستجابة قد تصل نصاً ⇒ plain ثم json.decode دفاعي (§1).
+      // The response can arrive as text, so plain first and then a
+      // defensive
+      // json.decode (§1).
       responseType: ResponseType.plain,
       validateStatus: (status) => status != null && status < 600,
     );
@@ -62,7 +67,7 @@ class MeTubeApiClient implements MeTubeApi {
   final ServerConfig config;
   final Dio _dio;
 
-  /// ترويسات البث للمشغلات (just_audio / video_player).
+  /// Streaming headers for the players (just_audio, video_player).
   @override
   Map<String, String> get streamingHeaders => {
         if (config.basicAuthHeader != null)
@@ -70,7 +75,8 @@ class MeTubeApiClient implements MeTubeApi {
         'Connection': 'keep-alive',
       };
 
-  /// §2.1 — صالح ⇔ 200 + JSON Map يحوي `done` و`queue` معاً.
+  /// §2.1: valid means 200 plus a JSON map carrying both `done` and
+  /// `queue`.
   @override
   Future<void> testConnection({Duration? timeout}) async {
     final response = await _request(
@@ -88,7 +94,7 @@ class MeTubeApiClient implements MeTubeApi {
     }
   }
 
-  /// §2.3 — السجل الكامل للاستطلاع.
+  /// §2.3: the full history used for polling.
   @override
   Future<HistoryResponse> fetchHistory() async {
     final response = await _request(() => _dio.get<String>(
@@ -101,39 +107,50 @@ class MeTubeApiClient implements MeTubeApi {
     return HistoryResponse.fromJson(Map<String, dynamic>.from(decoded as Map));
   }
 
-  /// **اسم preset التوافق على الحاوية** (قياس 2026-09-08).
+  /// **The name of the compatibility preset defined on the server**
+  /// (measured 2026-09-08).
   ///
-  /// `codec:h264` وحده لا يكفي لفيسبوك: سلسلة MeTube ثلاث خطوات
-  /// وأوسطها **بلا مرشّح ترميز** — `bestvideo[h264]+ba` ←
-  /// `bestvideo+ba` ← `best`. وصيغ فيسبوك المنفصلة كلها av01، فتفشل
-  /// الأولى وتلتقط **الثانية av1 1440×2560** قبل أن تصل الثالثة إلى
-  /// `hd` وهي **h264 720×1280 موجودة فعلاً** (مقيسة بـffprobe). أي أن
-  /// H.264 متاح ويُتجاوَز.
+  /// `codec:h264` alone is not enough for Facebook: MeTube's format chain
+  /// has three steps and the middle one carries **no codec filter**:
+  /// `bestvideo[h264]+ba`, then `bestvideo+ba`, then `best`. Facebook's
+  /// separate formats are all av01, so the first step fails and the
+  /// **second picks av1 at 1440x2560** before the third can reach `hd`,
+  /// which is **h264 at 720x1280 and genuinely present** (verified with
+  /// ffprobe). H.264 is available and skipped over.
   ///
-  /// والعلاج تخطّي الخطوة الوسطى — وهو `format` لا يُبنى عندنا بل في
-  /// السيرفر، فيُعرَّف preset باسمه على الحاوية ويرسل التطبيق **اسمه
-  /// فقط**: لا خيارات yt-dlp حرة، فلا حاجة لفتح
-  /// `ALLOW_YTDL_OPTIONS_OVERRIDES`.
+  /// The cure is to skip the middle step, and that is a `format` we do not
+  /// build here but the server does. So a preset is defined by name on the
+  /// container and the app sends **only its name**: no free-form yt-dlp
+  /// options, so `ALLOW_YTDL_OPTIONS_OVERRIDES` never has to be opened.
   static const compatPreset = 'compat_h264';
 
-  /// §2.2 — إضافة رابط. **قاعدة الجودة تُطبَّق هنا** فلا تفلت رقمية لغير
-  /// YouTube مهما كان المنادي.
+  /// §2.2: adding a link. **The quality rule is applied here**, so a
+  /// numeric
+  /// quality can never escape to a non-YouTube link whatever the caller
+  /// does.
   ///
-  /// **توافق التشغيل ([compatibleVideo])** — بلاغ المالك 2026-09-03
-  /// «مقاطع اليوتيوب في الريلز تظهر مشوشة وغير واضحة». القياس على
-  /// سيرفره الحقيقي: `quality:best` وحدها تعطي **VP9 أو AV1 في webm**
-  /// (`av1 1920×1080`، `vp9 480×848`) — وفكّ AV1 عتاديّاً غائب عن أغلب
-  /// الهواتف، فيتولاه فكٌّ برمجي يتخلف عن الإطارات: صورة ممزقة.
+  /// **Playback compatibility ([compatibleVideo])**, from field report
+  /// 2026-09-03: "YouTube clips in reels look torn and unclear". Measured
+  /// on
+  /// a real server: `quality:best` alone yields **VP9 or AV1 in webm** (av1
+  /// 1920x1080, vp9 480x848), and hardware AV1 decoding is missing from
+  /// most
+  /// phones, so a software decoder takes over and falls behind the frames:
+  /// a
+  /// torn picture.
   ///
-  /// و`format:mp4` وحدها **لا تكفي** (مقيس: أعطت av1 داخل mp4).
+  /// `format:mp4` alone is **not enough** (measured: it produced av1 inside
+  /// mp4).
   ///
-  /// **و`codec` وحده يُتجاهَل ما لم يُرسل `download_type` معه** — مقيس
-  /// مرتين: بدونه يعود السجل بـ`codec:auto` وملف av1؛ ومعه بـ`codec:h264`
-  /// وملف **h264 Main / aac LC**. لذلك تُرسل الثلاثة معاً أو لا شيء،
-  /// وهي نفس الحقول التي ترسلها واجهة MeTube نفسها.
+  /// And `codec` on its own **is ignored unless `download_type` is sent
+  /// with
+  /// it**, measured twice: without it the record comes back `codec:auto`
+  /// with an av1 file; with it, `codec:h264` and an **h264 Main / aac LC**
+  /// file. So all three go together or none do, which is exactly the set
+  /// MeTube's own interface sends.
   ///
-  /// **لا يُرسل مع `audio` أبداً**: `format:mp4` على مسار صوتي يغيّر
-  /// وعاء الملف المطلوب. و[compatPreset] يكمل ما يعجز عنه `codec`.
+  /// **Never sent with `audio`**: `format:mp4` on an audio path changes the
+  /// requested container. [compatPreset] covers what `codec` cannot.
   @override
   Future<void> add(
     String url,
@@ -141,17 +158,21 @@ class MeTubeApiClient implements MeTubeApi {
     bool compatibleVideo = false,
   }) async {
     final applied = quality.applyRule(url);
-    // **`best` حصراً**: المُحدِّد ثابت بلا `[height<=…]`، فإرساله مع
-    // جودة رقمية يبتلع سقف الارتفاع ويُنزل 1080p لمن طلب 720p.
+    // **`best` only**: the selector is fixed with no `[height<=…]`, so
+    // sending it alongside a numeric quality swallows the height ceiling
+    // and
+    // downloads 1080p for someone who asked for 720p.
     final withPreset = compatibleVideo && applied == Quality.best;
     try {
       await _postAdd(url, applied,
           compatibleVideo: compatibleVideo, preset: withPreset);
     } on ServerErrorException {
       if (!withPreset) rethrow;
-      // **سيرفر لا يعرف هذا الـpreset يردّ 400** — والتطبيق مفتوح
-      // المصدر يُشغَّل على حاويات لم يضبطها أحد. إعادة المحاولة بلا
-      // الـpreset تعيد سلوك الأمس بدل أن يفشل التنزيل رأساً.
+      // **A server that does not know this preset answers 400** — and an
+      // open-source app runs on containers nobody configured. Retrying
+      // without
+      // the preset restores yesterday's behaviour instead of failing the
+      // download outright.
       await _postAdd(url, applied,
           compatibleVideo: compatibleVideo, preset: false);
     }
@@ -175,14 +196,23 @@ class MeTubeApiClient implements MeTubeApi {
             'codec': 'h264',
           },
           if (preset) 'ytdl_options_presets': const [compatPreset],
-          // **ما نظنّه مفرداً يبقى مفرداً على السيرفر** (بلاغ المالك
-          // 2026-09-08). `PlaylistDetector` يعرف قوائم يوتيوب و`/sets/`
-          // ساوندكلاود فقط؛ أما صفحة فنان أو `/albums` أو قناة فيراها
-          // مقطعاً مفرداً — ويفكّها yt-dlp على السيرفر إلى عشرات.
-          // والضرر أشدّ في Lite: ينزل عشرون ويُسحب واحد، فتبقى تسعة
-          // عشر يتيمة على سيرفر العائلة لا أحد يحذفها.
+          // **What we take for a single item stays single on the server**
+          // (field
+          // report 2026-09-08). `PlaylistDetector` recognises YouTube
+          // playlists and
+          // SoundCloud `/sets/` only; an artist page, an `/albums` URL or a
+          // channel
+          // looks like one clip to it, and yt-dlp expands it server-side
+          // into
+          // dozens. The damage is worse in Lite: twenty download, one is
+          // pulled,
+          // and nineteen orphans stay on the family server with nobody
+          // deleting
+          // them.
           //
-          // مقيس على سيرفر المالك: ألبوم من ٣ مقاطع + الحدّ ⇒ نزل واحد.
+          // Measured on a real server: a three-track album plus this limit
+          // yielded
+          // one download.
           if (!PlaylistDetector.isPlaylist(url)) 'playlist_item_limit': 1,
         }),
         options: Options(contentType: 'application/json'),
@@ -191,7 +221,8 @@ class MeTubeApiClient implements MeTubeApi {
     _throwIfBodyError(_decode(response));
   }
 
-  /// §2.5 — الحذف بالـ canonicalUrl القادم من `/history` حصراً.
+  /// §2.5: deletion uses the canonicalUrl that came from `/history`, and
+  /// nothing else.
   @override
   Future<void> delete(
     List<String> canonicalUrls, {
@@ -207,7 +238,8 @@ class MeTubeApiClient implements MeTubeApi {
     _throwIfBodyError(_decode(response));
   }
 
-  /// §2.4 — رابط السحب/البث مع **حارس اسم الملف الإلزامي** داخل العميل.
+  /// §2.4: the pull and stream URL, with the **mandatory filename guard**
+  /// inside the client.
   @override
   String downloadUrl(String serverFilename) {
     if (!UrlKit.isSafeServerFilename(serverFilename)) {
@@ -216,11 +248,13 @@ class MeTubeApiClient implements MeTubeApi {
     return '${config.baseUrl}/download/${Uri.encodeComponent(serverFilename)}';
   }
 
-  /// **فحص وجود بايت واحد** — أرخص سؤال ممكن، وبمهلتنا نحن.
+  /// **A one-byte existence check**, the cheapest possible question, on a
+  /// timeout of our own.
   ///
-  /// السبب مقيس (2026-09-07): تسليم رابط ميت إلى `MediaMetadataRetriever`
-  /// يجعل منصة أندرويد تعيد المحاولة **عشر مرات بمهلة 8s** — أكثر من
-  /// ٨٠ ثانية تجمّد طابور السبر بأسره. الرفض هنا يستغرق جزءاً من ثانية.
+  /// The reason is measured (2026-09-07): handing a dead URL to
+  /// `MediaMetadataRetriever` makes the Android platform retry **ten times
+  /// with an 8s timeout**, over 80 seconds that freeze the entire probe
+  /// queue. Refusing here takes a fraction of a second.
   @override
   Future<bool> fileExists(String serverFilename, {Duration? timeout}) async {
     final String url;
@@ -233,7 +267,8 @@ class MeTubeApiClient implements MeTubeApi {
       final response = await _dio.get<dynamic>(
         url,
         options: Options(
-          // نطاق بايت واحد: السيرفر يردّ 206 بلا إرسال الملف.
+          // A one-byte range: the server answers 206 without sending the
+          // file.
           headers: const {'Range': 'bytes=0-0'},
           responseType: ResponseType.bytes,
           receiveTimeout: timeout ?? MTConstants.probeTimeout,
@@ -247,8 +282,8 @@ class MeTubeApiClient implements MeTubeApi {
     }
   }
 
-  /// §2.4 — السحب الفعلي إلى ملف. ⚠️ لا `responseType: bytes` مع
-  /// `dio.download` (فخ §1). محاولة واحدة — الإعادة في `Transfer`.
+  /// §2.4: the actual pull to a file. Never `responseType: bytes` with
+  /// `dio.download` (trap §1). One attempt; retries live in `Transfer`.
   @override
   Future<void> downloadTo(
     String serverFilename,
@@ -278,14 +313,17 @@ class MeTubeApiClient implements MeTubeApi {
     _throwIfDownloadRejected(response.statusCode ?? 0);
   }
 
-  /// **حارس حالة التنزيل — العطل الحرج ح-1 (2026-09-02).**
+  /// **The download status guard — critical defect ح-1 (2026-09-02).**
   ///
-  /// `validateStatus` في [BaseOptions] ينطبق على `dio.download` أيضاً،
-  /// ومسار التنزيل في dio **لا يفحص الحالة بعده**: فكانت صفحة خطأ
-  /// (401 بعد تغيير كلمة السر، 502 عابر من الوكيل العكسي) تُبثّ إلى
-  /// `.part` ثم تُرقّى ملفَ وسائط «ناجحاً» — وفي Lite يُحذف بعدها الأصل
-  /// من السيرفر، فيضيع الملف من الطرفين. الفحص هنا يجعلها فشلاً مصنفاً:
-  /// `Transfer` يمسح الجزئي، والحذف من السيرفر لا يقع أصلاً.
+  /// `validateStatus` in [BaseOptions] applies to `dio.download` as well,
+  /// and dio's download path **does not check the status afterwards**. So
+  /// an
+  /// error page (a 401 after a password change, a transient 502 from a
+  /// reverse proxy) was streamed into `.part` and then promoted to a
+  /// "successful" media file. In Lite the original is deleted from the
+  /// server right after, so the file is lost at both ends. Checking here
+  /// makes it a classified failure: `Transfer` wipes the partial, and the
+  /// server-side delete never happens at all.
   static void _throwIfDownloadRejected(int status) {
     if (status == 200 || status == 206) return;
     if (status == 401 || status == 403) {
@@ -297,9 +335,10 @@ class MeTubeApiClient implements MeTubeApi {
 
   void close() => _dio.close(force: true);
 
-  // ── الداخلية ──
+  // Internals.
 
-  /// ينفّذ الطلب، يصنّف أخطاء النقل، ثم يصنّف حالات HTTP.
+  /// Runs the request, classifies transport errors, then classifies HTTP
+  /// statuses.
   Future<Response<String>> _request(
     Future<Response<String>> Function() send,
   ) async {
@@ -322,7 +361,9 @@ class MeTubeApiClient implements MeTubeApi {
     return response;
   }
 
-  /// فك JSON دفاعي — HTML أو نص مكسور ⇒ ليس سيرفر MeTube.
+  /// Defensive JSON decoding: HTML or broken text means this is not a
+  /// MeTube
+  /// server.
   dynamic _decode(Response<String> response) {
     final decoded = _tryDecode(response.data);
     if (decoded == null) throw const NotMeTubeServerException();
@@ -338,7 +379,8 @@ class MeTubeApiClient implements MeTubeApi {
     }
   }
 
-  /// حتى مع 200 قد يعيد السيرفر `{"status":"error","msg":...}` (§2.2).
+  /// Even with a 200 the server can return `{"status":"error","msg":...}`
+  /// (§2.2).
   void _throwIfBodyError(dynamic decoded) {
     if (decoded is! Map) return;
     if (decoded['status']?.toString().toLowerCase() == 'error' ||
@@ -347,7 +389,7 @@ class MeTubeApiClient implements MeTubeApi {
     }
   }
 
-  /// الخطأ من `error` أو `msg` — نصاً كان أو Map.
+  /// The error from `error` or `msg`, whether it arrives as text or a map.
   static String? _extractErrorText(dynamic decoded) {
     if (decoded is! Map) return null;
     final raw = decoded['error'] ?? decoded['msg'] ?? decoded['message'];

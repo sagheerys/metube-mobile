@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 
 import '../theme/mt_theme.dart';
 
-/// أرضية البطاقة: التحديد لون ثابت، والتوهج لون **يتلاشى من نفسه**.
+/// The card ground: selection is a steady colour, while a highlight is a
+/// colour that **fades out by itself**.
 ///
-/// `TweenAnimationBuilder` يكفي بلا حالة: يبدأ من 1 وينتهي عند 0 مرة
-/// واحدة عند أول بناء، فينطفئ التوهج وحده حتى لو نسي المنادي إطفاءه.
-/// تتشاركها بطاقتا القائمة والشبكة كي لا يختلف معنى اللون بين عرضين.
+/// `TweenAnimationBuilder` is enough with no state: it runs from 1 to 0
+/// once on the first build, so the highlight extinguishes itself even if
+/// the caller forgets to clear it. The list card and the grid card share
+/// it so the meaning of the colour cannot drift between the two.
 class MTHighlightSurface extends StatelessWidget {
   const MTHighlightSurface({
     super.key,

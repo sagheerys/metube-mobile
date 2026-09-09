@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'app_version.dart';
 
-/// إصدار منشور على GitHub، مقروءاً من `releases/latest`.
+/// A release published on GitHub, as read from `releases/latest`.
 class UpdateRelease {
   const UpdateRelease({
     required this.version,
@@ -17,28 +17,31 @@ class UpdateRelease {
   final AppVersion version;
   final String tag;
 
-  /// رابط تنزيل ملف APK المطابق لهذا التطبيق (Lite أو Super).
+  /// The download URL of the APK matching this app, Lite or Super.
   final String apkUrl;
 
-  /// حجم الملف بالبايت — `0` إن لم يصرّح به السيرفر.
+  /// The file size in bytes, or `0` when the server did not declare one.
   final int apkSize;
 
-  /// ملاحظات الإصدار (Markdown خام كما كتبها المطوّر).
+  /// The release notes, raw Markdown as written.
   final String notes;
 
-  /// صفحة الإصدار — بديل يدوي حين يتعذّر التثبيت داخل التطبيق.
+  /// The release page, a manual fallback when installing inside the app is
+  /// not possible.
   final String pageUrl;
 
   final DateTime? publishedAt;
 
-  /// الحجم بالميغابايت لعرضه للمستخدم، أو `null` إن كان مجهولاً.
+  /// The size in megabytes for display, or `null` when unknown.
   double? get sizeMb => apkSize <= 0 ? null : apkSize / (1024 * 1024);
 
-  /// يقرأ ردّ GitHub ويختار الأصل المطابق لـ [assetMarker].
+  /// Reads GitHub's response and picks the asset matching [assetMarker].
   ///
-  /// يعيد `null` — لا يرمي — عند أي شذوذ: مسودّة، تجريبي، إصدار بلا
-  /// APK لهذا التطبيق، أو JSON غير متوقّع. **فحص التحديث لا يزعج
-  /// المستخدم بخطأ أبداً** (§ر-5: الميزة الجديدة لا تكسر ما يعمل).
+  /// Returns `null` rather than throwing on any anomaly: a draft, a
+  /// pre-release, a release with no APK for this app, or unexpected JSON.
+  /// **An update check never troubles the user with an error** (rule 5: a
+  /// new
+  /// feature does not break what works).
   static UpdateRelease? tryParse(String body, {required String assetMarker}) {
     Object? decoded;
     try {
@@ -48,8 +51,9 @@ class UpdateRelease {
     }
     if (decoded is! Map<String, dynamic>) return null;
 
-    // **المسودّات والتجريبية تُرفض هنا أيضاً** رغم أن `releases/latest`
-    // يستبعدها: نفس المحلّل يخدم `releases` الكاملة لو تغيّرت النقطة.
+    // **Drafts and pre-releases are rejected here too**, even though
+    // `releases/latest` excludes them: the same parser serves the full
+    // `releases` list if the endpoint ever changes.
     if (decoded['draft'] == true || decoded['prerelease'] == true) return null;
 
     final tag = decoded['tag_name'];
@@ -66,8 +70,9 @@ class UpdateRelease {
       final url = asset['browser_download_url'];
       if (name is! String || url is! String) continue;
       final lower = name.toLowerCase();
-      // **المطابقة بالعلامة وبالامتداد معاً**: الإصدار الواحد يحمل
-      // ملفَّي التطبيقين، فبلا العلامة يثبّت مالك Lite نسخة Super.
+      // **Matching on both the marker and the extension**: one release
+      // carries
+      // both apps' files, so without the marker a Lite user installs Super.
       if (!lower.endsWith('.apk') || !lower.contains(marker)) continue;
       final size = asset['size'];
       return UpdateRelease(

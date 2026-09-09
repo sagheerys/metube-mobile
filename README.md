@@ -35,8 +35,8 @@ flutter pub get
 # debug
 cd apps/metube_super && flutter run        # or apps/metube_lite
 
-# release (Windows helper; archives to the paths set inside the script)
-powershell -File tool/build-apk.ps1 -App both
+# release
+cd apps/metube_super && flutter build apk --release
 ```
 
 Release builds are signed from `apps/<app>/android/key.properties`, which is
@@ -91,14 +91,18 @@ Translations are very welcome — see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Documentation
 
+Start with **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** — the map of the
+repository: what the packages are, the rules that hold them together, where a
+feature belongs, and how to run the tests. It is written in English first, with
+an Arabic version below it.
+
 `docs/plan/` holds the binding specification this project was built against:
 the product requirements, the technical design, the screen flows, the design
 brief, the **server data schema with its documented traps**, and the
-implementation log. `docs/reports/` holds field audits with measurements.
-
-**These documents are written in Arabic**, which is the working language of the
-project. Code, identifiers and commit subjects are a mix; issues and pull
-requests are welcome in either Arabic or English.
+implementation log. **These documents are written in Arabic**, which is the
+working language of the project; the architecture map above covers what a
+contributor needs from them. Issues and pull requests are welcome in either
+Arabic or English.
 
 ## Credits
 

@@ -12,8 +12,9 @@ import '../widgets/mt_section_header.dart';
 import '../widgets/mt_snackbar.dart';
 import '../widgets/mt_url_input_sheet.dart';
 
-/// معرض داخلي لفحص بوابة المرحلة 3: كل مكوّن بالثيمين والاتجاهين —
-/// **ليس شاشة منتج**؛ نصوصه عينات ثابتة عمداً (خارج قاعدة arb).
+/// An internal gallery for reviewing every component in both themes and
+/// both text directions. **Not a product screen**: its strings are fixed
+/// samples on purpose, outside the arb rule.
 class MTGalleryScreen extends StatelessWidget {
   const MTGalleryScreen({
     super.key,
@@ -239,8 +240,11 @@ class MTGalleryScreen extends StatelessWidget {
         startLabel: 'ابدأ التحميل',
         onStart: () => Navigator.pop(sheetContext),
       ),
-      // معرض تطوير، لكن التسريب تسريب: المتحكم يُصرَّف بعد أن تخرج
-      // الورقة من الشجرة فعلاً — لا فور اكتمال المستقبل.
+      // A development gallery, but a leak is still a leak: the controller
+      // is
+      // disposed once the sheet has actually left the tree, not the moment
+      // its
+      // future completes.
     ).whenComplete(() {
       WidgetsBinding.instance
           .addPostFrameCallback((_) => controller.dispose());

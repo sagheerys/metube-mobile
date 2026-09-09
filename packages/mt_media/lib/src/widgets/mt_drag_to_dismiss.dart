@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:mt_ui/mt_ui.dart';
 
-/// **سحب عمودي يغلق الشاشة**: المحتوى يتبع الإصبع لأسفل (لا لأعلى)،
-/// وعند الرفع إمّا يُغلق — إن تجاوزت المسافة [MTMotion.dismissDragDistance]
-/// أو السرعة [MTMotion.dismissFlingVelocity] — أو يعود إلى مكانه بهدوء.
+/// **A vertical drag closes the screen**: the content follows the finger
+/// downwards, never upwards, and on release it either closes, if the
+/// distance passes [MTMotion.dismissDragDistance] or the velocity passes
+/// [MTMotion.dismissFlingVelocity], or returns calmly to place.
 ///
-/// **لا يتنافس مع شيء**: شريط التقدّم يسحب أفقياً والأزرار تنقر؛
-/// `onVerticalDragUpdate` وحده هنا. وحين يطلب النظام تقليل الحركة
-/// يعمل الإغلاق بلا تتبّع بصري.
+/// **It competes with nothing**: the progress bar drags horizontally and
+/// the buttons are tapped, and only `onVerticalDragUpdate` is used here.
+/// When the system asks to reduce motion, dismissal works without the
+/// visual tracking.
 class MTDragToDismiss extends StatefulWidget {
   const MTDragToDismiss({super.key, required this.child});
 
@@ -45,7 +47,7 @@ class _MTDragToDismissState extends State<MTDragToDismiss>
       Navigator.of(context).maybePop();
       return;
     }
-    // عودة هادئة إلى المكان — بلا ارتداد.
+    // A calm return to place, with no bounce.
     _from = _offset;
     _settle
       ..value = 1

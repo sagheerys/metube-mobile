@@ -4,15 +4,18 @@ import '../urls/url_kit.dart';
 
 const _uuid = Uuid();
 
-/// حالة عنصر `/history` بعد توحيد مرادفات السيرفر.
+/// The state of a `/history` item after the server's synonyms are
+/// normalised.
 enum ItemStatus { inProgress, completed, failed, unknown }
 
-/// عنصر واحد من `GET /history` — **التحليل المتسامح** حسب جدول
-/// `05-DATA-SCHEMA.md` §2.3 حرفياً. القواعد الصلبة:
-/// - [canonicalUrl] هو المفتاح الأساسي لكل بيانات التطبيق.
-/// - [filename] الغائب يبقى null — **لا يُخلَّق من العنوان** (فخ §6.3).
-/// - رابط `i.ytimg.com` البديل لـ YouTube **حصراً**؛ غيره يبقى بلا صورة
-///   (يكملها ArtworkIndex في طبقة أعلى).
+/// One item from `GET /history`, parsed **tolerantly** per the table in
+/// `05-DATA-SCHEMA.md` §2.3. The hard rules:
+/// - - [canonicalUrl] is the primary key for all app data.
+/// - - A missing [filename] stays null; it is **never invented from the
+/// title** (trap §6.3).
+/// - - The `i.ytimg.com` fallback thumbnail is for YouTube **only**;
+/// anything else stays imageless, and ArtworkIndex fills it in a layer
+/// above.
 class HistoryItem {
   const HistoryItem({
     required this.id,
@@ -33,14 +36,15 @@ class HistoryItem {
 
   final String id;
 
-  /// الرابط المُقنون كما أعاده السيرفر — الحذف والفهرسة به لا بالمُدخل.
+  /// The canonical URL as the server returned it. Deletion and indexing use
+  /// this, never the entered URL.
   final String canonicalUrl;
   final String? title;
   final String? filename;
   final String? uploader;
   final String? thumbnail;
 
-  /// 0..1 أو null إن غاب.
+  /// 0 to 1, or null when absent.
   final double? progress;
   final ItemStatus status;
   final String? rawStatus;
@@ -49,7 +53,9 @@ class HistoryItem {
   final String? quality;
   final String? format;
 
-  /// حجم الملف على السيرفر بالبايت إن أعاده (`size`) — للفرز والعرض.
+  /// The file's size on the server in bytes if it reported one (`size`),
+  /// for
+  /// sorting and display.
   final int? sizeBytes;
 
   bool get isDownloading => status == ItemStatus.inProgress;
@@ -57,7 +63,8 @@ class HistoryItem {
   bool get hasError =>
       status == ItemStatus.failed || (error != null && error!.isNotEmpty);
 
-  /// خطأ يدل على حظر المنصة (كوكيز) ⇒ `PlatformBlockedException` أعلى.
+  /// An error indicating a blocked platform (cookies), which becomes
+  /// `PlatformBlockedException` above.
   bool get isPlatformBlocked =>
       error != null && UrlKit.isPlatformBlockedError(error!);
 
@@ -85,7 +92,8 @@ class HistoryItem {
     );
   }
 
-  /// أي قيمة ⇒ نص غير فارغ أو null (الأخطاء قد تصل Map من السيرفر).
+  /// Any value becomes a non-empty string or null; errors can arrive from
+  /// the server as a map.
   static String? _str(dynamic value) {
     if (value == null) return null;
     final s = value.toString().trim();
@@ -100,7 +108,7 @@ class HistoryItem {
         _str(json['uploader_id']) ??
         _str(json['channel_id']);
     if (raw == null) return null;
-    // إزالة لاحقة "[videoid]" التي يلحقها yt-dlp أحياناً.
+    // Removes the "[videoid]" suffix yt-dlp sometimes appends.
     return raw.replaceFirst(RegExp(r'\s*\[[A-Za-z0-9_-]{6,}\]\s*$'), '').trim();
   }
 

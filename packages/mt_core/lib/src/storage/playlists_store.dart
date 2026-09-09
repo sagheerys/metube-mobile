@@ -3,8 +3,9 @@ import 'dart:convert';
 import '../models/saved_playlist.dart';
 import 'key_value_store.dart';
 
-/// مخزن القوائم المحفوظة (م-25) تحت مفتاح `saved_playlists` (§5.1) —
-/// كل تعديل داخل [PrefsMutex]، ويقرأ صيغة Lite القديمة (videoPaths) تلقائياً.
+/// The saved playlists store, under the `saved_playlists` key (§5.1).
+/// Every edit runs inside [PrefsMutex], and the old Lite format
+/// (videoPaths) is read automatically.
 class PlaylistsStore {
   PlaylistsStore({required this.store, required this.mutex, this.onChanged});
 
@@ -13,16 +14,19 @@ class PlaylistsStore {
   final KeyValueStore store;
   final PrefsMutex mutex;
 
-  /// **يُنادى بعد كل كتابة ناجحة** — نقطة الاختناق الوحيدة للمخزن.
-  /// يستعملها التطبيق ليطلب نسخة تلقائية بدل نثر النداء في كل شاشة.
+  /// **Called after every successful write**, the store's single choke
+  /// point. The app uses it to request an automatic backup rather than
+  /// scattering that call through every screen.
   final void Function()? onChanged;
 
-  /// **قراءة دفاعية عنصراً عنصراً (إصلاح خ-1):** كان الالتقاط مقصوراً
-  /// على `FormatException`، بينما `SavedPlaylist.fromJson` يرمي
-  /// `TypeError` إن وصل `items` خريطةً بدل قائمة (وارد من استعادة نسخة
-  /// legacy — والاستعادة تكتب بلا تحقق). النتيجة كانت **كل** `readAll`
-  /// يرمي ⇒ شاشة القوائم وكتاباتها معطلة نهائياً بلا شفاء ذاتي.
-  /// الآن: قائمة تالفة واحدة تُسقَط، والباقي ينجو.
+  /// **Defensive reading, item by item (fix خ-1):** the catch used to cover
+  /// `FormatException` alone, while `SavedPlaylist.fromJson` throws a
+  /// `TypeError` if `items` arrives as a map instead of a list, which
+  /// happens when restoring a legacy backup, and restore writes without
+  /// validating. The result was that **every** `readAll` threw, so the
+  /// playlists screen and all its writes were dead with no self-healing.
+  /// Now
+  /// one corrupt playlist is dropped and the rest survive.
   Future<List<SavedPlaylist>> readAll() async {
     final raw = await store.getString(prefsKey);
     if (raw == null || raw.isEmpty) return [];
@@ -71,7 +75,7 @@ class PlaylistsStore {
   Future<void> touchLastPlayed(String id, {DateTime? at}) =>
       _mutateOne(id, (p) => p.lastPlayedAt = at ?? DateTime.now());
 
-  /// إضافة عناصر (فردي أو جماعي) مع منع التكرار بالرابط المُقنون.
+  /// Adds items, one or many, preventing duplicates by canonical URL.
   Future<void> addItems(String id, List<PlaylistEntry> entries) =>
       _mutateOne(id, (p) {
         final existing = p.items.map((e) => e.canonicalUrl).toSet();
@@ -88,15 +92,18 @@ class PlaylistsStore {
       _mutateOne(id, (p) =>
           p.items.removeWhere((e) => e.canonicalUrl == canonicalUrl));
 
-  /// **إزالة مفاتيح من كل القوائم** — تُنادى عند حذف الملف نهائياً.
+  /// **Removes keys from every playlist**, called when a file is deleted
+  /// for
+  /// good.
   ///
-  /// بلاغ المالك 2026-09-04: «حذفتُ ملفات القائمة فبقيت في القائمة ولا
-  /// تعمل». الحذف كان يشذّب كل الفهارس (العناوين، الأغلفة، الوسوم،
-  /// المواضع) **ما عدا القوائم** — فيبقى مدخل ميت يشغّل غيره عند النقر.
+  /// Field report 2026-09-04: "I deleted the playlist's files and they
+  /// stayed in the playlist and do not play." Deletion pruned every index,
+  /// titles, artwork, tags, positions, **except the playlists**, so a dead
+  /// entry stayed and played something else when tapped.
   ///
-  /// يقارن بالمفتاحين: [PlaylistEntry.canonicalUrl] ومسار Lite القديم
-  /// [PlaylistEntry.legacyPath] — مفتاح المكتبة قد يكون أيّهما.
-  /// يعيد عدد المداخل التي أُزيلت فعلاً.
+  /// It compares both keys: [PlaylistEntry.canonicalUrl] and the old Lite
+  /// path [PlaylistEntry.legacyPath], since the library key may be either.
+  /// Returns how many entries were actually removed.
   Future<int> removeFromAll(Iterable<String> keys) async {
     final targets = {...keys.where((k) => k.isNotEmpty)};
     if (targets.isEmpty) return 0;
@@ -113,8 +120,9 @@ class PlaylistsStore {
     return removed;
   }
 
-  /// قائمة بهذا الاسم بالضبط (بلا حساسية للمسافات الطرفية) — يستعملها
-  /// مُجمِّع الدفعة كي لا تتكرر قائمةٌ عند إعادة تحميل المصدر نفسه.
+  /// A playlist with exactly this name, ignoring surrounding whitespace.
+  /// Used by the batch collector so a playlist is not duplicated when the
+  /// same source is downloaded again.
   Future<SavedPlaylist?> byName(String name) async {
     final target = name.trim();
     if (target.isEmpty) return null;
@@ -124,7 +132,7 @@ class PlaylistsStore {
     return null;
   }
 
-  /// إعادة ترتيب بالسحب.
+  /// Reordering by drag.
   Future<void> reorderItem(String id, int oldIndex, int newIndex) =>
       _mutateOne(id, (p) {
         if (oldIndex < 0 || oldIndex >= p.items.length) return;

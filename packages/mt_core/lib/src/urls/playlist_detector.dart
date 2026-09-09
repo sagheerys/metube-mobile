@@ -1,5 +1,5 @@
-/// كاشف قوائم التشغيل — يغذي التوجيه التلقائي (م-5):
-/// رابط قائمة ⇒ شاشة الدفعي، رابط مفرد ⇒ إضافة مباشرة.
+/// Playlist detection, which feeds automatic routing: a playlist URL opens
+/// the batch screen, a single URL is added directly.
 enum PlaylistKind { none, youtube, soundcloud }
 
 abstract final class PlaylistDetector {
@@ -22,15 +22,19 @@ abstract final class PlaylistDetector {
 
   static bool isPlaylist(String url) => detect(url) != PlaylistKind.none;
 
-  /// معرف قائمة YouTube من أي شكل رابط، أو null إن لم يكن قائمة حقيقية.
+  /// The YouTube playlist id from any URL shape, or null when it is not a
+  /// real playlist.
   ///
-  /// **الاستثناءات مقصودة (2026-09-02):**
-  /// - `RD…` قوائم **مزيج** يولّدها يوتيوب لكل مشاهد بلا عناصر ثابتة،
-  ///   وردّ الخادم لها فارغ ⇒ كانت تُظهر «تعذّر تحميل هذه القائمة».
-  /// - `WL` (المشاهدة لاحقاً) و`LL` (الإعجابات) خاصتان بحساب مسجَّل
-  ///   الدخول ⇒ لا تُقرآن أبداً بلا اعتماد.
+  /// **The exclusions are deliberate (2026-09-02):**
+  /// - - `RD…` are **mix** playlists YouTube generates per viewer with no
+  /// fixed items, and the server returns nothing for them, so they showed
+  /// "could not load this playlist".
+  /// - - `WL` (Watch Later) and `LL` (Liked) belong to a signed-in account
+  ///   and
+  /// are never readable without credentials.
   ///
-  /// الثلاثة تُعامل كرابط مفرد: يُحمَّل الفيديو نفسه بدل شاشة فارغة.
+  /// All three are treated as a single link: the video itself downloads
+  /// instead of an empty screen.
   static String? youtubePlaylistId(String url) {
     final id = Uri.tryParse(url)?.queryParameters['list'] ??
         RegExp(r'/playlist/([A-Za-z0-9_-]+)').firstMatch(url)?.group(1);

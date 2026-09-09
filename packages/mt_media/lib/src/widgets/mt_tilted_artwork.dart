@@ -6,8 +6,9 @@ import 'package:mt_ui/mt_ui.dart';
 import '../models/playlist_item.dart';
 import 'mt_up_next_list.dart';
 
-/// غلاف شاشة الصوت: لوحة مائلة **-1.5°** داخل إطار مائل **+1°** —
-/// عنصر هوية معتمد في سجل §4 («غلاف مشغل الصوت مائل داخل إطار»).
+/// The audio screen cover: a plate tilted **-1.5°** inside a frame tilted
+/// **+1°**. An approved identity element in log §4 ("the audio player
+/// cover is tilted inside a frame").
 class MTTiltedArtwork extends StatelessWidget {
   const MTTiltedArtwork({
     super.key,
@@ -84,7 +85,8 @@ class MTTiltedArtwork extends StatelessWidget {
   }
 }
 
-/// رقاقة المصدر: «بث من السيرفر» أو «تشغيل من جهازك» (م-19 مرئية).
+/// The source chip: "streaming from the server" or "playing from your
+/// device", the golden rule made visible.
 class MTSourceChip extends StatelessWidget {
   const MTSourceChip({super.key, required this.local});
 

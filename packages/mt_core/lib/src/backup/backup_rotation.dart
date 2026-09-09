@@ -1,6 +1,7 @@
 import 'dart:io';
 
-/// نسخة محفوظة على القرص — اسمها يحمل تاريخها فلا حاجة لقراءة الملف.
+/// A backup saved on disk. Its name carries its date, so the file never
+/// has to be read to sort it.
 class BackupFile {
   const BackupFile({
     required this.path,
@@ -15,36 +16,42 @@ class BackupFile {
   final int sizeBytes;
 }
 
-/// **مخزن النسخ الدوّار** (طلب المالك 2026-09-04: «نسخ كثيرة تصل إلى ٧
-/// تلقائياً ويحذف القديم»).
+/// **The rotating backup store** (requested 2026-09-04: "several copies,
+/// up to seven automatically, deleting the oldest").
 ///
-/// ثلاثة قرارات، لكلٍّ سبب من عطل وقع فعلاً:
+/// Four decisions, each one caused by a real failure:
 ///
-/// 1. **اسم مؤرَّخ لكل نسخة — لا ملف واحد يُدهس.** الملف الثابت كان
-///    يعني أن نسخة فاسدة تمحو الصالحة قبلها بلا رجعة. وقد ضربنا هذا
-///    من جهة أخرى أيضاً: أندرويد 11+ يسجّل **مالكاً** لكل ملف في
-///    `Download/`، فالتطبيق المُعاد تثبيته لا يستطيع الكتابة فوق ملف
-///    أنشأته نسخة سابقة — `errno 13` الذي رآه المالك بلقطة. الاسم
-///    الجديد في كل مرة يجعل التعارض مستحيلاً بنيوياً.
+/// 1. 1. **A dated name per copy, not one file overwritten.** A fixed name
+/// meant a corrupt copy erased the good one before it with no way back.
+/// And it bit from another direction too: Android 11+ records an **owner**
+/// for every file in `Download/`, so a reinstalled app cannot overwrite a
+/// file an earlier install created, which is the `errno 13` seen in a
+/// screenshot. A new name every time makes the conflict structurally
+/// impossible.
 ///
-/// 2. **كتابة ذرّية**: `.tmp` ثم إعادة تسمية. انقطاعٌ في منتصف الكتابة
-///    (قتل التطبيق، بطارية) لا يترك نصف ملف يبدو صالحاً.
+/// 2. 2. **Atomic writes**: `.tmp` then rename. An interruption mid-write,
+///    a
+/// killed app or a dead battery, never leaves half a file that looks
+/// valid.
 ///
-/// 3. **لا تُكتب نسخة مطابقة لأحدث نسخة.** بلا هذا تصير السبع «سبع
-///    لحظات متتالية» لا سبعة تغييرات — فتُطرد نسخة الأمس بنسخ اليوم
-///    المتطابقة.
+/// 3. 3. **A copy identical to the newest one is not written.** Without
+///    this
+/// the seven become seven consecutive moments rather than seven changes,
+/// and yesterday's copy is evicted by today's duplicates.
 ///
-/// 4. **تباعد زمني بين الخانات** ([minSpacing]) — أُضيف بعد فحص جهاز
-///    المالك (2026-09-05): النسخ السبع في Super كانت كلها بين 00:39
-///    و00:45، **ست دقائق تغطيها كل الذاكرة الاحتياطية**. الحدّ «٧»
-///    كان يعمل تماماً، لكن كل تغيير في قائمة أو وسم يطلب نسخة، وتحميل
-///    دفعة من يوتيوب تغييرٌ لكل مقطع — فتلتهم الدفعة الواحدة الخانات
-///    السبع وتطرد كل ما قبلها. الفرق الثالث لا يكفي هنا: كل نسخة
-///    **مختلفة** فعلاً عن سابقتها.
+/// 4. 4. **A minimum spacing between slots** ([minSpacing]), added after a
+/// device review (2026-09-05): all seven copies in Super sat between 00:39
+/// and 00:45, **six minutes covering the entire backup history**. The
+/// limit of seven was working perfectly, but every playlist or tag change
+/// requests a backup, and a batch download from YouTube is a change per
+/// clip, so one batch consumed all seven slots and evicted everything
+/// before it. Decision 3 does not help here: each copy really is different
+/// from the one before.
 ///
-///    فالنسخة الأحدث من [minSpacing] **تحلّ محلّ** التي قبلها في نفس
-///    الخانة بدل أن تفتح خانة جديدة: أحدث حالة محفوظة دائماً، والسبع
-///    تمتد ساعات أو أياماً بحسب استعمالك.
+/// So a copy newer than [minSpacing] **replaces** the one before it in the
+/// same slot rather than opening a new one: the latest state is always
+/// saved, and the seven span hours or days depending on how the app is
+/// used.
 class BackupRotation {
   BackupRotation({
     required this.directory,
@@ -53,29 +60,31 @@ class BackupRotation {
     this.minSpacing = defaultSpacing,
   }) : assert(keep > 0, 'الاحتفاظ بصفر نسخة يعني حذف كل شيء');
 
-  /// العدد المعتمد (طلب المالك) — الملف كيلوبايتات، والعدد الثابت
-  /// أوضح للمستخدم من تدرّج زمني.
+  /// The agreed count. The file is a few kilobytes, and a fixed number is
+  /// clearer to a user than a time-based schedule.
   static const int defaultKeep = 7;
 
-  /// ساعة: تحميل دفعة كاملة يبقى خانةً واحدة، ويوم استعمال عادي يترك
-  /// عدة خانات — والسبع تصير تاريخاً لا لقطةً مكرَّرة.
+  /// One hour: a full batch download stays one slot, while a normal day of
+  /// use leaves several, so the seven become a history rather than a
+  /// repeated snapshot.
   static const Duration defaultSpacing = Duration(hours: 1);
 
   static const String extension = '.json';
   static const String _tempExtension = '.tmp';
 
-  /// مجلد النسخ — `<وسائط التطبيق>/backups`.
+  /// The backup folder: `<app media>/backups`.
   final String directory;
 
-  /// بادئة الاسم: `metube_lite` أو `metube_super`.
+  /// The name prefix: `metube_lite` or `metube_super`.
   final String prefix;
 
   final int keep;
 
-  /// أقل فاصل زمني بين خانتين. `Duration.zero` يعطّل التباعد.
+  /// The minimum gap between two slots. `Duration.zero` disables spacing.
   final Duration minSpacing;
 
-  /// `prefix_2026-09-04_094233.json` — يُرتَّب أبجدياً فيُرتَّب زمنياً.
+  /// `prefix_2026-09-04_094233.json`: sorting alphabetically sorts
+  /// chronologically.
   String fileNameFor(DateTime at) => '${prefix}_${stampOf(at)}$extension';
 
   static String stampOf(DateTime at) {
@@ -84,7 +93,8 @@ class BackupRotation {
         '_${two(at.hour)}${two(at.minute)}${two(at.second)}';
   }
 
-  /// التاريخ من الاسم — `null` لاسم لا يتبع النمط.
+  /// The date parsed out of the name, or `null` for a name that does not
+  /// follow the pattern.
   DateTime? dateOf(String fileName) {
     if (!fileName.startsWith('${prefix}_') ||
         !fileName.endsWith(extension)) {
@@ -98,7 +108,8 @@ class BackupRotation {
         '${stamp.substring(15, 17)}');
   }
 
-  /// النسخ المحفوظة — **الأحدث أولاً**. مجلد غير موجود ⇒ قائمة فارغة.
+  /// The saved copies, **newest first**. A missing folder yields an empty
+  /// list.
   Future<List<BackupFile>> list() async {
     final dir = Directory(directory);
     if (!await dir.exists()) return const [];
@@ -121,10 +132,11 @@ class BackupRotation {
 
   Future<BackupFile?> latest() async => (await list()).firstOrNull;
 
-  /// يكتب نسخة جديدة ويحذف ما زاد عن [keep].
+  /// Writes a new copy and deletes anything beyond [keep].
   ///
-  /// يعيد `null` إن كان المحتوى **مطابقاً لأحدث نسخة** — لا شيء تغيّر
-  /// فلا داعي لإهدار خانة من السبع.
+  /// Returns `null` when the content is **identical to the newest copy**:
+  /// nothing changed, so there is no reason to spend one of the seven
+  /// slots.
   Future<BackupFile?> write(String contents, {DateTime? at}) async {
     final dir = Directory(directory);
     await dir.create(recursive: true);
@@ -136,13 +148,15 @@ class BackupRotation {
       if (previous == contents) return null;
     }
 
-    // **الاستبدال لا الإضافة** داخل نفس الخانة الزمنية: تُحذف القديمة
-    // بعد نجاح كتابة البديل لا قبله، فانقطاعٌ في المنتصف يترك القديمة
-    // سليمة بدل أن يترك المستخدم بلا نسخة أصلاً.
+    // **Replacement rather than addition** inside the same time slot: the
+    // old
+    // file is deleted after the replacement is written successfully, never
+    // before, so an interruption in the middle leaves the old copy intact
+    // rather than leaving the user with none.
     //
-    // الخانة تُحسب على **شبكة ثابتة** لا بفارق عن آخر كتابة: «أحدث من
-    // ساعة» كان يجعل نشاطاً كل نصف ساعة يزحف بالخانة الوحيدة إلى
-    // الأبد فلا يُفتح تاريخ أصلاً.
+    // The slot is computed on a **fixed grid**, not as a gap from the last
+    // write: "newer than an hour" made activity every half hour drag the
+    // single slot forward forever, so a history never opened at all.
     final replace = newest != null &&
         minSpacing > Duration.zero &&
         _slotOf(stamp) == _slotOf(newest.at);
@@ -150,14 +164,15 @@ class BackupRotation {
     final target = '$directory/$name';
     final temp = File('$target$_tempExtension');
     await temp.writeAsString(contents, flush: true);
-    // النقلة الذرّية: من هنا فقط يراها القارئ.
+    // The atomic move: only from here is the copy visible to a reader.
     final file = await temp.rename(target);
 
     if (replace && newest.path != file.path) {
       try {
         await File(newest.path).delete();
       } on FileSystemException {
-        // ملف يملكه تثبيت سابق — يُترك، وprune يتكفّل بالحدّ.
+        // A file owned by an earlier install. Leave it; prune enforces the
+        // limit.
       }
     }
     await prune();
@@ -169,11 +184,13 @@ class BackupRotation {
     );
   }
 
-  /// رقم الخانة على شبكة [minSpacing] الثابتة — ساعةُ التقويم عملياً.
+  /// The slot number on the fixed [minSpacing] grid, in practice the
+  /// calendar hour.
   int _slotOf(DateTime at) =>
       at.millisecondsSinceEpoch ~/ minSpacing.inMilliseconds;
 
-  /// يحذف الأقدم حتى يبقى [keep] — ويعيد عدد المحذوف.
+  /// Deletes the oldest until [keep] remain, and returns how many were
+  /// deleted.
   Future<int> prune() async {
     final all = await list();
     if (all.length <= keep) return 0;
@@ -183,7 +200,9 @@ class BackupRotation {
         await File(file.path).delete();
         deleted++;
       } on FileSystemException {
-        // ملف يملكه تثبيت سابق (أندرويد 11+) — يُترك ولا يُسقط الدورة.
+        // A file owned by an earlier install (Android 11+). Leave it, and
+        // do not
+        // fail the rotation over it.
       }
     }
     return deleted;

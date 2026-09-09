@@ -1,6 +1,6 @@
 import '../urls/playlist_detector.dart';
 
-/// عنصر واحد داخل معاينة قائمة (شاشة الدفعي م-11).
+/// One item inside a playlist preview, on the batch screen.
 class PlaylistTrack {
   const PlaylistTrack({
     required this.url,
@@ -15,8 +15,9 @@ class PlaylistTrack {
   final String? thumbnail;
 }
 
-/// معاينة قائمة تشغيل كما تعرضها شاشة الدفعي: العنوان والغلاف والعناصر
-/// بمددها — يبنيها resolver YouTube أو SoundCloud.
+/// A playlist preview as the batch screen shows it: the title, the cover
+/// and the items with their durations. Built by the YouTube or SoundCloud
+/// resolver.
 class PlaylistPreview {
   const PlaylistPreview({
     required this.kind,

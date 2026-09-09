@@ -1,5 +1,6 @@
-/// كاشف المنصات — **القائمة الواحدة** المعتمدة (م-4): أي شاشة أو ودجت
-/// تحتاج اسم المنصة تمر من هنا، لا قوائم مكررة.
+/// Platform detection: **the single approved list**. Any screen or widget
+/// needing a platform name comes through here; there are no duplicate
+/// lists.
 enum MediaPlatform {
   youtube('YouTube'),
   tiktok('TikTok'),
@@ -15,13 +16,16 @@ enum MediaPlatform {
 
   const MediaPlatform(this.label);
 
-  /// اسم عرض إنجليزي محايد — الترجمة العربية عبر arb في طبقة الواجهة.
+  /// A neutral English display name; the Arabic translation lives in the
+  /// arb
+  /// files in the interface layer.
   final String label;
 
   bool get isYouTube => this == MediaPlatform.youtube;
 
-  /// المنصة من الرابط. الروابط القصيرة (vm./vt.tiktok، fb.watch،
-  /// on.soundcloud) تُنسب لمنصتها قبل الحلّ حتى تعرضها الشارة فوراً.
+  /// The platform from a URL. Short links (vm./vt.tiktok, fb.watch,
+  /// on.soundcloud) are attributed to their platform before resolution, so
+  /// the badge can show it immediately.
   static MediaPlatform detect(String url) {
     final u = url.trim().toLowerCase();
     if (u.isEmpty) return MediaPlatform.other;
@@ -44,6 +48,6 @@ enum MediaPlatform {
     return MediaPlatform.other;
   }
 
-  /// هل الرابط لمنصة معروفة؟ (يغذي الزر الذكي م-2.)
+  /// Is this URL from a known platform? Feeds the smart button.
   static bool isKnown(String url) => detect(url) != MediaPlatform.other;
 }

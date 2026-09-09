@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import '../theme/mt_theme.dart';
 import '../tokens/tokens.dart';
 
-/// حالة فارغة «وهج»: أيقونة في قرص soft + عنوان كوفي + شرح + فعل اختياري.
+/// A Wahaj empty state: an icon on a soft disc, a Kufi heading, an
+/// explanation and an optional action.
 class MTEmptyState extends StatelessWidget {
   const MTEmptyState({
     super.key,

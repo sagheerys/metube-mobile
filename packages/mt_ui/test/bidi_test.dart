@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mt_ui/mt_ui.dart';
 
-/// **حرّاس اتجاه الأرقام (فحص جهاز المالك 2026-09-05)**: المحارف
-/// المحايدة تلتصق بالطرف الخطأ في فقرة عربية، فتقلب معنى العبارة —
-/// «2 / 40» تُعرض «40 / 2».
+/// **Number direction guards** (device check 2026-09-05): neutral
+/// characters attach to the wrong end inside an Arabic paragraph and
+/// invert the meaning of a phrase, so "2 / 40" renders as "40 / 2".
 void main() {
   test('العزل يلفّ النص من طرفيه ولا يغيّر محتواه', () {
     final wrapped = mtLtrRun('2 / 40');
@@ -18,8 +18,9 @@ void main() {
   });
 
   test('العزل لا يتراكم عند اللفّ المزدوج بالخطأ', () {
-    // ليس عطلاً اليوم، لكنه فخ سهل: لفّ نصّ ملفوف يبقى صالحاً بصرياً
-    // والمهم ألا يضيع المحتوى.
+    // Not a defect today, but an easy trap: wrapping already-wrapped text
+    // stays visually valid, and what matters is that the content is not
+    // lost.
     expect(mtLtrRun(mtLtrRun('1 / 2')), contains('1 / 2'));
   });
 

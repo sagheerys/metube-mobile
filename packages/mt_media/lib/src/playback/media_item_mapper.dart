@@ -2,8 +2,9 @@ import 'package:audio_service/audio_service.dart';
 
 import '../models/playlist_item.dart';
 
-/// تحويل [PlaylistItem] ⇄ [MediaItem] لإشعار الوسائط وشاشة القفل.
-/// المعرف هو canonicalUrl دائماً فيبقى المفتاح واحداً عبر الطبقات.
+/// Converts [PlaylistItem] to and from [MediaItem] for the media
+/// notification and the lock screen. The id is always the canonicalUrl, so
+/// the key stays the same across every layer.
 extension PlaylistItemMediaItem on PlaylistItem {
   MediaItem toMediaItem() => MediaItem(
         id: canonicalUrl,
@@ -27,7 +28,8 @@ extension PlaylistItemMediaItem on PlaylistItem {
   }
 }
 
-/// المسار العكسي — يُستعمل حين تصل الأوامر من الإشعار بمعرف فقط.
+/// The reverse direction, used when commands arrive from the notification
+/// carrying only an id.
 PlaylistItem? playlistItemFromMediaItem(MediaItem item) {
   final extras = item.extras ?? const {};
   final ratio = extras['aspectRatio'];

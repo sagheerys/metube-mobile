@@ -3,8 +3,9 @@ import 'package:flutter/material.dart';
 import '../theme/mt_theme.dart';
 import '../tokens/tokens.dart';
 
-/// بطاقة تحميل حية «وهج»: أرضية soft بلون الفعل + شريط تقدم + إلغاء.
-/// نص الحالة (المرحلة/الخطأ) يأتي مترجماً من التطبيق.
+/// A live Wahaj download card: a soft accent ground, a progress bar and a
+/// cancel. The status text, whether a phase or an error, arrives already
+/// translated from the app.
 class MTDownloadProgressCard extends StatelessWidget {
   const MTDownloadProgressCard({
     super.key,
@@ -19,7 +20,7 @@ class MTDownloadProgressCard extends StatelessWidget {
   final String title;
   final String statusText;
 
-  /// 0..1 أو null لغير المحدد (مرحلة الإضافة/الانتظار).
+  /// 0 to 1, or null while indeterminate during the add and wait phases.
   final double? progress;
   final bool isError;
   final VoidCallback? onCancel;
@@ -83,12 +84,18 @@ class MTDownloadProgressCard extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                           style: text.bodySmall!.copyWith(color: softInk)),
                     ),
-                    // **العداد يرافق كل طور تقدمه معروف** (بلاغ المالك
-                    // 2026-09-03: «العداد لا يظهر عند السحب للجهاز»).
-                    // كانت النسبة مدفونة داخل نص «على السيرفر ٪» وحده،
-                    // فمرحلة السحب — وهي الأطول في Lite — تعرض شريطاً
-                    // يتحرك بلا رقم. الرقم عنصر مستقل الآن، فيظهر في
-                    // السحب والاستطلاع معاً بلا نص إضافي لكل مرحلة.
+                    // **The percentage follows every phase that knows its
+                    // progress** (field
+                    // report 2026-09-03: the counter did not appear while
+                    // pulling to the
+                    // device). The number used to be buried inside the "on
+                    // server %" string
+                    // alone, so the pull phase, the longest one in Lite,
+                    // showed a moving bar
+                    // with no number. It is an independent element now, so
+                    // it appears during
+                    // both the pull and the poll without a separate string
+                    // per phase.
                     if (!isError && progress != null) ...[
                       const SizedBox(width: MTSpace.sm),
                       Text(

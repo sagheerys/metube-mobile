@@ -1,6 +1,6 @@
-/// نواة MTF — Dart خالص: عميل MeTube API، النماذج المتسامحة، أدوات
-/// الروابط، محرك التحميل، التخزين، النسخ الاحتياطي، السجلات.
-/// كل السلوك من `docs/plan/05-DATA-SCHEMA.md` حرفياً.
+/// The MTF core in pure Dart: the MeTube API client, the tolerant models,
+/// URL tools, the download engine, storage, backup and logging. Every
+/// behaviour follows `docs/plan/05-DATA-SCHEMA.md` exactly.
 library;
 
 export 'src/api/api_exceptions.dart';

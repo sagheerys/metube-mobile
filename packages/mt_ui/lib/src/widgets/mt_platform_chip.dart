@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 
 import '../theme/mt_theme.dart';
 
-/// أنواع المنصات **بصرياً** — mt_ui لا يعرف mt_core (قاعدة الاعتماد 6)،
-/// والتطبيق يحوّل `MediaPlatform` إلى هذا النوع.
+/// Platform kinds **as far as presentation is concerned**. mt_ui does not
+/// know mt_core (dependency rule 6), so the app converts `MediaPlatform`
+/// into this type.
 enum MTPlatformKind {
   youtube('YT', Color(0xFFA8442F)),
   tiktok('TT', Color(0xFF3E6273)),
@@ -21,12 +22,12 @@ enum MTPlatformKind {
 
   final String label;
 
-  /// درجة نصية دافئة من عائلة وهج (المرجع: pchip في direction-3) —
-  /// [other] يسقط إلى ink3 من اللوحة.
+  /// A warm text shade from the Wahaj family; [other] falls back to ink3
+  /// from the palette.
   final Color tint;
 }
 
-/// شارة المنصة النصية المضغوطة داخل صف بيانات البطاقة.
+/// The compact textual platform badge inside a card's meta row.
 class MTPlatformChip extends StatelessWidget {
   const MTPlatformChip({super.key, required this.kind});
 

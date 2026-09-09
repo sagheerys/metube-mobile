@@ -5,17 +5,17 @@ import 'generated/mt_localizations.dart';
 
 export 'generated/mt_localizations.dart';
 
-/// تهيئة الترجمة الزمنية النسبية — عربي مسجل (خطوة 3.4).
+/// Registers the relative-time locales; Arabic is registered explicitly.
 void initMTL10n() {
   timeago.setLocaleMessages('ar', timeago.ArMessages());
   timeago.setLocaleMessages('ar_short', timeago.ArShortMessages());
 }
 
-/// وصول مختصر: `context.mtl.libraryTitle`.
+/// Shorthand access: `context.mtl.libraryTitle`.
 extension MTL10nX on BuildContext {
   MTLocalizations get mtl => MTLocalizations.of(this);
 }
 
-/// تاريخ نسبي بلغة السياق الحالية.
+/// A relative date in the locale currently in context.
 String mtTimeAgo(BuildContext context, DateTime time) =>
     timeago.format(time, locale: Localizations.localeOf(context).languageCode);

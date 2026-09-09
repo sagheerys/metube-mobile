@@ -6,12 +6,12 @@ import '../models/playlist_item.dart';
 import '../playback/audio_handler.dart';
 import 'mt_up_next_list.dart';
 
-/// المشغل المصغر (م-22): شريط دائم أسفل الشاشات الرئيسية عند وجود
-/// تشغيل — غلاف، عنوان، تشغيل/إيقاف، تقدم، سحب للإغلاق، ونقرة تفتح
-/// شاشة الصوت.
+/// The mini player: a permanent bar at the bottom of the main screens
+/// whenever something is playing. Cover, title, play and pause, progress,
+/// drag to dismiss, and a tap that opens the audio screen.
 ///
-/// **فخ §6.5:** الظهور مرهون بـ `mediaItem != null` — لا بـ
-/// `processingState` — وإلا بقي شبح بعد الإيقاف.
+/// **Trap §6.5:** visibility hangs on `mediaItem != null`, not on
+/// `processingState`, or a ghost survives the stop.
 class MTMiniPlayer extends StatelessWidget {
   const MTMiniPlayer({
     super.key,
@@ -36,8 +36,11 @@ class MTMiniPlayer extends StatelessWidget {
     stream: handler.mediaItem,
     builder: (context, snapshot) {
       final item = snapshot.data;
-      // **يظهر ويختفي بحركة لا بقفزة** (تلميع 2026-09-04): كان يطفر
-      // في مكانه فيدفع الشريط السفلي دفعةً واحدة.
+      // **It appears and disappears with motion rather than a jump**
+      // (polish
+      // 2026-09-04): it used to pop into place, shoving the bottom bar in
+      // one
+      // step.
       return AnimatedSwitcher(
         duration: mtMotionDuration(context, MTMotion.reveal),
         switchInCurve: MTMotion.entrance,
@@ -96,7 +99,9 @@ class _Bar extends StatelessWidget {
       key: const ValueKey('mt-mini-player'),
       direction: DismissDirection.down,
       onDismissed: (_) => handler.stop(),
-      // انكماش خفيف عند الضغط — يمهّد لصعود شاشة الصوت من مكانه.
+      // A light shrink while pressed, which prepares the audio screen
+      // rising
+      // out of its place.
       child: MTPressable(
         child: Material(
           color: Colors.transparent,

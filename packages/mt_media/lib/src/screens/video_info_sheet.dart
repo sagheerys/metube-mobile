@@ -9,8 +9,9 @@ import '../widgets/mt_queue_panel.dart';
 import '../widgets/mt_up_next_list.dart';
 import 'mt_video_screen.dart';
 
-/// الورقة الكريمية تحت الفيديو العمودي (مرجع «وهج» B): العنوان ←
-/// البيانات ← الأفعال ← الوضع والسرعة ← قسم «التالي» (م-38).
+/// The cream sheet under the portrait video (Wahaj reference B): title,
+/// then metadata, then actions, then mode and speed, then the "up next"
+/// section.
 class MTVideoInfoSheet extends StatelessWidget {
   const MTVideoInfoSheet({
     super.key,
@@ -84,8 +85,9 @@ class MTVideoInfoSheet extends StatelessWidget {
             Divider(color: p.line, height: 1),
             const SizedBox(height: MTSpace.md),
             MTQueuePanel(
-              // داخل `ListView` أعلاه — بدون هذا يبتلع مجرى القائمة
-              // الداخلية السحبَ فلا يمرَّر قسم «التالي» إطلاقاً.
+              // Inside the `ListView` above; without this its inner scroll
+              // swallows the
+              // drag and the "up next" section never scrolls at all.
               nested: true,
               items: ordered,
               currentIndex: currentIndex,
@@ -154,7 +156,8 @@ class _ActionTile extends StatelessWidget {
   }
 }
 
-/// صف الوضع والسرعة (مرجع B): رقاقة الوضع الحالي + السرعة في الطرف.
+/// The mode and speed row (reference B): a chip for the current mode with
+/// the speed at the far end.
 class _ModeRow extends StatelessWidget {
   const _ModeRow({required this.session});
 

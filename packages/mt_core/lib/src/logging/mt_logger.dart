@@ -4,9 +4,10 @@ import 'package:synchronized/synchronized.dart';
 
 enum LogLevel { debug, info, warn, error }
 
-/// سجل تشخيصي بملف حلقي (م-32): يُقص لآخر [maxLines] سطراً، والمشاركة
-/// تمر **إلزامياً** بـ [sanitizeForShare] (حذف الروابط وIP وترويسات
-/// المصادقة ومسارات التخزين). التطبيق يمرر المسار من path_provider.
+/// A diagnostic log in a ring file: trimmed to the last [maxLines] lines,
+/// and sharing passes **mandatorily** through [sanitizeForShare], which
+/// removes URLs, IP addresses, authentication headers and storage paths.
+/// The app supplies the path from path_provider.
 class MTLogger {
   MTLogger({required this.filePath, this.maxLines = 1000});
 
@@ -50,9 +51,10 @@ class MTLogger {
         tag: tag,
       );
 
-  /// **تحت القفل نفسه**: القصّ (`_trimIfNeeded`) يعيد كتابة الملف
-  /// كاملاً، وقراءةٌ تقع في تلك اللحظة ترى ملفاً فارغاً أو منقوصاً —
-  /// شاشة سجل تومض فارغة، واختبارٌ يسقط مرة كل عشر.
+  /// **Under the same lock**: trimming (`_trimIfNeeded`) rewrites the whole
+  /// file, and a read landing at that moment sees an empty or truncated
+  /// file. That is a log screen flashing empty, and a test failing one time
+  /// in ten.
   Future<String> readAll() => _lock.synchronized(() async {
         final file = File(filePath);
         return await file.exists() ? file.readAsString() : '';
@@ -65,7 +67,7 @@ class MTLogger {
         }
       });
 
-  /// نص السجل جاهزاً للمشاركة بعد التعقيم الإلزامي.
+  /// The log text ready to share, after the mandatory sanitising.
   Future<String> readForShare() async => sanitizeForShare(await readAll());
 
   Future<void> _trimIfNeeded(File file) async {
@@ -76,8 +78,9 @@ class MTLogger {
     }
   }
 
-  /// استبدال الاعتمادات والروابط والمسارات وعناوين IP بعلامات مبهمة —
-  /// **الترتيب مهم**: المصادقة قبل الروابط.
+  /// Replaces credentials, URLs, paths and IP addresses with opaque
+  /// markers.
+  /// **Order matters**: authentication before URLs.
   static String sanitizeForShare(String text) => text
       .replaceAll(_authPattern, '[AUTH]')
       .replaceAll(_urlPattern, '[URL]')

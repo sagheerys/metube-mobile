@@ -4,9 +4,9 @@ import '../theme/mt_theme.dart';
 import '../tokens/tokens.dart';
 import 'mt_media_card.dart' show MTMediaLocation;
 
-/// شارة الموقع على بطاقة المكتبة: زيتوني «دون اتصال» · وهج soft «على
-/// السيرفر» (سجل §4 — لغة المعنى). فُصلت عن `mt_media_card.dart` عند
-/// بلوغه حدّ الأسطر (القاعدة 4).
+/// The location badge on a library card: olive for "offline", soft ember
+/// for "on the server" (log §4, the language of meaning). Split out of
+/// `mt_media_card.dart` when that file reached the size limit (rule 4).
 class MTLocationBadge extends StatelessWidget {
   const MTLocationBadge({
     super.key,

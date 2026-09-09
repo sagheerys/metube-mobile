@@ -4,8 +4,9 @@ import '../models/playlist_preview.dart';
 import '../urls/playlist_detector.dart';
 import 'http_fetch.dart';
 
-/// SoundCloud (§4) — **هش بطبيعته ومعزول**: أي فشل يعيد null ولا يكسر
-/// شيئاً (الرابط يُمرَّر للسيرفر كما هو). لا مفاتيح API رسمية.
+/// SoundCloud (§4), **fragile by nature and isolated**: any failure
+/// returns null and breaks nothing, since the link is passed to the server
+/// as it is. There are no official API keys.
 class SoundCloudResolver {
   SoundCloudResolver({HttpGetString? httpGet})
       : _httpGet = httpGet ?? ioHttpGetString;
@@ -22,14 +23,15 @@ class SoundCloudResolver {
     RegExp(r'client_id=([a-zA-Z0-9]{32})'),
   ];
 
-  /// أكبر دفعة تقبلها `/tracks?ids=` قبل أن تُرفض.
+  /// The largest batch `/tracks?ids=` accepts before refusing.
   static const idsPerBatch = 50;
 
-  /// حد أعلى للمقاطع المُكمَّلة — ألبوم بـ432 مقطعاً (وارد فعلاً) لا
-  /// يحتاج أكثر من هذا في شاشة اختيار.
+  /// A ceiling on completed tracks: an album of 432 tracks, which really
+  /// does happen, needs no more than this on a selection screen.
   static const maxTracks = 400;
 
-  /// غلاف مقطع مفرد عبر oEmbed مع تكبير `-large.` إلى `-t500x500.`.
+  /// A single track's cover through oEmbed, upscaling `-large.` to
+  /// `-t500x500.`.
   Future<String?> trackArtwork(String trackUrl) async {
     try {
       final body = await _httpGet(Uri.parse(
@@ -43,13 +45,16 @@ class SoundCloudResolver {
     }
   }
 
-  /// حل قائمة `/sets/` من `window.__sc_hydration` ثم **إكمال المقاطع
-  /// الناقصة** عبر api-v2.
+  /// Resolves a `/sets/` playlist from `window.__sc_hydration`, then
+  /// **completes the partial tracks** through api-v2.
   ///
-  /// **بلاغ المالك 2026-09-02 «الألبوم يُحمَّل بطريقة غريبة»:** ساوندكلاود
-  /// يضمّن الكائن الكامل لأول ~5 مقاطع فقط، والبقية تصل كـ`{id, kind}`
-  /// بلا `permalink_url` — وكان المحلل يُسقطها بصمت، فألبوم من 432 مقطعاً
-  /// يظهر **5**. الإكمال هنا بدفعات من [idsPerBatch].
+  /// **Field report 2026-09-02, "the album downloads strangely":**
+  /// SoundCloud embeds the full object for only the first five or so
+  /// tracks;
+  /// the rest arrive as `{id, kind}` with no `permalink_url`, and the
+  /// parser
+  /// was dropping them silently, so an album of 432 tracks showed **5**.
+  /// Completion happens here in batches of [idsPerBatch].
   Future<PlaylistPreview?> resolveSet(String setUrl) async {
     try {
       final html = await _httpGet(Uri.parse(setUrl));
@@ -87,7 +92,8 @@ class SoundCloudResolver {
     return out;
   }
 
-  /// تحليل خالص لكتلة hydration — منفصل ليُختبر بعينات HTML حقيقية.
+  /// Pure parsing of the hydration block, kept separate so it can be tested
+  /// against real HTML samples.
   static PlaylistPreview? parseHydration(String html) {
     final data = _playlistData(html);
     if (data == null) return null;
@@ -99,7 +105,8 @@ class SoundCloudResolver {
     );
   }
 
-  /// معرفات المقاطع التي وصلت **ناقصة** (بلا `permalink_url`).
+  /// The ids of tracks that arrived **incomplete**, without a
+  /// `permalink_url`.
   static List<int> pendingTrackIds(String html) {
     final data = _playlistData(html);
     final tracks = data?['tracks'] as List? ?? const [];
@@ -112,7 +119,8 @@ class SoundCloudResolver {
     ].take(maxTracks).toList();
   }
 
-  /// المقاطع الكاملة من أي مصفوفة (hydration أو ردّ api-v2).
+  /// The complete tracks out of any array, whether hydration or an api-v2
+  /// response.
   static List<PlaylistTrack> tracksOf(List<dynamic> raw) => [
         for (final track in raw)
           if (track is Map && track['permalink_url'] != null)
@@ -126,11 +134,12 @@ class SoundCloudResolver {
             ),
       ];
 
-  /// استخراج client_id (32 محرفاً).
+  /// Extracts the client_id, 32 characters.
   ///
-  /// **المصدر الأول هو `apiClient` في hydration** (مُثبت على الموقع
-  /// الحقيقي 2026-09-02): الأنماط النصية الثلاثة لم تعد تطابق شيئاً في
-  /// صفحة اليوم، فكان الإكمال يسقط قبل أن يبدأ.
+  /// **The first source is `apiClient` in the hydration block** (confirmed
+  /// against the live site 2026-09-02): the three textual patterns no
+  /// longer
+  /// match anything on today's page, so completion failed before it began.
   static String? extractClientId(String content) {
     final hydration = _hydration(content);
     for (final entry in hydration) {

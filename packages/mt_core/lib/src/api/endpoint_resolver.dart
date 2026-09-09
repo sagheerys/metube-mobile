@@ -4,43 +4,50 @@ import '../constants/mt_constants.dart';
 import 'api_exceptions.dart';
 import 'metube_api_client.dart';
 
-/// **نتيجة فحص رابط واحد.**
+/// **The result of probing one endpoint.**
 ///
-/// كانت `bool` — و«لا يستجيب» و«يرفض اعتمادك» شيئان مختلفان تماماً
-/// للمستخدم: الأول يطارد راوتره، والثاني يصلحه بحقلين في الإعدادات.
-/// (بلاغ المالك 2026-09-05: قفل السيرفر بكلاودفلير فصارت كل الروابط
-/// حمراء بلا سبب معلن.)
+/// It used to be a `bool`, and "does not respond" versus "rejects your
+/// credentials" are entirely different things to a user: the first sends
+/// them hunting through their router, the second is fixed with two fields
+/// in settings. (Field report 2026-09-05: the server was put behind
+/// Cloudflare Access and every endpoint went red with no stated reason.)
 enum MTEndpointStatus {
-  /// سيرفر MeTube صالح يستجيب بالاعتماد الحالي.
+  /// A valid MeTube server that responds with the current credentials.
   ok,
 
-  /// 401/403 — الرابط حيّ لكن الاعتماد ناقص أو خاطئ.
+  /// 401 or 403: the endpoint is alive, but the credentials are missing or
+  /// wrong.
   unauthorized,
 
-  /// العنوان يستجيب لكنه **ليس MeTube**: صفحة HTML، أو JSON بلا
-  /// `done`/`queue`، أو 404 على المسار. اعتماده يفشل بكل عملية بعده.
+  /// The address responds but is **not MeTube**: an HTML page, JSON without
+  /// `done`/`queue`, or a 404 on the path. Adopting it fails every
+  /// operation
+  /// afterwards.
   notMeTube,
 
-  /// انقطاع، مهلة، DNS، أو عنوان ليس عليه MeTube.
+  /// A drop, a timeout, DNS, or an address with no MeTube on it.
   unreachable;
 
-  /// **الصالح للاعتماد النشط وحده هو `ok`**: رابط يردّ 401 لا يخدم
-  /// شيئاً، فاعتماده يترك التطبيق ينزف أخطاءً بلا فائدة.
+  /// **Only `ok` may become the active endpoint**: one that answers 401
+  /// serves nothing, and adopting it leaves the app bleeding errors to no
+  /// purpose.
   bool get isUsable => this == MTEndpointStatus.ok;
 }
 
-/// دالة فحص وصول لرابط واحد.
+/// A reachability probe for a single endpoint.
 typedef ProbeFn = Future<MTEndpointStatus> Function(String baseUrl);
 
-/// اختيار الرابط النشط (م-28): محلي مفضّل ثم الروابط الخارجية بترتيبها —
-/// الفحص **متوازٍ** بمهلة probe قصيرة (4s) حتى لا يعلّق تغيّر الشبكة.
+/// Choosing the active endpoint: the local one is preferred, then the
+/// external ones in order. Probing runs **in parallel** with a short 4s
+/// timeout, so a network change never hangs.
 class EndpointResolver {
   EndpointResolver({
     required this._probe,
     this.probeTimeout = MTConstants.probeTimeout,
   });
 
-  /// المُنشئ العملي: يفحص بعميل MeTube حقيقي بنفس الاعتمادات لكل رابط.
+  /// The practical constructor: probes with a real MeTube client using the
+  /// same credentials for every endpoint.
   factory EndpointResolver.withClientFactory(
     MeTubeApiClient Function(String baseUrl) clientFactory,
   ) {
@@ -55,7 +62,9 @@ class EndpointResolver {
         } on NotMeTubeServerException {
           return MTEndpointStatus.notMeTube;
         } on NoApiException {
-          // 404: خادم HTTP حيّ بلا واجهة MeTube — خطأ عنوان لا خطأ شبكة.
+          // 404: a live HTTP server with no MeTube interface. An address
+          // mistake,
+          // not a network one.
           return MTEndpointStatus.notMeTube;
         } on MTApiException {
           return MTEndpointStatus.unreachable;
@@ -69,8 +78,9 @@ class EndpointResolver {
   final ProbeFn _probe;
   final Duration probeTimeout;
 
-  /// أول رابط **صالح** بترتيب الأفضلية: المحلي أولاً ثم الخارجية.
-  /// null ⇔ لا شيء صالح.
+  /// The first **valid** endpoint in preference order: local first, then
+  /// the
+  /// external ones. `null` means nothing was valid.
   Future<String?> resolveActive({
     String? localUrl,
     List<String> externalUrls = const [],
@@ -78,8 +88,10 @@ class EndpointResolver {
       (await resolveDetailed(localUrl: localUrl, externalUrls: externalUrls))
           .url;
 
-  /// نفس الاختيار **ومعه حالة كل مرشح** من نفس جولة الفحص — حتى يقدر
-  /// المتصل أن يقول *لماذا* لم يجد شيئاً بلا فحص ثانٍ.
+  /// The same choice **together with the state of every candidate** from
+  /// the
+  /// same probing round, so the caller can say *why* it found nothing
+  /// without probing twice.
   Future<({String? url, Map<String, MTEndpointStatus> statuses})>
       resolveDetailed({
     String? localUrl,
@@ -102,11 +114,12 @@ class EndpointResolver {
     return (url: null, statuses: statuses);
   }
 
-  /// حالة كل رابط دفعة واحدة (نقاط الوصول الحية في شاشة الشبكة).
+  /// The state of every endpoint in one pass, for the live endpoint list in
+  /// the network screen.
   Future<Map<String, MTEndpointStatus>> probeAll(List<String> urls) async {
     final entries = await Future.wait(urls.map((url) async {
-      // try/catch حول await (لا onTimeout/catchError) حتى لا يكسرنا
-      // مستقبل مُصنَّف Future<Never> من probe رامٍ.
+      // try/catch around the await rather than onTimeout/catchError, so a
+      // probe that throws cannot hand us a future typed `Future<Never>`.
       try {
         return MapEntry(url, await _probe(url).timeout(probeTimeout));
       } catch (_) {

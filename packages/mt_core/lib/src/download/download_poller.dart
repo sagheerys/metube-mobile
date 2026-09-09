@@ -6,12 +6,13 @@ import '../models/history_item.dart';
 import '../urls/url_kit.dart';
 import 'history_matcher.dart';
 
-/// استطلاع `/history` حتى يكتمل عنصر **هذه** المهمة (§2.3).
+/// Polls `/history` until **this** task's item completes (§2.3).
 ///
-/// فُصل عن `download_engine.dart` لحدّ الأسطر (القاعدة 4) — وهو أيضاً
-/// موضع القاعدة الحاسمة في ح-3: **بصمات ما قبل الإضافة تُتجاهل**، فلا
-/// يُنسب للمهمة عنصرٌ قديم (خطأ سابق يسمّم إعادة المحاولة، أو ملف بجودة
-/// قديمة يُعلن نجاح طلب جودة أعلى).
+/// Split out of `download_engine.dart` for the size limit (rule 4), and it
+/// is also where the decisive rule from defect ح-3 lives: **fingerprints
+/// from before the add are ignored**, so an old item is never attributed
+/// to this task, whether that is an earlier error poisoning a retry or a
+/// file at an old quality declaring a higher-quality request successful.
 class DownloadPoller {
   const DownloadPoller({
     required this.api,
@@ -23,8 +24,9 @@ class DownloadPoller {
   final Duration pollInterval;
   final int maxAttempts;
 
-  /// [checkAborted] يرمي عند الإلغاء أو تصريف المحرك؛ [onProgress] يبثّ
-  /// تقدم السيرفر. يعيد العنصر المكتمل أو يرمي مصنفاً.
+  /// [checkAborted] throws on cancellation or engine disposal; [onProgress]
+  /// broadcasts the server's progress. Returns the completed item or throws
+  /// a classified error.
   Future<HistoryItem> pollUntilDone({
     required String url,
     required Set<String> before,
@@ -44,7 +46,9 @@ class DownloadPoller {
               ? PlatformBlockedException(detail)
               : ServerErrorException(detail);
         }
-        // filename غائب ⇒ ننتظر (لا يُخلَّق من العنوان أبداً — فخ §6.3).
+        // A missing filename means we wait. It is never invented from the
+        // title
+        // (trap §6.3).
         if (item.isCompleted && item.filename != null) return item;
         if (item.progress != null) onProgress(item.progress!);
       }

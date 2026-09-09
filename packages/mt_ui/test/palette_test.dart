@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mt_ui/mt_ui.dart';
 
-/// **حارس المشغل المصغر (قرار المالك 2026-09-05)**: العكس فكرة نهارية
-/// — شريط داكن تحت واجهة كريمية. ليلاً كان يصير شريطاً فاتحاً ساطعاً
-/// تحت شاشة سوداء، وهجٌ في غرفة مظلمة.
+/// **The mini player guard** (decision 2026-09-05): inversion is a
+/// daylight idea, a dark bar under a cream interface. At night it became a
+/// bright pale bar under a black screen, a glare in a dark room.
 void main() {
   for (final variant in MTVariant.values) {
     final day = MTPalette.of(variant, Brightness.light);
@@ -20,7 +20,7 @@ void main() {
       expect(night.night, isTrue);
       expect(night.miniBg, night.card, reason: 'لا انقلاب ليلي');
       expect(night.miniInk, night.ink);
-      // ولا يصير الشريط أفتح من أرضية الشاشة نفسها.
+      // And the bar never ends up lighter than the screen ground itself.
       expect(night.miniBg.computeLuminance(),
           lessThan(night.miniInk.computeLuminance()));
     });

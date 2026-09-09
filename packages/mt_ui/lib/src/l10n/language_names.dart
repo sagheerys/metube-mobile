@@ -1,16 +1,18 @@
-/// **اسم كل لغة بلغتها هي** — لا مترجَماً.
+/// **Every language named in itself**, never translated.
 ///
-/// شاشة اختيار اللغة تعرض «العربية» و«English» كما يكتبها أهلها، فمن
-/// لا يقرأ لغة الواجهة الحالية يجد لغته. ولهذا **لا تدخل هذه الأسماء
-/// arb**: ترجمتها إلى بقية اللغات عبثٌ يُكلِّف المترجمين ولا يفيد أحداً.
+/// The language picker shows "العربية" and "English" the way their own
+/// speakers write them, so someone who cannot read the current interface
+/// language can still find theirs. That is why these names **stay out of
+/// the arb files**: translating them into every other language costs
+/// translators effort and helps nobody.
 ///
-/// **إضافة لغة مستقبلاً = سطران**: ملف `app_xx.arb` وسطر هنا. وإن نُسي
-/// السطر ظهر رمز اللغة بدل اسمها — لا انهيار، ويكشفه حارس
-/// `arb_parity_test`.
+/// **Adding a language later is two lines**: an `app_xx.arb` file and one
+/// line here. Forget the line and the language code shows instead of the
+/// name. Nothing crashes, and `arb_parity_test` catches it.
 const Map<String, String> mtLanguageNames = {
   'ar': 'العربية',
   'en': 'English',
 };
 
-/// اسم اللغة أو رمزها إن لم يُسجَّل بعد.
+/// The language name, or its code if it has not been registered yet.
 String mtLanguageName(String code) => mtLanguageNames[code] ?? code;

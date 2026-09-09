@@ -2,9 +2,9 @@ import 'dart:io';
 
 import 'url_keyed_index.dart';
 
-/// فهرس الأغلفة: canonicalUrl → رابط الغلاف الملتقط عند الإضافة —
-/// البديل الوحيد المسموح لغير YouTube (لا اختلاق روابط ytimg، فخ §6.3).
-/// مفتاح prefs: `artwork_index` (§5.1).
+/// The artwork index: canonicalUrl to the cover URL captured at add time.
+/// The only fallback allowed for non-YouTube sources, since ytimg URLs are
+/// never invented (trap §6.3). Prefs key: `artwork_index` (§5.1).
 final class ArtworkIndex extends UrlKeyedIndex<String> {
   ArtworkIndex({required super.store, required super.mutex})
       : super(prefsKey: 'artwork_index');
@@ -20,18 +20,22 @@ final class ArtworkIndex extends UrlKeyedIndex<String> {
 
   Future<String?> artworkOf(String canonicalUrl) => valueOf(canonicalUrl);
 
-  /// **إزالة المدخلة وملفها على القرص معاً** (عطل المالك 2026-09-08).
+  /// **Removing the entry and its file on disk together** (defect found
+  /// 2026-09-08).
   ///
-  /// الحذف كان يزيل السطر من الفهرس ويترك ملف JPG يتيماً في
-  /// `filesDir/thumbs` — وبعد نقل المصغرات من `cacheDir` (الذي يكنسه
-  /// أندرويد) إلى `filesDir` (الذي لا يكنسه أحد) صار ذلك **تسريب
-  /// مساحة بلا سقف**: ٣٠KB لكل حذف، لا يراها المستخدم ولا يستطيع
-  /// استرجاعها إلا بمسح بيانات التطبيق كله.
+  /// Deletion used to drop the line from the index and leave an orphan JPG
+  /// in `filesDir/thumbs`. After thumbnails moved from `cacheDir`, which
+  /// Android sweeps, to `filesDir`, which nobody sweeps, that became an
+  /// **unbounded space leak**: 30KB per deletion, invisible to the user and
+  /// unrecoverable short of clearing all app data.
   ///
-  /// حارسان يمنعان حذف ما ليس لنا:
-  /// * قيمة تبدأ بـ`http` رابط بعيد (أغلفة يوتيوب) لا ملف.
-  /// * مسار ما زال مفتاحٌ آخر يشير إليه يبقى — لئلا يفقد عنصرٌ باقٍ
-  ///   غلافه لأن جاره حُذف.
+  /// Two guards stop us deleting what is not ours:
+  /// * * a value starting with `http` is a remote URL (YouTube covers), not
+  ///   a
+  /// file.
+  /// * * a path another key still points at is kept, so a surviving item
+  ///   does
+  /// not lose its cover because its neighbour was deleted.
   Future<void> removeKeysAndFiles(Iterable<String> canonicalUrls) async {
     final doomed = canonicalUrls.toSet();
     if (doomed.isEmpty) return;
@@ -48,7 +52,9 @@ final class ArtworkIndex extends UrlKeyedIndex<String> {
         final file = File(path);
         if (await file.exists()) await file.delete();
       } on FileSystemException {
-        // ملف مقفل أو بلا صلاحية — المدخلة تُزال على أي حال.
+        // A locked file, or one we lack permission for. The entry is
+        // removed
+        // either way.
       }
     }
     await mutate((map) => map.removeWhere((k, _) => doomed.contains(k)));

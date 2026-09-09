@@ -5,17 +5,20 @@ import '../urls/playlist_detector.dart';
 import 'http_fetch.dart';
 import 'innertube_parser.dart';
 
-/// قوائم YouTube — فشل-آمن: null عند أي خطأ (شاشة الدفعي تعرض رسالة).
+/// YouTube playlists, fail-safe: null on any error, and the batch screen
+/// shows a message.
 ///
-/// **مكتوب على InnerTube مباشرة لا على `youtube_explode_dart`** (بلاغ
-/// المالك 2026-09-02: «القائمة تظهر صفحة فارغة»). أُثبت بالتشغيل الحقيقي
-/// أن `yt.playlists.getVideos()` يبثّ **صفر عناصر** لقائمة عدّادها 19 —
-/// في 2.5.3 وفي أحدث إصدار 3.1.0 معاً، لأن يوتيوب استبدل
-/// `playlistVideoRenderer` بـ`lockupViewModel`. المشروع القديم في
-/// `Z:\MTD` يستعمل الحزمة نفسها، أي أن العطل موروث لا مستجد.
+/// **Written against InnerTube directly rather than
+/// `youtube_explode_dart`** (field report 2026-09-02: "the playlist shows
+/// an empty page"). Running it for real proved that
+/// `yt.playlists.getVideos()` emits **zero items** for a playlist counting
+/// 19, in 2.5.3 and in the newest 3.1.0 alike, because YouTube replaced
+/// `playlistVideoRenderer` with `lockupViewModel`. The earlier project
+/// uses the same package, so the defect is inherited rather than new.
 ///
-/// النقطة `browse` مع `browseId: VL<id>` **بلا مفتاح API** (مُختبر)،
-/// والصفحة الواحدة 100 عنصر ثم رمز استمرار.
+/// The `browse` endpoint with `browseId: VL<id>` works **without an API
+/// key** (tested), one page holds 100 items, and then a continuation
+/// token follows.
 class YoutubePlaylistResolver {
   YoutubePlaylistResolver({HttpPostJson? httpPost})
       : _post = httpPost ?? ioHttpPostJson;
@@ -25,7 +28,8 @@ class YoutubePlaylistResolver {
   static final Uri _browse =
       Uri.parse('https://www.youtube.com/youtubei/v1/browse?prettyPrint=false');
 
-  /// حد أعلى للصفحات — قائمة بآلاف العناصر لا تُعرض في شاشة اختيار.
+  /// A page ceiling: a playlist with thousands of items is not shown on a
+  /// selection screen.
   static const maxPages = 12;
 
   Future<PlaylistPreview?> resolve(String playlistUrl) async {

@@ -4,10 +4,11 @@ import 'package:mt_core/mt_core.dart';
 
 import 'playlist_item.dart';
 
-/// من أين يُشغَّل العنصر فعلياً.
+/// Where the item is actually played from.
 enum PlaybackOrigin { local, stream }
 
-/// مصدر تشغيل جاهز للمشغل: رابط + ترويسات (البث يحتاج Authorization).
+/// A playback source ready for the player: a URL plus headers, since
+/// streaming needs Authorization.
 class PlaybackSource {
   const PlaybackSource({
     required this.origin,
@@ -25,12 +26,13 @@ class PlaybackSource {
   String toString() => 'PlaybackSource(${origin.name}, $uri)';
 }
 
-/// كل ما يحتاجه التشغيل من السيرفر: بناء رابط الملف وترويسات البث.
-/// واجهة ضيقة عمداً — المشغل لا يعرف بقية عقد السيرفر ولا حزمة الشبكة.
+/// Everything playback needs from the server: building the file URL and
+/// the streaming headers. A deliberately narrow interface, so the player
+/// knows neither the rest of the server contract nor the network package.
 class ServerStreamEndpoint {
   const ServerStreamEndpoint({required this.buildUrl, required this.headers});
 
-  /// قد يرمي [UnsafeFilenameException] لاسم ملف خبيث (القاعدة 9).
+  /// May throw [UnsafeFilenameException] for a malicious filename (rule 9).
   final String Function(String serverFilename) buildUrl;
   final Map<String, String> headers;
 
@@ -39,33 +41,36 @@ class ServerStreamEndpoint {
         headers: api.streamingHeaders,
       );
 
-  /// لا سيرفر مُعد ⇒ المحلي فقط.
+  /// No server configured means local files only.
   static ServerStreamEndpoint get none => ServerStreamEndpoint(
         buildUrl: (_) => throw const UnsafeFilenameException(),
         headers: const {},
       );
 }
 
-/// **القاعدة الذهبية (م-19):** النسخة المحلية إن وُجدت على القرص فعلاً،
-/// وإلا البث من السيرفر بترويسات المصادقة. الموضع مشترك بين الحالتين
-/// لأن مفتاحه [PlaylistItem.canonicalUrl] لا المسار.
+/// **The golden rule:** the local copy if it really exists on disk,
+/// otherwise streaming from the server with authentication headers. The
+/// position is shared between the two cases because its key is
+/// [PlaylistItem.canonicalUrl], not the path.
 ///
-/// وجود المسار في الفهرس **لا يكفي** — الملف قد يكون حُذف من خارج
-/// التطبيق؛ لذلك يُفحص القرص قبل تفضيله (يُحقن الفاحص للاختبار).
+/// A path being present in the index **is not enough**: the file may have
+/// been deleted from outside the app, so the disk is checked before
+/// preferring it. The checker is injected for testing.
 class PlaybackSourceResolver {
   PlaybackSourceResolver({
     required this.endpoint,
     bool Function(String path)? fileExists,
   }) : _fileExists = fileExists ?? _defaultExists;
 
-  /// قابلة للتحديث عند تغيّر إعدادات السيرفر — المشغل الحي يلتقط
-  /// الرابط الجديد بلا إعادة بناء الجلسة.
+  /// Refreshable when the server settings change, so a live player picks up
+  /// the new URL without rebuilding the session.
   ServerStreamEndpoint endpoint;
   final bool Function(String path) _fileExists;
 
   static bool _defaultExists(String path) => File(path).existsSync();
 
-  /// null ⇒ لا مصدر صالح (لا ملف محلي ولا اسم ملف صالح على السيرفر).
+  /// null means no valid source: no local file and no valid filename on the
+  /// server.
   PlaybackSource? resolve(PlaylistItem item) {
     final local = item.localPath;
     if (local != null && local.isNotEmpty && _fileExists(local)) {

@@ -1,6 +1,7 @@
-/// تشغيل MTF المشترك: العنصر الموحد، القاعدة الذهبية للمصدر، طابور
-/// التشغيل، مشغل الصوت الخلفي، المشغلات وودجاتها، ومخازن الموضع والحالة.
-/// السلوك من `01-PRD.md` (م-19…م-23، م-35، م-38) و`02-TRD.md` §2.2.
+/// Shared MTF playback: the unified item, the golden source rule, the play
+/// queue, the background audio handler, the players and their widgets, and
+/// the position and state stores. Behaviour follows `01-PRD.md` and
+/// `02-TRD.md` §2.2.
 library;
 
 export 'src/models/play_mode.dart';

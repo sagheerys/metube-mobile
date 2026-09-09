@@ -1,6 +1,7 @@
 import 'package:mt_core/mt_core.dart';
 
-/// أبعاد مقطع عُرفت بعد تشغيله: المدة والنسبة.
+/// A clip's dimensions, learned after playing it: the duration and the
+/// ratio.
 class MediaShape {
   const MediaShape({required this.duration, required this.aspectRatio});
 
@@ -9,18 +10,19 @@ class MediaShape {
 
   bool get isVertical => aspectRatio > 0 && aspectRatio < 1;
 
-  /// عمودي و≤٣ دقائق ⇒ يدخل مسار القِصار (م-35).
+  /// Portrait and three minutes or less enters the shorts path.
   bool get isShortForm =>
       isVertical && duration > Duration.zero &&
       duration <= const Duration(minutes: 3);
 }
 
-/// فهرس أبعاد المقاطع: canonicalUrl → [MediaShape].
+/// The clip shape index: canonicalUrl to [MediaShape].
 ///
-/// **لماذا يلزم:** السيرفر لا يعطي المدة ولا النسبة، ومسار القِصار
-/// (م-35) ورقاقة «⚡ قِصار» في المكتبة يحتاجانهما قبل التشغيل. تُملأ
-/// انتهازياً عند أول تشغيل لكل مقطع فتتراكم المعرفة بلا طلب إضافي.
-/// مفتاح التخزين `media_shape_index` (إضافة موثقة على §5.1).
+/// **Why it is needed:** the server gives neither duration nor ratio, and
+/// both the shorts path and the "shorts" chip in the library need them
+/// before playback. It is filled opportunistically on the first play of
+/// each clip, so the knowledge accumulates with no extra request. Storage
+/// key: `media_shape_index`, a documented addition to §5.1.
 final class MediaShapeIndex extends UrlKeyedIndex<MediaShape> {
   MediaShapeIndex({required super.store, required super.mutex})
       : super(prefsKey: 'media_shape_index');

@@ -3,9 +3,10 @@ import 'dart:math';
 import '../models/play_mode.dart';
 import '../models/playlist_item.dart';
 
-/// طابور التشغيل — **منطق خالص بلا Flutter ولا مشغل** ليُختبر وحده
-/// (TRD §3.2). يحمل الترتيب الفعلي (عادي أو عشوائي) والمؤشر الحالي،
-/// ويجيب على سؤال واحد: ما العنصر التالي/السابق بهذا الوضع؟
+/// The play queue: **pure logic with no Flutter and no player**, so it can
+/// be tested on its own (TRD §3.2). It holds the actual order, sequential
+/// or shuffled, and the current index, and answers one question: what is
+/// the next or previous item in this mode?
 class PlaybackQueue {
   PlaybackQueue({
     required List<PlaylistItem> items,
@@ -23,7 +24,7 @@ class PlaybackQueue {
   final Random _random;
   late bool _shuffle;
 
-  /// ترتيب التشغيل: قائمة فهارس داخل [_items].
+  /// The play order: a list of indexes into [_items].
   List<int> _order = const [];
   int _cursor = 0;
 
@@ -32,12 +33,13 @@ class PlaybackQueue {
   bool get isEmpty => _items.isEmpty;
   bool get shuffle => _shuffle;
 
-  /// فهرس العنصر الحالي داخل [items] (لا داخل ترتيب التشغيل).
+  /// The current item's index inside [items], not inside the play order.
   int get index => _order.isEmpty ? -1 : _order[_cursor];
 
   PlaylistItem? get current => index < 0 ? null : _items[index];
 
-  /// العناصر بترتيب التشغيل الفعلي — لعرض «التالي» في ورقة القائمة.
+  /// The items in actual play order, for showing "up next" in the queue
+  /// sheet.
   List<PlaylistItem> get ordered => [for (final i in _order) _items[i]];
 
   bool get isLast => _order.isEmpty || _cursor == _order.length - 1;
@@ -54,7 +56,7 @@ class PlaybackQueue {
       _cursor = startAt;
       return;
     }
-    // العشوائي يبدأ دائماً من العنصر الحالي ثم يخلط الباقي.
+    // Shuffle always starts from the current item and shuffles the rest.
     final rest = [
       for (var i = 0; i < _items.length; i++)
         if (i != startAt) i,
@@ -70,8 +72,8 @@ class PlaybackQueue {
     _rebuildOrder(startAt: currentIndex);
   }
 
-  /// فهرس التالي بحسب [mode]. [userInitiated] يعني ضغط زر «التالي» —
-  /// وقتها لا يُحبس المستخدم في «تكرار واحد».
+  /// The next index according to [mode]. [userInitiated] means the "next"
+  /// button was pressed, and then the user is not trapped in repeat-one.
   int? nextIndex(PlayMode mode, {bool userInitiated = false}) {
     if (_order.isEmpty) return null;
     if (mode == PlayMode.repeatOne && !userInitiated) return index;
@@ -87,7 +89,8 @@ class PlaybackQueue {
     return mode == PlayMode.repeatAll ? _order.last : null;
   }
 
-  /// ينقل المؤشر لفهرس داخل [items]؛ يعيد false إن كان خارج المدى.
+  /// Moves the cursor to an index inside [items]; returns false when it is
+  /// out of range.
   bool jumpTo(int itemIndex) {
     final position = _order.indexOf(itemIndex);
     if (position < 0) return false;
@@ -105,8 +108,10 @@ class PlaybackQueue {
     return target == null ? false : jumpTo(target);
   }
 
-  /// حذف عنصر (تخطي معطوب أو إزالة من الورقة) مع الحفاظ على الحالي
-  /// ما أمكن. يعيد false إن كان الفهرس خارج المدى.
+  /// Removes an item, skipping a broken one or removing it from the sheet,
+  /// keeping the current one where possible. Returns false when the index
+  /// is
+  /// out of range.
   bool removeAt(int itemIndex) {
     if (itemIndex < 0 || itemIndex >= _items.length) return false;
     final currentItem = index == itemIndex ? null : current;
@@ -116,7 +121,8 @@ class PlaybackQueue {
       _cursor = 0;
       return true;
     }
-    // المؤشر الجديد: نفس العنصر إن بقي، وإلا الذي حل محل المحذوف.
+    // The new cursor: the same item if it survived, otherwise whatever took
+    // the removed one's place.
     final fallback = itemIndex.clamp(0, _items.length - 1);
     final target =
         currentItem == null ? fallback : _items.indexOf(currentItem);
@@ -124,8 +130,9 @@ class PlaybackQueue {
     return true;
   }
 
-  /// إعادة بناء بعد تغيّر العناصر — العشوائي يُخلط من جديد (لا سبيل
-  /// لحفظ ترتيب يشير لفهارس اختفت) والعادي يحافظ على موضعه.
+  /// Rebuilds after the items change. Shuffle is reshuffled, since an order
+  /// pointing at vanished indexes cannot be preserved, and sequential keeps
+  /// its position.
   void _rebuildOrderPreservingShuffle({required int startAt}) =>
       _rebuildOrder(startAt: startAt.clamp(0, _items.length - 1));
 }

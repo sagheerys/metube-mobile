@@ -1,7 +1,8 @@
 import 'package:mt_core/mt_core.dart';
 
-/// مواضع الاستئناف — المفتاح `playback_pos_<canonicalUrl>` (§5.1).
-/// نفس المفتاح للبث والنسخة المحلية ⇒ الاستئناف مشترك بينهما (م-19).
+/// Resume positions, keyed `playback_pos_<canonicalUrl>` (§5.1). The same
+/// key for the stream and the local copy, so resuming is shared between
+/// them.
 class PlaybackPositionStore {
   PlaybackPositionStore({required this.store, required this.mutex});
 
@@ -10,10 +11,12 @@ class PlaybackPositionStore {
 
   static const String prefix = 'playback_pos_';
 
-  /// أقل من هذا لا يستحق الحفظ (مشاهدة عابرة تُفسد «تابع من حيث وقفت»).
+  /// Anything shorter is not worth saving; a glance would spoil "continue
+  /// where you left off".
   static const Duration minimumToSave = Duration(seconds: 5);
 
-  /// قرب النهاية = انتهى العنصر ⇒ يُمسح ليبدأ من أوله في المرة القادمة.
+  /// Near the end means the item finished, so it is cleared and starts from
+  /// the beginning next time.
   static const Duration endThreshold = Duration(seconds: 10);
 
   String keyOf(String canonicalUrl) => '$prefix$canonicalUrl';
@@ -24,8 +27,9 @@ class PlaybackPositionStore {
     return Duration(milliseconds: ms);
   }
 
-  /// يحفظ الموضع بقواعده الثلاث: يتجاهل البدايات، ويمسح عند الاقتراب من
-  /// النهاية، ويكتب ما عدا ذلك. [duration] المجهولة تعطّل قاعدة النهاية.
+  /// Saves the position under its three rules: ignore the opening, clear
+  /// near the end, and write anything else. An unknown [duration] disables
+  /// the end rule.
   Future<void> save(
     String canonicalUrl,
     Duration position, {
@@ -46,7 +50,8 @@ class PlaybackPositionStore {
   Future<void> clear(String canonicalUrl) =>
       mutex.run(() => store.remove(keyOf(canonicalUrl)));
 
-  /// تنظيف كل المواضع (يُستدعى من «مسح البيانات» ومن استعادة نسخة).
+  /// Clears every position, called from "clear data" and from restoring a
+  /// backup.
   Future<void> clearAll() => mutex.run(() async {
         final keys = await store.keys();
         for (final key in keys.where((k) => k.startsWith(prefix))) {

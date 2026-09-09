@@ -7,8 +7,9 @@ import 'mt_video_session.dart';
 import 'video_buttons.dart';
 import 'video_control_bars.dart';
 
-/// أدوات الفيديو فوق المقطع (مرجع «وهج» C): لمسة تُظهرها و٣ ثوانٍ
-/// تخفيها، نقرة مزدوجة يمين/يسار = ±١٠ ثوانٍ، وقفل لمس في الوضع الغامر.
+/// The video chrome over the clip (Wahaj reference C): a touch shows it
+/// and three seconds hide it, a double tap on the right or left seeks ten
+/// seconds, and there is a touch lock in immersive mode.
 class MTVideoControls extends StatefulWidget {
   const MTVideoControls({
     super.key,
@@ -131,7 +132,9 @@ class _MTVideoControlsState extends State<MTVideoControls> {
             ),
           ),
           PositionedDirectional(
-            // فوق الحافة المدورة للورقة الكريمية التي تعلو الفيديو 14px.
+            // Above the rounded edge of the cream sheet, which overlaps the
+            // video by
+            // 14px.
             bottom: widget.fullscreen ? MTSpace.xs : MTSpace.xl,
             start: MTSpace.md,
             end: MTSpace.md,
@@ -144,7 +147,8 @@ class _MTVideoControlsState extends State<MTVideoControls> {
       );
 }
 
-/// تدرّج علوي وسفلي يفصل الأدوات عن الصورة (من المرجع).
+/// A top and bottom gradient separating the chrome from the picture, from
+/// the reference.
 class _Scrim extends StatelessWidget {
   const _Scrim();
 

@@ -1,15 +1,15 @@
 import '../constants/mt_constants.dart';
 
-/// أدوات الروابط الخالصة (بلا شبكة): استخراج من نص المشاركة، معرفات
-/// YouTube/الأرقام، التطبيع، المطابقة الضبابية، وحارس اسم ملف السيرفر.
-/// المرجع: م-4 في PRD + `05-DATA-SCHEMA.md` §2.3.
+/// Pure URL tools with no network: extraction from shared text,
+/// YouTube and numeric ids, normalisation, fuzzy matching, and the server
+/// filename guard. Reference: the PRD plus `05-DATA-SCHEMA.md` §2.3.
 abstract final class UrlKit {
   static final RegExp _urlPattern = RegExp(
     r'https?://[^\s<>"]+',
     caseSensitive: false,
   );
 
-  /// معرف YouTube (11 محرفاً): watch / embed / v / shorts / live / youtu.be.
+  /// A YouTube id (11 characters): watch, embed, v, shorts, live, youtu.be.
   static final RegExp _youtubeIdPattern = RegExp(
     r'(?:youtu\.be/|youtube\.com/(?:watch\?v=|embed/|v/|shorts/|live/))'
     r'([a-zA-Z0-9_-]{11})',
@@ -18,8 +18,9 @@ abstract final class UrlKit {
     r'[?&]v=([a-zA-Z0-9_-]{11})',
   );
 
-  /// تجريد الرابط من نص المشاركة الملفوف حوله (مشاركة SoundCloud مثلاً
-  /// جملة كاملة + الرابط). يعيد المدخل نفسه إن لم يوجد رابط ليكشفه التحقق.
+  /// Strips the URL out of the text wrapped around it, such as a SoundCloud
+  /// share that is a whole sentence plus the link. Returns the input
+  /// unchanged when no URL is found, so validation can report it.
   static String extractUrl(String input) {
     final trimmed = _stripBidiMarks(input).trim();
     if (trimmed.isEmpty) return trimmed;
@@ -34,16 +35,17 @@ abstract final class UrlKit {
     return match == null ? trimmed : _stripTrailingPunctuation(match.group(0)!);
   }
 
-  /// كل الروابط في نص (مشاركة عدة روابط دفعة واحدة — م-3).
+  /// Every URL in a piece of text, for sharing several links at once.
   static List<String> extractAllUrls(String input) =>
       _urlPattern.allMatches(_stripBidiMarks(input))
           .map((m) => _stripTrailingPunctuation(m.group(0)!))
           .toList();
 
-  /// علامات الاتجاه والمسافات الصفرية التي **تغلّف بها واتساب وتيليجرام
-  /// الروابط داخل الرسائل العربية** (العطل خ-5). بلا حذفها يصل الرابط
-  /// إلى yt-dlp بذيل خفي فيفشل بخطأ سيرفر غامض، بينما يعمل الرابط نفسه
-  /// عند لصقه يدوياً — وهذا تطبيق عربي أولاً.
+  /// Direction marks and zero-width spaces, which **WhatsApp and Telegram
+  /// wrap around links inside Arabic messages** (defect خ-5). Without
+  /// removing them the URL reaches yt-dlp with an invisible tail and fails
+  /// with an opaque server error, while the same link works when pasted by
+  /// hand. This is an Arabic-first app.
   static final RegExp _bidiMarks = RegExp(
     '[\u200B-\u200F\u202A-\u202E\u2066-\u2069\uFEFF]',
   );
@@ -51,11 +53,12 @@ abstract final class UrlKit {
   static String _stripBidiMarks(String input) =>
       input.replaceAll(_bidiMarks, '');
 
-  /// تنظيف الترقيم الزائد الذي تلصقه تطبيقات المراسلة بنهاية الرابط.
+  /// Cleans the trailing punctuation messaging apps stick to the end of a
+  /// link.
   static String _stripTrailingPunctuation(String url) =>
       url.replaceFirst(RegExp(r'''[)\]}>.,;:!?'"،؛]+$'''), '');
 
-  /// معرف فيديو YouTube أو null لغير YouTube.
+  /// The YouTube video id, or null for anything else.
   static String? youtubeVideoId(String url) {
     final byPath = _youtubeIdPattern.firstMatch(url)?.group(1);
     if (byPath != null) return byPath;
@@ -65,12 +68,16 @@ abstract final class UrlKit {
     return null;
   }
 
-  /// أطول معرف رقمي ≥10 خانات في المسار **أو الاستعلام** أو '' إن غاب.
+  /// The longest numeric id of at least 10 digits in the path **or the
+  /// query
+  /// string**, or '' when there is none.
   ///
-  /// **`=` مع `/` (عطل المالك 2026-09-08):** فيسبوك يضع المعرف في
-  /// الاستعلام لا المسار (`m.facebook.com/watch/?v=1619243166301797`)،
-  /// فكان يعود فارغاً لكل روابطه — وتسقط المطابقة إلى رتبة التطبيع
-  /// التي تمسح الاستعلام فتسوّي كل `facebook.com/watch` ببعضها.
+  /// **`=` alongside `/` (defect found 2026-09-08):** Facebook puts the id
+  /// in the query rather than the path
+  /// (`m.facebook.com/watch/?v=1619243166301797`), so this came back empty
+  /// for all of its links, and matching fell through to the normalisation
+  /// rank, which strips the query and flattens every `facebook.com/watch`
+  /// into one.
   static String longestNumericId(String url) {
     final matches = RegExp(r'[/=](\d{10,})').allMatches(url);
     if (matches.isEmpty) return '';
@@ -79,7 +86,8 @@ abstract final class UrlKit {
         .reduce((a, b) => a.length >= b.length ? a : b);
   }
 
-  /// تطبيع للمطابقة: إزالة scheme و`www./m./on.` والاستعلام والشرطة الأخيرة.
+  /// Normalisation for matching: drop the scheme, `www./m./on.`, the query
+  /// and the trailing slash.
   static String normalize(String url) {
     var u = url.trim().toLowerCase();
     u = u.replaceFirst(RegExp(r'^https?://'), '');
@@ -89,21 +97,25 @@ abstract final class UrlKit {
     return u;
   }
 
-  /// المطابقة الضبابية بين الرابط المُدخل ورابط `/history` المُقنون —
-  /// السلّم: حرفي → معرف YouTube → معرف رقمي → تطبيع → بادئة مسار.
+  /// Fuzzy matching between the entered URL and the canonical `/history`
+  /// one. The ladder: exact, YouTube id, numeric id, normalisation, path
+  /// prefix.
   ///
-  /// **قاعدة حاسمة (خطأ مُصطاد على السيرفر الحقيقي 2026-09-01):** معرفا
-  /// YouTube مرجعان نهائيان — إن وُجدا معاً واختلفا فلا تطابق أبداً، ولا
-  /// يُسمح بسقوط روابط watch إلى رتبة التطبيع (التي تمسح الاستعلام فتسوّي
-  /// كل `youtube.com/watch` ببعضها — وكاد ذلك يحذف عنصراً بريئاً).
+  /// **A decisive rule (caught against a real server 2026-09-01):** two
+  /// YouTube ids are final references. When both exist and differ there is
+  /// never a match, and watch URLs are not allowed to fall through to the
+  /// normalisation rank, which strips the query and flattens every
+  /// `youtube.com/watch` into one. That nearly deleted an innocent item.
   ///
-  /// **وقاعدة ثانية بنفس الثقل (العطل ح-2، 2026-09-02):** الاحتواء الخام
-  /// كان يطابق **العنصر الخطأ** لكل ما عدا YouTube:
-  /// `soundcloud.com/x/track` كان يطابق `soundcloud.com/x/track-remix`،
-  /// ومعرف رقمي يطابق رقماً أطول يبدأ به. النتيجة: سحب ملف بريء باسم
-  /// المطلوب، **وحذفه من السيرفر** في Lite. الآن الاحتواء **بحدود**:
-  /// الرقم لا يُقبل ملتصقاً برقم آخر، والمسار لا يُقبل إلا بادئةً كاملة
-  /// عند فاصل `/` (فيبقى الرابط الخاص `…/track/s-abc123` مطابِقاً).
+  /// **And a second rule of equal weight (defect ح-2, 2026-09-02):** raw
+  /// containment matched **the wrong item** for everything except YouTube:
+  /// `soundcloud.com/x/track` matched `soundcloud.com/x/track-remix`, and a
+  /// numeric id matched a longer number starting with it. The result was
+  /// pulling an innocent file under the requested name **and deleting it
+  /// from the server** in Lite. Containment is now **bounded**: a number is
+  /// not accepted when glued to another number, and a path is accepted only
+  /// as a complete prefix at a `/` boundary, so a private link like
+  /// `…/track/s-abc123` still matches.
   static bool urlsMatch(String url1, String url2) {
     if (url1.isEmpty || url2.isEmpty) return false;
     if (url1 == url2) return true;
@@ -113,8 +125,10 @@ abstract final class UrlKit {
     if (id1.isNotEmpty && id2.isNotEmpty) return id1 == id2;
     if (id1.isNotEmpty && url2.contains(id1)) return true;
     if (id2.isNotEmpty && url1.contains(id2)) return true;
-    // رابط واحد فقط له معرف YouTube والآخر بلا معرف ⇒ لا نكمل لرتب
-    // التطبيع المتساهلة (خطر التسوية على مسار watch المشترك).
+    // When only one URL has a YouTube id and the other has none, we do not
+    // continue to the lenient normalisation ranks, because of the
+    // flattening
+    // risk on the shared watch path.
     if (id1.isNotEmpty || id2.isNotEmpty) return false;
 
     final numId1 = longestNumericId(url1);
@@ -123,13 +137,19 @@ abstract final class UrlKit {
     if (numId1.isNotEmpty) return _containsIdAtBoundary(url2, numId1);
     if (numId2.isNotEmpty) return _containsIdAtBoundary(url1, numId2);
 
-    // **استعلامان مختلفان لا يسقطان إلى التطبيع** (عطل المالك
-    // 2026-09-08): التطبيع يمسح الاستعلام، ومنصةٌ تحمل الهوية فيه
-    // (فيسبوك `?v=…`) تنهار كلها إلى مسار واحد `facebook.com/watch`
-    // فيطابق **كل مقطع كلَّ مقطع**. الأثر مقيس: عنصر واحد أُتيح دون
-    // اتصال أعطى ملفه لبقية عناصر فيسبوك، ومطابقة `/history` في Lite
-    // كانت تسحب ملفاً بريئاً **ثم تحذف الأصل من السيرفر**. وهي نفس
-    // القاعدة المكتوبة أعلاه ليوتيوب، مُعمَّمةً على كل منصة.
+    // **Two different query strings do not fall through to normalisation**
+    // (defect found 2026-09-08): normalisation strips the query, and a
+    // platform carrying identity in it (Facebook's `?v=…`) collapses
+    // entirely
+    // onto one path, `facebook.com/watch`, so **every clip matches every
+    // other clip**. The effect was measured: one item made available
+    // offline
+    // gave its file to every other Facebook item, and `/history` matching
+    // in
+    // Lite pulled an innocent file **and then deleted the original from the
+    // server**. This is the same rule written above for YouTube,
+    // generalised
+    // to every platform.
     final query1 = _queryOf(url1);
     final query2 = _queryOf(url2);
     if (query1.isNotEmpty && query2.isNotEmpty && query1 != query2) {
@@ -142,7 +162,7 @@ abstract final class UrlKit {
     return _isPathPrefix(norm1, norm2) || _isPathPrefix(norm2, norm1);
   }
 
-  /// سلسلة الاستعلام وحدها (بلا `#fragment`) — '' إن غابت.
+  /// The query string alone, without the `#fragment`, or '' when absent.
   static String _queryOf(String url) {
     final at = url.indexOf('?');
     if (at < 0) return '';
@@ -151,8 +171,8 @@ abstract final class UrlKit {
     return (hash < 0 ? rest : rest.substring(0, hash)).toLowerCase();
   }
 
-  /// هل يحوي [url] الرقم [id] **غير ملتصق برقم آخر**؟ (`…/769798712`
-  /// ليس `…/76979871`).
+  /// Does [url] contain the number [id] **not glued to another number**?
+  /// (`…/769798712` is not `…/76979871`.)
   static bool _containsIdAtBoundary(String url, String id) {
     var from = 0;
     while (true) {
@@ -172,21 +192,25 @@ abstract final class UrlKit {
     return code >= 0x30 && code <= 0x39;
   }
 
-  /// [shorter] بادئةُ مسارٍ كاملة لـ [longer] عند فاصل `/` — يقبل
-  /// `a/b` مع `a/b/s-token` ويرفض `a/b` مع `a/b-remix`.
+  /// Is [shorter] a complete path prefix of [longer] at a `/` boundary?
+  /// Accepts `a/b` against `a/b/s-token` and rejects `a/b` against
+  /// `a/b-remix`.
   static bool _isPathPrefix(String longer, String shorter) =>
       shorter.isNotEmpty && longer.startsWith('$shorter/');
 
-  /// حارس اجتياز المسار لأسماء الملفات القادمة من السيرفر قبل بناء رابط
-  /// `/download/<filename>` — يرفض الفارغ وفواصل المسار والمكوّنين
-  /// `.` و`..` وحدهما ومحرف NUL.
+  /// The path-traversal guard for filenames coming from the server, applied
+  /// before building a `/download/<filename>` URL. It rejects the empty
+  /// string, path separators, the components `.` and `..` on their own, and
+  /// the NUL character.
   ///
-  /// **`..` داخل الاسم ليست اجتيازاً (بلاغ المالك 2026-09-03).** كان
-  /// الشرط `contains('..')`، وyt-dlp يقتطع العناوين الطويلة بنقاط —
-  /// فكان **كل مقطع طويل العنوان يفشل** بـ«unsafe filename» رغم أن
-  /// السيرفر يخدمه. القياس على سيرفر Lite الحقيقي:
-  /// `…كهرباء.  مدر... [2077436096300945409].mp4` ⇒ **HTTP 206
-  /// video/mp4**. الاجتياز يحتاج فاصل مسار، وهو مرفوض أصلاً.
+  /// **`..` inside a name is not traversal** (field report 2026-09-03). The
+  /// condition used to be `contains('..')`, and yt-dlp truncates long
+  /// titles
+  /// with dots, so **every clip with a long title failed** with "unsafe
+  /// filename" even though the server served it happily. Measured against a
+  /// real Lite server: a truncated name with an embedded `...` returned
+  /// **HTTP 206 video/mp4**. Traversal needs a path separator, which is
+  /// rejected anyway.
   static bool isSafeServerFilename(String name) {
     if (name.isEmpty) return false;
     if (name == '.' || name == '..') return false;
@@ -195,7 +219,8 @@ abstract final class UrlKit {
     return true;
   }
 
-  /// هل الرابط قصير يحتاج حلاً بتتبع redirect؟ (`05-DATA-SCHEMA.md` §4).
+  /// Is this a short link that needs redirect resolution?
+  /// (`05-DATA-SCHEMA.md` §4.)
   static bool needsResolution(String url) {
     final u = url.toLowerCase();
     return u.contains('vt.tiktok.com') ||
@@ -205,7 +230,7 @@ abstract final class UrlKit {
         u.contains('on.soundcloud.com');
   }
 
-  /// هل نصّ خطأ السيرفر يدل على حظر منصة (كوكيز)؟
+  /// Does the server's error text indicate a blocked platform (cookies)?
   static bool isPlatformBlockedError(String error) {
     final e = error.toLowerCase();
     return MTConstants.platformBlockedMarkers.any(e.contains);

@@ -1,42 +1,45 @@
-/// كل الأرقام والقوائم الثابتة للنواة — المصدر: `docs/plan/05-DATA-SCHEMA.md`.
-/// لا يُكتب رقم شبكة/تحميل في أي مكان آخر.
+/// Every fixed number and list the core uses. The source is
+/// `docs/plan/05-DATA-SCHEMA.md`; no network or download number is written
+/// anywhere else.
 abstract final class MTConstants {
-  // ── مهلات الشبكة (§1) ──
+  // Network timeouts (§1).
   static const Duration connectTimeout = Duration(seconds: 30);
   static const Duration receiveTimeout = Duration(seconds: 30);
 
-  /// السحب فقط (تدفق الملفات الكبيرة).
+  /// Pulls only, where large files stream.
   static const Duration downloadReceiveTimeout = Duration(minutes: 30);
   static const Duration testConnectionTimeout = Duration(seconds: 10);
 
-  /// probe سريع لتبديل الروابط (EndpointResolver).
+  /// A quick probe for endpoint switching (EndpointResolver).
   static const Duration probeTimeout = Duration(seconds: 4);
 
-  /// **سقف حلّ الرابط القصير قبل قرار التوجيه** (بلاغ المالك
-  /// 2026-09-08): القرار «قائمة أم مفرد» ينتظر شبكةً، والمستخدم ينتظر
-  /// معه — فبعد هذا الحد يُمضى بالرابط كما هو بدل تجميد الواجهة.
+  /// **How long short-link resolution may hold up a routing decision**
+  /// (field report 2026-09-08): deciding "playlist or single" waits on the
+  /// network and the user waits with it, so past this limit the link is
+  /// used
+  /// as it is rather than freezing the interface.
   static const Duration routingResolveTimeout = Duration(seconds: 5);
 
-  // ── إيقاع الاستطلاع (§2.3) ──
+  // Polling rhythm (§2.3).
   static const Duration pollInterval = Duration(seconds: 5);
 
-  /// 120 × 5s = 10 دقائق حد أقصى لخط التحميل.
+  /// 120 x 5s, a ten-minute ceiling for one download pipeline.
   static const int maxPollAttempts = 120;
 
-  /// تحديث واجهة Super الحية أثناء وجود نشاط فقط.
+  /// Super's live interface refresh, only while something is active.
   static const Duration livePollInterval = Duration(seconds: 2);
 
-  // ── السحب وإعادة المحاولة (§2.4) ──
+  // Pulling and retrying (§2.4).
   static const int pullRetries = 3;
   static const List<Duration> pullRetryBackoff = [
     Duration(seconds: 3),
     Duration(seconds: 6),
   ];
 
-  // ── الطابور (§3) ──
+  // The queue (§3).
   static const int maxConcurrentDownloads = 1;
 
-  // ── الجودات (§2.2) ──
+  // Qualities (§2.2).
   static const List<String> qualityWireValues = [
     'best',
     '1080',
@@ -45,13 +48,13 @@ abstract final class MTConstants {
     'audio',
   ];
 
-  // ── الملفات المحلية (§2.4 + §5.3) ──
+  // Local files (§2.4 and §5.3).
   static const String liteFolderName = 'MeTube_Lite';
   static const String superFolderName = 'MeTube_Super';
   static const int filenameTitleMaxLength = 80;
   static const String defaultMediaExtension = 'mp4';
 
-  // ── تصنيف أخطاء المنصات المحظورة (§2.3) ──
+  // Classifying blocked-platform errors (§2.3).
   static const List<String> platformBlockedMarkers = [
     'login',
     'sign in',
@@ -59,27 +62,29 @@ abstract final class MTConstants {
     'bot',
   ];
 
-  // ── الروابط القصيرة (§4) ──
+  // Short links (§4).
   static const int maxRedirectHops = 8;
 
-  /// م-36: المفضلة وسم نظامي مخفي في TagsIndex — يدخل النسخ الاحتياطي
-  /// تلقائياً ولا يظهر بين وسوم المستخدم.
+  /// Favourites are a hidden system tag inside TagsIndex: they enter the
+  /// backup automatically and never appear among the user's own tags.
   static const String favoritesSystemTag = '__favorites__';
 
-  // ── التحديث الذاتي من GitHub (م-66) ──
+  // Self-update from GitHub.
 
-  /// `owner/name` لمستودع الإصدارات — **نقطة التبديل الوحيدة**.
+  /// `owner/name` for the releases repository. **The single switching
+  /// point.**
   ///
-  /// نقطة `releases/latest` تتطلب مستودعاً **عاماً**: ما دام خاصاً يردّ
-  /// GitHub 404 ويُعامل كـ«لا تحديث» بصمت (فاشل-آمن). لفصل الإصدارات
-  /// عن الكود يكفي تغيير هذا السطر إلى مستودع إصدارات عام مستقل.
+  /// The `releases/latest` endpoint requires a **public** repository: while
+  /// it is private GitHub answers 404, which is read as "no update" in
+  /// silence (fail-safe). To separate releases from the code, changing this
+  /// one line to an independent public releases repository is enough.
   static const String updateRepo = 'sagheerys/metube-mobile';
 
-  /// إيقاع الفحص التلقائي — فحصٌ عند كل إقلاع يُغرق GitHub بلا فائدة،
-  /// والإصدارات تصدر بالأسابيع لا بالساعات.
+  /// How often the automatic check runs. Checking at every launch floods
+  /// GitHub for nothing, and releases arrive in weeks rather than hours.
   static const Duration updateCheckInterval = Duration(hours: 12);
 
-  /// اسم ملف التحديث في كاش التطبيق — ثابت كي تدهسه المرة التالية بدل
-  /// تكديس ملفات APK قديمة في الجهاز.
+  /// The update file's name in the app cache. Fixed, so the next download
+  /// overwrites it instead of piling old APKs on the device.
   static const String updateApkFileName = 'update.apk';
 }

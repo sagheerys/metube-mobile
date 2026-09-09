@@ -1,18 +1,19 @@
 import 'dart:io';
 
-/// فشل تنزيل التحديث — **نوع مستقل عن أخطاء سيرفر MeTube**: مصدره
-/// GitHub لا السيرفر، ورسالته لا تمرّ بمصنّف أخطاء السيرفر.
+/// An update download failure. **A type of its own, separate from MeTube
+/// server errors**: it comes from GitHub, not the server, and its message
+/// never passes through the server error classifier.
 class UpdateDownloadException implements Exception {
   const UpdateDownloadException(this.reason);
 
-  /// سبب تقني للسجلات — لا يُعرض للمستخدم كما هو.
+  /// A technical reason for the logs, never shown to the user as it is.
   final String reason;
 
   @override
   String toString() => 'UpdateDownloadException: $reason';
 }
 
-/// أُلغي التنزيل بطلب المستخدم — ليس خطأً يُعرض.
+/// The download was cancelled by the user. Not an error to display.
 class UpdateCancelledException implements Exception {
   const UpdateCancelledException();
 
@@ -20,32 +21,36 @@ class UpdateCancelledException implements Exception {
   String toString() => 'UpdateCancelledException';
 }
 
-/// راية إلغاء بسيطة — الواجهة ترفعها، والحلقة تقرؤها بين القطع.
+/// A simple cancellation flag: the interface raises it, and the loop reads
+/// it between chunks.
 class DownloadCancelToken {
   bool _cancelled = false;
   bool get isCancelled => _cancelled;
   void cancel() => _cancelled = true;
 }
 
-/// تنزيل ملف تثبيت التحديث (م-66) — **معزول عن Dio العميل** كبقية
-/// الشبكة الخارجية.
+/// Downloads the update installer, **isolated from the client's Dio** like
+/// the rest of the external network.
 ///
-/// يكتب إلى `<savePath>.part` ثم يعيد التسمية: ملف نصف منزَّل يُسلَّم
-/// لمثبّت الحزم يفشل برسالة «حزمة تالفة» مبهمة، وقد يبقى مخلَّفاً في
-/// الكاش يوهم أن التحديث جاهز.
+/// It writes to `<savePath>.part` and then renames: a half-downloaded file
+/// handed to the package installer fails with an opaque "corrupt package"
+/// message, and may linger in the cache suggesting an update is ready.
 class ApkDownloader {
   ApkDownloader({HttpClient Function()? clientFactory})
       : _clientFactory = clientFactory ?? HttpClient.new;
 
   final HttpClient Function() _clientFactory;
 
-  /// أول أربع بايتات لأي ملف APK — APK حزمة ZIP، وتوقيعها `PK\x03\x04`.
+  /// The first four bytes of any APK: an APK is a ZIP archive, and its
+  /// signature is `PK\x03\x04`.
   static const List<int> zipMagic = [0x50, 0x4B, 0x03, 0x04];
 
-  /// يعيد المسار النهائي بعد اكتمال التنزيل والتحقق.
+  /// Returns the final path once the download has completed and been
+  /// verified.
   ///
-  /// [expectedSize] من بيانات الإصدار: عدم تطابقه يعني ملفاً مبتوراً
-  /// (انقطاع شبكة يُنهي التدفق بلا خطأ).
+  /// [expectedSize] comes from the release data: a mismatch means a
+  /// truncated file, from a network drop that ends the stream without an
+  /// error.
   Future<String> download({
     required String url,
     required String savePath,
@@ -78,8 +83,11 @@ class ApkDownloader {
         if (cancel?.isCancelled ?? false) {
           throw const UpdateCancelledException();
         }
-        // **التحقق من التوقيع على أول قطعة**: صفحة خطأ HTML أو تحويلة
-        // تسجيل دخول تصل بحالة 200 وتُحفَظ باسم `.apk` بلا اعتراض.
+        // **Signature check on the first chunk**: an HTML error page or a
+        // login
+        // redirect arrives with status 200 and would be saved as `.apk`
+        // without
+        // objection.
         if (!checkedMagic && chunk.length >= zipMagic.length) {
           checkedMagic = true;
           for (var i = 0; i < zipMagic.length; i++) {

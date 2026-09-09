@@ -3,12 +3,12 @@ import 'package:audio_service/audio_service.dart';
 import '../models/play_mode.dart';
 import 'media_player_port.dart';
 
-/// ترجمة حالة المشغل الداخلية إلى مفردات `audio_service` — دوال خالصة
-/// فُصلت عن `MTAudioHandler` لحدّ الأسطر (القاعدة 4)، وهي أيضاً الوحدة
-/// الوحيدة القابلة للاختبار بلا مشغل حقيقي.
+/// Translates the internal player state into `audio_service` vocabulary.
+/// Pure functions split out of `MTAudioHandler` for the size limit (rule
+/// 4), and also the only unit here testable without a real player.
 
-/// أزرار الإشعار وشاشة القفل. الترتيب هو ترتيب العرض،
-/// و`androidCompactActionIndices` يشير إلى أول ثلاثة منها.
+/// The notification and lock-screen buttons. The order is the display
+/// order, and `androidCompactActionIndices` points at the first three.
 List<MediaControl> mtMediaControls({required bool playing}) => [
       MediaControl.skipToPrevious,
       if (playing) MediaControl.pause else MediaControl.play,

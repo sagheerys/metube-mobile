@@ -20,13 +20,14 @@ import 'transfer.dart';
 part 'download_engine_emit.dart';
 part 'download_engine_pull.dart';
 
-/// أين يُحفظ الملف المسحوب — يقررها التطبيق.
+/// Where the pulled file is saved. The app decides.
 typedef SavePathBuilder = String Function(
     DownloadTask task, String serverFilename);
 
-/// محرك الخط الرباعي (§3): add ← poll ← pull ← delete(سياسة) — تزامن
-/// أقصاه 1، أخطاء السيرفر تُفشِل **فوراً** (فخ §6.4)، والإلغاء ينظف
-/// الجزئي ويكنس يتيم السيرفر. يبث كل تغير حالة عبر [updates].
+/// The four-stage engine (§3): add, poll, pull, delete-by-policy.
+/// Concurrency of at most 1, server errors fail **immediately** (trap
+/// §6.4), and cancelling cleans the partial file and sweeps the orphan it
+/// left on the server. Every state change is broadcast through [updates].
 class DownloadEngine {
   DownloadEngine({
     required this.api,
@@ -51,26 +52,28 @@ class DownloadEngine {
   final Duration pollInterval;
   final int maxPollAttempts;
 
-  /// ر-2: Lite يسحب للجهاز بعد الاكتمال؛ Super لا (السحب هناك عبر
-  /// «إتاحة دون اتصال» فقط).
+  /// Rule 2: Lite pulls to the device once an item completes; Super does
+  /// not, where pulling happens only through "make available offline".
   final bool pullToDevice;
 
-  /// للفهرسة بعد الاكتمال (OfflineIndex / MediaStore).
+  /// For indexing after completion (OfflineIndex, MediaStore).
   final void Function(DownloadTask task)? onCompleted;
 
-  /// أثر تشخيصي (م-32) — mt_core لا يعرف مكان ملف السجل.
+  /// A diagnostic trace: mt_core does not know where the log file lives.
   final void Function(String message)? onLog;
 
-  /// **بوابة السحب** (م-42 «Wi‑Fi فقط»): تُسأل قبل جلب الملف للجهاز.
-  /// `false` ⇒ تُركن المهمة ([PullGateParking]) ويكمل الطابور. البوابة
-  /// قبل السحب لا قبل الإضافة بقصد: الغالي هو الملف. والتطبيق هو من
-  /// يجيب — mt_core لا يعرف `connectivity_plus` (القاعدة 6).
+  /// **The pull gate** ("Wi-Fi only"), asked before fetching a file to the
+  /// device. `false` parks the task ([PullGateParking]) and the queue
+  /// continues. The gate sits before the pull rather than before the add on
+  /// purpose: the expensive part is the file. The app answers it, because
+  /// mt_core does not know `connectivity_plus` (rule 6).
   final bool Function()? pullGate;
 
-  /// **توافق التشغيل** (بلاغ المالك 2026-09-03): تُسأل عند كل إضافة،
-  /// فتطلب H.264/AAC بدل ما يختاره الخادم (AV1/VP9) — انظر
-  /// [MeTubeApiClient.add]. تُقرأ **لحظة الإضافة** كـ[pullGate] بقصد،
-  /// فتبديل الإعداد لا يستوجب إعادة بناء المحرك.
+  /// **Playback compatibility** (field report 2026-09-03): asked on every
+  /// add, requesting H.264/AAC instead of whatever the server picks (AV1 or
+  /// VP9). See [MeTubeApiClient.add]. Read **at add time** like [pullGate],
+  /// on purpose, so toggling the setting does not require rebuilding the
+  /// engine.
   final bool Function()? compatibleVideo;
 
   final ShortLinkResolver _resolver;
@@ -81,13 +84,15 @@ class DownloadEngine {
   final Map<String, CancelToken> _cancelTokens = {};
   final Set<String> _cancelRequested = {};
 
-  /// لقطة `/history` قبل الإضافة (ح-3) — وتميّز يتيم الإلغاء (ع-7).
+  /// A `/history` snapshot from before the add (defect ح-3), which also
+  /// identifies the orphan left by a cancellation (defect ع-7).
   final Map<String, Set<String>> _snapshots = {};
 
-  /// آخر **نسبة مئوية صحيحة** بُثَّت لكل مهمة — مرشّح [_emitProgress].
+  /// The last **whole percentage** broadcast for each task, the filter used
+  /// by [_emitProgress].
   final Map<String, int> _lastPercent = {};
 
-  /// ما أوقفته بوابة الشبكة، بعنصر سجله جاهزاً للسحب (م-10).
+  /// What the network gate stopped, with its history item ready to pull.
   late final PullGateParking _parked = PullGateParking(
     pollInterval: pollInterval,
     onWake: () => unawaited(_pump()),
@@ -97,19 +102,23 @@ class DownloadEngine {
       StreamController<DownloadTask>.broadcast();
   bool _working = false;
 
-  /// **علم الموت (ع-1):** بلا هذا تدور حلقات الاستطلاع والبوابة بعد
-  /// التصريف على عميل Dio مغلق وتبثّ في stream مقفل.
+  /// **The death flag (defect ع-1):** without it, the polling and gate
+  /// loops
+  /// keep running after disposal, against a closed Dio client, emitting
+  /// into
+  /// a closed stream.
   bool _disposed = false;
 
   Stream<DownloadTask> get updates => _updates.stream;
   List<DownloadTask> get tasks => List.unmodifiable(_tasks.values);
   DownloadTask? taskById(String id) => _tasks[id];
 
-  /// هل ما زالت هناك مهمة حية؟ (يمنع تبديل السيرفر من إبادتها — ع-1)
+  /// Is any task still alive? Stops a server switch from wiping them out
+  /// (defect ع-1).
   bool get hasActiveWork =>
       _tasks.values.any((t) => !t.isFinished) || _parked.isNotEmpty;
 
-  /// إدخال مهمة — أول URL من نص المشاركة.
+  /// Enqueues a task, taking the first URL out of the shared text.
   DownloadTask submit(
     String url,
     Quality quality, {
@@ -128,11 +137,15 @@ class DownloadEngine {
     return task;
   }
 
-  /// إلغاء: المنتظر يُعلَّم فوراً، والجاري يُقطع سحبه وتُحذف جزئياته.
+  /// Cancelling: a waiting task is marked at once, and a running one has
+  /// its
+  /// pull cut and its partial files deleted.
   void cancel(String taskId) {
     _cancelRequested.add(taskId);
     final task = _tasks[taskId];
-    // في الطابور أو مركونة ⇒ لا عامل يمرّ عليها، فالإعلان والتنظيف هنا.
+    // Queued or parked means no worker will reach it, so the announcement
+    // and
+    // the cleanup happen here.
     if (_queue.remove(taskId) || _parked.remove(taskId)) {
       if (task != null) _emit(task.copyWith(phase: TaskPhase.cancelled));
       _cancelRequested.remove(taskId); // م-8: وإلا تسرّب للأبد
@@ -142,8 +155,9 @@ class DownloadEngine {
     _cancelTokens[taskId]?.cancel();
   }
 
-  /// إزالة مهمة **منتهية** من اللقطة — لبطاقة فشل أُعيد إرسالها (م-4)،
-  /// فلا تبقى معروضة إلى جانب المحاولة الجديدة. لا تمسّ الجارية.
+  /// Removes a **finished** task from the snapshot, for a failed card that
+  /// was resubmitted, so it does not linger beside the new attempt. Running
+  /// tasks are untouched.
   void forget(String taskId) {
     final task = _tasks[taskId];
     if (task == null || !task.isFinished) return;
@@ -161,7 +175,7 @@ class DownloadEngine {
     await _updates.close();
   }
 
-  // ── العامل الواحد (تزامن = 1) ──
+  // The single worker (concurrency 1).
 
   Future<void> _pump() async {
     if (_working || _disposed) return;
@@ -183,9 +197,10 @@ class DownloadEngine {
     }
   }
 
-  /// المعالجة الموحدة. **`on Object` الأخير هو إصلاح ع-2:** خطأ غير
-  /// مصنف (`FileSystemException` من إعادة التسمية مثلاً) كان يهرب من
-  /// المضخّة فتتجمد المهمة ويتوقف **الطابور كله** بلا رسالة.
+  /// The unified handler. **The trailing `on Object` is the fix for defect
+  /// ع-2:** an unclassified error, such as a `FileSystemException` from the
+  /// rename, escaped the pump, so the task froze and **the whole queue**
+  /// stopped with no message.
   Future<void> _guard(String taskId, Future<void> Function() body) async {
     try {
       await body();
@@ -215,12 +230,14 @@ class DownloadEngine {
       _emit(task.copyWith(phase: TaskPhase.cancelled));
       return;
     }
-    // 1) الإضافة (حل الرابط القصير ثم /add)
+    // 1) The add: resolve the short link, then call /add.
     task = _emit(task.copyWith(phase: TaskPhase.adding));
     final resolved = await _resolver.resolve(task.inputUrl);
     task = _emit(task.copyWith(resolvedUrl: resolved));
     _throwIfCancelRequested(taskId);
-    // ح-3: نعرف ما كان موجوداً قبلنا كي لا ننسب عملية غيرنا لأنفسنا.
+    // Defect ح-3: know what existed before us, so another operation is
+    // never
+    // attributed to this task.
     _snapshots[taskId] = await _matcher.snapshot(task.effectiveUrl);
     _throwIfCancelRequested(taskId);
     await api.add(
@@ -229,7 +246,7 @@ class DownloadEngine {
       compatibleVideo: compatibleVideo?.call() ?? false,
     );
 
-    // 2) الاستطلاع حتى الاكتمال أو الخطأ الفوري
+    // 2) Poll until completion or an immediate error.
     task = _emit(task.copyWith(phase: TaskPhase.polling));
     final done = await _pollUntilDone(taskId, task);
     task = _emit(task.copyWith(
@@ -239,13 +256,14 @@ class DownloadEngine {
       thumbnail: done.thumbnail,
     ));
 
-    // Super: يكتفي ببقاء العنصر على السيرفر — لا سحب ولا حذف.
+    // Super: leaving the item on the server is the whole job. No pull, no
+    // delete.
     if (!pullToDevice) {
       _complete(taskId);
       return;
     }
 
-    // 3) بوابة مغلقة ⇒ **تُركن ويكمل الطابور** (م-10).
+    // 3) A closed gate **parks the task and the queue continues**.
     if (!(pullGate?.call() ?? true)) {
       _parked.park(taskId, done);
       _emitPhase(taskId, TaskPhase.waitingForNetwork);
@@ -254,7 +272,8 @@ class DownloadEngine {
     await _pullPhase(taskId, done);
   }
 
-  /// استطلاع عنصر **هذه** المهمة — التفاصيل في [DownloadPoller].
+  /// Polls the item belonging to **this** task; the details live in
+  /// [DownloadPoller].
   Future<HistoryItem> _pollUntilDone(String taskId, DownloadTask task) =>
       DownloadPoller(
         api: api,
@@ -270,7 +289,7 @@ class DownloadEngine {
         onProgress: (p) => _emitProgress(taskId, p),
       );
 
-  /// ع-7: ما أضافته مهمة أُلغيت لا يُترك على السيرفر.
+  /// Defect ع-7: what a cancelled task added is not left on the server.
   Future<void> _cleanupOrphan(String taskId) async {
     final task = _tasks[taskId];
     final before = _snapshots.remove(taskId);

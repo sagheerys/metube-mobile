@@ -3,15 +3,16 @@ import '../resolvers/http_fetch.dart';
 import 'app_version.dart';
 import 'update_release.dart';
 
-/// فحص التحديثات من GitHub Releases (م-66).
+/// Checking for updates through GitHub Releases.
 ///
-/// **معزول عن `MeTubeApiClient` تماماً** (القاعدة 1): يستعمل
-/// [HttpGetString] نفسه الذي تستعمله محلّلات المنصات، فلا تتسرّب ترويسة
-/// اعتماد سيرفر المالك إلى GitHub، ولا يعرف GitHub شيئاً عن السيرفر.
+/// **Completely isolated from `MeTubeApiClient`** (rule 1): it uses the
+/// same [HttpGetString] the platform resolvers use, so the server's
+/// credential header never leaks to GitHub, and GitHub learns nothing
+/// about the server.
 ///
-/// **فاشل-آمن بالكامل**: كل مسار خطأ يعيد `null`. لا شبكة ولا مستودع
-/// خاص ولا JSON غريب يُظهر للمستخدم رسالة خطأ في فحص تلقائي — التحديث
-/// خدمة، لا واجب.
+/// **Entirely fail-safe**: every error path returns `null`. No network, no
+/// private repository and no unexpected JSON ever shows the user an error
+/// during an automatic check. An update is a service, not a duty.
 class UpdateChecker {
   UpdateChecker({
     required this.fetch,
@@ -21,18 +22,21 @@ class UpdateChecker {
 
   final HttpGetString fetch;
 
-  /// جزء من اسم ملف APK يميّز هذا التطبيق: `super` أو `lite`.
+  /// The part of an APK filename that identifies this app: `super` or
+  /// `lite`.
   final String assetMarker;
 
-  /// `owner/name` — نقطة التبديل الوحيدة لو انفصلت الإصدارات في مستودع
-  /// عام مستقل عن مستودع الكود.
+  /// `owner/name`. The single switching point if releases ever move to a
+  /// public repository separate from the code.
   final String repo;
 
   Uri get latestUri =>
       Uri.parse('https://api.github.com/repos/$repo/releases/latest');
 
-  /// فاشل-آمن: يبتلع كل خطأ ويعيد `null` — **للفحص التلقائي** الذي
-  /// يجري بلا علم المستخدم فلا يجوز أن يقاطعه بخطأ.
+  /// Fail-safe: swallows every error and returns `null`. **For the
+  /// automatic
+  /// check**, which runs without the user's knowledge and must never
+  /// interrupt them with an error.
   Future<UpdateRelease?> check({
     required String currentVersion,
     String? skippedVersion,
@@ -47,20 +51,24 @@ class UpdateChecker {
     }
   }
 
-  /// يرمي عند تعذّر الوصول — **للفحص اليدوي** وحده: من ضغط الزر يستحق
-  /// أن يميّز «أنت على أحدث إصدار» عن «تعذّر الوصول إلى GitHub»، وهما
-  /// في [check] نتيجة واحدة.
+  /// Throws when unreachable. **For the manual check only**: whoever
+  /// pressed
+  /// the button deserves to tell "you are on the latest version" apart from
+  /// "GitHub could not be reached", and in [check] those are one result.
   ///
-  /// يعيد الإصدار المتاح إن كان **أحدث فعلاً** من [currentVersion]،
-  /// و`null` إن لم يوجد جديد. [skippedVersion] هو ما اختار المستخدم
-  /// تخطّيه؛ يُكتم ما دام هو الأحدث ويعود مع ما بعده.
+  /// Returns the available release if it is **genuinely newer** than
+  /// [currentVersion], and `null` when there is nothing new.
+  /// [skippedVersion]
+  /// is what the user chose to skip; it stays muted while it is the newest,
+  /// and returns with whatever follows it.
   Future<UpdateRelease?> checkOrThrow({
     required String currentVersion,
     String? skippedVersion,
   }) async {
     final current = AppVersion.tryParse(currentVersion);
-    // **إصدار محلي غير مقروء = لا فحص**: بلا مرجع للمقارنة قد نعرض
-    // «تحديثاً» إلى نسخة أقدم مما على الجهاز.
+    // **An unreadable local version means no check**: with no reference to
+    // compare against, we could offer an "update" to something older than
+    // what is installed.
     if (current == null) return null;
 
     final body = await fetch(latestUri);
@@ -73,17 +81,17 @@ class UpdateChecker {
     return release;
   }
 
-  /// هل حان الفحص التلقائي؟ يمنع طلباً عند كل إقلاع.
+  /// Is the automatic check due? Prevents a request at every launch.
   ///
-  /// `null` في [lastCheck] تعني «لم يُفحص قط» — فيُفحص فوراً.
+  /// `null` in [lastCheck] means "never checked", so it checks immediately.
   static bool isDue(
     DateTime? lastCheck,
     DateTime now, {
     Duration interval = MTConstants.updateCheckInterval,
   }) {
     if (lastCheck == null) return true;
-    // **ساعة الجهاز قد ترجع للوراء** (تغيير المنطقة، مزامنة NTP):
-    // فحصٌ «في المستقبل» لا يجوز أن يجمّد الميزة إلى الأبد.
+    // **The device clock can move backwards** (a timezone change, an NTP
+    // sync): a check "in the future" must not freeze the feature forever.
     if (lastCheck.isAfter(now)) return true;
     return now.difference(lastCheck) >= interval;
   }

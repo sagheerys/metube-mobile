@@ -1,8 +1,9 @@
 import '../constants/mt_constants.dart';
 
-/// بناء اسم الملف المحلي (§2.4): `<CleanTitle>_<HHmmss>.<ext>` —
-/// الامتداد من اسم السيرفر (الافتراضي mp4)، قص العنوان 80، دعم كامل
-/// للعربية واليونيكود (تُزال فقط المحارف غير الصالحة في أسماء الملفات).
+/// Building the local filename (§2.4): `<CleanTitle>_<HHmmss>.<ext>`. The
+/// extension comes from the server's name (mp4 by default), the title is
+/// truncated at 80, and Arabic and Unicode are fully supported: only
+/// characters invalid in filenames are removed.
 String buildLocalFilename(
   String? title, {
   String? serverFilename,
@@ -25,7 +26,8 @@ String buildLocalFilename(
   return '${clean}_$stamp.${extensionOf(serverFilename)}';
 }
 
-/// امتداد اسم ملف السيرفر — أحرف/أرقام ≤5 بعد آخر نقطة، وإلا الافتراضي.
+/// The extension from the server's filename: letters or digits, at most 5
+/// after the final dot, otherwise the default.
 String extensionOf(String? serverFilename) {
   final name = serverFilename ?? '';
   final dot = name.lastIndexOf('.');

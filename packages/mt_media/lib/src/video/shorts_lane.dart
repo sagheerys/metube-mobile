@@ -1,23 +1,25 @@
 import '../models/playlist_item.dart';
 
-/// **مسار القِصار المصفّى (م-35)** — منطق خالص قابل للاختبار.
+/// **The filtered shorts lane**: pure, testable logic.
 ///
-/// قاعدة صارمة: السحب يتنقل بين القِصار العمودية من القائمة المعروضة
-/// **بنفس ترتيبها**؛ الصوتي والعرضي يُتخطيان بصمت، والعداد يعدّ القِصار
-/// وحدها. المجهول (بلا مدة أو نسبة) ليس قصيراً — لا تخمين.
+/// A strict rule: swiping moves between the portrait shorts of the list on
+/// screen **in that same order**; audio and landscape items are skipped
+/// silently, and the counter counts shorts alone. Unknown, with no
+/// duration or ratio, is not short. No guessing.
 class ShortsLane {
   const ShortsLane._(this.items, this.sourceIndices);
 
-  /// القِصار فقط بترتيب القائمة الأصلية.
+  /// The shorts only, in the original list's order.
   final List<PlaylistItem> items;
 
-  /// فهرس كل عنصر داخل القائمة الأصلية — للعودة لبقية القائمة.
+  /// Each item's index inside the original list, for returning to the rest
+  /// of it.
   final List<int> sourceIndices;
 
   bool get isEmpty => items.isEmpty;
   int get length => items.length;
 
-  /// يبني المسار من القائمة المعروضة.
+  /// Builds the lane from the list on screen.
   factory ShortsLane.from(List<PlaylistItem> source) {
     final items = <PlaylistItem>[];
     final indices = <int>[];
@@ -30,12 +32,13 @@ class ShortsLane {
     return ShortsLane._(items, indices);
   }
 
-  /// موضع عنصر داخل المسار (-1 إن لم يكن قصيراً).
+  /// An item's position inside the lane, or -1 when it is not a short.
   int laneIndexOf(String canonicalUrl) =>
       items.indexWhere((i) => i.canonicalUrl == canonicalUrl);
 
-  /// أول عنصر **غير قصير** بعد نهاية المسار — زر «متابعة بقية القائمة»
-  /// يفتحه في مشغله الصحيح. null إن لم يبق شيء.
+  /// The first **non-short** item after the lane ends; the "continue with
+  /// the rest of the list" button opens it in its correct player. null when
+  /// nothing is left.
   int? nextNonShortIndex(List<PlaylistItem> source) {
     final last = sourceIndices.isEmpty ? -1 : sourceIndices.last;
     for (var i = last + 1; i < source.length; i++) {

@@ -4,17 +4,18 @@ import 'package:mt_ui/mt_ui.dart';
 import '../models/playlist_item.dart';
 import 'media_time.dart';
 
-/// المصغرة يبنيها التطبيق (cached_network_image أو ملف محلي) — mt_media
-/// لا يعرف حزمة الصور ولا السيرفر.
-/// **يعيد `null` حين لا غلاف** — لا `SizedBox` فارغة: البديل (أيقونة
-/// صوت أو فيلم) يُرسم عند العدم، وإعادة ودجت فارغة كانت تقتل ذلك
-/// البديل وتترك مربعاً أصمّ في مشغل الصوت والمشغل المصغر (فحص جهاز
-/// المالك 2026-09-05).
+/// The app builds the thumbnail, from cached_network_image or a local
+/// file; mt_media knows neither the image package nor the server.
+/// **Returns `null` when there is no cover**, never an empty `SizedBox`:
+/// the fallback, an audio or film icon, is drawn on nothing, and returning
+/// an empty widget killed that fallback and left a blank square in the
+/// audio player and the mini player (device check 2026-09-05).
 typedef MTArtworkBuilder = Widget? Function(
     BuildContext context, PlaylistItem item);
 
-/// صفوف «التالي» — نفس المحتوى في الأشكال الثلاثة (م-38): قسم تحت
-/// الفيديو العمودي · لوحة جانبية في العرضي · ورقة سفلية في الصوتي.
+/// The "up next" rows, the same content in all three shapes: a section
+/// under portrait video, a side panel in landscape, a bottom sheet in
+/// audio.
 class MTUpNextList extends StatelessWidget {
   const MTUpNextList({
     super.key,
@@ -30,14 +31,16 @@ class MTUpNextList extends StatelessWidget {
 
   final List<PlaylistItem> items;
 
-  /// الفهرس داخل [items] للعنصر قيد التشغيل (-1 إن لا شيء).
+  /// The index inside [items] of the item currently playing, or -1 for
+  /// none.
   final int currentIndex;
   final ValueChanged<int> onTap;
   final MTArtworkBuilder? artwork;
   final bool dark;
 
-  /// العنصر الحالي **موقوف مؤقتاً** — المؤشر يسكن ولا يرقص (نفس علاج
-  /// شاشة القائمة: بلاغ المالك 2026-09-04).
+  /// The current item is **paused**, so the indicator stands still rather
+  /// than dancing (the same cure as the queue screen: field report
+  /// 2026-09-04).
   final bool paused;
   final bool shrinkWrap;
   final ScrollPhysics? physics;

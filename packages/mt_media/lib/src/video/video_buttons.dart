@@ -5,10 +5,12 @@ import '../models/play_mode.dart';
 import '../widgets/media_time.dart';
 import 'mt_video_session.dart';
 
-/// أزرار أدوات الفيديو المستقلة — فُصلت عن `video_control_bars.dart`
-/// عند إضافة زر السرعة (القاعدة 4: حدّ الأسطر).
+/// The standalone video chrome buttons, split out of
+/// `video_control_bars.dart` when the speed button was added (rule 4, the
+/// size limit).
 
-/// أزرار الأدوات فوق الفيديو: مربعات داكنة شبه شفافة بحبر كريمي.
+/// The chrome buttons over the video: semi-transparent dark squares with
+/// cream ink.
 class MTVideoIconButton extends StatelessWidget {
   const MTVideoIconButton({
     super.key,
@@ -53,15 +55,18 @@ class MTVideoIconButton extends StatelessWidget {
   }
 }
 
-/// زر السرعة في **أدوات المشغل** (فحص 2026-09-02).
+/// The speed button in **the player chrome** (review 2026-09-02).
 ///
-/// **تصحيح لملاحظة أولى خاطئة:** ظننت السرعة بلا باب إطلاقاً، والصحيح
-/// أن لها رقاقة في ورقة معلومات الفيديو أسفل الشاشة. لكن الورقة **لا
-/// وجود لها في ملء الشاشة** — وهو بالضبط الوضع الذي تريد فيه إبطاء درس
-/// أو تسريع مقدمة. فالزر هنا يسدّ فجوة حقيقية لا فجوة متوهَّمة.
+/// **Correcting an initial mistaken note:** the first reading was that
+/// speed had no entry point at all, when in fact it has a chip in the
+/// video info sheet at the bottom of the screen. But that sheet **does not
+/// exist in full screen**, which is exactly the situation where you want
+/// to slow a lesson down or speed an introduction up. So this button fills
+/// a real gap rather than an imagined one.
 ///
-/// النقرة **تدوّر** عبر [mtNextSpeed] — نفس سلوك مشغل الصوت والورقة
-/// حرفاً بحرف كي لا يتعلم المستخدم قاعدتين لنفس الفكرة.
+/// A tap **cycles** through [mtNextSpeed], the same behaviour as the audio
+/// player and the sheet, word for word, so the user never learns two rules
+/// for the same idea.
 class MTVideoSpeedButton extends StatelessWidget {
   const MTVideoSpeedButton({super.key, required this.session});
 
@@ -76,8 +81,11 @@ class MTVideoSpeedButton extends StatelessWidget {
     return Tooltip(
       message: context.mtl.playbackSpeed,
       child: Material(
-        // السرعة غير الطبيعية **حالة مستمرة** يجب أن تُرى بلا قراءة:
-        // لون الفعل يقول «هذا المقطع لا يعمل بسرعته الأصلية».
+        // A non-normal speed is **a persistent state** that should be
+        // visible
+        // without reading: the accent colour says "this clip is not running
+        // at
+        // its original speed".
         color: normal
             ? Colors.black.withValues(alpha: 0.4)
             : p.accent.withValues(alpha: 0.85),

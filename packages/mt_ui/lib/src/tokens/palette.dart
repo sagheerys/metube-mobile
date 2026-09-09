@@ -1,11 +1,12 @@
 import 'dart:ui';
 
-/// نسختا التطبيق — تتطابقان في كل شيء عدا لون الفعل (سجل §4).
+/// The two app variants. Identical in everything except the accent colour
+/// (log §4).
 enum MTVariant { lite, superApp }
 
-/// لوحة «وهج» — القيم منسوخة **حرفياً** من مراجع Open Design المعتمدة
-/// (`direction-3-wahaj` + `wahaj-dark-mode` + `wahaj-lite-screens`).
-/// القيم المشتقة (غير المنصوصة) معلمة بتعليق `مشتق`.
+/// The Wahaj palette. Values are copied **verbatim** from the approved
+/// design references. Derived values, the ones not stated there, are
+/// marked with a `derived` comment.
 class MTPalette {
   const MTPalette({
     required this.bg,
@@ -41,64 +42,67 @@ class MTPalette {
   final Color ink2;
   final Color ink3;
 
-  /// الفواصل الشعرية — بديل الصناديق في «وهج».
+  /// Hairline rules, which replace boxes in Wahaj.
   final Color line;
   final Color line2;
 
-  /// لون الفعل: وهج في Super · خليج بترولي في Lite.
+  /// The accent: ember in Super, petrol bay in Lite.
   final Color accent;
   final Color accentDeep;
   final Color accentSoft;
   final Color accentInk;
   final Color onAccent;
 
-  /// الزيتوني — دلالة «دون اتصال» في Super.
+  /// Olive, which signals "offline" in Super.
   final Color offline;
   final Color offlineSoft;
   final Color offlineInk;
 
-  /// دلالة «على السيرفر» (وهج soft في Super).
+  /// Signals "on the server" (soft ember in Super).
   final Color onServerSoft;
   final Color onServerInk;
 
   final Color ok;
   final Color err;
 
-  /// المفضلة ♥ قرمزي مستقل عن لوني الفعل (م-36).
+  /// Favourites are crimson, independent of either accent colour.
   final Color favorite;
   final Color favoriteSoft;
 
-  /// حبيبات الفيلم.
+  /// Film grain.
   final double grainOpacity;
 
-  /// هل هذه لوحة ليل؟ — يقرؤها المشغل المصغر وحده اليوم.
+  /// Is this a night palette? Only the mini player reads it today.
   final bool night;
 
-  /// **المشغل المصغر: معكوس نهاراً، متّسق ليلاً** (قرار المالك
-  /// 2026-09-05 بعد رؤيته على الجهاز).
+  /// **The mini player is inverted by day and consistent by night**
+  /// (decision 2026-09-05, after seeing it on a device).
   ///
-  /// كان معكوساً في الوضعين: شريط داكن أنيق تحت واجهة كريمية نهاراً —
-  /// وشريط **فاتح ساطع** تحت شاشة سوداء ليلاً، وهجٌ في غرفة مظلمة.
-  /// العكس فكرةٌ نهارية بطبعها، فليلاً يتبع البطاقة.
+  /// It used to be inverted in both: an elegant dark bar under a cream
+  /// interface by day, and a **bright pale bar** under a black screen by
+  /// night, a glare in a dark room. Inversion is a daylight idea by nature,
+  /// so at night it follows the card instead.
   Color get miniBg => night ? card : ink;
   Color get miniInk => night ? ink : bg;
   Color get miniInkMuted => (night ? ink : bg).withValues(alpha: 0.55);
 
-  /// بطاقة حالة السيرفر إسبريسو داكنة دائماً (سجل §4).
+  /// The server status card stays espresso-dark in both themes (log §4).
   static const Color serverCardBg = Color(0xFF241B15);
   static const Color serverCardInk = Color(0xFFF4EBDF);
 
-  // ── ثوابت داكنة دائمة (فحص شامل 2026-09-02: كانت مثبتة في الشاشات
-  // مخالفةً للقاعدة 5 — «كل لون من tokens، صفر قيمة مثبتة») ──────────
+  // Always-dark constants. Full review 2026-09-02 found these hard-coded
+  // in the screens, against rule 5: every colour comes from tokens, no
+  // literals.
 
-  /// طرف تدرّج بطاقة القائمة الإسبريسو — أفتح من [serverCardBg].
+  /// The far end of the espresso playlist-card gradient, lighter than
+  /// [serverCardBg].
   static const Color serverCardBgLift = Color(0xFF443327);
 
-  /// حجاب المشغل العرضي الغامر: إسبريسو شبه معتم فوق الفيديو.
+  /// The immersive landscape player scrim: near-opaque espresso over video.
   static const Color fullscreenScrim = Color(0xEB140F0C);
 
-  /// أحمر إشعارات النظام — يُستعمل خارج شجرة الودجت (لا `context`
-  /// ولا `MTThemeX`)، فيلزم أن يكون ثابتاً صريحاً.
+  /// System notification red. Used outside the widget tree, where there is
+  /// no `context` and no `MTThemeX`, so it has to be an explicit constant.
   static const Color notificationError = Color(0xFFB3261E);
 
   static MTPalette of(MTVariant variant, Brightness brightness) =>
@@ -109,7 +113,7 @@ class MTPalette {
         (MTVariant.lite, Brightness.dark) => liteNight,
       };
 
-  // ── الأساس النهاري المشترك ──
+  // The shared daylight base.
   static const MTPalette superDay = MTPalette(
     bg: Color(0xFFFBF6EE),
     card: Color(0xFFFFFDF9),
@@ -136,7 +140,7 @@ class MTPalette {
     grainOpacity: 0.035,
   );
 
-  // ── ليل «إسبريسو» ──
+  // Espresso night.
   static const MTPalette superNight = MTPalette(
     bg: Color(0xFF1A130F),
     card: Color(0xFF241B15),
@@ -164,7 +168,7 @@ class MTPalette {
     night: true,
   );
 
-  // ── Lite نهاراً: نفس الأساس + خليج بترولي ──
+  // Lite by day: the same base plus petrol bay.
   static const MTPalette liteDay = MTPalette(
     bg: Color(0xFFFBF6EE),
     card: Color(0xFFFFFDF9),
@@ -191,7 +195,7 @@ class MTPalette {
     grainOpacity: 0.035,
   );
 
-  // ── Lite ليلاً: «بُن بزُرقة البحر» ──
+  // Lite by night: coffee with a sea-blue cast.
   static const MTPalette liteNight = MTPalette(
     bg: Color(0xFF141A1B),
     card: Color(0xFF1E2627),

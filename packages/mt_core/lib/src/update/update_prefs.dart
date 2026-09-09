@@ -1,9 +1,10 @@
 import '../storage/key_value_store.dart';
 
-/// تفضيلات التحديث الذاتي (م-66) — مفاتيح `05-DATA-SCHEMA.md` §5.1.
+/// Self-update preferences, with keys from `05-DATA-SCHEMA.md` §5.1.
 ///
-/// **مخزن مستقل لا حقول في `SuperSettings`/`LiteSettings`**: الميزة
-/// تدخل خلف مسار جديد فلا تمسّ تحميل الإعدادات ولا حفظها (ر-5).
+/// **A store of its own rather than fields in `SuperSettings` or
+/// `LiteSettings`**: the feature arrives behind a new path, so it touches
+/// neither settings loading nor settings saving (rule 5).
 class UpdatePrefs {
   UpdatePrefs({required this.store, required this.mutex});
 
@@ -14,10 +15,13 @@ class UpdatePrefs {
   static const String lastCheckKey = 'update_last_check';
   static const String skippedVersionKey = 'update_skipped_version';
 
-  /// إصدار الملف المنزَّل الجالس في الكاش — يُمسح متى صار التطبيق عنده.
+  /// The version of the downloaded file sitting in the cache. Wiped once
+  /// the
+  /// app is that version.
   static const String downloadedVersionKey = 'update_downloaded_version';
 
-  /// **مفعّل افتراضياً**: من لا يفتح الإعدادات هو أحوج الناس للتحديث.
+  /// **On by default**: whoever never opens settings is exactly who needs
+  /// updates most.
   Future<bool> autoCheck() async =>
       await store.getBool(autoCheckKey) ?? true;
 
@@ -29,8 +33,9 @@ class UpdatePrefs {
     return ms == null ? null : DateTime.fromMillisecondsSinceEpoch(ms);
   }
 
-  /// يُختم **بعد كل محاولة** ناجحة كانت أو فاشلة: مستودع خاص أو شبكة
-  /// مقطوعة يجب ألا يعيدا الطلب عند كل إقلاع.
+  /// Stamped **after every attempt**, successful or not: a private
+  /// repository or a dead network must not repeat the request at every
+  /// launch.
   Future<void> markChecked(DateTime when) =>
       mutex.run(() => store.setInt(lastCheckKey, when.millisecondsSinceEpoch));
 
@@ -39,8 +44,8 @@ class UpdatePrefs {
   Future<void> skipVersion(String version) =>
       mutex.run(() => store.setString(skippedVersionKey, version));
 
-  /// يُنادى بعد تثبيت ناجح — وإلا ظلّ تخطٍّ قديم يكتم إصداراً لاحقاً
-  /// لو تراجعت أرقام الإصدارات لأي سبب.
+  /// Called after a successful install, or an old skip would keep muting a
+  /// later release if version numbers ever moved backwards.
   Future<void> clearSkip() => mutex.run(() => store.remove(skippedVersionKey));
 
   Future<String?> downloadedVersion() => store.getString(downloadedVersionKey);

@@ -2,15 +2,17 @@ import 'package:flutter/material.dart';
 
 import '../l10n/l10n.dart';
 
-/// حوار إدخال نص واحد (اسم قائمة، اسم وسم، رابط نقطة نهاية…).
+/// A single-text input dialog: a playlist name, a tag name, an endpoint
+/// URL.
 ///
-/// **لماذا ودجت مُحالة (Stateful) لا دالة** (فحص شامل 2026-09-02): كل
-/// موضع كان ينشئ `TextEditingController` داخل دالة بناء الحوار ولا
-/// يصرّفه أبداً — خمسة تسريبات في التطبيقين. وتصريفه بعد
-/// `await showDialog` **ليس حلاً**: المستقبل يكتمل عند الـpop بينما
-/// حركة الإغلاق ما زالت تُعيد بناء الحقل، وهو بالضبط ما فجّر «الشاشة
-/// الحمراء» في المرحلة 8. المالك الوحيد الصحيح للمتحكم هو الودجت التي
-/// تحمله، تصرّفه في `dispose` بعد أن تخرج من الشجرة فعلاً.
+/// **Why a stateful widget rather than a function** (full review
+/// 2026-09-02): every call site created a `TextEditingController` inside
+/// the dialog's builder and never disposed it, five leaks across the two
+/// apps. Disposing after `await showDialog` **is not a fix**: the future
+/// completes at the pop while the closing animation is still rebuilding
+/// the field, which is exactly what produced the red screen in phase 8.
+/// The only correct owner of the controller is the widget that holds it,
+/// disposing it in `dispose` once it has actually left the tree.
 Future<String?> promptMTText(
   BuildContext context, {
   required String title,
@@ -48,7 +50,7 @@ class _MTTextPrompt extends StatefulWidget {
   final String? labelText;
   final String? hintText;
 
-  /// الروابط تُكتب LTR ولو كانت الواجهة عربية.
+  /// URLs are typed left to right even when the interface is Arabic.
   final TextDirection? fieldDirection;
 
   @override

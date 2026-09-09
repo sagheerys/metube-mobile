@@ -1,10 +1,12 @@
 import 'package:synchronized/synchronized.dart';
 
-/// واجهة التخزين المفتاحي — تُنفَّذ في التطبيق فوق SharedPreferences
-/// (النواة Dart خالص فتُختبر بـ [MemoryKeyValueStore]).
-/// أسماء المفاتيح من `05-DATA-SCHEMA.md` §5.1 حصراً.
+/// The key-value storage interface, implemented in the app over
+/// SharedPreferences. The core is pure Dart, so it is tested with
+/// [MemoryKeyValueStore]. Key names come from `05-DATA-SCHEMA.md` §5.1 and
+/// nowhere else.
 abstract interface class KeyValueStore {
-  /// القيمة الخام بأي نوع مخزن (String/bool/int/double/List of String).
+  /// The raw value in whatever type was stored (String, bool, int, double,
+  /// List of String).
   Future<Object?> get(String key);
 
   Future<void> setString(String key, String value);
@@ -16,7 +18,7 @@ abstract interface class KeyValueStore {
   Future<Set<String>> keys();
 }
 
-/// قراءات مصنفة متسامحة فوق [KeyValueStore.get].
+/// Tolerant typed reads over [KeyValueStore.get].
 extension TypedReads on KeyValueStore {
   Future<String?> getString(String key) async {
     final v = await get(key);
@@ -44,11 +46,13 @@ extension TypedReads on KeyValueStore {
   }
 }
 
-/// القفل الواحد لكل قراءة-تعديل-كتابة على التخزين (القاعدة 3) — تدفقان
-/// متزامنان بلا قفل يقرآن نفس القيمة فيمحو البطيءُ كتابةَ الأسرع.
+/// The one lock for every read-modify-write against storage (rule 3): two
+/// concurrent flows without it read the same value, and the slower one
+/// erases the faster one's write.
 class PrefsMutex {
   final Lock _lock = Lock();
 
-  /// تسلسل [body] مع كل استدعاءات هذا القفل في نفس الـ isolate.
+  /// Serialises [body] against every other call to this lock in the same
+  /// isolate.
   Future<T> run<T>(Future<T> Function() body) => _lock.synchronized(body);
 }

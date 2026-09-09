@@ -7,8 +7,8 @@ import 'backup_crypto.dart';
 
 part 'backup_legacy.dart';
 
-/// `plain` هي الصيغة المكتوبة اليوم؛ الثلاث الباقية **قراءة فقط**
-/// (هجرة من إصدارات سابقة).
+/// `plain` is the format written today; the other three are **read-only**,
+/// for migration from earlier releases.
 enum BackupFormat { plain, v2, legacyLite, legacySuper }
 
 class ImportResult {
@@ -17,9 +17,10 @@ class ImportResult {
   final int keysRestored;
 }
 
-/// خدمة النسخ الاحتياطي (§5.4): كتابة v2 `MTF1` وقراءة التنسيقات الثلاثة
-/// (القديمان **قراءة فقط** للهجرة). الحمولة: كل مفاتيح §5.1 + `username`
-/// — **كلمة المرور لا تدخل أبداً**. تعمل على نصوص؛ ملفات القرص شأن التطبيق.
+/// The backup service (§5.4): writes v2 `MTF1` and reads all three formats
+/// (the two legacy ones **read-only**, for migration). The payload is every
+/// key in §5.1 plus `username`; **the password never goes in**. It works on
+/// strings, since files on disk are the app's business.
 class BackupService {
   BackupService({
     required this.store,
@@ -32,10 +33,12 @@ class BackupService {
   final SecretStore secrets;
   final PrefsMutex mutex;
 
-  /// `lite` أو `super` — للتوثيق داخل الملف فقط؛ الاستيراد يقبل الكل.
+  /// `lite` or `super`, recorded inside the file for documentation only;
+  /// import accepts either.
   final String variant;
 
-  /// مفاتيح تحمل روابط سيرفر قد تُلصق بصيغة `https://user:pass@host`.
+  /// Keys holding server URLs, which may be pasted as
+  /// `https://user:pass@host`.
   static const _urlKeys = {
     'server_url',
     'local_url',
@@ -43,10 +46,11 @@ class BackupService {
     'external_urls',
   };
 
-  /// **حذف الاعتمادات المضمّنة في الرابط قبل النسخ (إصلاح خ-2).**
-  /// استثناء كلمة السر من النسخة صحيح، لكن من يلصق
-  /// `https://user:pass@host` كرابط سيرفر يضعها في مفتاح نصي عادي —
-  /// فتدخل النسخة الاحتياطية رغم القاعدة.
+  /// **Strip credentials embedded in a URL before backing it up (fix
+  /// خ-2).**
+  /// Excluding the password from the backup is correct, but someone who
+  /// pastes `https://user:pass@host` as the server URL puts it in an
+  /// ordinary string key, so it entered the backup despite the rule.
   static Object? _sanitize(String key, Object? value) {
     if (!_urlKeys.contains(key)) return value;
     if (value is String) return stripUrlCredentials(value);
@@ -56,19 +60,22 @@ class BackupService {
     return value;
   }
 
-  /// يعيد الرابط بلا `user:pass@` — وغير الروابط كما هي.
+  /// Returns the URL without `user:pass@`, and anything that is not a URL
+  /// unchanged.
   static String stripUrlCredentials(String raw) {
     final uri = Uri.tryParse(raw.trim());
     if (uri == null || uri.userInfo.isEmpty) return raw;
     return uri.replace(userInfo: '').toString();
   }
 
-  /// مفتاح فكّ النسخ القديمة **إن وُجد** — لا يُولَّد.
+  /// The key that decrypts legacy backups **if one exists**. It is never
+  /// generated.
   ///
-  /// كان يُولِّد مفتاحاً حين لا يجد، وهذا صحيح يوم كانت الكتابة مشفّرة.
-  /// بعد إزالة التشفير (2026-09-04) صار التوليد عبثاً محضاً: مفتاح جديد
-  /// لن يفكّ شيئاً، ثم يفشل الفكّ برسالة أبعد عن السبب. الغياب نفسه هو
-  /// الجواب: [BackupKeyMismatchException].
+  /// It used to generate a key when it found none, which was right while
+  /// writing was encrypted. After encryption was removed (2026-09-04),
+  /// generating became pure waste: a new key decrypts nothing, and then
+  /// decryption fails with a message further from the cause. The absence is
+  /// itself the answer: [BackupKeyMismatchException].
   Future<String> _decryptionKey() async {
     final stored = await secrets.read(SecretKeys.backupAesKey);
     if (stored == null || stored.isEmpty) {
@@ -77,19 +84,25 @@ class BackupService {
     return stored;
   }
 
-  /// **تصدير نصّي غير مشفَّر — وبلا أي سرّ** (قرار المالك 2026-09-04).
+  /// **A plain-text export with no secret in it at all** (decision
+  /// 2026-09-04).
   ///
-  /// كان `MTF1` مشفَّراً بمفتاح يعيش في التخزين الآمن، فيموت مع «مسح
-  /// البيانات» أو إعادة التثبيت — تاركاً نسخةً **يتيمة** لا تُفتح إلا
-  /// إن كان المستخدم صدّر المفتاح، وهو ما لا يفعله أحد. والمحتوى نفسه
-  /// (روابط، عناوين، قوائم، وسوم) يراه من يفتح التطبيق أصلاً.
+  /// `MTF1` used to be encrypted with a key living in secure storage, which
+  /// dies with "clear data" or a reinstall, leaving an **orphan** backup
+  /// that
+  /// opens only if the user exported the key, which nobody does. And the
+  /// content itself, links, titles, playlists and tags, is visible to
+  /// anyone
+  /// who opens the app anyway.
   ///
-  /// و[SecretKeys.username] **لم يعد يُنسخ**: كلمة المرور لم تكن تُنسخ
-  /// أبداً، فالمستخدم يعيد إدخالها على كل حال — واسمٌ بلا كلمة لا يفتح
-  /// شيئاً، فإخراجه يجعل الملف بلا سرّ إطلاقاً.
+  /// [SecretKeys.username] is **no longer backed up** either: the password
+  /// never was, so the user re-enters it regardless, and a username without
+  /// a password opens nothing. Leaving it out makes the file secret-free.
   ///
-  /// لقطة كاملة تحت القفل كي لا يمزقها كاتب متزامن. مُنسَّقة بمسافات
-  /// بادئة: ملفٌ غير مشفَّر يُقرأ بالعين مخرجٌ إنساني بلا كلفة.
+  /// A full snapshot under the lock, so a concurrent writer cannot tear it.
+  /// Indented on purpose: an unencrypted file read by eye is a
+  /// human-readable
+  /// escape hatch that costs nothing.
   Future<String> exportToString() => mutex.run(() async {
         final prefsMap = <String, dynamic>{};
         for (final key in await store.keys()) {
@@ -105,10 +118,12 @@ class BackupService {
         });
       });
 
-  /// استيراد أي تنسيق: النصّي الجديد أو الثلاثة المشفّرة القديمة.
+  /// Imports any format: the new plain text or the three legacy encrypted
+  /// ones.
   ///
-  /// **الترويسة تُفحص أولاً** (قاعدة §5.4: لا `json.decode` لملف مشفَّر
-  /// قبل فكّه)، وغيابها مع بداية `{` يعني الصيغة النصّية.
+  /// **The header is checked first** (rule §5.4: never `json.decode` an
+  /// encrypted file before decrypting it), and its absence together with a
+  /// leading `{` means the plain format.
   Future<ImportResult> importFromString(String contents) async {
     final header = BackupCrypto.headerOf(contents);
     if (header == null) {
@@ -127,7 +142,7 @@ class BackupService {
 
     return switch (header) {
       BackupCrypto.headerLegacyLite => _applyLegacyLite(payload),
-      // v2 وMTSBACKUP1 بنفس بنية prefs المصنفة.
+      // v2 and MTSBACKUP1 share the same typed prefs structure.
       _ => _applyTypedPrefs(
           payload,
           header == BackupCrypto.headerV2
@@ -156,9 +171,11 @@ class BackupService {
     final prefs = (payload['prefs'] as Map?) ?? const {};
     var restored = 0;
     await mutex.run(() async {
-      // **استعادة كل-أو-لا-شيء (إصلاح خ-2).** فشلٌ في المفتاح 40 من 200
-      // كان يترك **جهازاً هجيناً**: فهرس دون-اتصال من جهاز آخر بعناوين
-      // مفقودة، بلا أي تراجع ولا رسالة تقول أين توقف.
+      // **All-or-nothing restore (fix خ-2).** A failure on key 40 of 200
+      // used
+      // to leave a **hybrid device**: an offline index from another phone
+      // pointing at missing titles, with no rollback and no message saying
+      // where it stopped.
       final rollback = <String, Object?>{};
       for (final key in prefs.keys) {
         rollback[key.toString()] = await store.get(key.toString());
@@ -204,7 +221,8 @@ class BackupService {
         _ => null,
       };
 
-  /// إعادة قيمة كما كانت — للتراجع عن استعادة فشلت في منتصفها.
+  /// Puts a value back as it was, to roll back a restore that failed
+  /// halfway.
   Future<void> _restoreRaw(String key, Object value) async {
     switch (value) {
       case String v:

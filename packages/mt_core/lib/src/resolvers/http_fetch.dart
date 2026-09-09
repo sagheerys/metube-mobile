@@ -1,23 +1,27 @@
 import 'dart:convert';
 import 'dart:io';
 
-/// جلب نصي بسيط للخدمات الخارجية (§4) — **معزول عن Dio العميل** حتى لا
-/// تتسرب ترويسة Basic Auth الخاصة بالسيرفر إلى منصات خارجية.
+/// A plain text fetch for external services (§4), **isolated from the
+/// client's Dio** so the server's Basic Auth header can never leak to a
+/// third-party platform.
 typedef HttpGetString = Future<String> Function(Uri uri);
 
-/// إرسال JSON للخدمات الخارجية — نفس العزل، ولنقطة InnerTube تحديداً.
+/// Posting JSON to external services: the same isolation, and specifically
+/// for the InnerTube endpoint.
 typedef HttpPostJson = Future<String> Function(Uri uri, Object body);
 
-/// متصفح سطح مكتب: يوتيوب وساوندكلاود يردّان صفحات مختلفة (أو يرفضان)
-/// بحسب الوكيل، و`SOCS` يتخطى حاجز موافقة الكوكيز في أوروبا.
+/// A desktop browser identity: YouTube and SoundCloud return different
+/// pages, or refuse outright, depending on the agent, and `SOCS` clears
+/// the European cookie-consent wall.
 const _browserHeaders = {
   'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
       'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
   'accept-language': 'en-US,en;q=0.9',
 };
 
-/// التنفيذ الافتراضي بـ dart:io — مهلة قصيرة وفشل سريع؛ الـ resolvers
-/// المستهلكة له كلها فشل-آمن (null عند أي مشكلة).
+/// The default dart:io implementation: a short timeout and a fast failure.
+/// Every resolver consuming it is fail-safe and returns null on any
+/// problem.
 Future<String> ioHttpGetString(Uri uri) async {
   final client = HttpClient()
     ..connectionTimeout = const Duration(seconds: 10);

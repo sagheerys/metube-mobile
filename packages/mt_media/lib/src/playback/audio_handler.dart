@@ -16,15 +16,17 @@ import 'playback_state_mapping.dart';
 
 part 'audio_handler_recovery.dart';
 
-/// مشغل الصوت الخلفي (م-21): إشعار وسائط وأزرار شاشة قفل، أوضاع تشغيل
-/// وعشوائي، تخطي تلقائي للعنصر المعطوب، حفظ دوري للموضع، واستعادة
-/// الجلسة بعد إعادة تشغيل التطبيق.
+/// The background audio player: a media notification and lock-screen
+/// controls, play and shuffle modes, automatic skipping of a broken item,
+/// periodic position saving, and session restoration after the app
+/// restarts.
 ///
-/// **القاعدة الذهبية (م-19):** المصدر من [PlaybackSourceResolver] — محلي
-/// إن وُجد على القرص وإلا بث بترويسات المصادقة، والموضع مشترك بينهما.
+/// **The golden rule:** the source comes from [PlaybackSourceResolver],
+/// local if it exists on disk and otherwise a stream with authentication
+/// headers, and the position is shared between the two.
 ///
-/// **فخ §6.5:** [stop] ينظف `mediaItem` و`queue` والحالة المحفوظة معاً،
-/// وإلا بقي «مشغل مصغر شبح» بعد الإيقاف.
+/// **Trap §6.5:** [stop] clears `mediaItem`, `queue` and the saved state
+/// together, or a ghost mini player survives the stop.
 class MTAudioHandler extends BaseAudioHandler with SeekHandler {
   MTAudioHandler({
     required this.player,
@@ -54,59 +56,70 @@ class MTAudioHandler extends BaseAudioHandler with SeekHandler {
   int _consecutiveErrors = 0;
   Timer? _saveTimer;
 
-  /// **حارس السباق (العطل ع-3).** جلسة الفيديو والريلز تحملان حارساً
-  /// مماثلاً، وهذا المشغل كان بلا حارس رغم أنه أكثرها مداخل: نقرتان
-  /// سريعتان على أغنيتين قد تُبقيان A يعزف بينما الإشعار يعرض B،
-  /// و`persist()` يكتب موضع B تحت مفتاح A. والأخطر: سحب المشغل المصغر
-  /// (stop) أثناء تحميل معلّق كان **يعيده حياً يعزف**.
+  /// **The race guard (defect ع-3).** The video and reels sessions carry a
+  /// similar guard, and this player had none despite having the most entry
+  /// points: two quick taps on two songs could leave A playing while the
+  /// notification showed B, with `persist()` writing B's position under A's
+  /// key. Worse, dismissing the mini player (stop) during a pending load
+  /// **brought it back alive and playing**.
   int _generation = 0;
 
-  /// يُستدعى قبل أي بدء تشغيل صوتي: يوقف جلسة الفيديو الحية.
+  /// Called before any audio playback starts: it stops the live video
+  /// session.
   ///
-  /// **الاتجاه المعاكس للقاعدة الذهبية (العطل ع-4):** «مخرج واحد» كانت
-  /// منفّذة باتجاه واحد فقط (فتح فيديو ⇒ يوقف الصوت). فكان زر التشغيل
-  /// في إشعار الوسائط أثناء الفيديو — أو تشغيل صوتيات من شاشة القوائم
-  /// المفتوحة فوق المشغل — يُسمع **مصدرين معاً**.
+  /// **The opposite direction of the golden rule (defect ع-4):** "one
+  /// output" was implemented one way only, so opening a video stopped
+  /// audio.
+  /// The play button in the media notification during a video, or starting
+  /// audio from the playlists screen opened over the player, produced **two
+  /// sources at once**.
   Future<void> Function()? onTakeVideoFocus;
 
   PlayMode get playMode => _playMode;
   bool get shuffleEnabled => _queue.shuffle;
   PlaylistItem? get currentItem => _queue.current;
 
-  /// **مفتاح ما يُعزف الآن كتيار** (canonicalUrl) — لمؤشر «يشغَّل الآن».
+  /// **What is playing now, as a stream** of canonicalUrl, for the "now
+  /// playing" indicator.
   ///
-  /// [currentItem] لقطة لحظية: مراقبتها عبر `ref.watch` على مزوّد مثبّت
-  /// بـ override **لا يتحدث أبداً**، فكان المؤشر يعلق على المقطع الأول
-  /// مهما تقدمت القائمة (لقطة المالك 2026-09-02 — العطل ط-8). الواجهات
-  /// تستهلك هذا التيار، ولا تحتاج معه معرفة `audio_service` أصلاً.
+  /// [currentItem] is a point-in-time snapshot: watching it through
+  /// `ref.watch` on a provider pinned by an override **never updates**, so
+  /// the indicator stuck on the first clip however far the queue advanced
+  /// (screenshot 2026-09-02, defect ط-8). Interfaces consume this stream
+  /// and
+  /// then need no knowledge of `audio_service` at all.
   Stream<String?> get currentKey =>
       mediaItem.map((item) => item?.id).distinct();
 
-  /// **هل يعزف الآن فعلاً؟** — غير «أيّ عنصر هو الحالي» ([currentKey]).
-  /// مؤشر «قيد التشغيل» كان يرقص على مقطع موقوف مؤقتاً لأن الواجهة لا
-  /// تعرف إلا العنصر الحالي (بلاغ المالك 2026-09-04).
+  /// **Is it actually playing right now?** Different from "which item is
+  /// current" ([currentKey]). The "now playing" indicator used to dance
+  /// over
+  /// a paused clip because the interface knew only the current item (field
+  /// report 2026-09-04).
   Stream<bool> get playingStream =>
       playbackState.map((state) => state.playing).distinct();
 
-  /// نفس المعلومة كـ[Listenable] — للأوراق التي تُبنى مرة ولا تراقب
-  /// تياراً (ورقة قائمة الانتظار)، فيتوقف مؤشر التوازن فيها أيضاً.
+  /// The same information as a [Listenable], for sheets built once that do
+  /// not watch a stream, such as the queue sheet, so their equaliser stops
+  /// too.
   final ValueNotifier<bool> playingNotifier = ValueNotifier(false);
 
-  /// العناصر بترتيب الإدراج (فهارسها هي التي يقبلها [skipToQueueItem]).
+  /// The items in insertion order; those indexes are what
+  /// [skipToQueueItem] accepts.
   List<PlaylistItem> get items => _queue.items;
 
-  /// العناصر بترتيب التشغيل الفعلي — لعرض «التالي».
+  /// The items in actual play order, for showing "up next".
   List<PlaylistItem> get orderedItems => _queue.ordered;
   int get currentIndex => _queue.index;
   Stream<Duration> get positionStream => player.positionStream;
 
-  /// يُستدعى مرة عند الإقلاع: التفضيلات المحفوظة (§5.1).
+  /// Called once at startup: the saved preferences (§5.1).
   Future<void> loadPreferences() async {
     _playMode = await prefs.playMode();
     await player.setSpeed(await prefs.speed());
   }
 
-  /// تشغيل القائمة المعروضة وقت النقر (ر-4).
+  /// Plays the list that was on screen at the moment of the tap (rule 4).
   Future<void> playItems(
     List<PlaylistItem> items, {
     int startIndex = 0,
@@ -114,10 +127,12 @@ class MTAudioHandler extends BaseAudioHandler with SeekHandler {
     bool autoPlay = true,
   }) async {
     if (items.isEmpty) return;
-    // **الحارس يبدأ من هنا لا من `_loadCurrent`** (كشفه اختبار ع-3):
-    // بين هذا السطر و`_loadCurrent` قراءتان من التفضيلات. إيقافٌ يقع
-    // خلالهما (سحب المشغل المصغر) كان يكتمل ثم **يواصل هذا المسار
-    // فيبني الطابور ويعزف** — فيعود الشريط الذي أغلقته حياً.
+    // **The guard starts here rather than in `_loadCurrent`** (revealed by
+    // the ع-3 test): there are two preference reads between this line and
+    // `_loadCurrent`. A stop landing in between, from dismissing the mini
+    // player, completed and then **this path carried on, built the queue
+    // and
+    // played**, bringing back the bar the user had just closed.
     final generation = ++_generation;
     _playlistId = playlistId;
     _playMode = await prefs.playMode(playlistId: playlistId);
@@ -133,8 +148,9 @@ class MTAudioHandler extends BaseAudioHandler with SeekHandler {
     await _loadCurrent(autoPlay: autoPlay);
   }
 
-  /// إحياء الجلسة المحفوظة بعد إعادة تشغيل التطبيق — **بلا تشغيل
-  /// تلقائي**؛ يظهر المشغل المصغر ليكمل المستخدم بنقرة.
+  /// Revives the saved session after the app restarts, **without
+  /// autoplaying**. The mini player appears so the user can continue with a
+  /// tap.
   Future<bool> restoreSession() async {
     final generation = ++_generation;
     final snapshot = await stateStore.read();
@@ -142,7 +158,8 @@ class MTAudioHandler extends BaseAudioHandler with SeekHandler {
     _playlistId = snapshot.playlistId;
     _playMode = await prefs.playMode(playlistId: _playlistId);
     final shuffle = await prefs.shuffle();
-    // نقرة المستخدم على أغنية أثناء الاستعادة تفوز — لا تُداس بلقطة قديمة.
+    // A user tapping a song during restoration wins; an old snapshot never
+    // overwrites it.
     if (_isStale(generation)) return false;
     _queue = PlaybackQueue(
       items: snapshot.items,
@@ -154,11 +171,12 @@ class MTAudioHandler extends BaseAudioHandler with SeekHandler {
     return true;
   }
 
-  // ── الأوامر (الإشعار وشاشة القفل والواجهة) ──
+  // The commands, from the notification, the lock screen and the interface.
   //
-  // **تبقى في الصنف** ولا تُنقل لملف `part`: الامتداد لا يتجاوز دالة
-  // الأصل، فكان `audio_service` سينادي نسخة `BaseAudioHandler` بدلاً
-  // منها — خطأ صحّة اكتُشف في الفحص الشامل 2026-09-02.
+  // **They stay in the class** and are not moved to a `part` file: an
+  // extension does not override the original method, so `audio_service`
+  // would have called `BaseAudioHandler`'s version instead. A correctness
+  // bug found in the full review 2026-09-02.
 
   @override
   Future<void> play() async {
@@ -166,9 +184,10 @@ class MTAudioHandler extends BaseAudioHandler with SeekHandler {
     await player.play();
   }
 
-  /// **إسكات الفيديو لا يُلغي التشغيل** (2026-09-03): المسجِّل شاشةٌ قد
-  /// تموت، ورميةٌ منه كانت تُجهض `player.play()` قبل أن يبدأ — فيبدو
-  /// التطبيق وكأنه «لا يشغّل شيئاً» بعد زيارة الريلز (بلاغ المالك).
+  /// **Silencing video does not cancel playback** (2026-09-03): the
+  /// registrar is a screen that may already be gone, and a throw from it
+  /// aborted `player.play()` before it began, so the app looked like it
+  /// "plays nothing" after visiting reels (field report).
   Future<void> _takeVideoFocus() async {
     try {
       await onTakeVideoFocus?.call();
@@ -192,7 +211,8 @@ class MTAudioHandler extends BaseAudioHandler with SeekHandler {
   @override
   Future<void> skipToPrevious() => _skip(forward: false);
 
-  /// نقرة عنصر في ورقة قائمة الانتظار — [index] فهرس داخل العناصر.
+  /// A tap on an item in the queue sheet; [index] is an index into the
+  /// items.
   @override
   Future<void> skipToQueueItem(int index) async {
     await savePosition();
@@ -221,7 +241,8 @@ class MTAudioHandler extends BaseAudioHandler with SeekHandler {
     _broadcast();
   }
 
-  /// **فخ §6.5** — الإيقاف ينظف كل ما يُظهر المشغل المصغر.
+  /// **Trap §6.5**: stopping clears everything that keeps the mini player
+  /// visible.
   @override
   Future<void> stop() async {
     _generation++; // تحميل معلّق لا يعيد إحياء المشغل المصغر بعد الإغلاق
@@ -249,7 +270,7 @@ class MTAudioHandler extends BaseAudioHandler with SeekHandler {
     await player.dispose();
   }
 
-  // ── الداخلية ──
+  // Internals.
 
   Future<void> _skip({required bool forward}) async {
     await savePosition();
@@ -264,7 +285,7 @@ class MTAudioHandler extends BaseAudioHandler with SeekHandler {
     if (state == MediaPlaybackState.completed) unawaited(onCompleted());
   }
 
-  /// انتهى المقطع طبيعياً ⇒ الوضع يقرر (م-20).
+  /// The clip ended naturally, so the mode decides what happens next.
   Future<void> onCompleted() async {
     final url = _queue.current?.canonicalUrl;
     if (url != null) await positions.clear(url);

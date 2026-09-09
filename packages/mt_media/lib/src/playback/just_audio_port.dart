@@ -5,8 +5,9 @@ import 'package:just_audio/just_audio.dart';
 import '../models/playback_source.dart';
 import 'media_player_port.dart';
 
-/// تنفيذ [MediaPlayerPort] فوق `just_audio` — **المكان الوحيد** الذي
-/// يعرف الحزمة، فيبقى منطق المشغل قابلاً للاختبار بلا منصة.
+/// A [MediaPlayerPort] implementation over `just_audio`. **The only place**
+/// that knows the package, which keeps the player logic testable without a
+/// platform.
 class JustAudioPort implements MediaPlayerPort {
   JustAudioPort({AudioPlayer? player}) : _player = player ?? AudioPlayer() {
     _errors = StreamController<Object>.broadcast();
@@ -31,16 +32,23 @@ class JustAudioPort implements MediaPlayerPort {
         initialPosition: initialPosition,
       );
 
-  /// **مستقبل `play()` في just_audio لا يكتمل إلا حين يتوقف التشغيل** —
-  /// نصّ الحزمة: «يكتمل حين ينتهي التشغيل أو يُوقَف». فانتظاره يعني
-  /// انتظار المقطع كله (بلاغ المالك 2026-09-03):
+  /// **just_audio's `play()` future does not complete until playback
+  /// stops**
+  /// — the package's own words: "completes when playback ends or is
+  /// stopped". Awaiting it means awaiting the whole clip (field report
+  /// 2026-09-03):
   ///
-  /// «متابعة صوتاً» كانت تعلّق شاشة الفيديو فلا تُغلق مهما انتظرت،
-  /// **ثم** يُنفَّذ `pop` المؤجل عند إيقاف الصوت — وقد غادر المستخدم
-  /// الشاشة بطريق آخر — فيُسقط الغلاف نفسه: **شاشة سوداء**.
+  /// "continue as audio" hung the video screen so it would not close
+  /// however
+  /// long you waited, **and then** the deferred `pop` ran when the audio
+  /// was
+  /// stopped, by which time the user had left the screen another way, so it
+  /// popped the shell itself: **a black screen**.
   ///
-  /// عقد [MediaPlayerPort.play] هو «أصدر أمر التشغيل»، لا «شغّل حتى
-  /// النهاية». الخطأ يُحوَّل إلى مجرى الأخطاء فيتخطّى المعالجُ العنصر.
+  /// The contract of [MediaPlayerPort.play] is "issue the play command",
+  /// not
+  /// "play to the end". Errors are forwarded to the error stream so the
+  /// handler skips the item.
   @override
   Future<void> play() async {
     unawaited(_player.play().catchError((Object error) {

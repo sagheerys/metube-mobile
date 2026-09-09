@@ -2,21 +2,23 @@ import 'dart:convert';
 
 import 'package:encrypt/encrypt.dart';
 
-/// الملف ليس بأي تنسيق نسخ احتياطي معروف (لا ترويسة صالحة).
+/// The file is in no known backup format: no valid header.
 final class BackupFormatException implements Exception {
   const BackupFormatException([this.detail]);
   final String? detail;
 }
 
-/// الترويسة صحيحة لكن المفتاح لا يفك — Clear Data أو جهاز آخر بلا
-/// استيراد المفتاح. حالة نهائية: لا إعادة محاولة، والحل استيراد المفتاح.
+/// The header is right but the key does not decrypt: cleared data, or
+/// another device without the key imported. A terminal state, with no
+/// retry; the answer is to import the key.
 final class BackupKeyMismatchException implements Exception {
   const BackupKeyMismatchException();
 }
 
-/// تشفير النسخ الاحتياطي (§5.4) — AES-256-CBC من مكتبات قياسية **فقط**
-/// (درس Super: دوال base64/utf8 اليدوية كانت معطوبة لغير-ASCII).
-/// شكل الملف: `<الترويسة>\n<base64(IV)>\n<base64(ciphertext)>`.
+/// Backup encryption (§5.4): AES-256-CBC from standard libraries **only**
+/// (the lesson from the old Super: hand-rolled base64/utf8 helpers were
+/// broken for non-ASCII). File shape:
+/// `<header>\n<base64(IV)>\n<base64(ciphertext)>`.
 abstract final class BackupCrypto {
   static const String headerV2 = 'MTF1';
   static const String headerLegacyLite = 'MTBACKUP1';
@@ -36,7 +38,9 @@ abstract final class BackupCrypto {
 
   static String generateKeyBase64() => Key.fromSecureRandom(32).base64;
 
-  /// ترويسة الملف إن كانت معروفة — لتمييز التنسيق قبل أي فك.
+  /// The file header if it is a known one, to identify the format before
+  /// any
+  /// decryption.
   static String? headerOf(String contents) {
     final firstLine = contents.split('\n').first.trim();
     return knownHeaders.contains(firstLine) ? firstLine : null;
@@ -54,9 +58,9 @@ abstract final class BackupCrypto {
     return '$header\n${iv.base64}\n${ciphertext.base64}';
   }
 
-  /// فك أي تنسيق من الترويسات الثلاث. **لا json.decode قبل هذا الفك**
-  /// (قاعدة §5.4). يرمي [BackupFormatException] لملف غريب،
-  /// و[BackupKeyMismatchException] لمفتاح خاطئ.
+  /// Decrypts any of the three header formats. **No json.decode before this
+  /// step** (rule §5.4). Throws [BackupFormatException] for a foreign file
+  /// and [BackupKeyMismatchException] for a wrong key.
   static String decrypt({
     required String contents,
     required String keyBase64,
@@ -77,13 +81,13 @@ abstract final class BackupCrypto {
     }
   }
 
-  // ── ملف المفتاح المُصدَّر (تصدير/استيراد للاستعادة على جهاز آخر) ──
+  // The exported key file, for restoring on another device.
 
   static String encodeKeyFile(String keyBase64) =>
       '$keyHeaderV2\n$keyBase64\n';
 
-  /// يقرأ ملف مفتاح بأي ترويسة معروفة (الجديدة أو القديمتين) —
-  /// null لملف غير صالح. المفتاح 32 بايتاً بالضبط.
+  /// Reads a key file with any known header, new or either legacy one.
+  /// Returns null for an invalid file. The key is exactly 32 bytes.
   static String? decodeKeyFile(String contents) {
     final lines = contents.split('\n');
     if (lines.length < 2) return null;

@@ -1,7 +1,7 @@
 import 'url_keyed_index.dart';
 
-/// فهرس الوسوم (Super — م-26): canonicalUrl → قائمة وسوم المستخدم.
-/// مفتاح prefs: `tags_index` (§5.1). حذف وسم لا يحذف الوسائط أبداً.
+/// The tags index (Super): canonicalUrl to the user's list of tags. Prefs
+/// key: `tags_index` (§5.1). Deleting a tag never deletes media.
 final class TagsIndex extends UrlKeyedIndex<List<String>> {
   TagsIndex({required super.store, required super.mutex, super.onChanged})
       : super(prefsKey: 'tags_index');
@@ -22,7 +22,7 @@ final class TagsIndex extends UrlKeyedIndex<List<String>> {
   Future<List<String>> tagsOf(String canonicalUrl) async =>
       await valueOf(canonicalUrl) ?? const [];
 
-  /// إضافة/إزالة وسم لعنصر (نقرة الرقاقة في ورقة الوسوم).
+  /// Adds or removes a tag for one item, from a chip tap in the tags sheet.
   Future<void> toggleTag(String canonicalUrl, String tag) =>
       mutate((map) {
         final tags = List<String>.from(map[canonicalUrl] ?? const []);
@@ -30,7 +30,7 @@ final class TagsIndex extends UrlKeyedIndex<List<String>> {
         tags.isEmpty ? map.remove(canonicalUrl) : map[canonicalUrl] = tags;
       });
 
-  /// كل الوسوم بعدد عناصر كل منها (رقاقات «وسومك» م-37/ج).
+  /// Every tag with how many items carry it, for the "your tags" chips.
   Future<Map<String, int>> allTagsWithCounts() async {
     final counts = <String, int>{};
     for (final tags in (await readAll()).values) {
@@ -41,16 +41,17 @@ final class TagsIndex extends UrlKeyedIndex<List<String>> {
     return counts;
   }
 
-  /// عناصر وسم معين (تصفية المكتبة).
+  /// The items carrying one tag, for filtering the library.
   Future<List<String>> urlsWithTag(String tag) async => [
         for (final entry in (await readAll()).entries)
           if (entry.value.contains(tag)) entry.key,
       ];
 
-  /// إعادة تسمية وسم عبر كل العناصر.
-  /// إعادة تسمية وسم — **بلا تكرار (إصلاح م-7):** عنصر يحمل الاسمين
-  /// معاً (القديم والجديد) كان يصير يحمل الجديد مرتين، فينتفخ عدّاد
-  /// الرقاقة ويظهر العنصر مكرراً في التصفية.
+  /// Renames a tag across every item, **without duplicating (fix م-7):** an
+  /// item carrying both the old and the new name ended up carrying the new
+  /// one twice, which inflated the chip counter and showed the item twice
+  /// in
+  /// the filter.
   Future<void> renameTag(String oldName, String newName) => mutate((map) {
         for (final entry in map.entries) {
           final idx = entry.value.indexOf(oldName);
@@ -63,7 +64,7 @@ final class TagsIndex extends UrlKeyedIndex<List<String>> {
         }
       });
 
-  /// حذف وسم من كل العناصر — الوسائط تبقى.
+  /// Deletes a tag from every item. The media stays.
   Future<void> deleteTag(String tag) => mutate((map) {
         final emptied = <String>[];
         for (final entry in map.entries) {

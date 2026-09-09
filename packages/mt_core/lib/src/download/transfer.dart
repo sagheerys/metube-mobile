@@ -6,13 +6,15 @@ import '../api/api_exceptions.dart';
 import '../api/metube_api.dart';
 import '../constants/mt_constants.dart';
 
-/// السحب بإعادة محاولة (§2.4): 3 محاولات بتراجع 3s/6s (انقطاعات
-/// Cloudflare)، **حذف الملف الجزئي قبل كل محاولة** وعند الإلغاء/الفشل.
+/// Pulling with retries (§2.4): 3 attempts backing off 3s then 6s, for
+/// Cloudflare interruptions, **deleting the partial file before every
+/// attempt** and on cancellation or failure.
 ///
-/// **الكتابة إلى `<savePath>.part` ثم إعادة تسمية** (بلاغ المالك
-/// 2026-09-02): Dio يكتب تدريجياً في الملف النهائي، ومكتبة Lite تُبنى
-/// من **مسح المجلد** — فكان المقطع يظهر في المكتبة نصف محمّل، ويرتجف
-/// حجمه مع كل تحديث. اللاحقة `.part` ليست امتداد وسائط فيتخطاها المسح.
+/// **Writing to `<savePath>.part` then renaming** (field report
+/// 2026-09-02): Dio writes incrementally into the final file, and Lite's
+/// library is built by **scanning the folder**, so a clip appeared in the
+/// library half downloaded with its size flickering on every refresh. The
+/// `.part` suffix is not a media extension, so the scan skips it.
 class Transfer {
   Transfer({
     required this.api,
@@ -20,18 +22,20 @@ class Transfer {
     this.backoff = MTConstants.pullRetryBackoff,
   });
 
-  /// لاحقة الملف الجزئي — **يجب ألا تكون امتداد وسائط** كي يتخطاها مسح
-  /// المكتبة (`isMediaFile`).
+  /// The partial file suffix. It **must not be a media extension**, so the
+  /// library scan (`isMediaFile`) skips it.
   static const partSuffix = '.part';
 
   final MeTubeApi api;
   final int retries;
 
-  /// فترات الانتظار بين المحاولات — تُصفَّر في الاختبارات.
+  /// The waits between attempts, zeroed in tests.
   final List<Duration> backoff;
 
-  /// يعيد **المسار النهائي فعلاً** — قد يختلف عن [savePath] إن كان
-  /// مشغولاً (خ-3)، والمنادي يفهرس بما يعود لا بما طلب.
+  /// Returns **the path actually used**, which may differ from [savePath]
+  /// if
+  /// that was taken (defect خ-3). The caller indexes what comes back, not
+  /// what it asked for.
   Future<String> pull({
     required String serverFilename,
     required String savePath,
@@ -52,7 +56,7 @@ class Transfer {
             }
           },
         );
-        // النقلة الذرية: من هنا فقط يراه مسح المجلد.
+        // The atomic move: only from here does the folder scan see it.
         final target = await _freeTarget(savePath);
         await File(partPath).rename(target);
         return target;
@@ -74,11 +78,13 @@ class Transfer {
     throw const NetworkException('pull exhausted');
   }
 
-  /// **هدف غير مشغول (إصلاح خ-3).** اسم الملف المحلي يحمل طابع
-  /// `HHmmss` بلا تاريخ (§2.4)، فعنوانان متطابقان في الثانية نفسها —
-  /// وارد في الدفعات الصوتية — أو في نفس الوقت من يومين، كانا يجعلان
-  /// `rename` **يدهس الملف الأقدم بصمت**. الصيغة تبقى كما وثّقها العقد،
-  /// والتصادم النادر يُحلّ بلاحقة رقمية.
+  /// **An unoccupied target (fix خ-3).** The local filename carries an
+  /// `HHmmss` stamp with no date (§2.4), so two identical titles in the
+  /// same
+  /// second, plausible in an audio batch, or at the same time on two
+  /// different days, made `rename` **silently overwrite the older file**.
+  /// The format stays as the contract documented it, and the rare collision
+  /// is resolved with a numeric suffix.
   static Future<String> _freeTarget(String savePath) async {
     if (!await File(savePath).exists()) return savePath;
     final dot = savePath.lastIndexOf('.');
@@ -96,7 +102,7 @@ class Transfer {
       final file = File(savePath);
       if (await file.exists()) await file.delete();
     } on FileSystemException {
-      // ملف مقفل مؤقتاً — المحاولة التالية ستكتب فوقه.
+      // A temporarily locked file. The next attempt will write over it.
     }
   }
 }

@@ -5,18 +5,21 @@ import 'quality.dart';
 
 const _uuid = Uuid();
 
-/// مراحل مهمة التحميل عبر الخط الرباعي (`05-DATA-SCHEMA.md` §3):
-/// add ← poll ← pull ← delete(حسب السياسة).
+/// The phases of a download task along the four-stage pipeline
+/// (`05-DATA-SCHEMA.md` §3): add, poll, pull, delete by policy.
 enum TaskPhase {
   queued,
   adding,
   polling,
 
-  /// الملف جاهز على السيرفر و**السحب موقوف بانتظار Wi‑Fi** (م-42).
+  /// The file is ready on the server and **the pull is held waiting for
+  /// Wi-Fi**.
   ///
-  /// مرحلة مستقلة عن `pulling` بقصد: التقدم لا يتحرك هنا، والسبب ليس
-  /// بطء شبكة بل قرار المستخدم — عرضها كـ«يسحب 0٪» كذب يجعله يظن
-  /// التطبيق معلقاً، وعرضها كـ«فشل» كذب آخر.
+  /// A phase of its own rather than part of `pulling`, on purpose: progress
+  /// does not move here, and the reason is not a slow network but the
+  /// user's
+  /// own choice. Showing it as "pulling 0%" is a lie that suggests the app
+  /// has hung, and showing it as "failed" is another one.
   waitingForNetwork,
   pulling,
   deleting,
@@ -25,8 +28,9 @@ enum TaskPhase {
   cancelled,
 }
 
-/// مهمة تحميل واحدة — معرفها uuid v4 (لا `url.hashCode` الهش القديم).
-/// كائن غير قابل للتغيير؛ محرك التحميل (المرحلة 2) يتقدم بها عبر [copyWith].
+/// A single download task, identified by a uuid v4 rather than the old and
+/// fragile `url.hashCode`. Immutable; the download engine advances it
+/// through [copyWith].
 class DownloadTask {
   DownloadTask({
     String? id,
@@ -48,37 +52,43 @@ class DownloadTask {
 
   final String id;
 
-  /// كما أدخله المستخدم (للعرض وإعادة المحاولة).
+  /// As the user entered it, for display and for retrying.
   final String inputUrl;
 
-  /// بعد حل الرابط القصير — هو ما يُرسل إلى `/add`.
+  /// After the short link is resolved. This is what is sent to `/add`.
   final String? resolvedUrl;
 
-  /// من `/history` — **الوحيد** الصالح للحذف والفهرسة.
+  /// From `/history`. The **only** value valid for deletion and indexing.
   final String? canonicalUrl;
   final String? serverFilename;
 
-  /// عنوان السيرفر وغلافه لحظة الاكتمال — يُستعملان لاسم الملف المحلي
-  /// (§2.4) وفهرسي العنوان والغلاف وإشعار الاكتمال (م-9). **لا يُختلقان**
-  /// إن غابا (فخ §6.3).
+  /// The server's title and artwork at the moment of completion. Used for
+  /// the local filename (§2.4), the title and artwork indexes and the
+  /// completion notification. **Neither is invented** when missing (trap
+  /// §6.3).
   final String? title;
   final String? thumbnail;
   final String? localPath;
   final Quality quality;
   final TaskPhase phase;
 
-  /// 0..1: تقدم السيرفر أثناء polling ثم تقدم السحب أثناء pulling.
+  /// 0 to 1: the server's progress while polling, then the pull's progress
+  /// while pulling.
   final double progress;
 
-  /// الخطأ المصنف عند الفشل — التطبيق يحوّل نوعه لنص مترجم (TRD §3.3).
+  /// The classified error on failure. The app turns its type into
+  /// translated
+  /// text (TRD §3.3).
   final MTApiException? error;
 
-  /// المفرد يتقدم على أعضاء الدفعات في الطابور.
+  /// A single item outranks members of a batch in the queue.
   final bool isBatchMember;
   final DateTime createdAt;
 
-  /// **هل لهذه المرحلة تقدم معروف؟** المنتظِرة وموقوفة الشبكة لا تتحرك،
-  /// فعرض «0٪» عليها كذب يوحي بالتعليق (نفس منطق `waitingForNetwork`).
+  /// **Does this phase have known progress?** A waiting task and one held
+  /// by
+  /// the network gate do not move, so showing "0%" over them is a lie that
+  /// suggests a hang (the same reasoning as `waitingForNetwork`).
   bool get hasKnownProgress =>
       phase != TaskPhase.queued && phase != TaskPhase.waitingForNetwork;
 
@@ -118,12 +128,14 @@ class DownloadTask {
       );
 }
 
-/// متوسط تقدم مجموعة مهام (0..1) — للشريط المُجمِّع أعلى المكتبة حين
-/// تتعدد التحميلات (بلاغ المالك 2026-09-03).
+/// The mean progress of a group of tasks (0 to 1), for the summary bar at
+/// the top of the library when several downloads run at once (field report
+/// 2026-09-03).
 ///
-/// المهام بلا تقدم معروف تُحسب **صفراً لا تُستبعد**: استبعادها يجعل
-/// «٣ تحميلات» تعرض ٩٠٪ لأن واحدة فقط تعمل والباقي في الطابور.
-/// المجموعة الفارغة أو التي لا تقدم فيها بتاتاً ⇒ `null` (شريط غير محدد).
+/// Tasks with no known progress count as **zero rather than being
+/// excluded**: excluding them made "3 downloads" show 90% because only one
+/// was running and the rest were queued. An empty group, or one with no
+/// progress at all, yields `null` for an indeterminate bar.
 double? averageTaskProgress(List<DownloadTask> tasks) {
   if (tasks.isEmpty) return null;
   if (!tasks.any((t) => t.hasKnownProgress)) return null;

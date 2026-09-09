@@ -1,11 +1,11 @@
 import 'key_value_store.dart';
 import 'secret_store.dart';
 
-/// تنفيذ ذاكرة لـ [KeyValueStore] — للاختبارات وسكربت بوابة 2 الخالص.
+/// An in-memory [KeyValueStore], for tests and for the pure gate-2 script.
 class MemoryKeyValueStore implements KeyValueStore {
   final Map<String, Object> _data = {};
 
-  /// لقطة للقراءة في الاختبارات.
+  /// A read-only snapshot for tests.
   Map<String, Object> get snapshot => Map.unmodifiable(_data);
 
   @override
@@ -34,7 +34,7 @@ class MemoryKeyValueStore implements KeyValueStore {
   Future<Set<String>> keys() async => _data.keys.toSet();
 }
 
-/// تنفيذ ذاكرة لـ [SecretStore] — للاختبارات فقط (لا تشفير).
+/// An in-memory [SecretStore] for tests only, with no encryption.
 class MemorySecretStore implements SecretStore {
   final Map<String, String> _data = {};
 

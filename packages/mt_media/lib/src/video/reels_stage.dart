@@ -6,8 +6,9 @@ import '../models/playlist_item.dart';
 import '../screens/mt_video_screen.dart';
 import 'reels_overlay.dart';
 
-/// طبقات مشهد الريلز — الصورة وطبقة المعلومات فوقها.
-/// فُصلت عن `mt_reels_player.dart` لحدّ الأسطر (القاعدة 4).
+/// The layers of the reels stage: the picture, and the information layer
+/// over it. Split out of `mt_reels_player.dart` for the size limit (rule
+/// 4).
 
 class ReelsVideoLayer extends StatelessWidget {
   const ReelsVideoLayer({
@@ -35,13 +36,19 @@ class ReelsVideoLayer extends StatelessWidget {
               )
             : controller == null || !controller!.value.isInitialized
                 ? const Center(child: CircularProgressIndicator())
-                // **`contain` لا `cover`** (بلاغ المالك 2026-09-02: «يقتطع
-                // جزءاً من الفيديو ويظهر مكبراً»). `cover` يملأ الشاشة
-                // بتكبير المقطع حتى يغطي البعد الأطول ويقصّ الباقي — على
-                // هاتف 20:9 يعني قصّ ~20% من مقطع 16:9 رأسي، أي رأس
-                // المتحدث. إنستقرام وشورتس يلائمان العرض ويتركان الفراغ
-                // للتدرج والأدوات، وهو ما نفعله الآن: **المقاس الأصلي
-                // كاملاً بلا اقتطاع**.
+                // **`contain`, not `cover`** (field report 2026-09-02: "it
+                // cuts part of
+                // the video off and shows it enlarged"). `cover` fills the
+                // screen by
+                // enlarging the clip until it covers the longer dimension
+                // and crops the
+                // rest: on a 20:9 phone that means cropping about 20% of a
+                // 16:9 portrait
+                // clip, which is the speaker's head. Instagram and Shorts
+                // fit the width
+                // and leave the space to the gradient and the chrome, which
+                // is what we do
+                // now: **the original framing, entire and uncropped**.
                 : Center(
                     child: AspectRatio(
                       aspectRatio: controller!.value.aspectRatio,
@@ -69,21 +76,22 @@ class ReelsOverlayLayer extends StatelessWidget {
   final int total;
   final bool favorite;
 
-  /// `null` ⇒ لا زر مفضلة في العمود (انظر [MTReelsRail]).
+  /// `null` means no favourite button in the column (see [MTReelsRail]).
   final VoidCallback? onToggleFavorite;
   final List<MTPlayerAction> actions;
   final String? subtitle;
 
-  /// **الأدوات تختفي بعد لحظة وتعود باللمس** (طلب المالك 2026-09-02).
-  /// شريط التقدم وحده يبقى دائماً — فهو خارج هذه الطبقة.
+  /// **The chrome hides after a moment and returns on a touch** (requested
+  /// 2026-09-02). The progress bar alone is always visible, which is why it
+  /// lives outside this layer.
   final bool visible;
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.mtl;
     return IgnorePointer(
-      // مخفية ⇒ لا تلتقط اللمس، وإلا ابتلع عمود الأفعال الشفاف النقرة
-      // التي يريدها المستخدم لإظهار الأدوات.
+      // Hidden means it does not receive touches, or the transparent action
+      // column swallows the tap the user meant for showing the chrome.
       ignoring: !visible,
       child: AnimatedOpacity(
         opacity: visible ? 1 : 0,
@@ -104,10 +112,15 @@ class ReelsOverlayLayer extends StatelessWidget {
                 ),
               ),
             ),
-            // **تحت الشريط العلوي لا خلفه** (فحص جهاز المالك 2026-09-05):
-            // الشريط داخل `SafeArea` والتلميح كان على `top: 64` ثابتة،
-            // فيتداخل النصّان على جهاز بشريط حالة طويل. و`⌃` كان
-            // يُرسم بخط عربي فيبدو «٨».
+            // **Below the top bar rather than behind it** (device check
+            // 2026-09-05):
+            // the bar is inside a `SafeArea` while the hint sat at a fixed
+            // `top: 64`,
+            // so the two strings overlapped on a device with a tall status
+            // bar. And
+            // the chevron was drawn in an Arabic font, where it looked like
+            // the digit
+            // eight.
             PositionedDirectional(
               top: 0,
               start: 0,
@@ -135,10 +148,12 @@ class ReelsOverlayLayer extends StatelessWidget {
                 actions: actions,
               ),
             ),
-            // **فوق شريط التقدم لا عليه** (لقطة على المحاكي 2026-09-02):
-            // الشريط صار دائم الظهور، فكان الخيط البرتقالي يمر في منتصف
-            // عنوان المقطع. 64 = ارتفاع الشريط (24) + هامش الأمان السفلي
-            // + فجوة تنفس.
+            // **Above the progress bar, not on it** (emulator screenshot
+            // 2026-09-02): once the bar became permanently visible, the
+            // orange line
+            // ran straight through the middle of the clip title. 64 is the
+            // bar height
+            // (24) plus the bottom safe inset plus breathing room.
             PositionedDirectional(
               start: 74,
               end: MTSpace.lg,

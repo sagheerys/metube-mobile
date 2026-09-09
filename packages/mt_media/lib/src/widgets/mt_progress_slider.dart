@@ -3,8 +3,9 @@ import 'package:mt_ui/mt_ui.dart';
 
 import 'media_time.dart';
 
-/// شريط التقدم بمقبض — من مرجع «وهج» (مسار 5px، تعبئة بلون الفعل،
-/// مقبض حبري 15px). يُستعمل في شاشة الصوت والفيديو العمودي والعرضي.
+/// The progress bar with a handle, from the Wahaj reference: a 5px track,
+/// an accent-coloured fill and a 15px ink handle. Used in the audio
+/// screen and in both portrait and landscape video.
 class MTProgressSlider extends StatefulWidget {
   const MTProgressSlider({
     super.key,
@@ -21,10 +22,11 @@ class MTProgressSlider extends StatefulWidget {
   final Duration? buffered;
   final ValueChanged<Duration> onSeek;
 
-  /// فوق الفيديو الداكن: حبر كريمي بدل الحبر البني.
+  /// Over dark video: cream ink instead of the brown ink.
   final bool dark;
 
-  /// شاشة الصوت تعرض المتبقي سالباً؛ الفيديو يعرض المدة الكاملة.
+  /// The audio screen shows the remaining time as a negative; video shows
+  /// the full duration.
   final bool showRemaining;
 
   @override
@@ -103,10 +105,12 @@ class _MTProgressSliderState extends State<MTProgressSlider> {
     );
   }
 
-  /// **كان يطلب `tabularFigures` ولا يحصل عليها**: النمط يرث خط النصوص
-  /// Tajawal الذي لا يملك جدول `tnum` أصلاً (فحص الملف الثنائي
-  /// 2026-09-02)، فتُتجاهل الميزة بصمت ويظل العدّاد يرقص. `.tabular`
-  /// ينقله لخط العناوين الذي يدعمها فعلاً.
+  /// **It used to ask for `tabularFigures` and never get them**: the style
+  /// inherits the Tajawal body font, which has no `tnum` table at all
+  /// (binary inspection 2026-09-02), so the feature was silently ignored
+  /// and
+  /// the counter kept dancing. `.tabular` moves it to the heading font,
+  /// which genuinely supports it.
   TextStyle _timeStyle(BuildContext context, Color color) =>
       Theme.of(context).textTheme.bodySmall!.copyWith(color: color).tabular;
 }

@@ -1,8 +1,9 @@
-/// مقارنة إصدارات دلالية (SemVer) — أساس قرار «هل يوجد أحدث؟».
+/// Semantic version comparison, the basis for deciding "is there anything
+/// newer?".
 ///
-/// **لماذا لا تُقارَن النصوص مباشرة**: `'2.10.0'.compareTo('2.9.0')` يعطي
-/// سالباً لأن المقارنة النصية ترى `'1' < '9'` — فيبقى المستخدم على 2.9.0
-/// إلى الأبد. القرار يمرّ من هنا وحده.
+/// **Why strings are not compared directly**: `'2.10.0'.compareTo('2.9.0')`
+/// returns negative, because a string comparison sees `'1' < '9'`, so the
+/// user stays on 2.9.0 forever. Every such decision passes through here.
 class AppVersion implements Comparable<AppVersion> {
   const AppVersion(this.major, this.minor, this.patch, {this.preRelease});
 
@@ -10,20 +11,20 @@ class AppVersion implements Comparable<AppVersion> {
   final int minor;
   final int patch;
 
-  /// ما بعد `-` مثل `beta.1` — و`null` تعني إصداراً مستقراً.
+  /// Whatever follows `-`, such as `beta.1`. `null` means a stable release.
   final String? preRelease;
 
-  /// يقبل `2.1.0` و`v2.1.0` و`2.1.0+7` و`2.1.0-beta.1`.
+  /// Accepts `2.1.0`, `v2.1.0`, `2.1.0+7` and `2.1.0-beta.1`.
   ///
-  /// **رقم البناء `+7` يُهمل عمداً**: هو عدّاد أندرويد الداخلي
-  /// (`versionCode`)، ونسختان بنفس `2.1.0` وبناءين مختلفين ليستا
-  /// تحديثاً لبعضهما في نظر المستخدم.
+  /// **The build number `+7` is dropped on purpose**: it is Android's
+  /// internal counter (`versionCode`), and two builds of the same `2.1.0`
+  /// are not an update to each other as far as the user is concerned.
   static AppVersion? tryParse(String? raw) {
     if (raw == null) return null;
     var s = raw.trim();
     if (s.isEmpty) return null;
     if (s.startsWith('v') || s.startsWith('V')) s = s.substring(1);
-    // رقم البناء أولاً: `2.1.0-beta+7` تقطع عند `+` لا عند `-`.
+    // Build number first: `2.1.0-beta+7` is cut at the `+`, not at the `-`.
     final plus = s.indexOf('+');
     if (plus >= 0) s = s.substring(0, plus);
     String? pre;
@@ -38,7 +39,7 @@ class AppVersion implements Comparable<AppVersion> {
     final nums = <int>[];
     for (final part in parts) {
       final n = int.tryParse(part);
-      // رفض الفراغ والسالب والحروف — لا تخمين.
+      // Reject empty, negative and alphabetic parts. No guessing.
       if (n == null || n < 0) return null;
       nums.add(n);
     }
@@ -55,9 +56,10 @@ class AppVersion implements Comparable<AppVersion> {
     if (major != other.major) return major.compareTo(other.major);
     if (minor != other.minor) return minor.compareTo(other.minor);
     if (patch != other.patch) return patch.compareTo(other.patch);
-    // **الإصدار التجريبي أدنى من المستقر** (قاعدة SemVer §11.3):
-    // `2.1.0-beta.1 < 2.1.0`. بدونها يُعرض على من يملك المستقر
-    // «تحديث» إلى تجريبي أقدم منه.
+    // **A pre-release ranks below the stable release** (SemVer §11.3):
+    // `2.1.0-beta.1 < 2.1.0`. Without it, somebody on the stable build
+    // would
+    // be offered an "update" to a pre-release older than what they have.
     final a = preRelease;
     final b = other.preRelease;
     if (a == null && b == null) return 0;

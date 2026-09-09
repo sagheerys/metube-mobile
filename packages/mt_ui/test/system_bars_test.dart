@@ -3,9 +3,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mt_ui/mt_ui.dart';
 
-/// **حرّاس أزرار التنقل السفلية (بلاغ المالك 2026-09-04)**: مع الإيماءات
-/// كان كل شيء سليماً، ومع الأزرار الثلاثة يُقتطع آخر ما في الورقة —
-/// لأن الورقة السفلية تمتد لحافة الشاشة و`useSafeArea` لا يحمي الأسفل.
+/// **Guards for the bottom navigation buttons** (field report
+/// 2026-09-04): everything was fine with gestures, and with the three
+/// buttons the last thing in a sheet was clipped, because a bottom sheet
+/// reaches the screen edge and `useSafeArea` does not protect the bottom.
 void main() {
   const navBar = 48.0; // ارتفاع شريط الأزرار الثلاثة في أندرويد.
 
@@ -47,7 +48,8 @@ void main() {
 
       final screen = tester.getSize(find.byType(MaterialApp)).height;
       final button = tester.getRect(find.text('ابدأ التحميل'));
-      // الحارس: قاع الزر لا يدخل منطقة الأزرار إطلاقاً.
+      // The guard: the bottom of the button never enters the navigation
+      // area.
       expect(button.bottom, lessThanOrEqualTo(screen - navBar));
     });
 
@@ -60,8 +62,9 @@ void main() {
 
       final screen = tester.getSize(find.byType(MaterialApp)).height;
       final button = tester.getRect(find.text('ابدأ التحميل'));
-      // فوق لوحة المفاتيح بمسافة التصميم وحدها — لا فراغ زائد بقدر
-      // شريط الأزرار الذي تغطيه اللوحة أصلاً.
+      // Above the keyboard by the design spacing alone, with no extra gap
+      // the
+      // size of a button bar the keyboard already covers.
       expect(button.bottom, lessThanOrEqualTo(screen - 300));
       expect(button.bottom, greaterThan(screen - 300 - navBar));
     });
@@ -97,8 +100,10 @@ void main() {
       final style = styleOf(tester);
       expect(style.systemNavigationBarIconBrightness, Brightness.dark);
       expect(style.systemNavigationBarColor, Colors.transparent);
-      // الحارس الأهم: أندرويد 15+ يرسم حجاباً خلف الأزرار بلا هذا،
-      // فيظهر شريط بلون مختلف عن شريط التطبيق فوقه.
+      // The most important guard: without this, Android 15+ draws a scrim
+      // behind the buttons, showing a band of a different colour from the
+      // app's
+      // own bar above it.
       expect(style.systemNavigationBarContrastEnforced, isFalse);
     });
 

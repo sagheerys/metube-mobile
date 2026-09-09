@@ -1,10 +1,12 @@
 part of 'download_engine.dart';
 
-/// **البثّ** — كل تغيّر حالة يمر من هنا إلى [DownloadEngine.updates].
+/// **Broadcasting.** Every state change passes through here on its way to
+/// [DownloadEngine.updates].
 ///
-/// ملف `part` لا مكتبة مستقلة (القاعدة 4 — حدّ الأسطر): هذه الدوال
-/// تعمل على الحالة الخاصة للمحرك (`_tasks`، `_updates`، `_lastPercent`)،
-/// وامتدادٌ في مكتبة أخرى لا يصل للأعضاء الخاصة.
+/// A `part` file rather than its own library (rule 4, the size limit):
+/// these functions work on the engine's private state (`_tasks`,
+/// `_updates`, `_lastPercent`), and an extension in another library cannot
+/// reach private members.
 extension DownloadEngineEmit on DownloadEngine {
   void _emitPhase(String taskId, TaskPhase phase) {
     _lastPercent.remove(taskId);
@@ -12,19 +14,23 @@ extension DownloadEngineEmit on DownloadEngine {
     if (task != null) _emit(task.copyWith(phase: phase));
   }
 
-  /// **بثّ التقدّم عند تغيّر النسبة الصحيحة فقط** (بلاغ المالك
-  /// 2026-09-04: «التطبيق ثقيل ولا يستجيب عند تحميل ٧ فيديوهات»،
-  /// و«عداد الإشعارات لا يتحرك»).
+  /// **Progress is broadcast only when the whole percentage changes**
+  /// (field
+  /// report 2026-09-04: "the app is heavy and unresponsive while
+  /// downloading
+  /// 7 videos", and "the notification counter does not move").
   ///
-  /// `onReceiveProgress` في Dio يُنادى **مع كل قطعة مستلمة** — مئات
-  /// المرات في الثانية من سيرفر على الشبكة المحلية. كل نداء كان يمرّ
-  /// بـ[_emit] ⇒ عنصر جديد في `updates` ⇒ إعادة بناء المكتبة كاملةً
-  /// **ونشرُ إشعار لكل مهمة** في المراقب. سبع مهام متوازية تعني آلاف
-  /// المنشورات في الدقيقة: أندرويد يخنق النشر فيتجمّد شريط الإشعار،
-  /// والواجهة تتقطّع.
+  /// Dio's `onReceiveProgress` fires **on every chunk received**, hundreds
+  /// of times a second from a server on the local network. Each call went
+  /// through [_emit], producing a new item in `updates`, rebuilding the
+  /// whole library **and posting a notification per task** in the watcher.
+  /// Seven parallel tasks meant thousands of posts a minute: Android
+  /// throttles posting, the notification bar freezes and the interface
+  /// stutters.
   ///
-  /// النسبة الصحيحة سقفها 101 بثّة لكل مهمة في كل طور — والحالات غير
-  /// التقدمية (تغيّر الطور، الاكتمال، الفشل) تمرّ بلا مرشّح إطلاقاً.
+  /// A whole percentage caps this at 101 broadcasts per task per phase, and
+  /// non-progress events (a phase change, completion, failure) pass with no
+  /// filter at all.
   void _emitProgress(String taskId, double progress) {
     final task = _tasks[taskId];
     if (task == null) return;

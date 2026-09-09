@@ -5,8 +5,9 @@ import 'package:mt_ui/mt_ui.dart';
 import '../models/play_mode.dart';
 import '../playback/audio_handler.dart';
 
-/// صف التحكم الرئيسي: عشوائي | السابق | تشغيل/إيقاف | التالي | الوضع.
-/// زر التشغيل مربع مدور بلون الفعل كما في مرجع «وهج».
+/// The main control row: shuffle, previous, play and pause, next, mode.
+/// The play button is a rounded square in the accent colour, as in the
+/// Wahaj reference.
 class MTPlayerControlsRow extends StatelessWidget {
   const MTPlayerControlsRow({
     super.key,
@@ -27,13 +28,21 @@ class MTPlayerControlsRow extends StatelessWidget {
       stream: handler.playbackState,
       builder: (context, snapshot) {
         final playing = snapshot.data?.playing ?? false;
-        // **شريط التحكم لا ينعكس مع اللغة** (بلاغ المالك 2026-09-02:
-        // «أزرار الانتقال يمين ويسار مقلوبة»). في RTL كان الصف يعكس
-        // *المواضع* بينما تبقى الأسهم كما هي — «السابق» يقع يميناً
-        // وسهمه يشير يساراً. وعكس الأيقونات ليس حلاً: `replay_10`
-        // و`forward_10` تحملان الرقم «10» فينقلب معها.
-        // كل المشغلات المرجعية (يوتيوب، سبوتيفاي) تثبّت هذا الشريط —
-        // رموز النقل عالمية لا نص يُقرأ باتجاه.
+        // **The control bar does not mirror with the language** (field
+        // report
+        // 2026-09-02: "the skip buttons on the right and left are
+        // reversed"). In
+        // RTL the row mirrored the *positions* while the arrows stayed as
+        // they
+        // were, so "previous" sat on the right with its arrow pointing
+        // left. And
+        // mirroring the icons is no answer: `replay_10` and `forward_10`
+        // carry
+        // the number "10", which flips with them. Every reference player,
+        // YouTube
+        // and Spotify among them, pins this bar: transport glyphs are
+        // universal,
+        // not text read in a direction.
         return Directionality(
           textDirection: TextDirection.ltr,
           child: Row(
@@ -97,7 +106,8 @@ class _PlayButton extends StatelessWidget {
   Widget build(BuildContext context) => Semantics(
     button: true,
     label: label,
-    // انكماش خفيف عند الضغط، و▶ ⇄ ⏸ بتلاشٍ وتوسّع (تلميع 2026-09-04).
+    // A light shrink while pressed, and play and pause fade and expand
+    // (polish 2026-09-04).
     child: MTPressable(
       child: Material(
         color: palette.accent,

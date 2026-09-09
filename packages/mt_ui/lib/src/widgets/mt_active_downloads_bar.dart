@@ -3,16 +3,18 @@ import 'package:flutter/material.dart';
 import '../theme/mt_theme.dart';
 import '../tokens/tokens.dart';
 
-/// **شريط مُجمِّع للتحميلات النشطة** — بديل تكديس بطاقة لكل مهمة أعلى
-/// المكتبة.
+/// **A summary bar for active downloads**, replacing one stacked card per
+/// task at the top of the library.
 ///
-/// بلاغ المالك 2026-09-03: «عدة تحميلات تظهر كلها في مكتبة التحميلات
-/// **وهي موجود لها زر فوق في الأعلى** — أوجد طريقة بحيث ما تتزاحم في
-/// مكان واحد». كل بطاقة حية ترتفع ~78 نقطة، فثلاث مهام كانت تدفع
-/// المكتبة خارج الشاشة وتترك المستخدم يمرّر ليصل إلى ملفاته.
+/// Field report 2026-09-03: several downloads all appeared in the library
+/// **while a button for them already sat in the header**, so they crowded
+/// one place. Each live card is about 78 points tall, so three tasks
+/// pushed the library off screen and left the user scrolling to reach
+/// their own files.
 ///
-/// القاعدة الآن: مهمة واحدة ⇒ بطاقتها كاملة · أكثر ⇒ **هذا السطر
-/// الواحد** يلخّصها ويحيل إلى ورقة الإدارة التي فتحها زر الرأس أصلاً.
+/// The rule now: one task shows its full card; more than one collapses
+/// into **this single line**, which summarises them and defers to the
+/// management sheet the header button already opened.
 class MTActiveDownloadsBar extends StatelessWidget {
   const MTActiveDownloadsBar({
     super.key,
@@ -22,14 +24,14 @@ class MTActiveDownloadsBar extends StatelessWidget {
     this.progress,
   });
 
-  /// «٣ تحميلات جارية» — مترجم من التطبيق.
+  /// "3 downloads in progress", translated by the app.
   final String label;
 
-  /// «عرض الكل».
+  /// "Show all".
   final String actionLabel;
   final VoidCallback onTap;
 
-  /// متوسط تقدم المهام 0..1، أو null لغير المحدد.
+  /// Mean task progress from 0 to 1, or null when indeterminate.
   final double? progress;
 
   @override

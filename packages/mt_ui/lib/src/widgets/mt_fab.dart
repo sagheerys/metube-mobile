@@ -5,8 +5,9 @@ import '../tokens/tokens.dart';
 import 'mt_motion.dart';
 import 'mt_polish.dart';
 
-/// زر «إضافة رابط» المعتمد: FAB مستطيل مدوّر بلون الفعل مع صندوق أيقونة
-/// شفيف — يتبدل نصه/أيقونته عند وجود رابط جاهز بالحافظة (م-2).
+/// The approved "add link" button: a rounded rectangular FAB in the accent
+/// colour with a translucent icon box. Its label and icon change when a
+/// link is waiting in the clipboard.
 class MTFab extends StatelessWidget {
   const MTFab({
     super.key,
@@ -20,7 +21,7 @@ class MTFab extends StatelessWidget {
   final VoidCallback onPressed;
   final IconData icon;
 
-  /// وضع «الرابط جاهز للصق» — أيقونة لصق ونبضة لونية.
+  /// The "link ready to paste" state: a paste icon and a colour pulse.
   final bool highlighted;
 
   @override
@@ -34,9 +35,11 @@ class MTFab extends StatelessWidget {
       fontWeight: FontWeight.w700,
       color: p.onAccent,
     );
-    // **التبدّل بين «إضافة رابط» و«الرابط جاهز» بحركة** (تلميع
-    // 2026-09-04): اللون يذوب، والأيقونة تتبادل، والعرض يتمدد مع النص
-    // — كانت الثلاثة تطفر معاً لحظة النسخ.
+    // **The swap between "add link" and "link ready" is animated** (polish
+    // 2026-09-04): the colour dissolves, the icons trade places and the
+    // width
+    // stretches with the label. All three used to jump at once the moment
+    // something was copied.
     return MTPressable(
       child: AnimatedContainer(
         duration: duration,

@@ -2,8 +2,10 @@
 
 Thank you for looking. This project has a small number of rules that are
 enforced rather than suggested — they exist because each one was learned from a
-defect. The full working rulebook is [CLAUDE.md](CLAUDE.md); this file is the
-short version.
+defect.
+
+Read **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** first: it is the map of
+the repository and explains most of what follows.
 
 Issues and pull requests are welcome **in Arabic or English**.
 
