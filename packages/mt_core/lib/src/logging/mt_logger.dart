@@ -33,16 +33,26 @@ class MTLogger {
     LogLevel level = LogLevel.info,
     String? tag,
   }) => _lock.synchronized(() async {
-    final file = File(filePath);
-    await file.parent.create(recursive: true);
-    final stamp = DateTime.now().toIso8601String();
-    final tagPart = tag == null ? '' : '[$tag] ';
-    await file.writeAsString(
-      '$stamp ${level.name.toUpperCase()} $tagPart$message\n',
-      mode: FileMode.append,
-      flush: true,
-    );
-    await _trimIfNeeded(file);
+    try {
+      final file = File(filePath);
+      await file.parent.create(recursive: true);
+      final stamp = DateTime.now().toIso8601String();
+      final tagPart = tag == null ? '' : '[$tag] ';
+      await file.writeAsString(
+        '$stamp ${level.name.toUpperCase()} $tagPart$message\n',
+        mode: FileMode.append,
+        flush: true,
+      );
+      await _trimIfNeeded(file);
+    } on FileSystemException {
+      // **Best effort by design.** A diagnostic log must never take down
+      // the thing it is describing. The directory can go away underneath it
+      // — Android wipes caches — and CI caught exactly that on Linux
+      // (2026-09-09): the append succeeded, the file was gone by the time
+      // the trim read it back, and `PathNotFoundException` surfaced out of
+      // `LibraryEnricher.enrich`, failing a test about thumbnails for a
+      // reason that had nothing to do with thumbnails.
+    }
   });
 
   Future<void> error(String message, {Object? cause, String? tag}) => log(
@@ -71,6 +81,8 @@ class MTLogger {
   Future<String> readForShare() async => sanitizeForShare(await readAll());
 
   Future<void> _trimIfNeeded(File file) async {
+    // The append above created it; it can still be gone by now.
+    if (!await file.exists()) return;
     final lines = await file.readAsLines();
     if (lines.length > maxLines) {
       final kept = lines.sublist(lines.length - maxLines);

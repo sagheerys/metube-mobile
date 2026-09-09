@@ -1,37 +1,14 @@
 version: 2
 
 updates:
-  # One pub ecosystem per package: this is a workspace, and Dependabot
-  # resolves each pubspec on its own.
+  # One pub entry, at the workspace root. Dependabot refuses a per-package
+  # one here — "Only apply dependency_services to the root of the
+  # workspace" — which is what its first ten runs said on 2026-09-09.
   - package-ecosystem: pub
-    directory: /packages/mt_core
+    directory: /
     schedule:
       interval: monthly
-    open-pull-requests-limit: 3
-
-  - package-ecosystem: pub
-    directory: /packages/mt_media
-    schedule:
-      interval: monthly
-    open-pull-requests-limit: 3
-
-  - package-ecosystem: pub
-    directory: /packages/mt_ui
-    schedule:
-      interval: monthly
-    open-pull-requests-limit: 3
-
-  - package-ecosystem: pub
-    directory: /apps/metube_lite
-    schedule:
-      interval: monthly
-    open-pull-requests-limit: 3
-
-  - package-ecosystem: pub
-    directory: /apps/metube_super
-    schedule:
-      interval: monthly
-    open-pull-requests-limit: 3
+    open-pull-requests-limit: 5
 
   # The pinned actions in the CI workflow.
   - package-ecosystem: github-actions

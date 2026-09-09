@@ -70,4 +70,23 @@ void main() {
       expect(await logger.readForShare(), isNot(contains('secret.example')));
     });
   });
+
+  test(
+    '**the guard**: a log the filesystem refuses does not reach the caller',
+    () async {
+      // Reproduces, deterministically, what CI hit on Linux on
+      // 2026-09-09: the log file could not be written and the exception
+      // escaped `MTLogger.log` into `LibraryEnricher.enrich`, failing a
+      // test about thumbnails. Here the parent of the log path is a file,
+      // so creating the directory throws.
+      final tmp = Directory.systemTemp.createTempSync('mt_logger_blocked_');
+      addTearDown(() => tmp.deleteSync(recursive: true));
+      final blocker = File('${tmp.path}/blocked')..writeAsStringSync('x');
+      final blocked = MTLogger(filePath: '${blocker.path}/app.log');
+
+      await blocked.log('this must be dropped, not thrown');
+
+      expect(await blocked.readAll(), isEmpty);
+    },
+  );
 }
