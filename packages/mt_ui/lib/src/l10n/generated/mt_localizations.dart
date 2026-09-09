@@ -158,12 +158,6 @@ abstract class MTLocalizations {
   /// **'Add link'**
   String get addLinkFab;
 
-  /// No description provided for @addNToServer.
-  ///
-  /// In en, this message translates to:
-  /// **'Add {count} to server'**
-  String addNToServer(int count);
-
   /// No description provided for @addTo.
   ///
   /// In en, this message translates to:
@@ -206,12 +200,6 @@ abstract class MTLocalizations {
   /// **'{count} added to the playlist'**
   String addedToPlaylistCount(int count);
 
-  /// No description provided for @addedToQueue.
-  ///
-  /// In en, this message translates to:
-  /// **'Added to download queue'**
-  String get addedToQueue;
-
   /// No description provided for @addingToServer.
   ///
   /// In en, this message translates to:
@@ -230,35 +218,17 @@ abstract class MTLocalizations {
   /// **'All platforms'**
   String get allPlatforms;
 
-  /// No description provided for @allTagsFilter.
-  ///
-  /// In en, this message translates to:
-  /// **'All'**
-  String get allTagsFilter;
-
   /// No description provided for @alreadyInPlaylist.
   ///
   /// In en, this message translates to:
   /// **'Already added'**
   String get alreadyInPlaylist;
 
-  /// No description provided for @appFeatures.
-  ///
-  /// In en, this message translates to:
-  /// **'App Features'**
-  String get appFeatures;
-
   /// No description provided for @appTitle.
   ///
   /// In en, this message translates to:
   /// **'MeTube Super'**
   String get appTitle;
-
-  /// No description provided for @appearance.
-  ///
-  /// In en, this message translates to:
-  /// **'Appearance'**
-  String get appearance;
 
   /// No description provided for @audioOnly.
   ///
@@ -278,18 +248,6 @@ abstract class MTLocalizations {
   /// **'Authentication (Optional)'**
   String get authentication;
 
-  /// No description provided for @autoBackgroundAudio.
-  ///
-  /// In en, this message translates to:
-  /// **'Auto Background Audio'**
-  String get autoBackgroundAudio;
-
-  /// No description provided for @autoBackgroundAudioSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Play audio in background when pressing back button'**
-  String get autoBackgroundAudioSubtitle;
-
   /// No description provided for @autoBuilt.
   ///
   /// In en, this message translates to:
@@ -307,18 +265,6 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'Looks for a new version in the background about twice a day.'**
   String get autoCheckUpdatesHelp;
-
-  /// No description provided for @autoPlayNext.
-  ///
-  /// In en, this message translates to:
-  /// **'Auto-play next: ON'**
-  String get autoPlayNext;
-
-  /// No description provided for @autoPlayOff.
-  ///
-  /// In en, this message translates to:
-  /// **'Auto-play next: OFF'**
-  String get autoPlayOff;
 
   /// No description provided for @autoRestoreSuccess.
   ///
@@ -386,41 +332,11 @@ abstract class MTLocalizations {
   /// **'Downloading files in background...'**
   String get backgroundDownload;
 
-  /// No description provided for @backgroundPlay.
-  ///
-  /// In en, this message translates to:
-  /// **'Background play'**
-  String get backgroundPlay;
-
-  /// No description provided for @backupFailed.
-  ///
-  /// In en, this message translates to:
-  /// **'Backup failed'**
-  String get backupFailed;
-
-  /// No description provided for @backupFileSaved.
-  ///
-  /// In en, this message translates to:
-  /// **'Encrypted backup saved'**
-  String get backupFileSaved;
-
-  /// No description provided for @backupKeyMismatch.
-  ///
-  /// In en, this message translates to:
-  /// **'This backup is encrypted with a different key. Import the matching backup key first.'**
-  String get backupKeyMismatch;
-
   /// No description provided for @backupNote.
   ///
   /// In en, this message translates to:
   /// **'Includes playlists, tags, the offline index, artwork links and settings. Passwords and usernames are never backed up, and media files are not included.'**
   String get backupNote;
-
-  /// No description provided for @backupRestore.
-  ///
-  /// In en, this message translates to:
-  /// **'Backup & Restore'**
-  String get backupRestore;
 
   /// No description provided for @backupSettings.
   ///
@@ -451,12 +367,6 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'Download selected'**
   String get batchDownloadSelected;
-
-  /// No description provided for @batchFromPlaylistNote.
-  ///
-  /// In en, this message translates to:
-  /// **'This link came from inside a playlist'**
-  String get batchFromPlaylistNote;
 
   /// No description provided for @batchLoading.
   ///
@@ -506,12 +416,6 @@ abstract class MTLocalizations {
   /// **'Cancel'**
   String get cancel;
 
-  /// No description provided for @cardView.
-  ///
-  /// In en, this message translates to:
-  /// **'Card view'**
-  String get cardView;
-
   /// No description provided for @changeQuality.
   ///
   /// In en, this message translates to:
@@ -523,12 +427,6 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'Check for updates'**
   String get checkForUpdates;
-
-  /// No description provided for @chooseBackupFile.
-  ///
-  /// In en, this message translates to:
-  /// **'Choose the backup file'**
-  String get chooseBackupFile;
 
   /// No description provided for @chooseOptions.
   ///
@@ -548,18 +446,6 @@ abstract class MTLocalizations {
   /// **'Clear'**
   String get clear;
 
-  /// No description provided for @clearAllConfirm.
-  ///
-  /// In en, this message translates to:
-  /// **'This will remove all saved settings including credentials. Continue?'**
-  String get clearAllConfirm;
-
-  /// No description provided for @clearAllSettings.
-  ///
-  /// In en, this message translates to:
-  /// **'Clear All Settings'**
-  String get clearAllSettings;
-
   /// No description provided for @clearLogs.
   ///
   /// In en, this message translates to:
@@ -571,12 +457,6 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'Delete all diagnostic logs?'**
   String get clearLogsConfirm;
-
-  /// No description provided for @clipboardEmpty.
-  ///
-  /// In en, this message translates to:
-  /// **'Clipboard is empty'**
-  String get clipboardEmpty;
 
   /// No description provided for @clipboardFound.
   ///
@@ -595,12 +475,6 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'Close player'**
   String get closePlayer;
-
-  /// No description provided for @comingSoonPhase.
-  ///
-  /// In en, this message translates to:
-  /// **'This screen is built in a later phase of the plan'**
-  String get comingSoonPhase;
 
   /// No description provided for @compactView.
   ///
@@ -626,12 +500,6 @@ abstract class MTLocalizations {
   /// **'Completed'**
   String get completed;
 
-  /// No description provided for @connecting.
-  ///
-  /// In en, this message translates to:
-  /// **'Connecting...'**
-  String get connecting;
-
   /// No description provided for @connectionFailed.
   ///
   /// In en, this message translates to:
@@ -643,12 +511,6 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'Connected successfully — settings saved'**
   String get connectionSuccessful;
-
-  /// No description provided for @contactDeveloper.
-  ///
-  /// In en, this message translates to:
-  /// **'Contact Developer'**
-  String get contactDeveloper;
 
   /// No description provided for @continueAsAudio.
   ///
@@ -709,24 +571,6 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'Creator'**
   String get creator;
-
-  /// No description provided for @credentialsRequired.
-  ///
-  /// In en, this message translates to:
-  /// **'Username and password are required to connect to the server.'**
-  String get credentialsRequired;
-
-  /// No description provided for @currentServerAddress.
-  ///
-  /// In en, this message translates to:
-  /// **'Current server address'**
-  String get currentServerAddress;
-
-  /// No description provided for @date.
-  ///
-  /// In en, this message translates to:
-  /// **'Date'**
-  String get date;
 
   /// No description provided for @defaultQuality.
   ///
@@ -818,12 +662,6 @@ abstract class MTLocalizations {
   /// **'Deselect All'**
   String get deselectAll;
 
-  /// No description provided for @detailTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Title'**
-  String get detailTitle;
-
   /// No description provided for @details.
   ///
   /// In en, this message translates to:
@@ -853,12 +691,6 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'View, search, and share app logs (redacted)'**
   String get diagnosticLogsSubtitle;
-
-  /// No description provided for @diagnostics.
-  ///
-  /// In en, this message translates to:
-  /// **'Diagnostics'**
-  String get diagnostics;
 
   /// No description provided for @disclaimer.
   ///
@@ -890,12 +722,6 @@ abstract class MTLocalizations {
   /// **'Download'**
   String get download;
 
-  /// No description provided for @downloadAndShare.
-  ///
-  /// In en, this message translates to:
-  /// **'Download & Share'**
-  String get downloadAndShare;
-
   /// No description provided for @downloadComplete.
   ///
   /// In en, this message translates to:
@@ -920,12 +746,6 @@ abstract class MTLocalizations {
   /// **'Download Failed'**
   String get downloadFailed;
 
-  /// No description provided for @downloadFailedStatus.
-  ///
-  /// In en, this message translates to:
-  /// **'Download failed'**
-  String get downloadFailedStatus;
-
   /// No description provided for @downloadFailedTitle.
   ///
   /// In en, this message translates to:
@@ -937,12 +757,6 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'Download'**
   String get downloadNow;
-
-  /// No description provided for @downloadQuality.
-  ///
-  /// In en, this message translates to:
-  /// **'Download Quality'**
-  String get downloadQuality;
 
   /// No description provided for @downloadStarted.
   ///
@@ -956,18 +770,6 @@ abstract class MTLocalizations {
   /// **'Download started · {quality}'**
   String downloadStartedQuality(Object quality);
 
-  /// No description provided for @downloadTracks.
-  ///
-  /// In en, this message translates to:
-  /// **'Download {count} Tracks'**
-  String downloadTracks(int count);
-
-  /// No description provided for @downloadUrlUnavailable.
-  ///
-  /// In en, this message translates to:
-  /// **'Download URL not available'**
-  String get downloadUrlUnavailable;
-
   /// No description provided for @downloading.
   ///
   /// In en, this message translates to:
@@ -979,18 +781,6 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'Downloading'**
   String get downloadingTitle;
-
-  /// No description provided for @downloadsTab.
-  ///
-  /// In en, this message translates to:
-  /// **'Downloads'**
-  String get downloadsTab;
-
-  /// No description provided for @email.
-  ///
-  /// In en, this message translates to:
-  /// **'Email'**
-  String get email;
 
   /// No description provided for @emptyLibraryMessage.
   ///
@@ -1010,18 +800,6 @@ abstract class MTLocalizations {
   /// **'Add videos from the library'**
   String get emptyPlaylistMessage;
 
-  /// No description provided for @endpointReachable.
-  ///
-  /// In en, this message translates to:
-  /// **'Reachable'**
-  String get endpointReachable;
-
-  /// No description provided for @endpointUnreachable.
-  ///
-  /// In en, this message translates to:
-  /// **'Unreachable'**
-  String get endpointUnreachable;
-
   /// No description provided for @endpointUrl.
   ///
   /// In en, this message translates to:
@@ -1033,24 +811,6 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'Fullscreen'**
   String get enterFullscreen;
-
-  /// No description provided for @enterUrl.
-  ///
-  /// In en, this message translates to:
-  /// **'Enter URL'**
-  String get enterUrl;
-
-  /// No description provided for @enterUrlHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Paste video URL here...'**
-  String get enterUrlHint;
-
-  /// No description provided for @enterUrlPrompt.
-  ///
-  /// In en, this message translates to:
-  /// **'Enter a video URL to download:'**
-  String get enterUrlPrompt;
 
   /// No description provided for @errAuth.
   ///
@@ -1100,29 +860,11 @@ abstract class MTLocalizations {
   /// **'Error: {message}'**
   String errorGeneric(Object message);
 
-  /// No description provided for @errorLogs.
-  ///
-  /// In en, this message translates to:
-  /// **'Error Logs'**
-  String get errorLogs;
-
-  /// No description provided for @errorLogsSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'View app logs for diagnostics'**
-  String get errorLogsSubtitle;
-
   /// No description provided for @exitFullscreen.
   ///
   /// In en, this message translates to:
   /// **'Exit fullscreen'**
   String get exitFullscreen;
-
-  /// No description provided for @exportKeySubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Required to restore on a new phone or after reinstall'**
-  String get exportKeySubtitle;
 
   /// No description provided for @exportShare.
   ///
@@ -1148,12 +890,6 @@ abstract class MTLocalizations {
   /// **'External network'**
   String get externalNetworkSection;
 
-  /// No description provided for @externalPlayerLocalOnly.
-  ///
-  /// In en, this message translates to:
-  /// **'Local copy only — the server link is never handed to another app'**
-  String get externalPlayerLocalOnly;
-
   /// No description provided for @externalPlayerShort.
   ///
   /// In en, this message translates to:
@@ -1172,65 +908,11 @@ abstract class MTLocalizations {
   /// **'Failed to load playlist'**
   String get failedToLoadPlaylist;
 
-  /// No description provided for @failedToLoadVideo.
-  ///
-  /// In en, this message translates to:
-  /// **'Failed to load video'**
-  String get failedToLoadVideo;
-
-  /// No description provided for @failedToQueue.
-  ///
-  /// In en, this message translates to:
-  /// **'Failed to add to queue'**
-  String get failedToQueue;
-
   /// No description provided for @favorites.
   ///
   /// In en, this message translates to:
   /// **'Favorites'**
   String get favorites;
-
-  /// No description provided for @featureBackup.
-  ///
-  /// In en, this message translates to:
-  /// **'Automatic backup and restore'**
-  String get featureBackup;
-
-  /// No description provided for @featureBilingual.
-  ///
-  /// In en, this message translates to:
-  /// **'Arabic and English language support'**
-  String get featureBilingual;
-
-  /// No description provided for @featureDownload.
-  ///
-  /// In en, this message translates to:
-  /// **'Download videos from YouTube and other platforms'**
-  String get featureDownload;
-
-  /// No description provided for @featurePlayer.
-  ///
-  /// In en, this message translates to:
-  /// **'Direct download by sharing links from any app'**
-  String get featurePlayer;
-
-  /// No description provided for @featurePlaylists.
-  ///
-  /// In en, this message translates to:
-  /// **'Create and manage playlists'**
-  String get featurePlaylists;
-
-  /// No description provided for @featureThemes.
-  ///
-  /// In en, this message translates to:
-  /// **'Dark and light themes'**
-  String get featureThemes;
-
-  /// No description provided for @fieldHelp.
-  ///
-  /// In en, this message translates to:
-  /// **'Help'**
-  String get fieldHelp;
 
   /// No description provided for @file.
   ///
@@ -1244,41 +926,11 @@ abstract class MTLocalizations {
   /// **'File Name'**
   String get fileName;
 
-  /// No description provided for @fileNotFound.
-  ///
-  /// In en, this message translates to:
-  /// **'File not found'**
-  String get fileNotFound;
-
   /// No description provided for @fileSize.
   ///
   /// In en, this message translates to:
   /// **'File Size'**
   String get fileSize;
-
-  /// No description provided for @fileSizeBytes.
-  ///
-  /// In en, this message translates to:
-  /// **'{value} B'**
-  String fileSizeBytes(Object value);
-
-  /// No description provided for @fileSizeGB.
-  ///
-  /// In en, this message translates to:
-  /// **'{value} GB'**
-  String fileSizeGB(Object value);
-
-  /// No description provided for @fileSizeKB.
-  ///
-  /// In en, this message translates to:
-  /// **'{value} KB'**
-  String fileSizeKB(Object value);
-
-  /// No description provided for @fileSizeMB.
-  ///
-  /// In en, this message translates to:
-  /// **'{value} MB'**
-  String fileSizeMB(Object value);
 
   /// No description provided for @filterAll.
   ///
@@ -1297,12 +949,6 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'Offline'**
   String get filterOffline;
-
-  /// No description provided for @filterPlaylists.
-  ///
-  /// In en, this message translates to:
-  /// **'Playlists'**
-  String get filterPlaylists;
 
   /// No description provided for @filterServer.
   ///
@@ -1328,18 +974,6 @@ abstract class MTLocalizations {
   /// **'About this field'**
   String get helpAboutField;
 
-  /// No description provided for @howItWorks.
-  ///
-  /// In en, this message translates to:
-  /// **'How it works'**
-  String get howItWorks;
-
-  /// No description provided for @importBackup.
-  ///
-  /// In en, this message translates to:
-  /// **'Import a backup'**
-  String get importBackup;
-
   /// No description provided for @inPlaylists.
   ///
   /// In en, this message translates to:
@@ -1363,66 +997,6 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'No longer available'**
   String get itemUnavailable;
-
-  /// No description provided for @keyExportFailed.
-  ///
-  /// In en, this message translates to:
-  /// **'Failed to export backup key'**
-  String get keyExportFailed;
-
-  /// No description provided for @keyExportedMessage.
-  ///
-  /// In en, this message translates to:
-  /// **'Saved to:\n{path}\n\nUpload this file to Google Drive (or another safe place). You\'ll need it to restore your backup after Clear Data or on a new phone.'**
-  String keyExportedMessage(Object path);
-
-  /// No description provided for @keyExportedTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Backup key saved'**
-  String get keyExportedTitle;
-
-  /// No description provided for @keyImportConfirm.
-  ///
-  /// In en, this message translates to:
-  /// **'Replace key'**
-  String get keyImportConfirm;
-
-  /// No description provided for @keyImportConfirmMessage.
-  ///
-  /// In en, this message translates to:
-  /// **'This will replace the device\'s current encryption key.\n\nAny backup file already on disk that was encrypted with the previous key will become unreadable.\n\nContinue only if this key matches your backup file.'**
-  String get keyImportConfirmMessage;
-
-  /// No description provided for @keyImportConfirmTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Replace current key?'**
-  String get keyImportConfirmTitle;
-
-  /// No description provided for @keyImportInvalid.
-  ///
-  /// In en, this message translates to:
-  /// **'Invalid key file'**
-  String get keyImportInvalid;
-
-  /// No description provided for @keyImportNotFound.
-  ///
-  /// In en, this message translates to:
-  /// **'Key file not found at Downloads/MeTube_Super/metube_super_backup_key.txt'**
-  String get keyImportNotFound;
-
-  /// No description provided for @keyImportedMessage.
-  ///
-  /// In en, this message translates to:
-  /// **'Encryption key restored. You can now use Restore All Data to recover your backup.'**
-  String get keyImportedMessage;
-
-  /// No description provided for @keyImportedTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Key imported'**
-  String get keyImportedTitle;
 
   /// No description provided for @language.
   ///
@@ -1490,12 +1064,6 @@ abstract class MTLocalizations {
   /// **'Listen in the background'**
   String get listenInBackground;
 
-  /// No description provided for @loadingVideo.
-  ///
-  /// In en, this message translates to:
-  /// **'Loading video...'**
-  String get loadingVideo;
-
   /// No description provided for @localCopyRemoved.
   ///
   /// In en, this message translates to:
@@ -1514,23 +1082,11 @@ abstract class MTLocalizations {
   /// **'Local network'**
   String get localNetworkSection;
 
-  /// No description provided for @localOnlyYoutubeMessage.
-  ///
-  /// In en, this message translates to:
-  /// **'Direct downloads support YouTube only.\nConfigure a MeTube server in Settings to download from other platforms.'**
-  String get localOnlyYoutubeMessage;
-
   /// No description provided for @localUrlLabel.
   ///
   /// In en, this message translates to:
   /// **'Local server URL'**
   String get localUrlLabel;
-
-  /// No description provided for @localVideos.
-  ///
-  /// In en, this message translates to:
-  /// **'Library ({count})'**
-  String localVideos(int count);
 
   /// No description provided for @lockTouch.
   ///
@@ -1550,29 +1106,11 @@ abstract class MTLocalizations {
   /// **'Links, addresses and credentials are stripped before sharing'**
   String get logsSanitizedNote;
 
-  /// No description provided for @logsShareText.
-  ///
-  /// In en, this message translates to:
-  /// **'MeTube Super logs (URLs/IPs/credentials redacted)'**
-  String get logsShareText;
-
   /// No description provided for @madeOffline.
   ///
   /// In en, this message translates to:
   /// **'Saved for offline'**
   String get madeOffline;
-
-  /// No description provided for @madeWithLove.
-  ///
-  /// In en, this message translates to:
-  /// **'Made with ❤️ By Yasir Sagheer'**
-  String get madeWithLove;
-
-  /// No description provided for @makeAvailableOffline.
-  ///
-  /// In en, this message translates to:
-  /// **'Make available offline'**
-  String get makeAvailableOffline;
 
   /// No description provided for @makeOffline.
   ///
@@ -1592,29 +1130,11 @@ abstract class MTLocalizations {
   /// **'The self-hosted server this app is a client for'**
   String get metubeCredit;
 
-  /// No description provided for @modeAuto.
-  ///
-  /// In en, this message translates to:
-  /// **'Auto'**
-  String get modeAuto;
-
   /// No description provided for @modeAutoNext.
   ///
   /// In en, this message translates to:
   /// **'Auto'**
   String get modeAutoNext;
-
-  /// No description provided for @modeOff.
-  ///
-  /// In en, this message translates to:
-  /// **'Off'**
-  String get modeOff;
-
-  /// No description provided for @modeRepeat.
-  ///
-  /// In en, this message translates to:
-  /// **'Repeat'**
-  String get modeRepeat;
 
   /// No description provided for @modeRepeatAll.
   ///
@@ -1663,12 +1183,6 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'Needs your attention'**
   String get needsAttention;
-
-  /// No description provided for @networkBackRetrying.
-  ///
-  /// In en, this message translates to:
-  /// **'Network is back — retrying'**
-  String get networkBackRetrying;
 
   /// No description provided for @networkSettings.
   ///
@@ -1730,23 +1244,11 @@ abstract class MTLocalizations {
   /// **'No logs found'**
   String get noLogsFound;
 
-  /// No description provided for @noPasswordTip.
-  ///
-  /// In en, this message translates to:
-  /// **'No password? Leave auth fields empty for open servers!'**
-  String get noPasswordTip;
-
   /// No description provided for @noPlayableSource.
   ///
   /// In en, this message translates to:
   /// **'This item has no playable source'**
   String get noPlayableSource;
-
-  /// No description provided for @noPlaylists.
-  ///
-  /// In en, this message translates to:
-  /// **'No playlists'**
-  String get noPlaylists;
 
   /// No description provided for @noPlaylistsMessage.
   ///
@@ -1784,35 +1286,17 @@ abstract class MTLocalizations {
   /// **'No tags yet. Create one below.'**
   String get noTagsYet;
 
-  /// No description provided for @noValidUrl.
-  ///
-  /// In en, this message translates to:
-  /// **'No valid video URL found'**
-  String get noValidUrl;
-
   /// No description provided for @noVideosFound.
   ///
   /// In en, this message translates to:
   /// **'Your library is empty'**
   String get noVideosFound;
 
-  /// No description provided for @noVideosHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Share a video URL from any app, or tap the + button to add one'**
-  String get noVideosHint;
-
   /// No description provided for @noWarranty.
   ///
   /// In en, this message translates to:
   /// **'Provided as is, without any warranty.'**
   String get noWarranty;
-
-  /// No description provided for @nonYoutubeQualityNote.
-  ///
-  /// In en, this message translates to:
-  /// **'Non-YouTube platforms only support best quality or audio'**
-  String get nonYoutubeQualityNote;
 
   /// No description provided for @notAffiliated.
   ///
@@ -1856,12 +1340,6 @@ abstract class MTLocalizations {
   /// **'On the server · {percent}%'**
   String onServerProgress(Object percent);
 
-  /// No description provided for @openGithub.
-  ///
-  /// In en, this message translates to:
-  /// **'Open MeTube on GitHub'**
-  String get openGithub;
-
   /// No description provided for @openInExternalPlayer.
   ///
   /// In en, this message translates to:
@@ -1874,29 +1352,11 @@ abstract class MTLocalizations {
   /// **'Open Original Link'**
   String get openOriginalLink;
 
-  /// No description provided for @originalUrl.
-  ///
-  /// In en, this message translates to:
-  /// **'Original URL'**
-  String get originalUrl;
-
   /// No description provided for @password.
   ///
   /// In en, this message translates to:
   /// **'Password'**
   String get password;
-
-  /// No description provided for @passwordRequired.
-  ///
-  /// In en, this message translates to:
-  /// **'Password is required'**
-  String get passwordRequired;
-
-  /// No description provided for @pasteFromClipboard.
-  ///
-  /// In en, this message translates to:
-  /// **'Paste'**
-  String get pasteFromClipboard;
 
   /// No description provided for @pasteUrlHint.
   ///
@@ -1940,12 +1400,6 @@ abstract class MTLocalizations {
   /// **'{name} · {count}'**
   String platformCount(Object name, int count);
 
-  /// No description provided for @platformFilter.
-  ///
-  /// In en, this message translates to:
-  /// **'Platform'**
-  String get platformFilter;
-
   /// No description provided for @play.
   ///
   /// In en, this message translates to:
@@ -1958,23 +1412,11 @@ abstract class MTLocalizations {
   /// **'Play all'**
   String get playAll;
 
-  /// No description provided for @playAllFavorites.
-  ///
-  /// In en, this message translates to:
-  /// **'Play all favorites'**
-  String get playAllFavorites;
-
   /// No description provided for @playModeLabel.
   ///
   /// In en, this message translates to:
   /// **'Mode'**
   String get playModeLabel;
-
-  /// No description provided for @playbackError.
-  ///
-  /// In en, this message translates to:
-  /// **'Playback Error'**
-  String get playbackError;
 
   /// No description provided for @playbackSpeed.
   ///
@@ -1987,12 +1429,6 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'Couldn\'t play this file'**
   String get playerError;
-
-  /// No description provided for @playerLoading.
-  ///
-  /// In en, this message translates to:
-  /// **'Loading video...'**
-  String get playerLoading;
 
   /// No description provided for @playingFromDevice.
   ///
@@ -2048,41 +1484,11 @@ abstract class MTLocalizations {
   /// **'Playlists'**
   String get playlists;
 
-  /// No description provided for @playlistsCount.
-  ///
-  /// In en, this message translates to:
-  /// **'{count} playlists'**
-  String playlistsCount(int count);
-
-  /// No description provided for @pleaseEnterUrl.
-  ///
-  /// In en, this message translates to:
-  /// **'Please enter a URL'**
-  String get pleaseEnterUrl;
-
   /// No description provided for @preferences.
   ///
   /// In en, this message translates to:
   /// **'Preferences'**
   String get preferences;
-
-  /// No description provided for @preparingDownload.
-  ///
-  /// In en, this message translates to:
-  /// **'Preparing download...'**
-  String get preparingDownload;
-
-  /// No description provided for @preparingShare.
-  ///
-  /// In en, this message translates to:
-  /// **'Preparing the file for sharing…'**
-  String get preparingShare;
-
-  /// No description provided for @preparingToShare.
-  ///
-  /// In en, this message translates to:
-  /// **'Preparing to share… {percent}%'**
-  String preparingToShare(String percent);
 
   /// No description provided for @previous.
   ///
@@ -2126,12 +1532,6 @@ abstract class MTLocalizations {
   /// **'720p'**
   String get quality720;
 
-  /// No description provided for @qualityAudio.
-  ///
-  /// In en, this message translates to:
-  /// **'Audio only'**
-  String get qualityAudio;
-
   /// No description provided for @qualityBest.
   ///
   /// In en, this message translates to:
@@ -2156,12 +1556,6 @@ abstract class MTLocalizations {
   /// **'Queue'**
   String get queueLabel;
 
-  /// No description provided for @queuePosition.
-  ///
-  /// In en, this message translates to:
-  /// **'Queue position: {position}'**
-  String queuePosition(int position);
-
   /// No description provided for @queued.
   ///
   /// In en, this message translates to:
@@ -2185,12 +1579,6 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'A shared or pasted link starts downloading immediately at the default quality, with no sheet. Numeric qualities are YouTube-only — anything else downloads at best quality, and an \"audio only\" default applies everywhere.'**
   String get quickDownloadHelp;
-
-  /// No description provided for @readyToShare.
-  ///
-  /// In en, this message translates to:
-  /// **'Ready to share!'**
-  String get readyToShare;
 
   /// No description provided for @reelsEndBack.
   ///
@@ -2240,35 +1628,11 @@ abstract class MTLocalizations {
   /// **'Remove from favorites'**
   String get removeFromFavorites;
 
-  /// No description provided for @removeFromPlaylist.
-  ///
-  /// In en, this message translates to:
-  /// **'Remove from playlist'**
-  String get removeFromPlaylist;
-
   /// No description provided for @removeLocalCopy.
   ///
   /// In en, this message translates to:
   /// **'Remove local copy'**
   String get removeLocalCopy;
-
-  /// No description provided for @removeOfflineConfirm.
-  ///
-  /// In en, this message translates to:
-  /// **'Delete the local copy from this device?\nThe video stays on the server and can be streamed again.'**
-  String get removeOfflineConfirm;
-
-  /// No description provided for @removeOfflineCopy.
-  ///
-  /// In en, this message translates to:
-  /// **'Remove offline copy'**
-  String get removeOfflineCopy;
-
-  /// No description provided for @removeOfflineTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Remove Offline Copy'**
-  String get removeOfflineTitle;
 
   /// No description provided for @removeUnavailable.
   ///
@@ -2300,23 +1664,11 @@ abstract class MTLocalizations {
   /// **'Rename tag'**
   String get renameTag;
 
-  /// No description provided for @reorderHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Drag to reorder'**
-  String get reorderHint;
-
   /// No description provided for @reportBug.
   ///
   /// In en, this message translates to:
   /// **'Report a Bug'**
   String get reportBug;
-
-  /// No description provided for @restoreCancelled.
-  ///
-  /// In en, this message translates to:
-  /// **'Backup file not found in Downloads folder'**
-  String get restoreCancelled;
 
   /// No description provided for @restoreConfirm.
   ///
@@ -2336,29 +1688,11 @@ abstract class MTLocalizations {
   /// **'Restore failed — invalid backup file'**
   String get restoreFailed;
 
-  /// No description provided for @restoreFromBackupSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Pick one of the saved backups, or a file'**
-  String get restoreFromBackupSubtitle;
-
-  /// No description provided for @restoreNotFound.
-  ///
-  /// In en, this message translates to:
-  /// **'No backup file found in Downloads/MeTube_Super'**
-  String get restoreNotFound;
-
   /// No description provided for @restoreSettings.
   ///
   /// In en, this message translates to:
   /// **'Restore All Data'**
   String get restoreSettings;
-
-  /// No description provided for @restoreSettingsSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Import from Downloads/metube_lite_backup.json'**
-  String get restoreSettingsSubtitle;
 
   /// No description provided for @restoreSuccess.
   ///
@@ -2378,12 +1712,6 @@ abstract class MTLocalizations {
   /// **'Retry'**
   String get retry;
 
-  /// No description provided for @retryingAttempt.
-  ///
-  /// In en, this message translates to:
-  /// **'Retry {attempt}/{max}…'**
-  String retryingAttempt(int attempt, int max);
-
   /// No description provided for @saveSettings.
   ///
   /// In en, this message translates to:
@@ -2402,53 +1730,11 @@ abstract class MTLocalizations {
   /// **'Saved on device'**
   String get savedOnDevice;
 
-  /// No description provided for @savedPartial.
-  ///
-  /// In en, this message translates to:
-  /// **'Saved (Server delete failed)'**
-  String get savedPartial;
-
-  /// No description provided for @savedSuccess.
-  ///
-  /// In en, this message translates to:
-  /// **'Settings saved'**
-  String get savedSuccess;
-
-  /// No description provided for @savedTo.
-  ///
-  /// In en, this message translates to:
-  /// **'Saved to Downloads/MeTube_Lite'**
-  String get savedTo;
-
-  /// No description provided for @savedToDownloads.
-  ///
-  /// In en, this message translates to:
-  /// **'Saved to Downloads/MeTube_Super'**
-  String get savedToDownloads;
-
-  /// No description provided for @scanningVideos.
-  ///
-  /// In en, this message translates to:
-  /// **'Scanning videos...'**
-  String get scanningVideos;
-
-  /// No description provided for @searchHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Search…'**
-  String get searchHint;
-
   /// No description provided for @searchLogs.
   ///
   /// In en, this message translates to:
   /// **'Search logs…'**
   String get searchLogs;
-
-  /// No description provided for @searchResults.
-  ///
-  /// In en, this message translates to:
-  /// **'Results: {found} of {total}'**
-  String searchResults(int found, int total);
 
   /// No description provided for @searchVideos.
   ///
@@ -2491,18 +1777,6 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'Server Configuration'**
   String get serverConfiguration;
-
-  /// No description provided for @serverDownload.
-  ///
-  /// In en, this message translates to:
-  /// **'Server Download'**
-  String get serverDownload;
-
-  /// No description provided for @serverDownloadDesc.
-  ///
-  /// In en, this message translates to:
-  /// **'Videos will be sent to your MeTube Super/TrueNAS server'**
-  String get serverDownloadDesc;
 
   /// No description provided for @serverStatusChecking.
   ///
@@ -2552,12 +1826,6 @@ abstract class MTLocalizations {
   /// **'http://192.168.1.5:8086 or https://domain.com'**
   String get serverUrlHint;
 
-  /// No description provided for @serverUrlLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Server URL (MeTube Super)'**
-  String get serverUrlLabel;
-
   /// No description provided for @serverUrlRequired.
   ///
   /// In en, this message translates to:
@@ -2569,12 +1837,6 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'Settings'**
   String get settings;
-
-  /// No description provided for @settingsCleared.
-  ///
-  /// In en, this message translates to:
-  /// **'Settings cleared'**
-  String get settingsCleared;
 
   /// No description provided for @settingsSaved.
   ///
@@ -2594,41 +1856,17 @@ abstract class MTLocalizations {
   /// **'Share'**
   String get share;
 
-  /// No description provided for @shareFailed.
-  ///
-  /// In en, this message translates to:
-  /// **'Failed to share: {message}'**
-  String shareFailed(Object message);
-
-  /// No description provided for @shareKeyFile.
-  ///
-  /// In en, this message translates to:
-  /// **'Share key file'**
-  String get shareKeyFile;
-
   /// No description provided for @shareLogs.
   ///
   /// In en, this message translates to:
   /// **'Share Logs'**
   String get shareLogs;
 
-  /// No description provided for @shareRedacted.
-  ///
-  /// In en, this message translates to:
-  /// **'Share (redacted)'**
-  String get shareRedacted;
-
   /// No description provided for @shareSelected.
   ///
   /// In en, this message translates to:
   /// **'Share Selected'**
   String get shareSelected;
-
-  /// No description provided for @shareVia.
-  ///
-  /// In en, this message translates to:
-  /// **'Share'**
-  String get shareVia;
 
   /// No description provided for @shortsFilter.
   ///
@@ -2726,23 +1964,11 @@ abstract class MTLocalizations {
   /// **'Source code'**
   String get sourceCode;
 
-  /// No description provided for @speedNormal.
-  ///
-  /// In en, this message translates to:
-  /// **'Normal'**
-  String get speedNormal;
-
   /// No description provided for @startDownload.
   ///
   /// In en, this message translates to:
   /// **'Start download'**
   String get startDownload;
-
-  /// No description provided for @startingDownload.
-  ///
-  /// In en, this message translates to:
-  /// **'Starting download via server...'**
-  String get startingDownload;
 
   /// No description provided for @status.
   ///
@@ -2750,95 +1976,17 @@ abstract class MTLocalizations {
   /// **'Status'**
   String get status;
 
-  /// No description provided for @statusCompleted.
-  ///
-  /// In en, this message translates to:
-  /// **'Completed'**
-  String get statusCompleted;
-
-  /// No description provided for @statusDownloading.
-  ///
-  /// In en, this message translates to:
-  /// **'Downloading...'**
-  String get statusDownloading;
-
-  /// No description provided for @statusError.
-  ///
-  /// In en, this message translates to:
-  /// **'Error'**
-  String get statusError;
-
-  /// No description provided for @statusOffline.
-  ///
-  /// In en, this message translates to:
-  /// **'Offline'**
-  String get statusOffline;
-
-  /// No description provided for @statusQueued.
-  ///
-  /// In en, this message translates to:
-  /// **'Queued'**
-  String get statusQueued;
-
-  /// No description provided for @statusQueuing.
-  ///
-  /// In en, this message translates to:
-  /// **'Adding to queue...'**
-  String get statusQueuing;
-
-  /// No description provided for @statusServerDownloading.
-  ///
-  /// In en, this message translates to:
-  /// **'Server downloading...'**
-  String get statusServerDownloading;
-
-  /// No description provided for @statusStream.
-  ///
-  /// In en, this message translates to:
-  /// **'Stream'**
-  String get statusStream;
-
-  /// No description provided for @statusWaiting.
-  ///
-  /// In en, this message translates to:
-  /// **'Waiting...'**
-  String get statusWaiting;
-
-  /// No description provided for @streamUrlUnavailable.
-  ///
-  /// In en, this message translates to:
-  /// **'Stream URL not available'**
-  String get streamUrlUnavailable;
-
   /// No description provided for @streamingFromServer.
   ///
   /// In en, this message translates to:
   /// **'Streaming from the server'**
   String get streamingFromServer;
 
-  /// No description provided for @supportedPlatforms.
-  ///
-  /// In en, this message translates to:
-  /// **'Supported: YouTube, Twitter/X, Instagram, TikTok, Facebook, Vimeo & more'**
-  String get supportedPlatforms;
-
   /// No description provided for @tagActionsHint.
   ///
   /// In en, this message translates to:
   /// **'Long-press a tag to rename or delete it.'**
   String get tagActionsHint;
-
-  /// No description provided for @tagAudio.
-  ///
-  /// In en, this message translates to:
-  /// **'Audio'**
-  String get tagAudio;
-
-  /// No description provided for @tagVideo.
-  ///
-  /// In en, this message translates to:
-  /// **'Video'**
-  String get tagVideo;
 
   /// No description provided for @tags.
   ///
@@ -2851,12 +1999,6 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'Opens the library filtered'**
   String get tagsOpenFiltered;
-
-  /// No description provided for @tapToCopy.
-  ///
-  /// In en, this message translates to:
-  /// **'Tap to copy'**
-  String get tapToCopy;
 
   /// No description provided for @testingConnection.
   ///
@@ -2876,29 +2018,11 @@ abstract class MTLocalizations {
   /// **'Dark'**
   String get themeDark;
 
-  /// No description provided for @themeDarkMode.
-  ///
-  /// In en, this message translates to:
-  /// **'Dark theme'**
-  String get themeDarkMode;
-
-  /// No description provided for @themeFollowSystem.
-  ///
-  /// In en, this message translates to:
-  /// **'Follow system settings'**
-  String get themeFollowSystem;
-
   /// No description provided for @themeLight.
   ///
   /// In en, this message translates to:
   /// **'Light'**
   String get themeLight;
-
-  /// No description provided for @themeLightMode.
-  ///
-  /// In en, this message translates to:
-  /// **'Light theme'**
-  String get themeLightMode;
 
   /// No description provided for @themeSystem.
   ///
@@ -2917,12 +2041,6 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'Total: {duration}'**
   String totalDuration(Object duration);
-
-  /// No description provided for @tracksCount.
-  ///
-  /// In en, this message translates to:
-  /// **'{count} tracks'**
-  String tracksCount(int count);
 
   /// No description provided for @tryAgain.
   ///
@@ -3086,35 +2204,11 @@ abstract class MTLocalizations {
   /// **'Updates'**
   String get updates;
 
-  /// No description provided for @urlMustStartWith.
-  ///
-  /// In en, this message translates to:
-  /// **'URL must start with http:// or https://'**
-  String get urlMustStartWith;
-
-  /// No description provided for @urlRequiredField.
-  ///
-  /// In en, this message translates to:
-  /// **'Enter a URL'**
-  String get urlRequiredField;
-
-  /// No description provided for @useCurrentConnection.
-  ///
-  /// In en, this message translates to:
-  /// **'Use current connection'**
-  String get useCurrentConnection;
-
   /// No description provided for @username.
   ///
   /// In en, this message translates to:
   /// **'Username'**
   String get username;
-
-  /// No description provided for @usernameRequired.
-  ///
-  /// In en, this message translates to:
-  /// **'Username is required'**
-  String get usernameRequired;
 
   /// No description provided for @version.
   ///
@@ -3128,35 +2222,11 @@ abstract class MTLocalizations {
   /// **'Added to playlist'**
   String get videoAdded;
 
-  /// No description provided for @videoDetails.
-  ///
-  /// In en, this message translates to:
-  /// **'Video details'**
-  String get videoDetails;
-
-  /// No description provided for @videoLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Video'**
-  String get videoLabel;
-
   /// No description provided for @videoPlayer.
   ///
   /// In en, this message translates to:
   /// **'Video Player'**
   String get videoPlayer;
-
-  /// No description provided for @videoRemoved.
-  ///
-  /// In en, this message translates to:
-  /// **'Removed from playlist'**
-  String get videoRemoved;
-
-  /// No description provided for @videosCount.
-  ///
-  /// In en, this message translates to:
-  /// **'{count} videos'**
-  String videosCount(int count);
 
   /// No description provided for @viewAll.
   ///
@@ -3194,12 +2264,6 @@ abstract class MTLocalizations {
   /// **'View'**
   String get viewMode;
 
-  /// No description provided for @waiting.
-  ///
-  /// In en, this message translates to:
-  /// **'Waiting for server...'**
-  String get waiting;
-
   /// No description provided for @waitingForWifi.
   ///
   /// In en, this message translates to:
@@ -3229,12 +2293,6 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'Your tags'**
   String get yourTags;
-
-  /// No description provided for @youtubeDownloadStarting.
-  ///
-  /// In en, this message translates to:
-  /// **'Starting YouTube download...'**
-  String get youtubeDownloadStarting;
 
   /// No description provided for @ytdlpCredit.
   ///

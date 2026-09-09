@@ -78,6 +78,12 @@ final updateCheckerProvider = Provider(
 
 final apkDownloaderProvider = Provider((ref) => ApkDownloader());
 
+/// مجلد الكاش الذي يحطّ فيه ملف التحديث — **مزوّد مستقل** كي تستبدله
+/// الاختبارات بمجلد مؤقّت: `path_provider` قناة أصلية لا تعمل في
+/// اختبارات الودجات.
+final updateCacheDirProvider = FutureProvider<String>(
+    (ref) async => (await getTemporaryDirectory()).path);
+
 final updateChannelProvider = Provider((ref) => const UpdateChannel());
 
 final updateControllerProvider =
@@ -159,8 +165,8 @@ class UpdateNotifier extends Notifier<UpdateState> {
     state = state.copyWith(
         phase: UpdatePhase.downloading, progress: 0, clearFailure: true);
     try {
-      final dir = await getTemporaryDirectory();
-      final path = '${dir.path}/${MTConstants.updateApkFileName}';
+      final dir = await ref.read(updateCacheDirProvider.future);
+      final path = '$dir/${MTConstants.updateApkFileName}';
       await ref.read(apkDownloaderProvider).download(
             url: release.apkUrl,
             savePath: path,

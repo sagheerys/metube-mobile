@@ -52,11 +52,6 @@ class MTLocalizationsAr extends MTLocalizations {
   String get addLinkFab => 'إضافة رابط';
 
   @override
-  String addNToServer(int count) {
-    return 'إضافة $count إلى الخادم';
-  }
-
-  @override
   String get addTo => 'أضف إلى…';
 
   @override
@@ -82,9 +77,6 @@ class MTLocalizationsAr extends MTLocalizations {
   }
 
   @override
-  String get addedToQueue => 'أُضيف إلى قائمة التنزيل';
-
-  @override
   String get addingToServer => 'يُرسَل للسيرفر…';
 
   @override
@@ -94,19 +86,10 @@ class MTLocalizationsAr extends MTLocalizations {
   String get allPlatforms => 'كل المنصات';
 
   @override
-  String get allTagsFilter => 'الكل';
-
-  @override
   String get alreadyInPlaylist => 'مضاف مسبقاً';
 
   @override
-  String get appFeatures => 'مميزات التطبيق';
-
-  @override
   String get appTitle => 'MeTube Super';
-
-  @override
-  String get appearance => 'المظهر';
 
   @override
   String get audioOnly => 'صوت فقط';
@@ -118,13 +101,6 @@ class MTLocalizationsAr extends MTLocalizations {
   String get authentication => 'المصادقة (اختياري)';
 
   @override
-  String get autoBackgroundAudio => 'تشغيل تلقائي في الخلفية';
-
-  @override
-  String get autoBackgroundAudioSubtitle =>
-      'تشغيل المقطع الصوتي في الخلفية عند النقر على زر الرجوع';
-
-  @override
   String get autoBuilt => 'تلقائية';
 
   @override
@@ -133,12 +109,6 @@ class MTLocalizationsAr extends MTLocalizations {
   @override
   String get autoCheckUpdatesHelp =>
       'يبحث عن إصدار جديد في الخلفية مرتين يومياً تقريباً.';
-
-  @override
-  String get autoPlayNext => 'التشغيل التلقائي: مفعل';
-
-  @override
-  String get autoPlayOff => 'التشغيل التلقائي: متوقف';
 
   @override
   String get autoRestoreSuccess =>
@@ -178,24 +148,8 @@ class MTLocalizationsAr extends MTLocalizations {
   String get backgroundDownload => 'جاري تحميل الملفات في الخلفية...';
 
   @override
-  String get backgroundPlay => 'تشغيل بالخلفية';
-
-  @override
-  String get backupFailed => 'فشل النسخ الاحتياطي';
-
-  @override
-  String get backupFileSaved => 'حُفظت النسخة المشفّرة';
-
-  @override
-  String get backupKeyMismatch =>
-      'هذه النسخة مشفّرة بمفتاح مختلف. استورد مفتاح النسخ المطابق أولاً.';
-
-  @override
   String get backupNote =>
       'يشمل القوائم والوسوم وفهرس عدم الاتصال وروابط الأغلفة والإعدادات. لا تُنسخ كلمة المرور ولا اسم المستخدم أبداً، ولا تُنسخ ملفات الوسائط.';
-
-  @override
-  String get backupRestore => 'النسخ الاحتياطي والاستعادة';
 
   @override
   String get backupSettings => 'نسخ جميع البيانات احتياطياً';
@@ -216,9 +170,6 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get batchDownloadSelected => 'تحميل المحدد';
-
-  @override
-  String get batchFromPlaylistNote => 'هذا الرابط من داخل قائمة';
 
   @override
   String get batchLoading => 'قراءة القائمة…';
@@ -247,16 +198,10 @@ class MTLocalizationsAr extends MTLocalizations {
   String get cancel => 'إلغاء';
 
   @override
-  String get cardView => 'عرض البطاقات';
-
-  @override
   String get changeQuality => 'تغيير الجودة';
 
   @override
   String get checkForUpdates => 'التحقق من التحديثات';
-
-  @override
-  String get chooseBackupFile => 'اختر ملف النسخة';
 
   @override
   String get chooseOptions => 'خيارات';
@@ -268,20 +213,10 @@ class MTLocalizationsAr extends MTLocalizations {
   String get clear => 'مسح';
 
   @override
-  String get clearAllConfirm =>
-      'سيؤدي هذا إلى إزالة جميع الإعدادات المحفوظة بما فيها بيانات الدخول. متابعة؟';
-
-  @override
-  String get clearAllSettings => 'مسح كل الإعدادات';
-
-  @override
   String get clearLogs => 'مسح السجلّات';
 
   @override
   String get clearLogsConfirm => 'حذف كل سجلّات التشخيص؟';
-
-  @override
-  String get clipboardEmpty => 'الحافظة فارغة';
 
   @override
   String get clipboardFound => 'رابط جاهز في الحافظة';
@@ -291,9 +226,6 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get closePlayer => 'إغلاق المشغل';
-
-  @override
-  String get comingSoonPhase => 'هذه الشاشة تُبنى في مرحلة لاحقة من الخطة';
 
   @override
   String get compactView => 'عرض مدمج';
@@ -309,16 +241,10 @@ class MTLocalizationsAr extends MTLocalizations {
   String get completed => 'مكتمل';
 
   @override
-  String get connecting => 'جارٍ الاتصال...';
-
-  @override
   String get connectionFailed => 'فشل الاتصال';
 
   @override
   String get connectionSuccessful => 'تم الاتصال بنجاح — حُفظت الإعدادات';
-
-  @override
-  String get contactDeveloper => 'تواصل مع المطور';
 
   @override
   String get continueAsAudio => 'متابعة صوتاً';
@@ -350,16 +276,6 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get creator => 'المنشئ';
-
-  @override
-  String get credentialsRequired =>
-      'اسم المستخدم وكلمة المرور مطلوبان للاتصال بالسيرفر.';
-
-  @override
-  String get currentServerAddress => 'عنوان الخادم الحالي';
-
-  @override
-  String get date => 'التاريخ';
 
   @override
   String get defaultQuality => 'جودة الفيديو الافتراضية';
@@ -419,9 +335,6 @@ class MTLocalizationsAr extends MTLocalizations {
   String get deselectAll => 'إلغاء التحديد';
 
   @override
-  String get detailTitle => 'العنوان';
-
-  @override
   String get details => 'التفاصيل';
 
   @override
@@ -436,9 +349,6 @@ class MTLocalizationsAr extends MTLocalizations {
   @override
   String get diagnosticLogsSubtitle =>
       'عرض السجلّات والبحث فيها ومشاركتها (مُنقّحة)';
-
-  @override
-  String get diagnostics => 'التشخيص';
 
   @override
   String get disclaimer => 'اخلاء مسؤولية';
@@ -457,9 +367,6 @@ class MTLocalizationsAr extends MTLocalizations {
   String get download => 'تنزيل';
 
   @override
-  String get downloadAndShare => 'تنزيل ومشاركة';
-
-  @override
   String get downloadComplete => 'اكتمل التحميل';
 
   @override
@@ -472,16 +379,10 @@ class MTLocalizationsAr extends MTLocalizations {
   String get downloadFailed => 'فشل التحميل';
 
   @override
-  String get downloadFailedStatus => 'فشل التنزيل';
-
-  @override
   String get downloadFailedTitle => 'فشل التنزيل';
 
   @override
   String get downloadNow => 'تحميل';
-
-  @override
-  String get downloadQuality => 'جودة التنزيل';
 
   @override
   String get downloadStarted => 'بدأ التحميل...';
@@ -492,24 +393,10 @@ class MTLocalizationsAr extends MTLocalizations {
   }
 
   @override
-  String downloadTracks(int count) {
-    return 'تحميل $count مقطع';
-  }
-
-  @override
-  String get downloadUrlUnavailable => 'رابط التنزيل غير متاح';
-
-  @override
   String get downloading => 'جاري التحميل...';
 
   @override
   String get downloadingTitle => 'جارٍ التنزيل';
-
-  @override
-  String get downloadsTab => 'التحميلات';
-
-  @override
-  String get email => 'البريد الالكتروني';
 
   @override
   String get emptyLibraryMessage => 'أضِف رابط فيديو، أو اسحب للتحديث.';
@@ -521,25 +408,10 @@ class MTLocalizationsAr extends MTLocalizations {
   String get emptyPlaylistMessage => 'أضِف فيديوهات من المكتبة';
 
   @override
-  String get endpointReachable => 'يمكن الوصول';
-
-  @override
-  String get endpointUnreachable => 'تعذّر الوصول';
-
-  @override
   String get endpointUrl => 'عنوان نقطة النهاية';
 
   @override
   String get enterFullscreen => 'ملء الشاشة';
-
-  @override
-  String get enterUrl => 'أدخل الرابط';
-
-  @override
-  String get enterUrlHint => 'الصق رابط الفيديو هنا...';
-
-  @override
-  String get enterUrlPrompt => 'أدخل رابط فيديو لتنزيله:';
 
   @override
   String get errAuth => 'اسم المستخدم أو كلمة المرور خاطئة';
@@ -571,17 +443,7 @@ class MTLocalizationsAr extends MTLocalizations {
   }
 
   @override
-  String get errorLogs => 'سجل الاخطاء';
-
-  @override
-  String get errorLogsSubtitle => 'عرض سجلات التطبيق للتشخيص';
-
-  @override
   String get exitFullscreen => 'خروج من ملء الشاشة';
-
-  @override
-  String get exportKeySubtitle =>
-      'لازم للاستعادة على هاتف جديد أو بعد إعادة التثبيت';
 
   @override
   String get exportShare => 'تصدير ومشاركة';
@@ -598,10 +460,6 @@ class MTLocalizationsAr extends MTLocalizations {
   String get externalNetworkSection => 'شبكة خارجية';
 
   @override
-  String get externalPlayerLocalOnly =>
-      'النسخة المحلية فقط — لا يُسلَّم رابط السيرفر لتطبيق آخر';
-
-  @override
   String get externalPlayerShort => 'مشغل خارجي';
 
   @override
@@ -611,34 +469,7 @@ class MTLocalizationsAr extends MTLocalizations {
   String get failedToLoadPlaylist => 'فشل تحميل القائمة';
 
   @override
-  String get failedToLoadVideo => 'فشل تحميل الفيديو';
-
-  @override
-  String get failedToQueue => 'فشلت الإضافة إلى القائمة';
-
-  @override
   String get favorites => 'المفضلة';
-
-  @override
-  String get featureBackup => 'نسخ احتياطي واستعادة تلقائية';
-
-  @override
-  String get featureBilingual => 'دعم اللغة العربية والانجليزية';
-
-  @override
-  String get featureDownload => 'تحميل فيديوهات من يوتيوب ومنصات أخرى';
-
-  @override
-  String get featurePlayer => 'تحميل مباشر عبر مشاركة الروابط من أي تطبيق';
-
-  @override
-  String get featurePlaylists => 'إنشاء وإدارة قوائم التشغيل';
-
-  @override
-  String get featureThemes => 'وضع داكن وفاتح';
-
-  @override
-  String get fieldHelp => 'مساعدة';
 
   @override
   String get file => 'الملف';
@@ -647,30 +478,7 @@ class MTLocalizationsAr extends MTLocalizations {
   String get fileName => 'اسم الملف';
 
   @override
-  String get fileNotFound => 'الملف غير موجود';
-
-  @override
   String get fileSize => 'حجم الملف';
-
-  @override
-  String fileSizeBytes(Object value) {
-    return '$value بايت';
-  }
-
-  @override
-  String fileSizeGB(Object value) {
-    return '$value ج.ب';
-  }
-
-  @override
-  String fileSizeKB(Object value) {
-    return '$value ك.ب';
-  }
-
-  @override
-  String fileSizeMB(Object value) {
-    return '$value م.ب';
-  }
 
   @override
   String get filterAll => 'الكل';
@@ -680,9 +488,6 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get filterOffline => 'بلا اتصال';
-
-  @override
-  String get filterPlaylists => 'قوائم';
 
   @override
   String get filterServer => 'الخادم';
@@ -697,12 +502,6 @@ class MTLocalizationsAr extends MTLocalizations {
   String get helpAboutField => 'حول هذا الحقل';
 
   @override
-  String get howItWorks => 'كيف يعمل';
-
-  @override
-  String get importBackup => 'استيراد نسخة';
-
-  @override
   String get inPlaylists => 'في قوائم التشغيل';
 
   @override
@@ -713,41 +512,6 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get itemUnavailable => 'لم يعد متوفراً';
-
-  @override
-  String get keyExportFailed => 'فشل تصدير مفتاح النسخ الاحتياطي';
-
-  @override
-  String keyExportedMessage(Object path) {
-    return 'تم الحفظ في:\n$path\n\nارفع هذا الملف إلى قوقل درايف (أو مكان آمن آخر). ستحتاجه لاستعادة نسختك الاحتياطية بعد مسح البيانات أو على هاتف جديد.';
-  }
-
-  @override
-  String get keyExportedTitle => 'تم حفظ مفتاح النسخ الاحتياطي';
-
-  @override
-  String get keyImportConfirm => 'استبدال المفتاح';
-
-  @override
-  String get keyImportConfirmMessage =>
-      'سيتم استبدال مفتاح التشفير الحالي للجهاز.\n\nأي نسخة احتياطية موجودة وتم تشفيرها بالمفتاح السابق ستصبح غير قابلة للقراءة.\n\nاستمر فقط إذا كان هذا المفتاح يطابق ملف نسختك الاحتياطية.';
-
-  @override
-  String get keyImportConfirmTitle => 'استبدال المفتاح الحالي؟';
-
-  @override
-  String get keyImportInvalid => 'ملف مفتاح غير صالح';
-
-  @override
-  String get keyImportNotFound =>
-      'ملف المفتاح غير موجود في Downloads/MeTube_Super/metube_super_backup_key.txt';
-
-  @override
-  String get keyImportedMessage =>
-      'تم استعادة مفتاح التشفير. يمكنك الآن استخدام \"استعادة جميع البيانات\" لاسترداد نسختك الاحتياطية.';
-
-  @override
-  String get keyImportedTitle => 'تم استيراد المفتاح';
 
   @override
   String get language => 'اللغة';
@@ -787,9 +551,6 @@ class MTLocalizationsAr extends MTLocalizations {
   String get listenInBackground => 'استماع بالخلفية';
 
   @override
-  String get loadingVideo => 'جارٍ تحميل الفيديو...';
-
-  @override
   String get localCopyRemoved => 'أُزيلت النسخة المحلية';
 
   @override
@@ -800,16 +561,7 @@ class MTLocalizationsAr extends MTLocalizations {
   String get localNetworkSection => 'شبكة محلية';
 
   @override
-  String get localOnlyYoutubeMessage =>
-      'التحميل المباشر يدعم يوتيوب فقط.\nاضبط رابط سيرفر MeTube في الإعدادات لتحميل من منصات أخرى.';
-
-  @override
   String get localUrlLabel => 'عنوان الخادم المحلي';
-
-  @override
-  String localVideos(int count) {
-    return 'المكتبة ($count)';
-  }
 
   @override
   String get lockTouch => 'قفل اللمس';
@@ -822,17 +574,7 @@ class MTLocalizationsAr extends MTLocalizations {
       'تُحذف الروابط والعناوين والاعتمادات قبل المشاركة';
 
   @override
-  String get logsShareText =>
-      'سجلّات MeTube Super (مع تنقيح الروابط/العناوين/بيانات الدخول)';
-
-  @override
   String get madeOffline => 'أُتيح دون اتصال';
-
-  @override
-  String get madeWithLove => 'صنع بـ ❤️ بواسطة ياسر صغير';
-
-  @override
-  String get makeAvailableOffline => 'إتاحة بلا اتصال';
 
   @override
   String get makeOffline => 'إتاحة دون اتصال';
@@ -844,16 +586,7 @@ class MTLocalizationsAr extends MTLocalizations {
   String get metubeCredit => 'الخادم ذاتي الاستضافة الذي يتصل به التطبيق';
 
   @override
-  String get modeAuto => 'تلقائي';
-
-  @override
   String get modeAutoNext => 'تلقائي';
-
-  @override
-  String get modeOff => 'إيقاف';
-
-  @override
-  String get modeRepeat => 'تكرار';
 
   @override
   String get modeRepeatAll => 'تكرار الكل';
@@ -878,9 +611,6 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get needsAttention => 'تحتاج انتباهك';
-
-  @override
-  String get networkBackRetrying => 'عادت الشبكة — إعادة المحاولة';
 
   @override
   String get networkSettings => 'الشبكات';
@@ -915,14 +645,7 @@ class MTLocalizationsAr extends MTLocalizations {
   String get noLogsFound => 'لا توجد سجلّات';
 
   @override
-  String get noPasswordTip =>
-      'بلا كلمة مرور؟ اترك حقول المصادقة فارغة للخوادم المفتوحة!';
-
-  @override
   String get noPlayableSource => 'لا مصدر لتشغيل هذا العنصر';
-
-  @override
-  String get noPlaylists => 'لا توجد قوائم';
 
   @override
   String get noPlaylistsMessage => 'أنشئ قائمة لتنظيم فيديوهاتك';
@@ -944,21 +667,10 @@ class MTLocalizationsAr extends MTLocalizations {
   String get noTagsYet => 'لا وسوم بعد. أنشئ واحداً بالأسفل.';
 
   @override
-  String get noValidUrl => 'لم يُعثر على رابط فيديو صالح';
-
-  @override
   String get noVideosFound => 'مكتبتك فارغة';
 
   @override
-  String get noVideosHint =>
-      'شارك رابط فيديو من أي تطبيق، أو اضغط زر + لإضافة رابط';
-
-  @override
   String get noWarranty => 'يُقدَّم كما هو، بلا أي ضمان.';
-
-  @override
-  String get nonYoutubeQualityNote =>
-      'المنصّات غير اليوتيوب تدعم أفضل جودة أو الصوت فقط';
 
   @override
   String get notAffiliated =>
@@ -985,25 +697,13 @@ class MTLocalizationsAr extends MTLocalizations {
   }
 
   @override
-  String get openGithub => 'فتح MeTube على GitHub';
-
-  @override
   String get openInExternalPlayer => 'فتح في مشغل خارجي';
 
   @override
   String get openOriginalLink => 'فتح الرابط الأصلي';
 
   @override
-  String get originalUrl => 'الرابط الأصلي';
-
-  @override
   String get password => 'كلمة المرور';
-
-  @override
-  String get passwordRequired => 'كلمة المرور مطلوبة';
-
-  @override
-  String get pasteFromClipboard => 'لصق';
 
   @override
   String get pasteUrlHint => 'الصق الرابط هنا…';
@@ -1029,31 +729,19 @@ class MTLocalizationsAr extends MTLocalizations {
   }
 
   @override
-  String get platformFilter => 'المنصة';
-
-  @override
   String get play => 'تشغيل';
 
   @override
   String get playAll => 'تشغيل الكل';
 
   @override
-  String get playAllFavorites => 'شغّل المفضلة كلها';
-
-  @override
   String get playModeLabel => 'الوضع';
-
-  @override
-  String get playbackError => 'خطأ في التشغيل';
 
   @override
   String get playbackSpeed => 'سرعة التشغيل';
 
   @override
   String get playerError => 'تعذّر تشغيل هذا الملف';
-
-  @override
-  String get playerLoading => 'جارٍ تحميل الفيديو...';
 
   @override
   String get playingFromDevice => 'تشغيل من جهازك';
@@ -1085,26 +773,7 @@ class MTLocalizationsAr extends MTLocalizations {
   String get playlists => 'قوائم التشغيل';
 
   @override
-  String playlistsCount(int count) {
-    return '$count قائمة';
-  }
-
-  @override
-  String get pleaseEnterUrl => 'الرجاء إدخال رابط';
-
-  @override
   String get preferences => 'التفضيلات';
-
-  @override
-  String get preparingDownload => 'جارٍ تجهيز التنزيل...';
-
-  @override
-  String get preparingShare => 'يُجهَّز الملف للمشاركة…';
-
-  @override
-  String preparingToShare(String percent) {
-    return 'يُجهَّز للمشاركة… $percent٪';
-  }
 
   @override
   String get previous => 'السابق';
@@ -1128,9 +797,6 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get quality720 => '720p';
-
-  @override
-  String get qualityAudio => 'صوت فقط';
 
   @override
   String get qualityBest => 'الأفضل';
@@ -1157,11 +823,6 @@ class MTLocalizationsAr extends MTLocalizations {
   String get queueLabel => 'قائمة الانتظار';
 
   @override
-  String queuePosition(int position) {
-    return 'الموقع في الطابور: $position';
-  }
-
-  @override
   String get queued => 'في الانتظار';
 
   @override
@@ -1173,9 +834,6 @@ class MTLocalizationsAr extends MTLocalizations {
   @override
   String get quickDownloadHelp =>
       'الرابط المشارَك أو الملصوق يبدأ التحميل فوراً بالجودة الافتراضية بلا نافذة. الجودات الرقمية ليوتيوب وحده — غيره ينزل بأفضل جودة، وإن كانت الجودة الافتراضية «صوت فقط» فهي تُطبَّق على كل المنصات.';
-
-  @override
-  String get readyToShare => 'جاهز للمشاركة!';
 
   @override
   String get reelsEndBack => 'عودة للمكتبة';
@@ -1202,20 +860,7 @@ class MTLocalizationsAr extends MTLocalizations {
   String get removeFromFavorites => 'أزل من المفضلة';
 
   @override
-  String get removeFromPlaylist => 'إزالة من القائمة';
-
-  @override
   String get removeLocalCopy => 'إزالة النسخة المحلية';
-
-  @override
-  String get removeOfflineConfirm =>
-      'حذف النسخة المحلية من هذا الجهاز؟\nيبقى الفيديو على الخادم ويمكن بثّه مجدداً.';
-
-  @override
-  String get removeOfflineCopy => 'إزالة النسخة المحلية';
-
-  @override
-  String get removeOfflineTitle => 'إزالة النسخة المحلية';
 
   @override
   String removeUnavailable(int count) {
@@ -1235,13 +880,7 @@ class MTLocalizationsAr extends MTLocalizations {
   String get renameTag => 'إعادة تسمية الوسم';
 
   @override
-  String get reorderHint => 'اسحب لإعادة الترتيب';
-
-  @override
   String get reportBug => 'الابلاغ عن مشكلة';
-
-  @override
-  String get restoreCancelled => 'لم يُعثر على ملف النسخة في مجلد التنزيلات';
 
   @override
   String get restoreConfirm =>
@@ -1254,17 +893,7 @@ class MTLocalizationsAr extends MTLocalizations {
   String get restoreFailed => 'فشلت الاستعادة — ملف نسخة غير صالح';
 
   @override
-  String get restoreFromBackupSubtitle => 'اختر من النسخ المحفوظة، أو من ملف';
-
-  @override
-  String get restoreNotFound => 'لا يوجد ملف نسخة في Downloads/MeTube_Super';
-
-  @override
   String get restoreSettings => 'استعادة جميع البيانات';
-
-  @override
-  String get restoreSettingsSubtitle =>
-      'استيراد من Downloads/metube_lite_backup.json';
 
   @override
   String get restoreSuccess => 'تمت استعادة البيانات بنجاح';
@@ -1287,11 +916,6 @@ class MTLocalizationsAr extends MTLocalizations {
   String get retry => 'إعادة المحاولة';
 
   @override
-  String retryingAttempt(int attempt, int max) {
-    return 'إعادة المحاولة $attempt/$max…';
-  }
-
-  @override
   String get saveSettings => 'حفظ الإعدادات';
 
   @override
@@ -1301,30 +925,7 @@ class MTLocalizationsAr extends MTLocalizations {
   String get savedOnDevice => 'محفوظ للجهاز';
 
   @override
-  String get savedPartial => 'تم الحفظ (فشل الحذف من السيرفر)';
-
-  @override
-  String get savedSuccess => 'تم حفظ الإعدادات';
-
-  @override
-  String get savedTo => 'تم الحفظ في Downloads/MeTube_Lite';
-
-  @override
-  String get savedToDownloads => 'حُفِظ في Downloads/MeTube_Super';
-
-  @override
-  String get scanningVideos => 'جاري فحص الفيديوهات...';
-
-  @override
-  String get searchHint => 'بحث…';
-
-  @override
   String get searchLogs => 'بحث في السجلّات…';
-
-  @override
-  String searchResults(int found, int total) {
-    return 'النتائج: $found من $total';
-  }
 
   @override
   String get searchVideos => 'بحث في الفيديوهات...';
@@ -1352,13 +953,6 @@ class MTLocalizationsAr extends MTLocalizations {
   String get serverConfiguration => 'إعداد الخادم';
 
   @override
-  String get serverDownload => 'تنزيل عبر الخادم';
-
-  @override
-  String get serverDownloadDesc =>
-      'ستُرسَل الفيديوهات إلى خادم MeTube Super/TrueNAS الخاص بك';
-
-  @override
   String get serverStatusChecking => 'جارٍ فحص الاتصال…';
 
   @override
@@ -1384,16 +978,10 @@ class MTLocalizationsAr extends MTLocalizations {
   String get serverUrlHint => 'http://192.168.1.5:8086 أو https://domain.com';
 
   @override
-  String get serverUrlLabel => 'رابط الخادم (MeTube Super)';
-
-  @override
   String get serverUrlRequired => 'رابط الخادم مطلوب';
 
   @override
   String get settings => 'الإعدادات';
-
-  @override
-  String get settingsCleared => 'تم مسح الإعدادات';
 
   @override
   String get settingsSaved => 'تم حفظ الإعدادات بنجاح';
@@ -1405,24 +993,10 @@ class MTLocalizationsAr extends MTLocalizations {
   String get share => 'مشاركة';
 
   @override
-  String shareFailed(Object message) {
-    return 'فشلت المشاركة: $message';
-  }
-
-  @override
-  String get shareKeyFile => 'مشاركة ملف المفتاح';
-
-  @override
   String get shareLogs => 'مشاركة السجلات';
 
   @override
-  String get shareRedacted => 'مشاركة (مُنقّحة)';
-
-  @override
   String get shareSelected => 'مشاركة المحدد';
-
-  @override
-  String get shareVia => 'مشاركة';
 
   @override
   String get shortsFilter => 'قِصار';
@@ -1474,71 +1048,22 @@ class MTLocalizationsAr extends MTLocalizations {
   String get sourceCode => 'الشيفرة المصدرية';
 
   @override
-  String get speedNormal => 'عادي';
-
-  @override
   String get startDownload => 'ابدأ التحميل';
-
-  @override
-  String get startingDownload => 'جاري بدء التحميل عبر السيرفر...';
 
   @override
   String get status => 'الحالة';
 
   @override
-  String get statusCompleted => 'اكتمل';
-
-  @override
-  String get statusDownloading => 'جارٍ التنزيل...';
-
-  @override
-  String get statusError => 'خطأ';
-
-  @override
-  String get statusOffline => 'بلا اتصال';
-
-  @override
-  String get statusQueued => 'في القائمة';
-
-  @override
-  String get statusQueuing => 'جارٍ الإضافة إلى القائمة...';
-
-  @override
-  String get statusServerDownloading => 'الخادم يُنزّل...';
-
-  @override
-  String get statusStream => 'بث';
-
-  @override
-  String get statusWaiting => 'في الانتظار...';
-
-  @override
-  String get streamUrlUnavailable => 'رابط البث غير متاح';
-
-  @override
   String get streamingFromServer => 'بث مباشر من السيرفر';
 
   @override
-  String get supportedPlatforms =>
-      'المدعومة: يوتيوب، تويتر/X، إنستغرام، تيك توك، فيسبوك، فيميو والمزيد';
-
-  @override
   String get tagActionsHint => 'اضغط مطوّلاً على وسم لإعادة تسميته أو حذفه.';
-
-  @override
-  String get tagAudio => 'صوت';
-
-  @override
-  String get tagVideo => 'فيديو';
 
   @override
   String get tags => 'الوسوم';
 
   @override
   String get tagsOpenFiltered => 'تفتح المكتبة مصفّاة';
-
-  @override
-  String get tapToCopy => 'اضغط للنسخ';
 
   @override
   String get testingConnection => 'جارٍ اختبار الاتصال…';
@@ -1550,16 +1075,7 @@ class MTLocalizationsAr extends MTLocalizations {
   String get themeDark => 'داكن';
 
   @override
-  String get themeDarkMode => 'السمة الداكنة';
-
-  @override
-  String get themeFollowSystem => 'اتّباع إعدادات النظام';
-
-  @override
   String get themeLight => 'فاتح';
-
-  @override
-  String get themeLightMode => 'السمة الفاتحة';
 
   @override
   String get themeSystem => 'النظام';
@@ -1570,11 +1086,6 @@ class MTLocalizationsAr extends MTLocalizations {
   @override
   String totalDuration(Object duration) {
     return 'الإجمالي: $duration';
-  }
-
-  @override
-  String tracksCount(int count) {
-    return '$count مقطع';
   }
 
   @override
@@ -1666,19 +1177,7 @@ class MTLocalizationsAr extends MTLocalizations {
   String get updates => 'التحديثات';
 
   @override
-  String get urlMustStartWith => 'يجب أن يبدأ الرابط بـ http:// أو https://';
-
-  @override
-  String get urlRequiredField => 'أدخل عنواناً';
-
-  @override
-  String get useCurrentConnection => 'استخدم الاتصال الحالي';
-
-  @override
   String get username => 'اسم المستخدم';
-
-  @override
-  String get usernameRequired => 'اسم المستخدم مطلوب';
 
   @override
   String get version => 'الإصدار';
@@ -1687,21 +1186,7 @@ class MTLocalizationsAr extends MTLocalizations {
   String get videoAdded => 'أُضيف إلى القائمة';
 
   @override
-  String get videoDetails => 'تفاصيل الفيديو';
-
-  @override
-  String get videoLabel => 'فيديو';
-
-  @override
   String get videoPlayer => 'مشغّل الفيديو';
-
-  @override
-  String get videoRemoved => 'أُزيل من القائمة';
-
-  @override
-  String videosCount(int count) {
-    return '$count فيديو';
-  }
 
   @override
   String get viewAll => 'عرض الكل';
@@ -1722,9 +1207,6 @@ class MTLocalizationsAr extends MTLocalizations {
   String get viewMode => 'العرض';
 
   @override
-  String get waiting => 'بانتظار السيرفر...';
-
-  @override
   String get waitingForWifi => 'بانتظار Wi‑Fi';
 
   @override
@@ -1739,9 +1221,6 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get yourTags => 'وسومك';
-
-  @override
-  String get youtubeDownloadStarting => 'جاري بدء تحميل يوتيوب...';
 
   @override
   String get ytdlpCredit => 'أداة التنزيل التي يشغّلها MeTube';
