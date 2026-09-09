@@ -220,6 +220,12 @@ curl -si https://metube.example.com/download/ | head -1
 A 401 is also the one failure the apps name exactly: they report wrong
 credentials rather than a generic error.
 
+Turn on **Always Use HTTPS** for the hostname while you are in the
+dashboard. Basic auth is a password in a header: over plain HTTP it
+travels in the clear, and a first request that arrives as `http://` has
+already sent it before any redirect can help. Lite refuses cleartext to a
+public address on its own, so the app side is covered; a browser is not.
+
 ### The way that does not work: Cloudflare Access
 
 Cloudflare Access (Zero Trust policies, the e-mail/OTP login page) cannot
