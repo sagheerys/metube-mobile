@@ -24,20 +24,20 @@ class PlaylistEntry {
   bool get isLegacy => canonicalUrl.isEmpty && legacyPath != null;
 
   Map<String, dynamic> toJson() => {
-        'canonicalUrl': canonicalUrl,
-        if (serverFilename != null) 'serverFilename': serverFilename,
-        if (cachedTitle != null) 'cachedTitle': cachedTitle,
-        if (cachedThumb != null) 'cachedThumb': cachedThumb,
-        if (legacyPath != null) 'legacyPath': legacyPath,
-      };
+    'canonicalUrl': canonicalUrl,
+    if (serverFilename != null) 'serverFilename': serverFilename,
+    if (cachedTitle != null) 'cachedTitle': cachedTitle,
+    if (cachedThumb != null) 'cachedThumb': cachedThumb,
+    if (legacyPath != null) 'legacyPath': legacyPath,
+  };
 
   factory PlaylistEntry.fromJson(Map<String, dynamic> json) => PlaylistEntry(
-        canonicalUrl: json['canonicalUrl']?.toString() ?? '',
-        serverFilename: json['serverFilename']?.toString(),
-        cachedTitle: json['cachedTitle']?.toString(),
-        cachedThumb: json['cachedThumb']?.toString(),
-        legacyPath: json['legacyPath']?.toString(),
-      );
+    canonicalUrl: json['canonicalUrl']?.toString() ?? '',
+    serverFilename: json['serverFilename']?.toString(),
+    cachedTitle: json['cachedTitle']?.toString(),
+    cachedThumb: json['cachedThumb']?.toString(),
+    legacyPath: json['legacyPath']?.toString(),
+  );
 }
 
 /// A saved playlist, with pinning and last-played time.
@@ -49,9 +49,9 @@ class SavedPlaylist {
     this.pinned = false,
     DateTime? createdAt,
     this.lastPlayedAt,
-  })  : id = id ?? _uuid.v4(),
-        items = items ?? [],
-        createdAt = createdAt ?? DateTime.now();
+  }) : id = id ?? _uuid.v4(),
+       items = items ?? [],
+       createdAt = createdAt ?? DateTime.now();
 
   final String id;
   String name;
@@ -61,14 +61,13 @@ class SavedPlaylist {
   DateTime? lastPlayedAt;
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'name': name,
-        'createdAt': createdAt.toIso8601String(),
-        'pinned': pinned,
-        if (lastPlayedAt != null)
-          'lastPlayedAt': lastPlayedAt!.toIso8601String(),
-        'items': items.map((e) => e.toJson()).toList(),
-      };
+    'id': id,
+    'name': name,
+    'createdAt': createdAt.toIso8601String(),
+    'pinned': pinned,
+    if (lastPlayedAt != null) 'lastPlayedAt': lastPlayedAt!.toIso8601String(),
+    'items': items.map((e) => e.toJson()).toList(),
+  };
 
   factory SavedPlaylist.fromJson(Map<String, dynamic> json) {
     // The old Lite format: {name, createdAt, videoPaths: [file paths]}.

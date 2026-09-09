@@ -5,8 +5,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mt_core/mt_core.dart';
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 
-/// م-2: رابط منصة معروفة جاهز في الحافظة ⇒ يتحول زر الإضافة لوضع
-/// «الرابط جاهز للصق». يُفحص عند الإقلاع والعودة للتطبيق.
+/// A known-platform link waiting in the clipboard switches the add button
+/// to its "link ready to paste" state. Checked at startup and when the app
+/// returns to the foreground.
 final clipboardUrlProvider = StateProvider<String?>((ref) => null);
 
 Future<void> refreshClipboardUrl(Ref ref) async {
@@ -16,43 +17,57 @@ Future<void> refreshClipboardUrl(Ref ref) async {
     final url = UrlKit.extractUrl(data?.text ?? '');
     if (url.startsWith('http') && MediaPlatform.isKnown(url)) found = url;
   } catch (_) {
-    // بعض الأجهزة تمنع قراءة الحافظة بالخلفية — نتجاهل بصمت.
+    // Some devices forbid reading the clipboard in the background; we
+    // ignore that silently.
   }
   ref.read(clipboardUrlProvider.notifier).state = found;
 }
 
-/// م-3: استقبال المشاركة من أندرويد — حتى cold start، وعدة روابط دفعة.
-/// يبث قوائم الروابط المستخرجة من أي نص مشارك.
+/// Receiving a share from Android, including on a cold start and with
+/// several links at once. It broadcasts the lists of URLs extracted from
+/// any shared text.
 class ShareReceiver {
   ShareReceiver({required this.onUrls, this.onLog});
 
   final void Function(List<String> urls) onUrls;
 
-  /// أثرٌ في السجل التشخيصي عند كل استقبال — **مصدره بلاغ المالك
-  /// 2026-09-08**: «أحياناً لا تظهر ورقة التحميل إلا بإعادة المحاولة».
-  /// بلا هذا السطر لا يُعرف أضاع التطبيقُ الرابطَ أم لم يصل أصلاً.
+  /// A trace in the diagnostic log on every reception, **prompted by field
+  /// report 2026-09-08**: "sometimes the download sheet only appears if I
+  /// try again". Without this line there is no telling whether the app lost
+  /// the link or it never arrived.
   final void Function(String message)? onLog;
 
   StreamSubscription<List<SharedMediaFile>>? _subscription;
 
   bool _disposed = false;
 
-  /// آخر دفعة سُلِّمت — الرابط الأولي قد يصل **مرتين**: من
-  /// `getInitialMedia` ومن البثّ معاً بعد أن صار الاشتراك أسبق.
+  /// **Subscribe first, then read the initial link** (field report
+  /// 2026-09-08).
+  ///
+  /// The order used to be reversed: `getInitialMedia`, `reset`, `listen`,
+  /// and between the two awaits there was a window **with no listener**. An
+  /// app resting in the background has its link delivered straight to the
+  /// stream, so it fell into that window without a trace, and then a retry
+  /// succeeded because the subscription was by then in place. Which is
+  /// exactly what was reported.
   List<String>? _lastDelivered;
 
-  /// **الاشتراك أولاً، ثم الرابط الأولي** (بلاغ المالك 2026-09-08).
+  /// **Subscribe first, then read the initial link** (field report
+  /// 2026-09-08).
   ///
-  /// كان الترتيب معكوساً: `getInitialMedia` ← `reset` ← `listen`. وبين
-  /// الانتظارين نافذةٌ **بلا مستمع**؛ والتطبيق الساكن في الخلفية
-  /// يُسلَّم رابطه إلى البثّ مباشرة، فيسقط فيها بلا أثر — ثم تنجح
-  /// إعادة المحاولة لأن الاشتراك صار قائماً. وهو ما وصفه المالك حرفياً.
+  /// The order used to be reversed: `getInitialMedia`, `reset`, `listen`,
+  /// and between the two awaits there was a window **with no listener**. An
+  /// app resting in the background has its link delivered straight to the
+  /// stream, so it fell into that window without a trace, and then a retry
+  /// succeeded because the subscription was by then in place. Which is
+  /// exactly what was reported.
   Future<void> start() async {
-    // **تفكيك مبكر أثناء الانتظار (إصلاح م-1):** hot restart أو إغلاق
-    // سريع كان يترك مستمعاً حياً يمسك غلافاً ميتاً.
+    // **Early teardown during the await (fix م-1):** a hot restart or a
+    // quick close left a live listener holding a dead shell.
     if (_disposed) return;
-    _subscription =
-        ReceiveSharingIntent.instance.getMediaStream().listen(_handle);
+    _subscription = ReceiveSharingIntent.instance.getMediaStream().listen(
+      _handle,
+    );
 
     final initial = await ReceiveSharingIntent.instance.getInitialMedia();
     if (_disposed) return;
@@ -69,11 +84,14 @@ class ShareReceiver {
       }
     }
     if (urls.isEmpty || _disposed) return;
-    // نفس الدفعة مرتين ⇒ ورقتان فوق بعضهما أو تنزيلان لرابط واحد.
+    // The same batch twice means two sheets stacked, or two downloads of
+    // one link.
     if (_lastDelivered != null &&
         _lastDelivered!.length == urls.length &&
-        List.generate(urls.length, (i) => _lastDelivered![i] == urls[i])
-            .every((same) => same)) {
+        List.generate(
+          urls.length,
+          (i) => _lastDelivered![i] == urls[i],
+        ).every((same) => same)) {
       onLog?.call('share duplicate ignored (${urls.length})');
       return;
     }

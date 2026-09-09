@@ -15,10 +15,8 @@ extension DownloadEngineEmit on DownloadEngine {
   }
 
   /// **Progress is broadcast only when the whole percentage changes**
-  /// (field
-  /// report 2026-09-04: "the app is heavy and unresponsive while
-  /// downloading
-  /// 7 videos", and "the notification counter does not move").
+  /// (field report 2026-09-04: "the app is heavy and unresponsive while
+  /// downloading 7 videos", and "the notification counter does not move").
   ///
   /// Dio's `onReceiveProgress` fires **on every chunk received**, hundreds
   /// of times a second from a server on the local network. Each call went

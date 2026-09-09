@@ -10,11 +10,11 @@ import 'media_player_port.dart';
 /// The notification and lock-screen buttons. The order is the display
 /// order, and `androidCompactActionIndices` points at the first three.
 List<MediaControl> mtMediaControls({required bool playing}) => [
-      MediaControl.skipToPrevious,
-      if (playing) MediaControl.pause else MediaControl.play,
-      MediaControl.skipToNext,
-      MediaControl.stop,
-    ];
+  MediaControl.skipToPrevious,
+  if (playing) MediaControl.pause else MediaControl.play,
+  MediaControl.skipToNext,
+  MediaControl.stop,
+];
 
 AudioProcessingState mtProcessingState(MediaPlaybackState state) =>
     switch (state) {
@@ -26,11 +26,10 @@ AudioProcessingState mtProcessingState(MediaPlaybackState state) =>
     };
 
 AudioServiceRepeatMode mtRepeatMode(PlayMode mode) => switch (mode) {
-      PlayMode.repeatOne => AudioServiceRepeatMode.one,
-      PlayMode.repeatAll => AudioServiceRepeatMode.all,
-      _ => AudioServiceRepeatMode.none,
-    };
+  PlayMode.repeatOne => AudioServiceRepeatMode.one,
+  PlayMode.repeatAll => AudioServiceRepeatMode.all,
+  _ => AudioServiceRepeatMode.none,
+};
 
-AudioServiceShuffleMode mtShuffleMode({required bool shuffle}) => shuffle
-    ? AudioServiceShuffleMode.all
-    : AudioServiceShuffleMode.none;
+AudioServiceShuffleMode mtShuffleMode({required bool shuffle}) =>
+    shuffle ? AudioServiceShuffleMode.all : AudioServiceShuffleMode.none;

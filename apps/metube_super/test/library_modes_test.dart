@@ -20,10 +20,12 @@ void main() {
   setUp(() => store = MemoryKeyValueStore());
 
   ProviderContainer container() {
-    final c = ProviderContainer(overrides: [
-      keyValueStoreProvider.overrideWithValue(store),
-      prefsMutexProvider.overrideWithValue(PrefsMutex()),
-    ]);
+    final c = ProviderContainer(
+      overrides: [
+        keyValueStoreProvider.overrideWithValue(store),
+        prefsMutexProvider.overrideWithValue(PrefsMutex()),
+      ],
+    );
     addTearDown(c.dispose);
     return c;
   }
@@ -75,14 +77,16 @@ void main() {
     late BuildContext ctx;
 
     Future<void> host(WidgetTester tester, double dpr) => tester.pumpWidget(
-          MediaQuery(
-            data: MediaQueryData(devicePixelRatio: dpr),
-            child: Builder(builder: (c) {
-              ctx = c;
-              return const SizedBox();
-            }),
-          ),
-        );
+      MediaQuery(
+        data: MediaQueryData(devicePixelRatio: dpr),
+        child: Builder(
+          builder: (c) {
+            ctx = c;
+            return const SizedBox();
+          },
+        ),
+      ),
+    );
 
     testWidgets('العرض المنطقي × كثافة الشاشة', (tester) async {
       await host(tester, 3);
@@ -106,29 +110,30 @@ void main() {
 
   group('رقاقة المنصة في الصف الأول', () {
     Widget app(List<LibraryItem> items) => ProviderScope(
-          overrides: [
-            keyValueStoreProvider.overrideWithValue(store),
-            secretStoreProvider.overrideWithValue(MemorySecretStore()),
-            prefsMutexProvider.overrideWithValue(PrefsMutex()),
-            initialSettingsProvider.overrideWithValue(const SuperSettings()),
-            libraryItemsProvider.overrideWith((ref) async => items),
-          ],
-          child: MaterialApp(
-            theme: mtTheme(MTVariant.superApp, Brightness.light),
-            locale: const Locale('ar'),
-            localizationsDelegates: MTLocalizations.localizationsDelegates,
-            supportedLocales: MTLocalizations.supportedLocales,
-            home: const Scaffold(body: LibraryFilterChips()),
-          ),
-        );
+      overrides: [
+        keyValueStoreProvider.overrideWithValue(store),
+        secretStoreProvider.overrideWithValue(MemorySecretStore()),
+        prefsMutexProvider.overrideWithValue(PrefsMutex()),
+        initialSettingsProvider.overrideWithValue(const SuperSettings()),
+        libraryItemsProvider.overrideWith((ref) async => items),
+      ],
+      child: MaterialApp(
+        theme: mtTheme(MTVariant.superApp, Brightness.light),
+        locale: const Locale('ar'),
+        localizationsDelegates: MTLocalizations.localizationsDelegates,
+        supportedLocales: MTLocalizations.supportedLocales,
+        home: const Scaffold(body: LibraryFilterChips()),
+      ),
+    );
 
     final items = [
       LibraryItem(canonicalUrl: 'https://youtu.be/a', title: 'أ'),
       LibraryItem(canonicalUrl: 'https://vimeo.com/1', title: 'ب'),
     ];
 
-    testWidgets('بلا منصة مختارة ⇒ لا رقاقة إضافية (لا صف ثالث)',
-        (tester) async {
+    testWidgets('بلا منصة مختارة ⇒ لا رقاقة إضافية (لا صف ثالث)', (
+      tester,
+    ) async {
       await tester.pumpWidget(app(items));
       await tester.pumpAndSettle();
       expect(find.byType(InputChip), findsNothing);

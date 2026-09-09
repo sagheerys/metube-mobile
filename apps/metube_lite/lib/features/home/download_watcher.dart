@@ -13,32 +13,37 @@ import 'notifications.dart';
 
 final notificationsProvider = Provider((ref) => DownloadNotifications());
 
-/// م-9 + م-10: يراقب مهام المحرك فيقود الإشعارات ووضع الخلفية.
+/// Watches the engine's tasks and drives the notifications and the
+/// background mode.
 ///
-/// وضع الخلفية يُفعَّل **أثناء وجود مهام نشطة فقط** ويُطفأ بانتهائها —
-/// خدمة أمامية دائمة تستنزف البطارية وتُغضب أندرويد.
+/// Background mode is enabled **only while tasks are active** and switched
+/// off when they end: a permanent foreground service drains the battery and
+/// angers Android.
 final downloadWatcherProvider = Provider<void>((ref) {
   final notifications = ref.watch(notificationsProvider);
   final logger = ref.watch(loggerProvider);
   var backgroundOn = false;
   final notified = <String>{};
 
-  /// **بصمة آخر إشعار نُشر لكل مهمة** — مرشّح تكرار.
+  /// **The fingerprint of the last notification posted per task**: a
+  /// duplicate filter.
   ///
-  /// بلاغ المالك 2026-09-04: «العدّاد في الإشعارات لا يتحرك مع أنه في
-  /// التطبيق يتحرك». [handle] تمرّ على **كل** المهام في كل بثّة، فسبع
-  /// مهام متوازية كانت تعني سبع منشورات لكل تغيّر في أيٍّ منها — آلاف
-  /// النداءات على قناة المنصة في الدقيقة. أندرويد يخنق النشر المفرط من
-  /// التطبيق الواحد فيتجمّد ما يراه المستخدم. هنا: لا يُنشر إلا ما
-  /// تغيّر نصّه أو نسبته فعلاً.
+  /// Field report 2026-09-04: "the counter in the notifications does not
+  /// move even though it moves in the app". [handle] walks **every** task
+  /// on every broadcast, so seven parallel tasks meant seven posts for
+  /// every change in any one of them, thousands of calls a minute on the
+  /// platform channel. Android throttles excessive posting from a single
+  /// app and what the user sees freezes. Here, nothing is posted unless its
+  /// text or its percentage actually changed.
   final lastShown = <int, String>{};
 
-  /// **تسلسل النشر**: `unawaited` على استدعاءات متلاحقة كان يسمح
-  /// لنداء قديم أن يصل بعد أحدث منه، فيعيد النسبة إلى الوراء.
+  /// **Posting sequence**: `unawaited` on consecutive calls let an older
+  /// one arrive after a newer one and put the percentage back.
   Future<void> chain = Future.value();
 
   MTLocalizations l10n() => lookupMTLocalizations(
-      Locale(ref.read(settingsProvider).localeCode ?? 'ar'));
+    Locale(ref.read(settingsProvider).localeCode ?? 'ar'),
+  );
 
   int idOf(DownloadTask task) => task.id.hashCode & 0x7fffffff;
 
@@ -53,11 +58,15 @@ final downloadWatcherProvider = Provider<void>((ref) {
             notificationTitle: texts.downloadingTitle,
             notificationText: texts.backgroundDownload,
             notificationImportance: AndroidNotificationImportance.normal,
-            notificationIcon:
-                const AndroidResource(name: 'ic_launcher', defType: 'mipmap'),
+            notificationIcon: const AndroidResource(
+              name: 'ic_launcher',
+              defType: 'mipmap',
+            ),
             enableWifiLock: true,
-            // **لا** نطلب استثناء تحسين البطارية: حوار نظام مزعج لضيف
-            // العائلة، والخدمة الأمامية وحدها تكفي لجلسة تحميل قصيرة.
+            // We do **not** request a battery-optimisation exemption: it is
+            // an intrusive system dialog for a family member, and the
+            // foreground service alone is enough for a short download
+            // session.
             shouldRequestBatteryOptimizationsOff: false,
           ),
         );
@@ -66,13 +75,15 @@ final downloadWatcherProvider = Provider<void>((ref) {
         await FlutterBackground.disableBackgroundExecution();
       }
     } catch (e) {
-      // رفض الإذن أو جهاز لا يدعمه: التحميل يستمر ما دام التطبيق مفتوحاً.
+      // A refused permission or a device that does not support it:
+      // downloading continues as long as the app is open.
       backgroundOn = false;
       await logger.error('background mode failed', cause: e, tag: 'download');
     }
   }
 
-  /// ينشر شريط تقدّم **إن تغيّر** عمّا نُشر آخر مرة لهذه المهمة.
+  /// Posts a progress bar **if it changed** from what was last posted for
+  /// this task.
   Future<void> showProgressIfChanged(
     int id, {
     required String title,
@@ -97,16 +108,18 @@ final downloadWatcherProvider = Provider<void>((ref) {
     for (final task in tasks) {
       final id = idOf(task);
       switch (task.phase) {
-        // **بلاغ المالك 2026-09-02:** الإشعار كان يبدأ عند السحب فقط،
-        // فمرحلة السيرفر كلها (وهي الأطول عادة) تمر بلا أي إشعار —
-        // يبدو التطبيق ساكناً. الآن كل مرحلة تُعلن نفسها.
+        // **Field report 2026-09-02:** the notification used to start at
+        // the pull only, so the entire server phase, usually the longest,
+        // passed with no notification at all and the app looked idle. Now
+        // every phase announces itself.
         case TaskPhase.queued:
           await showProgressIfChanged(
             id,
             title: task.title ?? texts.downloadingTitle,
             body: texts.queuedSection,
             channelName: texts.activeDownloads,
-            // طور بلا نسبة معروفة ⇒ شريط غير محدد لا شريط صفري ساكن.
+            // A phase with no known percentage gets an indeterminate bar
+            // rather than a bar frozen at zero.
             percent: null,
           );
         case TaskPhase.adding:
@@ -121,13 +134,15 @@ final downloadWatcherProvider = Provider<void>((ref) {
           await showProgressIfChanged(
             id,
             title: task.title ?? texts.downloadingTitle,
-            body: texts
-                .onServerProgress((task.progress * 100).toStringAsFixed(0)),
+            body: texts.onServerProgress(
+              (task.progress * 100).toStringAsFixed(0),
+            ),
             channelName: texts.activeDownloads,
             percent: (task.progress * 100).round(),
           );
-        // م-42: الملف جاهز والسحب موقوف بانتظار Wi‑Fi — الإشعار يقول
-        // السبب صراحة، وإلا بدا التطبيق عالقاً بلا تفسير.
+        // The file is ready and the pull is held waiting for Wi-Fi; the
+        // notification says so plainly, or the app looks stuck with no
+        // explanation.
         case TaskPhase.waitingForNetwork:
           await showProgressIfChanged(
             id,
@@ -136,15 +151,17 @@ final downloadWatcherProvider = Provider<void>((ref) {
             channelName: texts.activeDownloads,
             percent: null,
           );
-        // **النسبة في نص الإشعار أيضاً** (بلاغ المالك 2026-09-03: «العداد
-        // لا يظهر عند السحب من السيرفر إلى الجهاز»). شريط الإشعار وحده
-        // لا يُقرأ رقماً، ومرحلة السحب هي الأطول في Lite.
+        // **The percentage in the notification text too** (field report
+        // 2026-09-03: "the counter does not appear while pulling from the
+        // server to the device"). A notification bar on its own cannot be
+        // read as a number, and pulling is the longest phase in Lite.
         case TaskPhase.pulling:
           await showProgressIfChanged(
             id,
             title: task.title ?? texts.downloadingTitle,
             body: texts.pullingToDeviceProgress(
-                (task.progress * 100).toStringAsFixed(0)),
+              (task.progress * 100).toStringAsFixed(0),
+            ),
             channelName: texts.activeDownloads,
             percent: (task.progress * 100).round(),
           );
@@ -159,9 +176,11 @@ final downloadWatcherProvider = Provider<void>((ref) {
         case TaskPhase.completed:
           lastShown.remove(id);
           if (!notified.add(task.id)) break;
-          // **لحظة الذروة**: العنصر يصل المكتبة بتوهجة واحدة تتلاشى —
-          // الاكتمال أسعد لحظة في التطبيق وكان يمر بلا أي احتفاء.
-          // نفس آلية إبراز نقرة الإشعار: مسار واحد لا اثنان.
+          // **The peak moment**: the item arrives in the library with one
+          // highlight that fades. Completion is the happiest moment in the
+          // app and it used to pass with no celebration at all. It uses the
+          // same mechanism as the notification-tap highlight: one path, not
+          // two.
           final arrived = task.canonicalUrl ?? task.localPath;
           if (arrived != null) {
             ref.read(highlightedItemProvider.notifier).state = arrived;
@@ -172,7 +191,8 @@ final downloadWatcherProvider = Provider<void>((ref) {
             title: texts.downloadCompleteTitle,
             body: task.title ?? task.effectiveUrl,
             channelName: texts.downloadComplete,
-            // نقرة الإشعار تُبرز العنصر في المكتبة (§1 من مسار التطبيق).
+            // A notification tap highlights the item in the library (§1 of
+            // the app flow).
             payload: task.canonicalUrl ?? task.localPath,
           );
         case TaskPhase.failed:
@@ -196,21 +216,19 @@ final downloadWatcherProvider = Provider<void>((ref) {
     await syncBackground(tasks.any((t) => !t.isFinished));
   }
 
-  ref.listen<AsyncValue<List<DownloadTask>>>(
-    engineTasksProvider,
-    (_, next) {
-      final tasks = next.valueOrNull ?? const <DownloadTask>[];
-      chain = chain.then((_) => handle(tasks)).catchError((Object e) {
-        unawaited(logger.error('notification failed',
-            cause: e, tag: 'download'));
-      });
-    },
-  );
+  ref.listen<AsyncValue<List<DownloadTask>>>(engineTasksProvider, (_, next) {
+    final tasks = next.valueOrNull ?? const <DownloadTask>[];
+    chain = chain.then((_) => handle(tasks)).catchError((Object e) {
+      unawaited(logger.error('notification failed', cause: e, tag: 'download'));
+    });
+  });
 });
 
-/// تهيئة الإشعارات مرة واحدة + ربط نقرة الاكتمال بإبراز العنصر.
-/// **لا يُخرج عطلاً إلى سلسلة الإقلاع** (نفس علاج Super): نداء المنصة
-/// يرمي في بيئة بلا قناة، وما بعده في `initState` لا علاقة له بالإشعارات.
+/// Initialises the notifications once and wires the completion tap to the
+/// item highlight.
+/// **It never lets a fault escape into the startup chain** (the same cure
+/// as Super): the platform call throws in an environment with no channel,
+/// and what follows it in `initState` has nothing to do with notifications.
 Future<void> initDownloadNotifications(WidgetRef ref) async {
   final notifications = ref.read(notificationsProvider);
   try {
@@ -220,13 +238,17 @@ Future<void> initDownloadNotifications(WidgetRef ref) async {
     );
     await notifications.requestPermission();
   } on Object catch (e) {
-    // التسجيل نفسه دفاعي: السجل قد لا يكون محقوناً في بيئة الاختبار.
+    // The logging itself is defensive: the logger may not be injected in a
+    // test environment.
     try {
-      unawaited(ref
-          .read(loggerProvider)
-          .error('notifications init failed', cause: e, tag: 'download'));
+      unawaited(
+        ref
+            .read(loggerProvider)
+            .error('notifications init failed', cause: e, tag: 'download'),
+      );
     } on Object {
-      // بيئة بلا سجل — الإشعارات وحدها تغيب والتحميل يعمل.
+      // An environment with no logger: only the notifications are missing
+      // and downloading works.
     }
   }
 }

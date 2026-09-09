@@ -26,28 +26,33 @@ void main() {
     bool autoSwitch = true,
   }) {
     final store = MemoryKeyValueStore();
-    final container = ProviderContainer(overrides: [
-      keyValueStoreProvider.overrideWithValue(store),
-      prefsMutexProvider.overrideWithValue(PrefsMutex()),
-      initialSettingsProvider.overrideWithValue(SuperSettings(
-        localUrl: local,
-        externalUrls: const [tunnel],
-        activeUrl: activeUrl,
-        autoSwitch: autoSwitch,
-        themeMode: ThemeMode.system,
-      )),
-      endpointResolverProvider.overrideWithValue(
-        EndpointResolver(
+    final container = ProviderContainer(
+      overrides: [
+        keyValueStoreProvider.overrideWithValue(store),
+        prefsMutexProvider.overrideWithValue(PrefsMutex()),
+        initialSettingsProvider.overrideWithValue(
+          SuperSettings(
+            localUrl: local,
+            externalUrls: const [tunnel],
+            activeUrl: activeUrl,
+            autoSwitch: autoSwitch,
+            themeMode: ThemeMode.system,
+          ),
+        ),
+        endpointResolverProvider.overrideWithValue(
+          EndpointResolver(
             probe: (url) async => reachable.contains(url)
                 ? MTEndpointStatus.ok
-                : MTEndpointStatus.unreachable),
-      ),
-      // الفحص صار يسأل المحرك «هل من عمل جارٍ؟» قبل التبديل (ع-1)،
-      // والمحرك يحتاج السجل — يُتجاوز في main، فيُتجاوز هنا كذلك.
-      loggerProvider.overrideWithValue(
-        MTLogger(filePath: '${Directory.systemTemp.path}/mtf_test.log'),
-      ),
-    ]);
+                : MTEndpointStatus.unreachable,
+          ),
+        ),
+        // الفحص صار يسأل المحرك «هل من عمل جارٍ؟» قبل التبديل (ع-1)،
+        // والمحرك يحتاج السجل — يُتجاوز في main، فيُتجاوز هنا كذلك.
+        loggerProvider.overrideWithValue(
+          MTLogger(filePath: '${Directory.systemTemp.path}/mtf_test.log'),
+        ),
+      ],
+    );
     addTearDown(container.dispose);
     return (container, store);
   }
@@ -72,10 +77,12 @@ void main() {
   });
 
   test('خروج من الشبكة المنزلية: المحلي يسقط ⇒ يعتمد النفق', () async {
-    final (container, store) =
-        build(reachable: {tunnel}, activeUrl: local);
-    final service = AutoSwitchService(_RefFor(container),
-        networkChanges: const Stream.empty(), debounce: Duration.zero);
+    final (container, store) = build(reachable: {tunnel}, activeUrl: local);
+    final service = AutoSwitchService(
+      _RefFor(container),
+      networkChanges: const Stream.empty(),
+      debounce: Duration.zero,
+    );
     await service.resolveNow();
     expect(container.read(settingsProvider).activeUrl, tunnel);
     expect(await store.getString('active_url'), tunnel);
@@ -90,25 +97,33 @@ void main() {
     await container
         .read(settingsProvider.notifier)
         .setLocalUrl('http://192.168.1.99:8086'); // عنوان ميت
-    final service = AutoSwitchService(_RefFor(container),
-        networkChanges: const Stream.empty(), debounce: Duration.zero);
+    final service = AutoSwitchService(
+      _RefFor(container),
+      networkChanges: const Stream.empty(),
+      debounce: Duration.zero,
+    );
     await service.resolveNow();
     expect(container.read(settingsProvider).activeUrl, tunnel);
   });
 
   test('لا شيء يستجيب ⇒ **لا يُصفَّر** الرابط المعتمد', () async {
     final (container, _) = build(reachable: const {});
-    final service = AutoSwitchService(_RefFor(container),
-        networkChanges: const Stream.empty(), debounce: Duration.zero);
+    final service = AutoSwitchService(
+      _RefFor(container),
+      networkChanges: const Stream.empty(),
+      debounce: Duration.zero,
+    );
     await service.resolveNow();
     expect(container.read(settingsProvider).activeUrl, tunnel);
   });
 
   test('التبديل مُطفأ ⇒ لا يمس الرابط المعتمد', () async {
-    final (container, _) =
-        build(reachable: {local, tunnel}, autoSwitch: false);
-    final service = AutoSwitchService(_RefFor(container),
-        networkChanges: const Stream.empty(), debounce: Duration.zero);
+    final (container, _) = build(reachable: {local, tunnel}, autoSwitch: false);
+    final service = AutoSwitchService(
+      _RefFor(container),
+      networkChanges: const Stream.empty(),
+      debounce: Duration.zero,
+    );
     await service.resolveNow();
     expect(container.read(settingsProvider).activeUrl, tunnel);
   });
@@ -116,16 +131,22 @@ void main() {
   group('بذرة قائمة الروابط (تثبيت هُيّئ برابط واحد)', () {
     test('عنوان شبكة خاصة ⇒ يُسجَّل رابطاً محلياً', () async {
       final store = MemoryKeyValueStore();
-      await seedEndpointsFromActive(store, PrefsMutex(),
-          const SuperSettings(activeUrl: local));
+      await seedEndpointsFromActive(
+        store,
+        PrefsMutex(),
+        const SuperSettings(activeUrl: local),
+      );
       expect(await store.getString('local_url'), local);
       expect(await store.getStringList('external_urls'), isNull);
     });
 
     test('نطاق عام ⇒ يُسجَّل رابطاً خارجياً', () async {
       final store = MemoryKeyValueStore();
-      await seedEndpointsFromActive(store, PrefsMutex(),
-          const SuperSettings(activeUrl: tunnel));
+      await seedEndpointsFromActive(
+        store,
+        PrefsMutex(),
+        const SuperSettings(activeUrl: tunnel),
+      );
       expect(await store.getStringList('external_urls'), [tunnel]);
       expect(await store.getString('local_url'), isNull);
     });
@@ -136,7 +157,10 @@ void main() {
         store,
         PrefsMutex(),
         const SuperSettings(
-            localUrl: local, activeUrl: tunnel, externalUrls: [tunnel]),
+          localUrl: local,
+          activeUrl: tunnel,
+          externalUrls: [tunnel],
+        ),
       );
       expect(await store.getStringList('external_urls'), isNull);
     });

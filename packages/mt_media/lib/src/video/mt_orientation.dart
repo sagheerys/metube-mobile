@@ -28,8 +28,7 @@ abstract final class MTOrientation {
       SystemChrome.setPreferredOrientations(portrait);
   static Future<void> lockLandscape() =>
       SystemChrome.setPreferredOrientations(landscape);
-  static Future<void> allow() =>
-      SystemChrome.setPreferredOrientations(free);
+  static Future<void> allow() => SystemChrome.setPreferredOrientations(free);
 }
 
 /// **The rotation scope around the portrait player**: it unlocks portrait
@@ -41,11 +40,7 @@ abstract final class MTOrientation {
 /// 2026-09-05: "landscape does not work and was never applied"): the call
 /// is app-wide and does not end with the screen that made it.
 class MTRotationScope extends StatefulWidget {
-  const MTRotationScope({
-    super.key,
-    required this.open,
-    required this.builder,
-  });
+  const MTRotationScope({super.key, required this.open, required this.builder});
 
   /// Opens the full-screen page and completes when it closes. `byRotation`
   /// tells the page how it was entered: by a tilt, so it leaves on the
@@ -54,7 +49,7 @@ class MTRotationScope extends StatefulWidget {
   final Future<void> Function(bool byRotation) open;
 
   final Widget Function(BuildContext context, VoidCallback openFullscreen)
-      builder;
+  builder;
 
   @override
   State<MTRotationScope> createState() => _MTRotationScopeState();

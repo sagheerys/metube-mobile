@@ -3,28 +3,27 @@ import 'package:mt_ui/mt_ui.dart';
 
 import '../playlists/playlists_providers.dart';
 
-/// **انتماء العنصر**: في أي قوائم تشغيل هو، وتحت أي وسوم (م-16).
+/// **Where an item belongs**: which playlists it is in and which tags it
+/// carries.
 ///
-/// بلاغ المالك 2026-09-04: «أريد في تفاصيل المقطع في أي قائمة بلاي لست
-/// إذا كان مضافاً، وإذا كان في وسم معين في أي وسم يتبع». المعلومة كانت
-/// موجودة في المخزن ولا تعرضها أي شاشة.
+/// Field report 2026-09-04: "in the clip details I want to see which
+/// playlist it was added to, and which tag it is under". The information
+/// was in the store and no screen displayed it.
 ///
-/// **[tags] فارغة دائماً في Lite** بقصد لا سهواً: الوسوم ميزة Super
-/// حصرياً (جدول الأدوار في CLAUDE.md §4)، وفهرس Lite لا يحمل غير وسم
-/// المفضلة النظامي. النوع نفسه في التطبيقين كي تبقى الشاشات المشتركة
-/// متماثلة.
+/// **[tags] is always empty in Lite**, by design rather than by oversight:
+/// tags are exclusively a Super feature, and Lite's index carries nothing
+/// but the system favourites tag. The type is the same in both apps so the
+/// shared screens stay identical.
 class ItemMembership {
-  const ItemMembership({
-    this.playlists = const [],
-    this.tags = const [],
-  });
+  const ItemMembership({this.playlists = const [], this.tags = const []});
 
   final List<String> playlists;
   final List<String> tags;
 
   bool get isEmpty => playlists.isEmpty && tags.isEmpty;
 
-  /// سطر واحد جاهز للعرض تحت العنوان — `null` إن لا انتماء له.
+  /// One line ready to show under the title, or `null` when it belongs
+  /// nowhere.
   String? line(MTLocalizations l10n) {
     final parts = [
       if (playlists.isNotEmpty) '${l10n.inPlaylists}: ${playlists.join('، ')}',
@@ -34,13 +33,15 @@ class ItemMembership {
   }
 }
 
-/// **فهرس واحد للمكتبة كلها، لا مزوّد لكل عنصر.**
+/// **One index for the whole library, not a provider per item.**
 ///
-/// عائلة `family` كانت ستعني مزوّداً لكل مقطع في مسار الريلز (مئات)،
-/// وكلها تُشتق من القراءة نفسها. المفتاح هو **مفتاح المكتبة الموحد**
-/// (canonicalUrl إن عُرف وإلا المسار) — نفس ما تخزنه مداخل القوائم.
-final membershipIndexProvider =
-    FutureProvider<Map<String, ItemMembership>>((ref) async {
+/// A `family` would have meant a provider per clip along the reels path,
+/// hundreds of them, all derived from the same read. The key is **the
+/// unified library key**, the canonicalUrl when known and otherwise the
+/// path, which is exactly what the playlist entries store.
+final membershipIndexProvider = FutureProvider<Map<String, ItemMembership>>((
+  ref,
+) async {
   final playlists = await ref.watch(playlistsProvider.future);
   final names = <String, List<String>>{};
   for (final playlist in playlists) {

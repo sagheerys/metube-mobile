@@ -40,8 +40,7 @@ class UpdateRelease {
   /// Returns `null` rather than throwing on any anomaly: a draft, a
   /// pre-release, a release with no APK for this app, or unexpected JSON.
   /// **An update check never troubles the user with an error** (rule 5: a
-  /// new
-  /// feature does not break what works).
+  /// new feature does not break what works).
   static UpdateRelease? tryParse(String body, {required String assetMarker}) {
     Object? decoded;
     try {
@@ -71,8 +70,8 @@ class UpdateRelease {
       if (name is! String || url is! String) continue;
       final lower = name.toLowerCase();
       // **Matching on both the marker and the extension**: one release
-      // carries
-      // both apps' files, so without the marker a Lite user installs Super.
+      // carries both apps' files, so without the marker a Lite user
+      // installs Super.
       if (!lower.endsWith('.apk') || !lower.contains(marker)) continue;
       final size = asset['size'];
       return UpdateRelease(

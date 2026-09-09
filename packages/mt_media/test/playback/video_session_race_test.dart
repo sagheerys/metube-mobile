@@ -17,10 +17,10 @@ void main() {
   late FakeVideoPlatform platform;
 
   PlaylistItem item(String id) => PlaylistItem(
-        canonicalUrl: 'https://x/$id',
-        title: id,
-        localPath: '/media/$id.mp4',
-      );
+    canonicalUrl: 'https://x/$id',
+    title: id,
+    localPath: '/media/$id.mp4',
+  );
 
   MTVideoSession build() {
     final store = MemoryKeyValueStore();
@@ -53,9 +53,16 @@ void main() {
     await Future.wait([opening, skipping]);
     await Future<void>.delayed(const Duration(milliseconds: 120));
 
-    expect(platform.playing.length, 1,
-        reason: 'أكثر من مشغل يعمل = صوتان معاً (الخلل الأصلي)');
-    expect(platform.alive.length, 1, reason: 'المشغل المتخلّى عنه يجب أن يُصرَّف');
+    expect(
+      platform.playing.length,
+      1,
+      reason: 'أكثر من مشغل يعمل = صوتان معاً (الخلل الأصلي)',
+    );
+    expect(
+      platform.alive.length,
+      1,
+      reason: 'المشغل المتخلّى عنه يجب أن يُصرَّف',
+    );
     expect(session.current!.title, 'b');
   });
 

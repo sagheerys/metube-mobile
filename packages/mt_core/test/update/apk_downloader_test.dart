@@ -77,8 +77,11 @@ void main() {
     handler = (r) async => r.response.add(body);
 
     await expectLater(
-      ApkDownloader()
-          .download(url: url(), savePath: savePath, expectedSize: 5000),
+      ApkDownloader().download(
+        url: url(),
+        savePath: savePath,
+        expectedSize: 5000,
+      ),
       throwsA(isA<UpdateDownloadException>()),
     );
     expect(File(savePath).existsSync(), isFalse);

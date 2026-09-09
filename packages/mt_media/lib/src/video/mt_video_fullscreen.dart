@@ -35,10 +35,9 @@ class MTVideoFullscreenPage extends StatefulWidget {
 
   /// **We entered by tilting the device rather than by the button.** The
   /// difference is behavioural: entering by tilt leaves on the opposite
-  /// tilt
-  /// (as YouTube does), while entering by the button stays landscape until
-  /// exit is pressed, because someone with rotation locked cannot tilt at
-  /// all.
+  /// tilt (as YouTube does), while entering by the button stays landscape
+  /// until exit is pressed, because someone with rotation locked cannot
+  /// tilt at all.
   final bool byRotation;
 
   @override
@@ -64,8 +63,7 @@ class _MTVideoFullscreenPageState extends State<MTVideoFullscreenPage> {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     // **We do not lock portrait here**: the portrait player beneath us is
     // still alive and owns the policy. Locking from here pinned the whole
-    // app
-    // to portrait forever.
+    // app to portrait forever.
     MTOrientation.allow();
     super.dispose();
   }
@@ -125,8 +123,8 @@ class _MTVideoFullscreenPageState extends State<MTVideoFullscreenPage> {
   }
 }
 
-/// The queue side panel: it slides in from the leading edge over the
-/// dimmed video.
+/// The queue side panel: it slides in from the leading edge over the dimmed
+/// video.
 class _SidePanel extends StatelessWidget {
   const _SidePanel({
     required this.session,
@@ -174,8 +172,9 @@ class _SidePanel extends StatelessWidget {
             ),
             child: _PanelBody(
               items: ordered,
-              currentIndex:
-                  ordered.indexWhere((i) => i.canonicalUrl == currentUrl),
+              currentIndex: ordered.indexWhere(
+                (i) => i.canonicalUrl == currentUrl,
+              ),
               artwork: artwork,
               playlistName: playlistName,
               paused: !session.isPlaying,
@@ -217,7 +216,11 @@ class _PanelBody extends StatelessWidget {
     return Container(
       color: MTPalette.fullscreenScrim,
       padding: const EdgeInsets.fromLTRB(
-          MTSpace.lg, MTSpace.lg, MTSpace.lg, MTSpace.md),
+        MTSpace.lg,
+        MTSpace.lg,
+        MTSpace.lg,
+        MTSpace.md,
+      ),
       child: SafeArea(
         child: DecoratedBox(
           decoration: BoxDecoration(

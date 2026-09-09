@@ -12,31 +12,36 @@ import 'notifications.dart';
 
 final notificationsProvider = Provider((ref) => DownloadNotifications());
 
-/// **إشعارات التحميل في Super (قرار المالك 2026-09-06).**
+/// **Download notifications in Super** (decision 2026-09-06).
 ///
-/// كان Super بلا إشعار البتة — لا اكتمال ولا فشل: من يغادر التطبيق بعد
-/// إضافة رابط لا يعرف ما جرى إلا بعودته. وفحص الأخطاء (2026-09-06) بيّن
-/// أن الفشل كان أسوأ حالاً: بطاقة «تحتاج انتباهك» لا يراها إلا من فتح
-/// ورقة الإدارة.
+/// Super had no notification at all, neither completion nor failure:
+/// anyone who left the app after adding a link learned what happened only
+/// by coming back. And an error review (2026-09-06) showed failure was
+/// worse off: a "needs your attention" card is seen only by someone who
+/// opens the management sheet.
 ///
-/// **ولا خدمة أمامية هنا خلافاً لـ Lite:** Lite يسحب كل ملف إلى الجهاز
-/// فيحتاج بقاءً في الخلفية، أما Super فيُبقي على السيرفر (§4) — والسحب
-/// استثناء («إتاحة دون اتصال» والدفعي). خدمة دائمة لأجل الاستثناء
-/// تستنزف البطارية بلا مقابل.
+/// **And no foreground service here, unlike Lite:** Lite pulls every file
+/// to the device and so needs to survive in the background, while Super
+/// leaves files on the server (§4) and pulling is the exception ("available
+/// offline" and batches). A permanent service for the exception drains the
+/// battery for nothing.
 final downloadWatcherProvider = Provider<void>((ref) {
   final notifications = ref.watch(notificationsProvider);
   final logger = ref.watch(loggerProvider);
   final notified = <String>{};
 
-  /// بصمة آخر إشعار لكل مهمة — بلا هذا المرشّح تُنشر سبع مهام في كل
-  /// بثّة (آلاف النداءات في الدقيقة) فيخنقها أندرويد ويتجمد ما يُرى.
+  /// The last notification's fingerprint per task. Without this filter,
+  /// seven tasks are posted on every broadcast, thousands of calls a
+  /// minute, so Android throttles them and what the user sees freezes.
   final lastShown = <int, String>{};
 
-  /// تسلسل النشر: نداء قديم كان يصل بعد أحدث منه فيعيد النسبة للوراء.
+  /// Posting sequence: an older call used to arrive after a newer one and
+  /// put the percentage back.
   Future<void> chain = Future.value();
 
   MTLocalizations l10n() => lookupMTLocalizations(
-      Locale(ref.read(settingsProvider).localeCode ?? 'ar'));
+    Locale(ref.read(settingsProvider).localeCode ?? 'ar'),
+  );
 
   int idOf(DownloadTask task) => task.id.hashCode & 0x7fffffff;
 
@@ -66,45 +71,60 @@ final downloadWatcherProvider = Provider<void>((ref) {
       final title = task.title ?? texts.downloadingTitle;
       switch (task.phase) {
         case TaskPhase.queued:
-          await showProgressIfChanged(id,
-              title: title,
-              body: texts.queuedSection,
-              channelName: texts.activeDownloads,
-              percent: null);
+          await showProgressIfChanged(
+            id,
+            title: title,
+            body: texts.queuedSection,
+            channelName: texts.activeDownloads,
+            percent: null,
+          );
         case TaskPhase.adding:
-          await showProgressIfChanged(id,
-              title: title,
-              body: texts.addingToServer,
-              channelName: texts.activeDownloads,
-              percent: null);
+          await showProgressIfChanged(
+            id,
+            title: title,
+            body: texts.addingToServer,
+            channelName: texts.activeDownloads,
+            percent: null,
+          );
         case TaskPhase.polling:
-          await showProgressIfChanged(id,
-              title: title,
-              body: texts
-                  .onServerProgress((task.progress * 100).toStringAsFixed(0)),
-              channelName: texts.activeDownloads,
-              percent: (task.progress * 100).round());
+          await showProgressIfChanged(
+            id,
+            title: title,
+            body: texts.onServerProgress(
+              (task.progress * 100).toStringAsFixed(0),
+            ),
+            channelName: texts.activeDownloads,
+            percent: (task.progress * 100).round(),
+          );
         case TaskPhase.waitingForNetwork:
-          await showProgressIfChanged(id,
-              title: title,
-              body: texts.waitingForWifi,
-              channelName: texts.activeDownloads,
-              percent: null);
-        // السحب في Super استثناء («إتاحة دون اتصال» والدفعي) لكنه أطول
-        // مرحلة حين يقع، فالنسبة في النص لا في الشريط وحده.
+          await showProgressIfChanged(
+            id,
+            title: title,
+            body: texts.waitingForWifi,
+            channelName: texts.activeDownloads,
+            percent: null,
+          );
+        // Pulling is the exception in Super ("available offline" and
+        // batches), but it is the longest phase when it happens, so the
+        // percentage goes in the text and not in the bar alone.
         case TaskPhase.pulling:
-          await showProgressIfChanged(id,
-              title: title,
-              body: texts.pullingToDeviceProgress(
-                  (task.progress * 100).toStringAsFixed(0)),
-              channelName: texts.activeDownloads,
-              percent: (task.progress * 100).round());
+          await showProgressIfChanged(
+            id,
+            title: title,
+            body: texts.pullingToDeviceProgress(
+              (task.progress * 100).toStringAsFixed(0),
+            ),
+            channelName: texts.activeDownloads,
+            percent: (task.progress * 100).round(),
+          );
         case TaskPhase.deleting:
-          await showProgressIfChanged(id,
-              title: title,
-              body: texts.cleaningServer,
-              channelName: texts.activeDownloads,
-              percent: null);
+          await showProgressIfChanged(
+            id,
+            title: title,
+            body: texts.cleaningServer,
+            channelName: texts.activeDownloads,
+            percent: null,
+          );
         case TaskPhase.completed:
           lastShown.remove(id);
           if (!notified.add(task.id)) break;
@@ -114,7 +134,8 @@ final downloadWatcherProvider = Provider<void>((ref) {
             title: texts.downloadCompleteTitle,
             body: task.title ?? task.effectiveUrl,
             channelName: texts.downloadComplete,
-            // النقرة تُبرز العنصر في المكتبة — نفس مسار توهج الاكتمال.
+            // The tap highlights the item in the library, the same path as
+            // the completion highlight.
             payload: task.canonicalUrl ?? task.localPath,
           );
         case TaskPhase.failed:
@@ -124,8 +145,9 @@ final downloadWatcherProvider = Provider<void>((ref) {
           await notifications.showResult(
             id,
             title: texts.downloadFailedTitle,
-            // **سبب الفشل في الإشعار نفسه**: «فشل» وحدها تُبقي المستخدم
-            // يخمّن بين شبكة مقطوعة ورابط مرفوض واعتماد خاطئ.
+            // **The failure reason in the notification itself**: "failed"
+            // alone leaves the user guessing between a dropped network, a
+            // refused link and wrong credentials.
             body: task.error == null
                 ? texts.failed
                 : errorText(texts, task.error!),
@@ -139,24 +161,21 @@ final downloadWatcherProvider = Provider<void>((ref) {
     }
   }
 
-  ref.listen<AsyncValue<List<DownloadTask>>>(
-    engineTasksProvider,
-    (_, next) {
-      final tasks = next.valueOrNull ?? const <DownloadTask>[];
-      chain = chain.then((_) => handle(tasks)).catchError((Object e) {
-        unawaited(
-            logger.error('notification failed', cause: e, tag: 'download'));
-      });
-    },
-  );
+  ref.listen<AsyncValue<List<DownloadTask>>>(engineTasksProvider, (_, next) {
+    final tasks = next.valueOrNull ?? const <DownloadTask>[];
+    chain = chain.then((_) => handle(tasks)).catchError((Object e) {
+      unawaited(logger.error('notification failed', cause: e, tag: 'download'));
+    });
+  });
 });
 
-/// يُنادى مرة عند الإقلاع من الغلاف.
+/// Called once at startup from the shell.
 ///
-/// **لا يُخرج عطلاً إلى سلسلة الإقلاع**: نداء المنصة يرمي في بيئة بلا
-/// قناة (اختبارات ويدجت، سطح مكتب) وحتى على أجهزة لا تسجّل الملحق —
-/// وسلسلة `initState` بعده تحمل استقبال المشاركة والاختصارات، فسقوطها
-/// يعطّل ما لا علاقة له بالإشعارات.
+/// **It never lets a fault escape into the startup chain**: the platform
+/// call throws in an environment with no channel (widget tests, desktop)
+/// and even on devices that do not register the plugin, and the `initState`
+/// chain after it carries share reception and the shortcuts, so its failure
+/// disables things with nothing to do with notifications.
 Future<void> initDownloadNotifications(WidgetRef ref) async {
   final notifications = ref.read(notificationsProvider);
   try {
@@ -166,13 +185,17 @@ Future<void> initDownloadNotifications(WidgetRef ref) async {
     );
     await notifications.requestPermission();
   } on Object catch (e) {
-    // التسجيل نفسه دفاعي: السجل قد لا يكون محقوناً في بيئة الاختبار.
+    // The logging itself is defensive: the logger may not be injected in a
+    // test environment.
     try {
-      unawaited(ref
-          .read(loggerProvider)
-          .error('notifications init failed', cause: e, tag: 'download'));
+      unawaited(
+        ref
+            .read(loggerProvider)
+            .error('notifications init failed', cause: e, tag: 'download'),
+      );
     } on Object {
-      // بيئة بلا سجل — الإشعارات وحدها تغيب والتحميل يعمل.
+      // An environment with no logger: only the notifications are missing
+      // and downloading works.
     }
   }
 }

@@ -9,12 +9,12 @@ import 'url_kit.dart';
 typedef RedirectStep = Future<String?> Function(String url);
 
 /// Resolves short links (vm./vt.tiktok, fb.watch, facebook /share/,
-/// on.soundcloud) by following redirects, while **refusing an HTTPS to
-/// HTTP downgrade** (`05-DATA-SCHEMA.md` §4). On any failure or downgrade
-/// the original URL is returned unchanged.
+/// on.soundcloud) by following redirects, while **refusing an HTTPS to HTTP
+/// downgrade** (`05-DATA-SCHEMA.md` §4). On any failure or downgrade the
+/// original URL is returned unchanged.
 class ShortLinkResolver {
   ShortLinkResolver({RedirectStep? redirectStep})
-      : _redirectStep = redirectStep ?? ioRedirectStep;
+    : _redirectStep = redirectStep ?? ioRedirectStep;
 
   final RedirectStep _redirectStep;
 
@@ -42,18 +42,18 @@ class ShortLinkResolver {
   /// downloading** (field report 2026-09-08).
   ///
   /// `on.soundcloud.com/…`, which is what the share button in the
-  /// SoundCloud
-  /// app produces, contains no `/sets/`, so `PlaylistDetector` saw a single
-  /// clip and passed it to the server, where yt-dlp expanded it into a
-  /// **whole album**: twenty tracks downloaded with no selection screen,
-  /// while the app knew of one task. The decision has to be made on the
-  /// **final** URL, not the entered one.
+  /// SoundCloud app produces, contains no `/sets/`, so `PlaylistDetector`
+  /// saw a single clip and passed it to the server, where yt-dlp expanded
+  /// it into a **whole album**: twenty tracks downloaded with no selection
+  /// screen, while the app knew of one task. The decision has to be made on
+  /// the **final** URL, not the entered one.
   ///
   /// The ceiling is necessary: this decision happens while the user waits,
   /// unlike resolution inside the engine, which runs after the task has
   /// already started.
-  Future<String> resolveForRouting(String url) => resolve(url)
-      .timeout(MTConstants.routingResolveTimeout, onTimeout: () => url);
+  Future<String> resolveForRouting(String url) =>
+      resolve(url)
+          .timeout(MTConstants.routingResolveTimeout, onTimeout: () => url);
 }
 
 /// The default dart:io implementation: a GET with no automatic following,

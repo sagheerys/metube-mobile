@@ -24,8 +24,7 @@ class ReelsProgressBar extends StatefulWidget {
   /// **The bar never plays or pauses by itself (defect ط-3):** only the
   /// state owner knows about audio focus and the wake lock. [onScrubEnd] is
   /// called at the end of a drag **and on its cancellation**, so the clip
-  /// is
-  /// never left paused with no indicator.
+  /// is never left paused with no indicator.
   final VoidCallback? onScrubStart;
   final VoidCallback? onScrubEnd;
 
@@ -108,8 +107,7 @@ class _ReelsProgressBarState extends State<ReelsProgressBar> {
                   final total = state.duration.inMilliseconds;
                   final playedFraction = total <= 0
                       ? 0.0
-                      : (state.position.inMilliseconds / total)
-                          .clamp(0.0, 1.0);
+                      : (state.position.inMilliseconds / total).clamp(0.0, 1.0);
                   final dragging = _dragFraction != null;
                   final shown = _dragFraction ?? playedFraction;
                   return Row(
@@ -122,8 +120,9 @@ class _ReelsProgressBarState extends State<ReelsProgressBar> {
                             // It thickens under the finger: confirmation
                             // that the drag was caught.
                             minHeight: dragging ? 6 : 3,
-                            backgroundColor: MTPalette.serverCardInk
-                                .withValues(alpha: 0.25),
+                            backgroundColor: MTPalette.serverCardInk.withValues(
+                              alpha: 0.25,
+                            ),
                             valueColor: AlwaysStoppedAnimation(p.accent),
                           ),
                         ),

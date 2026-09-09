@@ -10,89 +10,109 @@ import 'features/settings/settings_state.dart';
 import 'features/shared/error_report.dart';
 import 'features/shared/stores.dart';
 
-/// حقن Riverpod (TRD §3.1): تغيّر الإعدادات يعيد بناء العميل والمحرك
-/// تلقائياً — لا Completers ولا تزامن يدوي.
+/// Riverpod injection (TRD §3.1): a settings change rebuilds the client and
+/// the engine automatically, with no Completers and no manual
+/// synchronisation.
 
-/// يُتجاوز في main بعد تهيئة SharedPreferences.
+/// Overridden in main once SharedPreferences is ready.
 final keyValueStoreProvider = Provider<KeyValueStore>(
-    (ref) => throw UnimplementedError('overridden in main'));
+  (ref) => throw UnimplementedError('overridden in main'),
+);
 
-final secretStoreProvider =
-    Provider<SecretStore>((ref) => const SecureSecretStore());
+final secretStoreProvider = Provider<SecretStore>(
+  (ref) => const SecureSecretStore(),
+);
 
 final prefsMutexProvider = Provider((ref) => PrefsMutex());
 
-/// اللقطة الأولية المحملة قبل runApp — تُتجاوز في main.
+/// The initial snapshot loaded before runApp; overridden in main.
 final initialSettingsProvider = Provider<SuperSettings>(
-    (ref) => throw UnimplementedError('overridden in main'));
+  (ref) => throw UnimplementedError('overridden in main'),
+);
 
-final settingsProvider =
-    NotifierProvider<SettingsNotifier, SuperSettings>(SettingsNotifier.new);
+final settingsProvider = NotifierProvider<SettingsNotifier, SuperSettings>(
+  SettingsNotifier.new,
+);
 
-/// الـ Dio الوحيد — يعاد بناؤه عند تغيّر إعدادات السيرفر فقط.
+/// The one Dio. It is rebuilt only when the server settings change.
 final apiClientProvider = Provider<MeTubeApiClient?>((ref) {
-  final config =
-      ref.watch(settingsProvider.select((s) => s.serverConfig));
+  final config = ref.watch(settingsProvider.select((s) => s.serverConfig));
   if (config == null) return null;
   final client = MeTubeApiClient(config: config);
   ref.onDispose(client.close);
   return client;
 });
 
-final offlineIndexProvider = Provider((ref) => OfflineIndex(
-      store: ref.watch(keyValueStoreProvider),
-      mutex: ref.watch(prefsMutexProvider),
-    ));
+final offlineIndexProvider = Provider(
+  (ref) => OfflineIndex(
+    store: ref.watch(keyValueStoreProvider),
+    mutex: ref.watch(prefsMutexProvider),
+  ),
+);
 
-final tagsIndexProvider = Provider((ref) => TagsIndex(
-      store: ref.watch(keyValueStoreProvider),
-      mutex: ref.watch(prefsMutexProvider),
-      // **نقطة اختناق واحدة للنسخة التلقائية** (2026-09-04): كل كتابة
-      // وسم — من أي شاشة — تطلب نسخة، فلا تُنسى شاشة.
-      onChanged: () =>
-          unawaited(ref.read(autoBackupProvider).requestBackup()),
-    ));
+final tagsIndexProvider = Provider(
+  (ref) => TagsIndex(
+    store: ref.watch(keyValueStoreProvider),
+    mutex: ref.watch(prefsMutexProvider),
+    // **A single choke point for the automatic backup** (2026-09-04):
+    // every tag write, from any screen, requests a backup, so no screen
+    // can be forgotten.
+    onChanged: () => unawaited(ref.read(autoBackupProvider).requestBackup()),
+  ),
+);
 
-final artworkIndexProvider = Provider((ref) => ArtworkIndex(
-      store: ref.watch(keyValueStoreProvider),
-      mutex: ref.watch(prefsMutexProvider),
-    ));
+final artworkIndexProvider = Provider(
+  (ref) => ArtworkIndex(
+    store: ref.watch(keyValueStoreProvider),
+    mutex: ref.watch(prefsMutexProvider),
+  ),
+);
 
-/// إخفاقات السبر (عطل المصغرات 2026-09-07) — بلا هذه يُعاد سبر
-/// المستحيل عند كل إقلاع فيجمّد الطابور خلفه.
-final probeFailureIndexProvider = Provider((ref) => ProbeFailureIndex(
-      store: ref.watch(keyValueStoreProvider),
-      mutex: ref.watch(prefsMutexProvider),
-    ));
+/// Probe failures (the thumbnail defect 2026-09-07). Without this, the
+/// impossible is re-probed at every launch and freezes the queue behind it.
+final probeFailureIndexProvider = Provider(
+  (ref) => ProbeFailureIndex(
+    store: ref.watch(keyValueStoreProvider),
+    mutex: ref.watch(prefsMutexProvider),
+  ),
+);
 
-final playlistsStoreProvider = Provider((ref) => PlaylistsStore(
-      store: ref.watch(keyValueStoreProvider),
-      mutex: ref.watch(prefsMutexProvider),
-      // **نقطة اختناق واحدة للنسخة التلقائية** (2026-09-04): كل كتابة
-      // قوائم — من أي شاشة — تطلب نسخة، فلا تُنسى شاشة.
-      onChanged: () =>
-          unawaited(ref.read(autoBackupProvider).requestBackup()),
-    ));
+final playlistsStoreProvider = Provider(
+  (ref) => PlaylistsStore(
+    store: ref.watch(keyValueStoreProvider),
+    mutex: ref.watch(prefsMutexProvider),
+    // **A single choke point for the automatic backup** (2026-09-04):
+    // every playlist write, from any screen, requests a backup, so no
+    // screen can be forgotten.
+    onChanged: () => unawaited(ref.read(autoBackupProvider).requestBackup()),
+  ),
+);
 
-/// تجميع تحميل القائمة في قائمة محفوظة واحدة (بلاغ المالك 2026-09-02).
-final batchCollectorProvider = Provider((ref) => BatchPlaylistCollector(
-      playlists: ref.watch(playlistsStoreProvider),
-      onChanged: () =>
-          ref.read(playlistsRevisionProvider.notifier).state++,
-    ));
+/// Collects a playlist download into one saved playlist (asked 2026-09-02).
+final batchCollectorProvider = Provider(
+  (ref) => BatchPlaylistCollector(
+    playlists: ref.watch(playlistsStoreProvider),
+    onChanged: () => ref.read(playlistsRevisionProvider.notifier).state++,
+  ),
+);
 
-/// **عدّاد يُبطل تخبئة القوائم** حين تُكتب من خارج شاشتها. بلا هذا كانت
-/// القائمة المُجمَّعة تلقائياً تبقى غير مرئية حتى إعادة تشغيل التطبيق
-/// (مثبت على المحاكي 2026-09-03: الملف على القرص صحيح والشاشة فارغة).
+/// **A counter that invalidates the playlists cache** when they are written
+/// from outside their own screen. Without it, an automatically collected
+/// playlist stayed invisible until the app restarted (confirmed on the
+/// emulator 2026-09-03: the file on disk was correct and the screen was
+/// empty).
 final playlistsRevisionProvider = StateProvider<int>((ref) => 0);
 
-/// **حلّ الروابط القصيرة قبل قرار التوجيه** (بلاغ المالك 2026-09-08):
-/// `on.soundcloud.com/…` ألبومٌ لا يحوي `/sets/`، فكان يمرّ كمقطع مفرد
-/// ويفكّه السيرفر إلى عشرين. المحرك يحلّ لنفسه لاحقاً، وحلُّ المحلول
-/// لا يكلّف شيئاً (`needsResolution` تردّ false فوراً).
+/// **Resolving short links before the routing decision** (field report
+/// 2026-09-08): `on.soundcloud.com/…` is an album that contains no
+/// `/sets/`, so it passed as a single clip and the server expanded it into
+/// twenty. The engine resolves for itself later, and resolving what is
+/// already resolved costs nothing (`needsResolution` returns false
+/// immediately).
 final shortLinkResolverProvider = Provider((ref) => ShortLinkResolver());
 
-/// محرك Super: إضافة للسيرفر فقط (ر-2) — لا سحب ولا حذف تلقائي.
+/// Super's engine: add to the server only (rule 2). No pull and no
+/// automatic delete.
 final downloadEngineProvider = Provider<DownloadEngine?>((ref) {
   final api = ref.watch(apiClientProvider);
   if (api == null) return null;
@@ -106,27 +126,30 @@ final downloadEngineProvider = Provider<DownloadEngine?>((ref) {
         throw StateError('Super لا يسحب من خط الإضافة'),
     onCompleted: (task) {
       collector.onFinished(task);
-      // إن طلب المالك «احفظ على الجهاز» لهذه الدفعة (م-17 على كل عضو).
+      // When "save to device" was requested for this batch, applied to
+      // every member.
       ref.read(batchOfflineSaverProvider).onFinished(task);
       ref.invalidate(historyProvider);
     },
-    // بلاغ المالك 2026-09-03: يوتيوب «الأفضل» يعطي AV1/VP9 فيظهر المقطع
-    // مشوشاً على الهواتف — هذا يطلب H.264/AAC بدلها.
+    // Field report 2026-09-03: YouTube at "best" gives AV1 or VP9 and the
+    // clip looks torn on phones. This asks for H.264/AAC instead.
     compatibleVideo: () => ref.read(settingsProvider).compatiblePlayback,
-    // م-32: **أول موصل سجل في Super إطلاقاً** — كانت شاشة السجلات تقرأ
-    // ملفاً لا يكتب فيه أحد، فتظهر فارغة دائماً (بلاغ المالك 2026-09-02).
+    // **The first log wiring in Super at all**: the logs screen used to
+    // read a file nobody wrote to, so it was always empty (field report
+    // 2026-09-02).
     onLog: (message) => unawaited(logger.log(message, tag: 'download')),
   );
   ref.onDispose(engine.dispose);
   return engine;
 });
 
-/// لقطة مهام المحرك الحية — تتجدد مع كل تحديث حالة.
+/// A live snapshot of the engine's tasks, refreshed on every state update.
 ///
-/// **`yield engine.tasks` الأولى هي إصلاح أشباح ع-1:** StreamProvider
-/// يحتفظ بقيمته السابقة أثناء إعادة البناء، والمحرك الجديد لم يكن يبثّ
-/// شيئاً حتى أول `submit` — فتبقى بطاقات المحرك الميت وشارة عدّاده
-/// معروضة إلى ما لا نهاية بعد تبديل السيرفر.
+/// **The first `yield engine.tasks` is the fix for the ع-1 ghosts:** a
+/// StreamProvider keeps its previous value while rebuilding, and the new
+/// engine broadcast nothing until the first `submit`, so the dead engine's
+/// cards and its counter badge stayed on screen indefinitely after a server
+/// switch.
 final engineTasksProvider = StreamProvider<List<DownloadTask>>((ref) async* {
   final engine = ref.watch(downloadEngineProvider);
   if (engine == null) {
@@ -137,15 +160,15 @@ final engineTasksProvider = StreamProvider<List<DownloadTask>>((ref) async* {
   yield* engine.updates.map((_) => engine.tasks);
 });
 
-/// **يبلّغ المُجمِّع بأعضاء الدفعة التي سقطت** (فشل/إلغاء) كي لا تبقى
-/// قائمة القائمة المُجمَّعة معلّقة، وتُحذف إن سقط كل عناصرها.
+/// **Tells the collector which batch members fell away** (failed or
+/// cancelled), so the collected playlist is not left pending, and is
+/// deleted if every one of its items fell.
 final batchDropWatcherProvider = Provider<void>((ref) {
   final collector = ref.watch(batchCollectorProvider);
   ref.listen<AsyncValue<List<DownloadTask>>>(engineTasksProvider, (_, next) {
     for (final task in next.valueOrNull ?? const <DownloadTask>[]) {
       if (!task.isBatchMember) continue;
-      if (task.phase == TaskPhase.failed ||
-          task.phase == TaskPhase.cancelled) {
+      if (task.phase == TaskPhase.failed || task.phase == TaskPhase.cancelled) {
         unawaited(collector.onDropped(task.id));
         ref.read(batchOfflineSaverProvider).forget(task.id);
       }
@@ -153,19 +176,21 @@ final batchDropWatcherProvider = Provider<void>((ref) {
   });
 });
 
-/// المهام غير المنتهية (بطاقات المكتبة الحية + شارة الرأس — النموذج أ).
+/// The server history. null before the server is configured; refreshed by
+/// pull-to-refresh or by live polling.
 final activeTasksProvider = Provider<List<DownloadTask>>((ref) {
   final tasks = ref.watch(engineTasksProvider).valueOrNull ?? const [];
   return tasks.where((t) => !t.isFinished).toList();
 });
 
-/// المهام الفاشلة («تحتاج انتباهك» في ورقة الإدارة).
+/// Failed tasks: "needs your attention" in the management sheet.
 final failedTasksProvider = Provider<List<DownloadTask>>((ref) {
   final tasks = ref.watch(engineTasksProvider).valueOrNull ?? const [];
   return tasks.where((t) => t.phase == TaskPhase.failed).toList();
 });
 
-/// سجل السيرفر — null قبل تهيئة السيرفر؛ يُحدَّث بالسحب أو بالاستطلاع الحي.
+/// The server history. null before the server is configured; refreshed by
+/// pull-to-refresh or by live polling.
 final historyProvider = FutureProvider<HistoryResponse?>((ref) async {
   final api = ref.watch(apiClientProvider);
   if (api == null) return null;
@@ -174,60 +199,78 @@ final historyProvider = FutureProvider<HistoryResponse?>((ref) async {
     clearErrorSignature('history');
     return history;
   } on MTApiException catch (e) {
-    // **مصدر كل أعطال المكتبة** وكان لا يُسجَّل: انهيار 2026-09-05
-    // (رفض الاعتماد) مرّ بلا سطر واحد في السجل. ومرة لكل توقيع لأن
-    // الاستطلاع الحي كل ثانيتين يعيد العطل ثلاثين مرة في الدقيقة.
+    // **The source of every library failure**, and it was not being logged:
+    // a crash on 2026-09-05 from a rejected credential passed without a
+    // single line in the log. Once per signature, because live polling
+    // every two seconds would repeat the same failure thirty times a
+    // minute.
     unawaited(logErrorOnce(ref.read(loggerProvider), 'history', e));
     rethrow;
   }
 });
 
-/// النسخ الاحتياطي (م-31) — يكتب v2 ويقرأ التنسيقات الثلاثة.
-final backupServiceProvider = Provider((ref) => BackupService(
-      store: ref.watch(keyValueStoreProvider),
-      secrets: ref.watch(secretStoreProvider),
-      mutex: ref.watch(prefsMutexProvider),
-      variant: 'super',
-    ));
+/// The diagnostic log; overridden in main with a path from path_provider.
+final backupServiceProvider = Provider(
+  (ref) => BackupService(
+    store: ref.watch(keyValueStoreProvider),
+    secrets: ref.watch(secretStoreProvider),
+    mutex: ref.watch(prefsMutexProvider),
+    variant: 'super',
+  ),
+);
 
-/// السجل التشخيصي (م-32) — يُتجاوز في main بمسار من path_provider.
+/// The diagnostic log; overridden in main with a path from path_provider.
 final loggerProvider = Provider<MTLogger>(
-    (ref) => throw UnimplementedError('overridden in main'));
+  (ref) => throw UnimplementedError('overridden in main'),
+);
 
-// ── التشغيل (المرحلة 5) ──
+// Playback.
 
-final playbackPrefsProvider = Provider((ref) => PlaybackPrefs(
-      store: ref.watch(keyValueStoreProvider),
-      mutex: ref.watch(prefsMutexProvider),
-    ));
+final playbackPrefsProvider = Provider(
+  (ref) => PlaybackPrefs(
+    store: ref.watch(keyValueStoreProvider),
+    mutex: ref.watch(prefsMutexProvider),
+  ),
+);
 
-final playbackPositionsProvider = Provider((ref) => PlaybackPositionStore(
-      store: ref.watch(keyValueStoreProvider),
-      mutex: ref.watch(prefsMutexProvider),
-    ));
+final playbackPositionsProvider = Provider(
+  (ref) => PlaybackPositionStore(
+    store: ref.watch(keyValueStoreProvider),
+    mutex: ref.watch(prefsMutexProvider),
+  ),
+);
 
-/// أبعاد المقاطع (م-35) — تُملأ انتهازياً عند أول تشغيل.
-final mediaShapeIndexProvider = Provider((ref) => MediaShapeIndex(
-      store: ref.watch(keyValueStoreProvider),
-      mutex: ref.watch(prefsMutexProvider),
-    ));
+/// Clip dimensions, filled opportunistically on first play.
+final mediaShapeIndexProvider = Provider(
+  (ref) => MediaShapeIndex(
+    store: ref.watch(keyValueStoreProvider),
+    mutex: ref.watch(prefsMutexProvider),
+  ),
+);
 
-final audioStateStoreProvider = Provider((ref) => AudioStateStore(
-      store: ref.watch(keyValueStoreProvider),
-      mutex: ref.watch(prefsMutexProvider),
-    ));
+final audioStateStoreProvider = Provider(
+  (ref) => AudioStateStore(
+    store: ref.watch(keyValueStoreProvider),
+    mutex: ref.watch(prefsMutexProvider),
+  ),
+);
 
-/// يُتجاوز في main — يُبنى قبل `AudioService.init` ويُشارَك مع الفيديو
-/// فتنطبق القاعدة الذهبية بنفس المنطق على المشغلين.
+/// Overridden in main. It is built before `AudioService.init` and shared
+/// with video, so the golden rule applies with identical logic in both
+/// players.
 final playbackResolverProvider = Provider<PlaybackSourceResolver>(
-    (ref) => throw UnimplementedError('overridden in main'));
+  (ref) => throw UnimplementedError('overridden in main'),
+);
 
-/// معالج الصوت الخلفي — يُتجاوز في main بعد `AudioService.init`.
+/// The background audio handler; overridden in main after
+/// `AudioService.init`.
 final audioHandlerProvider = Provider<MTAudioHandler>(
-    (ref) => throw UnimplementedError('overridden in main'));
+  (ref) => throw UnimplementedError('overridden in main'),
+);
 
-/// يوصل رابط السيرفر الحالي بمحلّل المصادر — تغيّر الإعدادات يلتقطه
-/// المشغل الحي بلا إعادة بناء (نفس نمط TRD §3.1).
+/// Wires the current server URL into the source resolver, so a settings
+/// change is picked up by the live player with no rebuild (the same pattern
+/// as TRD §3.1).
 final playbackWiringProvider = Provider<void>((ref) {
   final api = ref.watch(apiClientProvider);
   ref.watch(playbackResolverProvider).endpoint = api == null
@@ -235,13 +278,15 @@ final playbackWiringProvider = Provider<void>((ref) {
       : ServerStreamEndpoint.fromApi(api);
 });
 
-/// محلّل الروابط (م-28): probe بنفس اعتمادات الحساب.
-/// **يراقب الاعتمادات وحدها لا كائن الإعدادات كله (إصلاح ط-6):** بلا
-/// `select` كان تغيير الثيم أو الجودة يعيد بناء المحلّل، فيُعاد فحص كل
-/// الروابط وأنت في شاشة الشبكة.
+/// The endpoint resolver: it probes with the account's own credentials.
+/// **It watches the credentials alone rather than the whole settings object
+/// (fix ط-6):** without `select`, changing the theme or the quality rebuilt
+/// the resolver, re-probing every endpoint while you were standing in the
+/// network screen.
 final endpointResolverProvider = Provider((ref) {
   final credentials = ref.watch(
-      settingsProvider.select((s) => (s.username ?? '', s.password ?? '')));
+    settingsProvider.select((s) => (s.username ?? '', s.password ?? '')),
+  );
   return EndpointResolver.withClientFactory(
     (baseUrl) => MeTubeApiClient(
       config: ServerConfig(

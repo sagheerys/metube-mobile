@@ -11,15 +11,17 @@ import '../library_providers.dart';
 import '../local_item.dart';
 import 'item_details_sheet.dart';
 
-/// ورقة إجراءات العنصر (ر-5 — نسخة Lite: كله محلي) — الحذف أخيراً
-/// معزولاً بفاصل وبلون الخطأ (قاعدة تنقل عامة).
-void showItemActionsSheet(
-    BuildContext context, WidgetRef ref, LocalItem item) {
+/// The item actions sheet (rule 5, Lite's version where everything is
+/// local). Delete comes last, isolated by a divider and in the error
+/// colour, which is a general navigation rule.
+void showItemActionsSheet(BuildContext context, WidgetRef ref, LocalItem item) {
   showModalBottomSheet<void>(
     context: context,
     useRootNavigator: true,
-    // سياق الشاشة (لا سياق الورقة) يُمرَّر لفتح الأوراق التالية بعده:
-    // استعمال سياق ورقة مُغلقة يفجّر تأكيد `_dependents.isEmpty`.
+    // The screen's context, not the sheet's, is passed for opening later
+    // sheets: using a closed sheet's context trips the
+    // `_dependents.isEmpty`
+    // assertion.
     builder: (_) => _ItemActionsSheet(item: item, host: context),
   );
 }
@@ -29,7 +31,8 @@ class _ItemActionsSheet extends ConsumerWidget {
 
   final LocalItem item;
 
-  /// سياق الشاشة المستضيفة — يبقى حياً بعد إغلاق هذه الورقة.
+  /// The hosting screen's context, which stays alive after this sheet
+  /// closes.
   final BuildContext host;
 
   @override
@@ -38,8 +41,10 @@ class _ItemActionsSheet extends ConsumerWidget {
     final p = MTThemeX.of(context).palette;
     final actions = ref.read(libraryActionsProvider);
 
-    Future<void> run(Future<void> Function() action,
-        {String? successText}) async {
+    Future<void> run(
+      Future<void> Function() action, {
+      String? successText,
+    }) async {
       Navigator.pop(context);
       try {
         await action();
@@ -53,17 +58,19 @@ class _ItemActionsSheet extends ConsumerWidget {
       }
     }
 
-    ListTile tile(IconData icon, String label, VoidCallback onTap,
-            {Color? color}) =>
-        ListTile(
-          leading: Icon(icon, color: color ?? p.ink2),
-          title: Text(label,
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyMedium!
-                  .copyWith(color: color)),
-          onTap: onTap,
-        );
+    ListTile tile(
+      IconData icon,
+      String label,
+      VoidCallback onTap, {
+      Color? color,
+    }) => ListTile(
+      leading: Icon(icon, color: color ?? p.ink2),
+      title: Text(
+        label,
+        style: Theme.of(context).textTheme.bodyMedium!.copyWith(color: color),
+      ),
+      onTap: onTap,
+    );
 
     return SafeArea(
       child: Column(
@@ -71,7 +78,11 @@ class _ItemActionsSheet extends ConsumerWidget {
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(
-                MTSpace.xl, MTSpace.lg, MTSpace.xl, MTSpace.sm),
+              MTSpace.xl,
+              MTSpace.lg,
+              MTSpace.xl,
+              MTSpace.sm,
+            ),
             child: Text(
               item.title,
               maxLines: 1,
@@ -84,36 +95,53 @@ class _ItemActionsSheet extends ConsumerWidget {
             Navigator.pop(context);
             showItemDetailsSheet(host, item);
           }),
-          tile(Icons.share_rounded, l10n.share,
-              () => run(() => actions.share([item]))),
-          // **مشغل خارجي — بملف محلي وحده** (طلب المالك 2026-09-05).
-          tile(Icons.open_with_rounded, l10n.openInExternalPlayer,
-              () => run(() async {
-                    final opened = await const ExternalPlayer()
-                        .open(item.path, audio: item.isAudio);
-                    if (!opened && host.mounted) {
-                      showMTSnack(host, l10n.noExternalPlayer,
-                          type: MTSnackType.error);
-                    }
-                  })),
+          tile(
+            Icons.share_rounded,
+            l10n.share,
+            () => run(() => actions.share([item])),
+          ),
+          // **An external player, for a local file only** (requested
+          // 2026-09-05).
+          tile(
+            Icons.open_with_rounded,
+            l10n.openInExternalPlayer,
+            () => run(() async {
+              final opened = await const ExternalPlayer().open(
+                item.path,
+                audio: item.isAudio,
+              );
+              if (!opened && host.mounted) {
+                showMTSnack(
+                  host,
+                  l10n.noExternalPlayer,
+                  type: MTSnackType.error,
+                );
+              }
+            }),
+          ),
           tile(Icons.playlist_add_rounded, l10n.addToPlaylist, () {
             Navigator.pop(context);
             showAddToPlaylistSheet(host, ref, [item]);
           }),
-          // الرابط الأصلي متاح فقط لما نعرف رابطه (لا اختلاق — فخ §6.3).
+          // The original link is offered only where we know it; it is never
+          // invented (trap §6.3).
           if (item.canonicalUrl != null)
             tile(Icons.open_in_new_rounded, l10n.openOriginalLink, () {
               Navigator.pop(context);
-              launchUrl(Uri.parse(item.canonicalUrl!),
-                  mode: LaunchMode.externalApplication);
+              launchUrl(
+                Uri.parse(item.canonicalUrl!),
+                mode: LaunchMode.externalApplication,
+              );
             }),
           const Divider(),
           tile(
             Icons.delete_outline_rounded,
             l10n.deleteVideo,
             () => _confirm(context, l10n.deleteVideoConfirm(item.title), () {
-              run(() => actions.deleteFiles([item]),
-                  successText: l10n.deletedTitle(item.title));
+              run(
+                () => actions.deleteFiles([item]),
+                successText: l10n.deletedTitle(item.title),
+              );
             }),
             color: p.err,
           ),
@@ -147,9 +175,12 @@ class _ItemActionsSheet extends ConsumerWidget {
   }
 }
 
-/// تأكيد الحذف الجماعي (ر-6) — حذف الملفات من الجهاز.
+/// Bulk delete confirmation (rule 6): deletes the files from the device.
 void confirmBulkDelete(
-    BuildContext context, WidgetRef ref, Set<String> selection) {
+  BuildContext context,
+  WidgetRef ref,
+  Set<String> selection,
+) {
   final l10n = context.mtl;
   showDialog<void>(
     context: context,
@@ -169,12 +200,16 @@ void confirmBulkDelete(
                 if (selection.contains(item.key)) item,
             ];
             try {
-              final count =
-                  await ref.read(libraryActionsProvider).deleteFiles(targets);
+              final count = await ref
+                  .read(libraryActionsProvider)
+                  .deleteFiles(targets);
               ref.read(libraryViewProvider.notifier).clearSelection();
               if (context.mounted) {
-                showMTSnack(context, l10n.deletedCount(count),
-                    type: MTSnackType.success);
+                showMTSnack(
+                  context,
+                  l10n.deletedCount(count),
+                  type: MTSnackType.success,
+                );
               }
             } catch (e) {
               if (context.mounted) {

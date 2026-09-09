@@ -4,15 +4,19 @@ import 'package:mt_ui/mt_ui.dart';
 
 import '../../di.dart';
 
-/// **شاشة اختيار اللغة** (طلب المالك 2026-09-08).
+/// **The language picker screen** (requested 2026-09-08).
 ///
-/// كان الاختيار زرّاً مقسّماً بثلاث شرائح. و`SegmentedButton` يقسم العرض
-/// على عدد الخيارات: ثلاثةٌ تسع شاشة 360dp، **وستةٌ تنكسر** — والخطة
-/// المعلنة دعم اللغات الشائعة. القائمة تتمدّد بلا حدّ وبلا كسر.
+/// The choice used to be a segmented button with three segments, and
+/// `SegmentedButton` divides the width by the number of options: three fit
+/// a 360dp screen, **and six break** — and the declared plan is to support
+/// the common languages. A list extends without limit and without
+/// breaking.
 ///
-/// «اتبع النظام» أولاً وبلا رمز لغة: هو **غياب اختيار** لا لغةً بعينها
-/// (م-50). واللغات تُقرأ من [MTLocalizations.supportedLocales] لا من
-/// قائمة مكتوبة بيد — فإضافة `app_xx.arb` تُظهر لغتها هنا تلقائياً.
+/// "Follow the system" comes first and carries no language code: it is
+/// **the absence of a choice**, not a particular language. The languages
+/// are read from [MTLocalizations.supportedLocales] rather than a
+/// hand-written list, so adding an `app_xx.arb` makes its language appear
+/// here automatically.
 class LanguageScreen extends ConsumerWidget {
   const LanguageScreen({super.key});
 
@@ -28,17 +32,14 @@ class LanguageScreen extends ConsumerWidget {
       required bool checked,
       required VoidCallback onTap,
       String? subtitle,
-    }) =>
-        ListTile(
-          title: Text(title),
-          subtitle: subtitle == null
-              ? null
-              : Text(subtitle, style: Theme.of(context).textTheme.bodySmall),
-          trailing: checked
-              ? Icon(Icons.check_rounded, color: p.accentInk)
-              : null,
-          onTap: onTap,
-        );
+    }) => ListTile(
+      title: Text(title),
+      subtitle: subtitle == null
+          ? null
+          : Text(subtitle, style: Theme.of(context).textTheme.bodySmall),
+      trailing: checked ? Icon(Icons.check_rounded, color: p.accentInk) : null,
+      onTap: onTap,
+    );
 
     final codes = [
       for (final locale in MTLocalizations.supportedLocales)

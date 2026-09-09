@@ -13,8 +13,8 @@ class PlaybackQueue {
     int index = 0,
     bool shuffle = false,
     Random? random,
-  })  : _items = List.of(items),
-        _random = random ?? Random() {
+  }) : _items = List.of(items),
+       _random = random ?? Random() {
     _shuffle = shuffle;
     final start = _items.isEmpty ? 0 : index.clamp(0, _items.length - 1);
     _rebuildOrder(startAt: start);
@@ -78,7 +78,8 @@ class PlaybackQueue {
     if (_order.isEmpty) return null;
     if (mode == PlayMode.repeatOne && !userInitiated) return index;
     if (_cursor < _order.length - 1) return _order[_cursor + 1];
-    final wraps = mode == PlayMode.repeatAll ||
+    final wraps =
+        mode == PlayMode.repeatAll ||
         (userInitiated && mode == PlayMode.repeatOne);
     return wraps ? _order.first : null;
   }
@@ -110,8 +111,7 @@ class PlaybackQueue {
 
   /// Removes an item, skipping a broken one or removing it from the sheet,
   /// keeping the current one where possible. Returns false when the index
-  /// is
-  /// out of range.
+  /// is out of range.
   bool removeAt(int itemIndex) {
     if (itemIndex < 0 || itemIndex >= _items.length) return false;
     final currentItem = index == itemIndex ? null : current;
@@ -124,8 +124,7 @@ class PlaybackQueue {
     // The new cursor: the same item if it survived, otherwise whatever took
     // the removed one's place.
     final fallback = itemIndex.clamp(0, _items.length - 1);
-    final target =
-        currentItem == null ? fallback : _items.indexOf(currentItem);
+    final target = currentItem == null ? fallback : _items.indexOf(currentItem);
     _rebuildOrderPreservingShuffle(startAt: target < 0 ? fallback : target);
     return true;
   }

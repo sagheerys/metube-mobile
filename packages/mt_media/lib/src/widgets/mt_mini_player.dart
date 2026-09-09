@@ -100,8 +100,7 @@ class _Bar extends StatelessWidget {
       direction: DismissDirection.down,
       onDismissed: (_) => handler.stop(),
       // A light shrink while pressed, which prepares the audio screen
-      // rising
-      // out of its place.
+      // rising out of its place.
       child: MTPressable(
         child: Material(
           color: Colors.transparent,

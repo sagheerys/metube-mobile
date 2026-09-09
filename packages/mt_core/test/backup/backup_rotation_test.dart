@@ -14,8 +14,10 @@ void main() {
     // **التباعد معطَّل هنا عمداً**: هذه الحرّاس تختبر آلية الحدّ
     // والذرّية والبادئة، وأزمنتها دقائق. التباعد له حرّاسه أدناه.
     rotation = BackupRotation(
-        directory: temp.path, prefix: 'metube_lite',
-        minSpacing: Duration.zero);
+      directory: temp.path,
+      prefix: 'metube_lite',
+      minSpacing: Duration.zero,
+    );
   });
   tearDown(() => temp.delete(recursive: true));
 
@@ -42,8 +44,11 @@ void main() {
     await rotation.write('{"a":1}');
     final all = await rotation.list();
     expect(all, hasLength(1), reason: 'الجديد وحده يُحسب نسخة');
-    expect(await File('${temp.path}/metube_lite_backup.json').exists(), isTrue,
-        reason: 'ولا يُحذف ملف التثبيت السابق');
+    expect(
+      await File('${temp.path}/metube_lite_backup.json').exists(),
+      isTrue,
+      reason: 'ولا يُحذف ملف التثبيت السابق',
+    );
   });
 
   test('يحتفظ بسبع ويحذف الأقدم، والأحدث أولاً', () async {
@@ -82,7 +87,9 @@ void main() {
 
   test('مجلد غير موجود ⇒ قائمة فارغة لا رمي', () async {
     final missing = BackupRotation(
-        directory: '${temp.path}/none', prefix: 'metube_lite');
+      directory: '${temp.path}/none',
+      prefix: 'metube_lite',
+    );
     expect(await missing.list(), isEmpty);
     expect(await missing.latest(), isNull);
   });
@@ -90,8 +97,10 @@ void main() {
   test('البادئة تفصل التطبيقين في مجلد واحد', () async {
     await rotation.write('{"lite":1}', at: at(1));
     final superRotation = BackupRotation(
-        directory: temp.path, prefix: 'metube_super',
-        minSpacing: Duration.zero);
+      directory: temp.path,
+      prefix: 'metube_super',
+      minSpacing: Duration.zero,
+    );
     await superRotation.write('{"super":1}', at: at(1));
 
     expect(await rotation.list(), hasLength(1));
@@ -101,10 +110,11 @@ void main() {
 
   test('keep مخصص يُحترم', () async {
     final three = BackupRotation(
-        directory: temp.path,
-        prefix: 'metube_lite',
-        keep: 3,
-        minSpacing: Duration.zero);
+      directory: temp.path,
+      prefix: 'metube_lite',
+      keep: 3,
+      minSpacing: Duration.zero,
+    );
     for (var i = 0; i < 6; i++) {
       await three.write('{"n":$i}', at: at(i));
     }
@@ -131,8 +141,11 @@ void main() {
       }
       final all = await spaced.list();
       expect(all, hasLength(1), reason: 'الدفعة خانة واحدة لا سبع');
-      expect(await spaced.read(all.single), '{"n":6}',
-          reason: 'وأحدث حالة هي المحفوظة — لا الأولى');
+      expect(
+        await spaced.read(all.single),
+        '{"n":6}',
+        reason: 'وأحدث حالة هي المحفوظة — لا الأولى',
+      );
     });
 
     test('بعد انقضاء الفاصل تُفتح خانة جديدة', () async {
@@ -162,8 +175,11 @@ void main() {
       }
       final all = await spaced.list();
       expect(all, hasLength(7));
-      expect(all.first.at.difference(all.last.at), const Duration(hours: 6),
-          reason: 'المدى الحقيقي للذاكرة الاحتياطية');
+      expect(
+        all.first.at.difference(all.last.at),
+        const Duration(hours: 6),
+        reason: 'المدى الحقيقي للذاكرة الاحتياطية',
+      );
     });
 
     test('الاستبدال لا يترك المستخدم بلا نسخة لحظةً واحدة', () async {

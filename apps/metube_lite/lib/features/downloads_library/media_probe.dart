@@ -1,6 +1,7 @@
 import 'package:flutter/services.dart';
 
-/// نتيجة سبر ملف واحد — أي حقل قد يغيب (ملف تالف أو ترميز غير مدعوم).
+/// The result of probing one file. Any field may be missing, from a corrupt
+/// file or an unsupported codec.
 class ProbedMedia {
   const ProbedMedia({
     required this.path,
@@ -15,13 +16,12 @@ class ProbedMedia {
   final int? width;
   final int? height;
 
-  /// مسار المصغرة المولّدة في كاش التطبيق (لا رابط شبكة).
+  /// The generated thumbnail's path in the app cache, not a network URL.
   final String? thumbPath;
 
-  double? get aspectRatio =>
-      (width == null || height == null || height! <= 0)
-          ? null
-          : width! / height!;
+  double? get aspectRatio => (width == null || height == null || height! <= 0)
+      ? null
+      : width! / height!;
 
   bool get isEmpty => duration == null && width == null && thumbPath == null;
 
@@ -42,8 +42,8 @@ class ProbedMedia {
   }
 }
 
-/// م-18 + م-35: سبر الملفات المحلية عبر القناة الأصلية
-/// (`MediaMetadataRetriever`). راجع `MediaProbe.kt` لسبب وجودها.
+/// Probing local files through the native channel
+/// (`MediaMetadataRetriever`). See `MediaProbe.kt` for why it exists.
 class MediaProbe {
   const MediaProbe([this.channel = _defaultChannel]);
 
@@ -53,13 +53,10 @@ class MediaProbe {
   Future<List<ProbedMedia>> probe(List<String> paths) async {
     if (paths.isEmpty) return const [];
     try {
-      final raw =
-          await channel.invokeMethod<List<Object?>>('probeMedia', {
+      final raw = await channel.invokeMethod<List<Object?>>('probeMedia', {
         'paths': paths,
       });
-      return [
-        for (final entry in raw ?? const []) ?ProbedMedia.fromMap(entry),
-      ];
+      return [for (final entry in raw ?? const []) ?ProbedMedia.fromMap(entry)];
     } on PlatformException {
       return const [];
     } on MissingPluginException {

@@ -16,37 +16,35 @@ class BackupFile {
   final int sizeBytes;
 }
 
-/// **The rotating backup store** (requested 2026-09-04: "several copies,
-/// up to seven automatically, deleting the oldest").
+/// **The rotating backup store** (requested 2026-09-04: "several copies, up
+/// to seven automatically, deleting the oldest").
 ///
 /// Four decisions, each one caused by a real failure:
 ///
-/// 1. 1. **A dated name per copy, not one file overwritten.** A fixed name
-/// meant a corrupt copy erased the good one before it with no way back.
-/// And it bit from another direction too: Android 11+ records an **owner**
-/// for every file in `Download/`, so a reinstalled app cannot overwrite a
-/// file an earlier install created, which is the `errno 13` seen in a
-/// screenshot. A new name every time makes the conflict structurally
-/// impossible.
+/// 1. **A dated name per copy, not one file overwritten.** A fixed
+///    name meant a corrupt copy erased the good one before it with no way
+///    back. And it bit from another direction too: Android 11+ records an
+///    **owner** for every file in `Download/`, so a reinstalled app cannot
+///    overwrite a file an earlier install created, which is the `errno 13`
+///    seen in a screenshot. A new name every time makes the conflict
+///    structurally impossible.
 ///
-/// 2. 2. **Atomic writes**: `.tmp` then rename. An interruption mid-write,
-///    a
-/// killed app or a dead battery, never leaves half a file that looks
-/// valid.
+/// 2. **Atomic writes**: `.tmp` then rename. An interruption
+///    mid-write, a killed app or a dead battery, never leaves half a file
+///    that looks valid.
 ///
-/// 3. 3. **A copy identical to the newest one is not written.** Without
-///    this
-/// the seven become seven consecutive moments rather than seven changes,
-/// and yesterday's copy is evicted by today's duplicates.
+/// 3. **A copy identical to the newest one is not written.** Without
+///    this the seven become seven consecutive moments rather than seven
+///    changes, and yesterday's copy is evicted by today's duplicates.
 ///
-/// 4. 4. **A minimum spacing between slots** ([minSpacing]), added after a
-/// device review (2026-09-05): all seven copies in Super sat between 00:39
-/// and 00:45, **six minutes covering the entire backup history**. The
-/// limit of seven was working perfectly, but every playlist or tag change
-/// requests a backup, and a batch download from YouTube is a change per
-/// clip, so one batch consumed all seven slots and evicted everything
-/// before it. Decision 3 does not help here: each copy really is different
-/// from the one before.
+/// 4. **A minimum spacing between slots** ([minSpacing]), added after
+///    a device review (2026-09-05): all seven copies in Super sat between
+///    00:39 and 00:45, **six minutes covering the entire backup history**.
+///    The limit of seven was working perfectly, but every playlist or tag
+///    change requests a backup, and a batch download from YouTube is a
+///    change per clip, so one batch consumed all seven slots and evicted
+///    everything before it. Decision 3 does not help here: each copy really
+///    is different from the one before.
 ///
 /// So a copy newer than [minSpacing] **replaces** the one before it in the
 /// same slot rather than opening a new one: the latest state is always
@@ -96,16 +94,19 @@ class BackupRotation {
   /// The date parsed out of the name, or `null` for a name that does not
   /// follow the pattern.
   DateTime? dateOf(String fileName) {
-    if (!fileName.startsWith('${prefix}_') ||
-        !fileName.endsWith(extension)) {
+    if (!fileName.startsWith('${prefix}_') || !fileName.endsWith(extension)) {
       return null;
     }
     final stamp = fileName.substring(
-        prefix.length + 1, fileName.length - extension.length);
+      prefix.length + 1,
+      fileName.length - extension.length,
+    );
     if (stamp.length != 17 || stamp[10] != '_') return null;
-    return DateTime.tryParse('${stamp.substring(0, 10)} '
-        '${stamp.substring(11, 13)}:${stamp.substring(13, 15)}:'
-        '${stamp.substring(15, 17)}');
+    return DateTime.tryParse(
+      '${stamp.substring(0, 10)} '
+      '${stamp.substring(11, 13)}:${stamp.substring(13, 15)}:'
+      '${stamp.substring(15, 17)}',
+    );
   }
 
   /// The saved copies, **newest first**. A missing folder yields an empty
@@ -119,12 +120,14 @@ class BackupRotation {
       final name = entity.path.split(RegExp(r'[/\\]')).last;
       final at = dateOf(name);
       if (at == null) continue; // ملفات قديمة أو غريبة لا تُلمس
-      out.add(BackupFile(
-        path: entity.path,
-        name: name,
-        at: at,
-        sizeBytes: await entity.length(),
-      ));
+      out.add(
+        BackupFile(
+          path: entity.path,
+          name: name,
+          at: at,
+          sizeBytes: await entity.length(),
+        ),
+      );
     }
     out.sort((a, b) => b.at.compareTo(a.at));
     return out;
@@ -149,15 +152,15 @@ class BackupRotation {
     }
 
     // **Replacement rather than addition** inside the same time slot: the
-    // old
-    // file is deleted after the replacement is written successfully, never
-    // before, so an interruption in the middle leaves the old copy intact
-    // rather than leaving the user with none.
+    // old file is deleted after the replacement is written successfully,
+    // never before, so an interruption in the middle leaves the old copy
+    // intact rather than leaving the user with none.
     //
     // The slot is computed on a **fixed grid**, not as a gap from the last
     // write: "newer than an hour" made activity every half hour drag the
     // single slot forward forever, so a history never opened at all.
-    final replace = newest != null &&
+    final replace =
+        newest != null &&
         minSpacing > Duration.zero &&
         _slotOf(stamp) == _slotOf(newest.at);
     final name = fileNameFor(stamp);
@@ -201,8 +204,7 @@ class BackupRotation {
         deleted++;
       } on FileSystemException {
         // A file owned by an earlier install (Android 11+). Leave it, and
-        // do not
-        // fail the rotation over it.
+        // do not fail the rotation over it.
       }
     }
     return deleted;

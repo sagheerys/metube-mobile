@@ -4,8 +4,9 @@ import 'package:mt_ui/mt_ui.dart';
 
 import '../playlists_providers.dart';
 
-/// بطاقة قائمة ذكية (م-37/أ): إسبريسو داكنة مصغرة بتوهّج علوي — تُبنى
-/// وحدها بلا صيانة، ولونها يتبع معناها (مفضلة قرمزي · الأحدث بلون الفعل).
+/// A smart playlist card: a small espresso-dark card with a glow at the
+/// top. It builds itself with no maintenance, and its colour follows its
+/// meaning (favourites crimson, newest in the accent colour).
 class SmartPlaylistCard extends StatelessWidget {
   const SmartPlaylistCard({
     super.key,
@@ -53,7 +54,8 @@ class SmartPlaylistCard extends StatelessWidget {
           child: Stack(
             clipBehavior: Clip.none,
             children: [
-              // توهّج ناعم أعلى البطاقة — تدرّج شعاعي يتلاشى، لا قرص حاد.
+              // A soft glow at the top of the card: a radial gradient that
+              // fades out, not a hard disc.
               PositionedDirectional(
                 top: -34,
                 end: -24,
@@ -121,8 +123,8 @@ class SmartPlaylistCard extends StatelessWidget {
   }
 }
 
-/// بطاقة قائمة يدوية (م-37/ب): غلاف فسيفسائي حتى أربع مصغرات
-/// + زر تشغيل + شارة تثبيت.
+/// A manual playlist card: a mosaic cover of up to four thumbnails, plus a
+/// play button and a pin badge.
 class PlaylistCard extends StatelessWidget {
   const PlaylistCard({
     super.key,
@@ -138,7 +140,7 @@ class PlaylistCard extends StatelessWidget {
   final VoidCallback onPlay;
   final VoidCallback onLongPress;
 
-  /// حتى أربعة أغلفة من عناصر القائمة (قد تكون فارغة).
+  /// Up to four covers from the playlist's items; it may be empty.
   final List<Widget> thumbnails;
 
   @override
@@ -165,7 +167,8 @@ class PlaylistCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // الغلاف يملأ ما تبقى من البطاقة فلا تبقى فراغات ميتة.
+              // The cover fills whatever is left of the card, so no dead
+              // space remains.
               Expanded(
                 child: _Cover(
                   thumbnails: thumbnails,
@@ -218,30 +221,31 @@ class _Cover extends StatelessWidget {
   final String pinnedLabel;
   final VoidCallback onPlay;
 
-
-  /// **فسيفساء تتكيّف مع العدد** (طلب المالك 2026-09-08): كانت خليّتين
-  /// دائماً، فقائمة من عشرين عنصراً تُعرَّف بغلافين اثنين. الآن حتى
-  /// أربعة — والتدرّج مقصود: **الثلاثة كبيرةٌ واثنتان** لا شبكةٌ فيها
-  /// ربعٌ فارغ، والواحدة تملأ الغلاف بدل نصفٍ ميت.
+  /// **A mosaic that adapts to the count** (requested 2026-09-08): it was
+  /// always two cells, so a playlist of twenty items was represented by two
+  /// covers. Now it goes up to four, and the progression is deliberate:
+  /// **three means one large and two small** rather than a grid with an
+  /// empty quarter, and one fills the whole cover instead of half of it
+  /// sitting dead.
   ///
-  /// **و`stretch` إلزامي في كل صف وعمود** (فحص جهاز المالك 2026-09-05):
-  /// بدونه لا تتلقى الخليّة ارتفاعاً مشدوداً فتأخذ الصورة ارتفاعها
-  /// الطبيعي وتتوسّط — شريطٌ رفيع وسط بطاقة فارغة، و`BoxFit.cover`
-  /// لا ينفع لأن لا شيء يطلب منه ملء الارتفاع.
+  /// **And `stretch` is mandatory in every row and column** (device check
+  /// 2026-09-05): without it the cell receives no tight height, so the
+  /// image takes its natural height and centres itself, a thin strip in the
+  /// middle of an empty card. `BoxFit.cover` does not help, because nothing
+  /// is asking it to fill the height.
   Widget _mosaic(BuildContext context, MTPalette p) {
     Widget cell(Widget? child) => ColoredBox(
-          color: p.cardAlt,
-          child: child ??
-              Icon(Icons.queue_music_rounded, size: 18, color: p.ink3),
-        );
+      color: p.cardAlt,
+      child: child ?? Icon(Icons.queue_music_rounded, size: 18, color: p.ink3),
+    );
     Widget stretchRow(List<Widget> children) => Row(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [for (final child in children) Expanded(child: child)],
-        );
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [for (final child in children) Expanded(child: child)],
+    );
     Widget stretchColumn(List<Widget> children) => Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [for (final child in children) Expanded(child: child)],
-        );
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [for (final child in children) Expanded(child: child)],
+    );
 
     final t = thumbnails;
     return switch (t.length) {
@@ -249,13 +253,13 @@ class _Cover extends StatelessWidget {
       1 => cell(t[0]),
       2 => stretchRow([cell(t[0]), cell(t[1])]),
       3 => stretchRow([
-          cell(t[0]),
-          stretchColumn([cell(t[1]), cell(t[2])]),
-        ]),
+        cell(t[0]),
+        stretchColumn([cell(t[1]), cell(t[2])]),
+      ]),
       _ => stretchColumn([
-          stretchRow([cell(t[0]), cell(t[1])]),
-          stretchRow([cell(t[2]), cell(t[3])]),
-        ]),
+        stretchRow([cell(t[0]), cell(t[1])]),
+        stretchRow([cell(t[2]), cell(t[3])]),
+      ]),
     };
   }
 

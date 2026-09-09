@@ -45,17 +45,25 @@ void main() {
     });
 
     test('مرشح دون اتصال / سيرفر', () {
-      expect(buildLibraryView(items, scope: LibraryScope.offline),
-          hasLength(2));
-      expect(buildLibraryView(items, scope: LibraryScope.onServer),
-          hasLength(2));
+      expect(
+        buildLibraryView(items, scope: LibraryScope.offline),
+        hasLength(2),
+      );
+      expect(
+        buildLibraryView(items, scope: LibraryScope.onServer),
+        hasLength(2),
+      );
     });
 
     test('مرشح النوع صوت/فيديو', () {
       expect(
-          buildLibraryView(items, type: MediaTypeFilter.audio), hasLength(1));
+        buildLibraryView(items, type: MediaTypeFilter.audio),
+        hasLength(1),
+      );
       expect(
-          buildLibraryView(items, type: MediaTypeFilter.video), hasLength(2));
+        buildLibraryView(items, type: MediaTypeFilter.video),
+        hasLength(2),
+      );
     });
 
     test('البحث الحي بالعنوان', () {
@@ -64,8 +72,10 @@ void main() {
     });
 
     test('تصفية وسم', () {
-      expect(buildLibraryView(items, tags: {'وثائقي'}).single.title,
-          'وثائقي البحار');
+      expect(
+        buildLibraryView(items, tags: {'وثائقي'}).single.title,
+        'وثائقي البحار',
+      );
     });
 
     test('تصفية وسوم مركبة: التضمين «أو» والاستثناء يغلب', () {
@@ -76,8 +86,7 @@ void main() {
       );
       // الاستثناء يطرح العنصر ولو كان مُضمَّناً بوسم آخر — نية صريحة.
       expect(
-        buildLibraryView(items,
-            tags: {'وثائقي'}, excludedTags: {'وثائقي'}),
+        buildLibraryView(items, tags: {'وثائقي'}, excludedTags: {'وثائقي'}),
         isEmpty,
       );
       // استثناء وحده بلا تضمين: كل شيء إلا حاملي الوسم.
@@ -88,12 +97,13 @@ void main() {
 
     test('الفرز بالحجم والاسم', () {
       expect(
-          buildLibraryView(items, sort: LibrarySort.largest)
-              .first
-              .sizeBytes,
-          300);
-      expect(buildLibraryView(items, sort: LibrarySort.nameAZ).first.title,
-          'أنشودة الصباح');
+        buildLibraryView(items, sort: LibrarySort.largest).first.sizeBytes,
+        300,
+      );
+      expect(
+        buildLibraryView(items, sort: LibrarySort.nameAZ).first.title,
+        'أنشودة الصباح',
+      );
     });
 
     test('شارة المكان (م-13)', () {
@@ -105,12 +115,14 @@ void main() {
 
   group('LibraryItem.fromHistory', () {
     test('كشف الصوت من quality=audio', () {
-      final item = LibraryItem.fromHistory(HistoryItem.fromJson({
-        'url': 'https://soundcloud.com/a/t',
-        'title': 'مقطع',
-        'quality': 'audio',
-        'status': 'finished',
-      }));
+      final item = LibraryItem.fromHistory(
+        HistoryItem.fromJson({
+          'url': 'https://soundcloud.com/a/t',
+          'title': 'مقطع',
+          'quality': 'audio',
+          'status': 'finished',
+        }),
+      );
       expect(item.isAudio, isTrue);
       expect(item.onServer, isTrue);
     });
@@ -125,8 +137,7 @@ void main() {
   /// والاختيار في ورقة الفرز لا في صف رقائق ثالث.
   group('تصفية المنصة', () {
     test('المنصة المختارة وحدها تبقى', () {
-      final result =
-          buildLibraryView(items, platform: MediaPlatform.youtube);
+      final result = buildLibraryView(items, platform: MediaPlatform.youtube);
       expect(result, hasLength(2));
       expect(result.every((i) => i.platform == MediaPlatform.youtube), isTrue);
     });
@@ -137,8 +148,11 @@ void main() {
     });
 
     test('المنصة تتركب مع بقية المرشحات لا تلغيها', () {
-      final result = buildLibraryView(items,
-          platform: MediaPlatform.youtube, scope: LibraryScope.favorites);
+      final result = buildLibraryView(
+        items,
+        platform: MediaPlatform.youtube,
+        scope: LibraryScope.favorites,
+      );
       expect(result.map((i) => i.title), ['أنشودة الصباح']);
     });
 
@@ -160,8 +174,9 @@ void main() {
   group('عوامل مساعدة', () {
     test('fromOfflineOnly يستمد العنوان من اسم الملف', () {
       final item = LibraryItem.fromOfflineOnly(
-          'https://youtu.be/ccccccccccc',
-          '/storage/emulated/0/Download/MeTube_Super/درس التجويد_120000.mp4');
+        'https://youtu.be/ccccccccccc',
+        '/storage/emulated/0/Download/MeTube_Super/درس التجويد_120000.mp4',
+      );
       expect(item.title, 'درس التجويد_120000');
       expect(item.isAudio, isFalse);
       expect(item.location, MTMediaLocation.offline);

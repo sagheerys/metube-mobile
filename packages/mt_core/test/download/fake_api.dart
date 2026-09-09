@@ -37,8 +37,9 @@ class FakeApi implements MeTubeApi {
     final call = historyCalls++;
     onHistoryFetch?.call(call);
     if (historyScript.isEmpty) return const HistoryResponse();
-    return historyScript[
-        call < historyScript.length ? call : historyScript.length - 1];
+    return historyScript[call < historyScript.length
+        ? call
+        : historyScript.length - 1];
   }
 
   /// آخر قيمة وصلت لـ`compatibleVideo` — يتحقق منها اختبار المحرك.
@@ -56,8 +57,10 @@ class FakeApi implements MeTubeApi {
   }
 
   @override
-  Future<void> delete(List<String> canonicalUrls,
-      {String where = 'done'}) async {
+  Future<void> delete(
+    List<String> canonicalUrls, {
+    String where = 'done',
+  }) async {
     deletes.add((canonicalUrls, where));
     if (deleteError != null) throw deleteError!;
   }
@@ -119,5 +122,4 @@ class FakeApi implements MeTubeApi {
 HistoryResponse historyWith({
   List<Map<String, dynamic>> done = const [],
   List<Map<String, dynamic>> queue = const [],
-}) =>
-    HistoryResponse.fromJson({'done': done, 'queue': queue});
+}) => HistoryResponse.fromJson({'done': done, 'queue': queue});

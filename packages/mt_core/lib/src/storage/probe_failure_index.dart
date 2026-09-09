@@ -11,7 +11,7 @@ import 'url_keyed_index.dart';
 /// derived rather than probed.
 final class ProbeFailureIndex extends UrlKeyedIndex<DateTime> {
   ProbeFailureIndex({required super.store, required super.mutex})
-      : super(prefsKey: 'probe_failures');
+    : super(prefsKey: 'probe_failures');
 
   /// How long before we forget: the file may come back, re-uploaded or the
   /// server restored.
@@ -27,8 +27,11 @@ final class ProbeFailureIndex extends UrlKeyedIndex<DateTime> {
   dynamic encodeValue(DateTime value) => value.millisecondsSinceEpoch;
 
   /// Should this item be skipped right now, because it failed recently?
-  bool isCoolingDown(Map<String, DateTime> failures, String canonicalUrl,
-      {DateTime? now}) {
+  bool isCoolingDown(
+    Map<String, DateTime> failures,
+    String canonicalUrl, {
+    DateTime? now,
+  }) {
     final at = failures[canonicalUrl];
     if (at == null) return false;
     return (now ?? DateTime.now()).difference(at) < retryAfter;

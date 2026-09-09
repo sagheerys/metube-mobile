@@ -5,8 +5,7 @@ sealed class MTApiException implements Exception {
   const MTApiException([this.detail]);
 
   /// An optional technical detail, the raw server message. For logs, not
-  /// for
-  /// direct display.
+  /// for direct display.
   final String? detail;
 
   /// Should this be retried automatically when the network returns?
@@ -45,8 +44,8 @@ final class NetworkException extends MTApiException {
   const NetworkException([super.detail]);
 }
 
-/// The server answered with an explicit error, in an `error` or `msg`
-/// field or as an HTTP error status.
+/// The server answered with an explicit error, in an `error` or `msg` field
+/// or as an HTTP error status.
 final class ServerErrorException extends MTApiException {
   const ServerErrorException([super.detail]);
 }
@@ -57,8 +56,7 @@ final class PlatformBlockedException extends ServerErrorException {
   const PlatformBlockedException([super.detail]);
 }
 
-/// A filename from the server failed the path safety guard: `..`, a
-/// separator, or empty.
+/// The task was cancelled by the user. Not an error to display.
 final class UnsafeFilenameException extends MTApiException {
   const UnsafeFilenameException([super.detail]);
 }
@@ -77,10 +75,10 @@ final class PollTimeoutException extends MTApiException {
 /// permissions, space.
 ///
 /// **Its cause was defect ع-2:** the download worker caught only
-/// `MTApiException`, so any `FileSystemException` from renaming the
-/// partial file escaped the pump. The task froze on "pulling" and **the
-/// whole queue stopped with no message**. Everything unclassified is now
-/// wrapped here, so a single task fails and the rest continue.
+/// `MTApiException`, so any `FileSystemException` from renaming the partial
+/// file escaped the pump. The task froze on "pulling" and **the whole queue
+/// stopped with no message**. Everything unclassified is now wrapped here,
+/// so a single task fails and the rest continue.
 final class LocalFailureException extends MTApiException {
   const LocalFailureException([super.detail]);
 }

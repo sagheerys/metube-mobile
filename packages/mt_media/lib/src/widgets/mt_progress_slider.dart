@@ -46,8 +46,9 @@ class _MTProgressSliderState extends State<MTProgressSlider> {
         .toDouble();
     final value = _dragValue ?? positionMs;
     final onDark = widget.dark;
-    final trackInactive =
-        onDark ? p.miniInk.withValues(alpha: 0.25) : p.ink.withValues(alpha: 0.1);
+    final trackInactive = onDark
+        ? p.miniInk.withValues(alpha: 0.25)
+        : p.ink.withValues(alpha: 0.1);
     final timeColor = onDark ? p.miniInkMuted : p.ink3;
 
     return Column(
@@ -73,9 +74,7 @@ class _MTProgressSliderState extends State<MTProgressSlider> {
             secondaryTrackValue: widget.buffered?.inMilliseconds
                 .clamp(0, maxMs < 1 ? 1 : maxMs.toInt())
                 .toDouble(),
-            onChanged: maxMs < 1
-                ? null
-                : (v) => setState(() => _dragValue = v),
+            onChanged: maxMs < 1 ? null : (v) => setState(() => _dragValue = v),
             onChangeEnd: (v) {
               widget.onSeek(Duration(milliseconds: v.round()));
               setState(() => _dragValue = null);
@@ -94,7 +93,9 @@ class _MTProgressSliderState extends State<MTProgressSlider> {
               Text(
                 widget.showRemaining
                     ? mtFormatRemaining(
-                        Duration(milliseconds: value.round()), widget.duration)
+                        Duration(milliseconds: value.round()),
+                        widget.duration,
+                      )
                     : mtFormatDuration(total),
                 style: _timeStyle(context, timeColor),
               ),
@@ -108,8 +109,7 @@ class _MTProgressSliderState extends State<MTProgressSlider> {
   /// **It used to ask for `tabularFigures` and never get them**: the style
   /// inherits the Tajawal body font, which has no `tnum` table at all
   /// (binary inspection 2026-09-02), so the feature was silently ignored
-  /// and
-  /// the counter kept dancing. `.tabular` moves it to the heading font,
+  /// and the counter kept dancing. `.tabular` moves it to the heading font,
   /// which genuinely supports it.
   TextStyle _timeStyle(BuildContext context, Color color) =>
       Theme.of(context).textTheme.bodySmall!.copyWith(color: color).tabular;

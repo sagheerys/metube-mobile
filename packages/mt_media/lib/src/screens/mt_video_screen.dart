@@ -29,9 +29,9 @@ class MTPlayerAction {
 }
 
 /// The portrait video player (Wahaj reference B): the video leads with a
-/// cream sheet beneath it, running title, then actions, then mode, then
-/// the "up next" list. Going back offers "continue as background audio?"
-/// from the same second.
+/// cream sheet beneath it, running title, then actions, then mode, then the
+/// "up next" list. Going back offers "continue as background audio?" from
+/// the same second.
 class MTVideoScreen extends StatelessWidget {
   const MTVideoScreen({
     super.key,
@@ -53,7 +53,7 @@ class MTVideoScreen extends StatelessWidget {
   /// The meta line under the title (platform, uploader), supplied by the
   /// app.
   final String Function(BuildContext context, PlaylistItem item)?
-      subtitleBuilder;
+  subtitleBuilder;
   final VoidCallback? onShowPlaylist;
 
   /// Smart handover: continue the same item as audio from the same second.
@@ -64,15 +64,14 @@ class MTVideoScreen extends StatelessWidget {
   /// `duration` became nothing, so a position near the end was **saved
   /// rather than cleared** and the clip "resumed" at the credits forever.
   final Future<void> Function(PlaylistItem item, Duration position)?
-      onContinueAsAudio;
+  onContinueAsAudio;
 
   /// **When the question is asked** (field report 2026-09-02: "after
   /// continuing in the background and pressing back the message appears; it
   /// should not"). The condition used to be `onContinueAsAudio == null`
   /// alone, so it asked on every exit, even after the user had already
-  /// moved
-  /// the clip to audio. Only the app knows the audio player's state, so the
-  /// app decides.
+  /// moved the clip to audio. Only the app knows the audio player's state,
+  /// so the app decides.
   final bool Function()? shouldOfferContinueAsAudio;
   final String? playlistName;
 
@@ -83,84 +82,79 @@ class MTVideoScreen extends StatelessWidget {
   final String? membershipLine;
 
   bool get _offersAudio =>
-      onContinueAsAudio != null &&
-      (shouldOfferContinueAsAudio?.call() ?? true);
+      onContinueAsAudio != null && (shouldOfferContinueAsAudio?.call() ?? true);
 
   /// **A tilt opens full screen and tilting back closes it** (decision
   /// 2026-09-05), and the button stays for anyone who has locked rotation
-  /// in
-  /// their system settings.
+  /// in their system settings.
   @override
   Widget build(BuildContext context) => MTRotationScope(
-        open: (byRotation) => _openFullscreen(context, byRotation),
-        builder: (context, openFullscreen) => _body(context, openFullscreen),
-      );
+    open: (byRotation) => _openFullscreen(context, byRotation),
+    builder: (context, openFullscreen) => _body(context, openFullscreen),
+  );
 
   Widget _body(BuildContext context, VoidCallback openFullscreen) => PopScope(
-        canPop: !_offersAudio,
-        onPopInvokedWithResult: (didPop, _) {
-          if (!didPop) _askContinueAsAudio(context);
-        },
-        child: Scaffold(
-          // **The system bar follows the theme** (field report 2026-09-05:
-          // "the
-          // clock bar is dark during the day and looks strange"). The video
-          // itself
-          // stays on a dark ground, but the bar above it took the page's
-          // colour,
-          // and that was "always dark", so a night bar appeared over a
-          // cream
-          // interface in daylight.
-          backgroundColor: MTThemeX.of(context).palette.bg,
-          body: ListenableBuilder(
-            listenable: session,
-            // **In landscape the video alone fills the screen** (field
-            // report
-            // 2026-09-05: "I leave full screen with the device in landscape
-            // and the
-            // app shows sideways"). Leaving manually disarms tilt so full
-            // screen is
-            // not reopened, and the result was a cream sheet with a
-            // squeezed video on
-            // a wide screen. Landscape is now **a form** of this screen
-            // rather than a
-            // fault in it.
-            builder: (context, _) =>
-                MediaQuery.orientationOf(context) == Orientation.landscape
-                    ? _VideoArea(
-                        session: session,
-                        fill: true,
-                        playlistName: playlistName,
-                        membershipLine: membershipLine,
-                        onBack: () => Navigator.of(context).maybePop(),
-                        onFullscreen: openFullscreen,
-                        onQueue: () => _openQueue(context),
-                      )
-                    : Column(
-              children: [
-                _VideoArea(
-                  session: session,
-                  playlistName: playlistName,
-                  membershipLine: membershipLine,
-                  onBack: () => Navigator.of(context).maybePop(),
-                  onFullscreen: openFullscreen,
-                  onQueue: () => _openQueue(context),
-                ),
-                Expanded(
-                  child: MTVideoInfoSheet(
+    canPop: !_offersAudio,
+    onPopInvokedWithResult: (didPop, _) {
+      if (!didPop) _askContinueAsAudio(context);
+    },
+    child: Scaffold(
+      // **In landscape the video alone fills the screen** (field report
+      // 2026-09-05: "I leave full screen with the device in landscape
+      // and the
+      // app shows sideways"). Leaving manually disarms tilt so full
+      // screen is
+      // not reopened, and the result was a cream sheet with a squeezed
+      // video on
+      // a wide screen. Landscape is now **a form** of this screen
+      // rather than a
+      // fault in it.
+      backgroundColor: MTThemeX.of(context).palette.bg,
+      body: ListenableBuilder(
+        listenable: session,
+        // **In landscape the video alone fills the screen** (field
+        // report 2026-09-05: "I leave full screen with the device in
+        // landscape and the app shows sideways"). Leaving manually
+        // disarms tilt so full screen is not reopened, and the result
+        // was a cream sheet with a squeezed video on a wide screen.
+        // Landscape is now **a form** of this screen rather than a
+        // fault in it.
+        builder: (context, _) =>
+            MediaQuery.orientationOf(context) == Orientation.landscape
+            ? _VideoArea(
+                session: session,
+                fill: true,
+                playlistName: playlistName,
+                membershipLine: membershipLine,
+                onBack: () => Navigator.of(context).maybePop(),
+                onFullscreen: openFullscreen,
+                onQueue: () => _openQueue(context),
+              )
+            : Column(
+                children: [
+                  _VideoArea(
                     session: session,
-                    actions: actions,
-                    artwork: artwork,
-                    subtitleBuilder: subtitleBuilder,
                     playlistName: playlistName,
-                    onShowPlaylist: onShowPlaylist,
+                    membershipLine: membershipLine,
+                    onBack: () => Navigator.of(context).maybePop(),
+                    onFullscreen: openFullscreen,
+                    onQueue: () => _openQueue(context),
                   ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      );
+                  Expanded(
+                    child: MTVideoInfoSheet(
+                      session: session,
+                      actions: actions,
+                      artwork: artwork,
+                      subtitleBuilder: subtitleBuilder,
+                      playlistName: playlistName,
+                      onShowPlaylist: onShowPlaylist,
+                    ),
+                  ),
+                ],
+              ),
+      ),
+    ),
+  );
 
   Future<void> _openFullscreen(BuildContext context, bool byRotation) =>
       Navigator.of(context).push(
@@ -185,9 +179,7 @@ class MTVideoScreen extends StatelessWidget {
       currentIndex: ordered.indexWhere((i) => i.canonicalUrl == currentUrl),
       artwork: artwork,
       playlistName: playlistName,
-      // The session notifies on every tick, so the sheet knows when
-      // playback
-      // stopped.
+      // The smart handover dialog on exit.
       liveness: session,
       paused: () => !session.isPlaying,
       onShowAll: onShowPlaylist,
@@ -201,11 +193,9 @@ class MTVideoScreen extends StatelessWidget {
     final item = session.current;
     final navigator = Navigator.of(context);
     // **We only pop our own page** (field report 2026-09-03): the handover
-    // to
-    // audio can take a while, and the user may have left another way in the
-    // meantime, so a blind `pop()` afterwards popped **the shell itself**
-    // and
-    // nothing was left: a black screen.
+    // to audio can take a while, and the user may have left another way in
+    // the meantime, so a blind `pop()` afterwards popped **the shell
+    // itself** and nothing was left: a black screen.
     final route = ModalRoute.of(context);
     void popSelf() {
       if (route == null || route.isCurrent) navigator.pop();
@@ -284,8 +274,10 @@ class _VideoArea extends StatelessWidget {
             else
               Center(
                 child: session.error != null
-                    ? Icon(Icons.error_outline_rounded,
-                        color: MTPalette.serverCardInk)
+                    ? Icon(
+                        Icons.error_outline_rounded,
+                        color: MTPalette.serverCardInk,
+                      )
                     : const CircularProgressIndicator(),
               ),
             if (ready)

@@ -35,16 +35,20 @@ void main() {
         {'path': text, 'type': 'text'},
       ]),
     );
-    await binding.defaultBinaryMessenger
-        .handlePlatformMessage(events.name, payload, (_) {});
+    await binding.defaultBinaryMessenger.handlePlatformMessage(
+      events.name,
+      payload,
+      (_) {},
+    );
   }
 
   setUp(() {
     initialGate = Completer<void>();
     delivered = [];
     logs = [];
-    binding.defaultBinaryMessenger
-        .setMockMethodCallHandler(methods, (call) async {
+    binding.defaultBinaryMessenger.setMockMethodCallHandler(methods, (
+      call,
+    ) async {
       if (call.method == 'getInitialMedia') {
         // **بطء مقصود**: هذه هي النافذة التي كان الحدث يسقط فيها.
         await initialGate.future;
@@ -56,20 +60,21 @@ void main() {
     // سجّله `EventChannel` عند الاشتراك، فلا يصل الحدث أبداً. المطلوب
     // الردّ على نداءي `listen`/`cancel` الصادرين فقط.
     binding.defaultBinaryMessenger.setMockMethodCallHandler(
-        const MethodChannel('receive_sharing_intent/events-media'),
-        (call) async => null);
+      const MethodChannel('receive_sharing_intent/events-media'),
+      (call) async => null,
+    );
   });
 
   tearDown(() {
     binding.defaultBinaryMessenger.setMockMethodCallHandler(methods, null);
     binding.defaultBinaryMessenger.setMockMethodCallHandler(
-        const MethodChannel('receive_sharing_intent/events-media'), null);
+      const MethodChannel('receive_sharing_intent/events-media'),
+      null,
+    );
   });
 
-  ShareReceiver build() => ShareReceiver(
-        onUrls: delivered.add,
-        onLog: logs.add,
-      );
+  ShareReceiver build() =>
+      ShareReceiver(onUrls: delivered.add, onLog: logs.add);
 
   test('رابط يصل قبل انتهاء getInitialMedia لا يضيع', () async {
     final receiver = build();
@@ -82,8 +87,11 @@ void main() {
     await started;
 
     // **الحارس**: بالترتيب القديم كانت هذه القائمة فارغة.
-    expect(delivered, hasLength(1),
-        reason: 'الاشتراك يجب أن يسبق قراءة الرابط الأولي');
+    expect(
+      delivered,
+      hasLength(1),
+      reason: 'الاشتراك يجب أن يسبق قراءة الرابط الأولي',
+    );
     expect(delivered.single.single, contains('dQw4w9WgXcQ'));
   });
 

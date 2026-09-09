@@ -73,24 +73,31 @@ void main() {
     Future<void> Function(PlaylistItem, Duration) onContinueAsAudio,
   ) async {
     usePhonePortrait(tester);
-    await tester.pumpWidget(MaterialApp(
-      navigatorKey: navKey,
-      localizationsDelegates: MTLocalizations.localizationsDelegates,
-      supportedLocales: MTLocalizations.supportedLocales,
-      theme: mtTheme(MTVariant.superApp, Brightness.light),
-      home: const Scaffold(body: Center(child: Text('BASE'))),
-    ));
-    unawaited(navKey.currentState!.push(MaterialPageRoute<void>(
-      builder: (_) => MTVideoScreen(
-        session: session,
-        onContinueAsAudio: onContinueAsAudio,
+    await tester.pumpWidget(
+      MaterialApp(
+        navigatorKey: navKey,
+        localizationsDelegates: MTLocalizations.localizationsDelegates,
+        supportedLocales: MTLocalizations.supportedLocales,
+        theme: mtTheme(MTVariant.superApp, Brightness.light),
+        home: const Scaffold(body: Center(child: Text('BASE'))),
       ),
-    )));
+    );
+    unawaited(
+      navKey.currentState!.push(
+        MaterialPageRoute<void>(
+          builder: (_) => MTVideoScreen(
+            session: session,
+            onContinueAsAudio: onContinueAsAudio,
+          ),
+        ),
+      ),
+    );
     await settle(tester);
   }
 
-  testWidgets('نقلٌ بطيء لا يُسقط الغلاف بعد أن يغادر المستخدم بطريق آخر',
-      (tester) async {
+  testWidgets('نقلٌ بطيء لا يُسقط الغلاف بعد أن يغادر المستخدم بطريق آخر', (
+    tester,
+  ) async {
     final session = newSession();
     await tester.runAsync(() => session.open([item]));
     final transfer = Completer<void>();
@@ -113,8 +120,11 @@ void main() {
     transfer.complete();
     await settle(tester);
 
-    expect(find.text('BASE'), findsOneWidget,
-        reason: 'pop عمياء كانت تُسقط الغلاف ⇒ شاشة سوداء');
+    expect(
+      find.text('BASE'),
+      findsOneWidget,
+      reason: 'pop عمياء كانت تُسقط الغلاف ⇒ شاشة سوداء',
+    );
     await tester.runAsync(session.dispose);
   });
 

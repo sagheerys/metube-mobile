@@ -28,30 +28,29 @@ void main() {
   });
 
   PlaylistItem short(String id) => PlaylistItem(
-        canonicalUrl: 'https://x/$id',
-        title: id,
-        localPath: '/media/$id.mp4',
-        duration: const Duration(seconds: 30),
-        aspectRatio: 0.5625,
-      );
+    canonicalUrl: 'https://x/$id',
+    title: id,
+    localPath: '/media/$id.mp4',
+    duration: const Duration(seconds: 30),
+    aspectRatio: 0.5625,
+  );
 
   Widget host(
     List<PlaylistItem> items, {
     void Function(Future<void> Function()? pauser)? onLive,
-  }) =>
-      MaterialApp(
-        localizationsDelegates: MTLocalizations.localizationsDelegates,
-        supportedLocales: MTLocalizations.supportedLocales,
-        theme: mtTheme(MTVariant.superApp, Brightness.light),
-        home: MTReelsPlayer(
-          lane: ShortsLane.from(items),
-          resolver: PlaybackSourceResolver(
-            endpoint: ServerStreamEndpoint.none,
-            fileExists: (_) => true,
-          ),
-          onLive: onLive,
-        ),
-      );
+  }) => MaterialApp(
+    localizationsDelegates: MTLocalizations.localizationsDelegates,
+    supportedLocales: MTLocalizations.supportedLocales,
+    theme: mtTheme(MTVariant.superApp, Brightness.light),
+    home: MTReelsPlayer(
+      lane: ShortsLane.from(items),
+      resolver: PlaybackSourceResolver(
+        endpoint: ServerStreamEndpoint.none,
+        fileExists: (_) => true,
+      ),
+      onLive: onLive,
+    ),
+  );
 
   /// التحرير غير متزامن عمداً (إسكات ⇒ تصريف ⇒ إغلاق مجاري المنصة).
   /// **و`runAsync` ضرورة لا زينة:** تصريف `video_player` ينتظر إلغاء
@@ -60,7 +59,8 @@ void main() {
   Future<void> settleTeardown(WidgetTester tester) async {
     await tester.pumpAndSettle();
     await tester.runAsync(
-        () => Future<void>.delayed(const Duration(milliseconds: 20)));
+      () => Future<void>.delayed(const Duration(milliseconds: 20)),
+    );
   }
 
   /// رد نداء المضيف كما كان يتصرف فعلاً بعد إبطال الشجرة.
@@ -68,8 +68,9 @@ void main() {
     throw StateError('Cannot use "ref" after the widget was disposed');
   }
 
-  testWidgets('رمية onLive عند الموت لا تترك مشغلاً يتيماً يعمل',
-      (tester) async {
+  testWidgets('رمية onLive عند الموت لا تترك مشغلاً يتيماً يعمل', (
+    tester,
+  ) async {
     await tester.pumpWidget(host([short('a')], onLive: throwingOnLive));
     await tester.pump(); // postFrameCallback ⇒ _load
     await tester.pumpAndSettle();
@@ -80,8 +81,11 @@ void main() {
     await tester.pumpAndSettle();
     await settleTeardown(tester);
 
-    expect(platform.playing, isEmpty,
-        reason: 'صوت يعمل بلا واجهة — بلاغ المالك بالنص');
+    expect(
+      platform.playing,
+      isEmpty,
+      reason: 'صوت يعمل بلا واجهة — بلاغ المالك بالنص',
+    );
     expect(platform.alive, isEmpty, reason: 'متحكم لم يُصرَّف = تسريب مرمّز');
   });
 
@@ -95,13 +99,17 @@ void main() {
     await tester.pump(const Duration(milliseconds: 200)); // ينتهي التحضير الآن
     await settleTeardown(tester);
 
-    expect(platform.playing, isEmpty,
-        reason: 'الحارس لا يجوز أن يعتمد على mounted');
+    expect(
+      platform.playing,
+      isEmpty,
+      reason: 'الحارس لا يجوز أن يعتمد على mounted',
+    );
     expect(platform.alive, isEmpty);
   });
 
-  testWidgets('onLive السليم يُسلَّم موقفاً عند الحياة وnull عند الموت',
-      (tester) async {
+  testWidgets('onLive السليم يُسلَّم موقفاً عند الحياة وnull عند الموت', (
+    tester,
+  ) async {
     final handovers = <bool>[];
     await tester.pumpWidget(
       host([short('a')], onLive: (pauser) => handovers.add(pauser != null)),

@@ -10,17 +10,14 @@ extension MTVideoSessionCommands on MTVideoSession {
   Future<void> seek(Duration to) async => _controller?.seekTo(to);
 
   /// A double tap on the right or left seeks ten seconds, from the
-  /// landscape
-  /// player reference.
+  /// landscape player reference.
   Future<void> seekBy(Duration delta) async {
     final controller = _controller;
     if (controller == null) return;
     final target = controller.value.position + delta;
     final max = controller.value.duration;
     await controller.seekTo(
-      target < Duration.zero
-          ? Duration.zero
-          : (target > max ? max : target),
+      target < Duration.zero ? Duration.zero : (target > max ? max : target),
     );
   }
 
@@ -63,11 +60,9 @@ extension MTVideoSessionCommands on MTVideoSession {
 
   /// **Shorts have no resume position (defect ط-4):** there was no
   /// `isShortForm` check here at all, so a mixed list advancing
-  /// automatically
-  /// into a short clip, or a list opened at `/player`, wrote
+  /// automatically into a short clip, or a list opened at `/player`, wrote
   /// `playback_pos_<url>` for a short. Reels never clears it, because it
-  /// does
-  /// not touch the position store: a dead entry forever.
+  /// does not touch the position store: a dead entry forever.
   Future<void> savePosition() async {
     final item = _queue.current;
     final controller = _controller;
@@ -84,8 +79,7 @@ extension MTVideoSessionCommands on MTVideoSession {
 
   /// **Silence first, then dispose (defect ط-2/3):** disposal is not
   /// immediate, so the audio of two clips overlapped on every skip. The
-  /// same
-  /// trap that was fixed in reels and never reached the session.
+  /// same trap that was fixed in reels and never reached the session.
   Future<void> _disposePlayers() async {
     final controller = _controller;
     _controller = null;
@@ -110,8 +104,7 @@ extension MTVideoSessionCommands on MTVideoSession {
       await WakelockPlus.toggle(enable: enabled);
     } on Object {
       // An unsupported platform: playback continues without keeping the
-      // screen
-      // awake.
+      // screen awake.
     }
   }
 }

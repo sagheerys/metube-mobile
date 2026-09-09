@@ -10,7 +10,7 @@ import 'url_keyed_index.dart';
 /// URL alone.
 final class TitleIndex extends UrlKeyedIndex<String> {
   TitleIndex({required super.store, required super.mutex})
-      : super(prefsKey: 'video_title_metadata');
+    : super(prefsKey: 'video_title_metadata');
 
   @override
   String? decodeValue(dynamic raw) {

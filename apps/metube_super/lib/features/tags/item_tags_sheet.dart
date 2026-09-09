@@ -11,8 +11,9 @@ import '../playlists/playlists_providers.dart';
 import '../shared/membership.dart';
 import 'manage_tags_sheet.dart';
 
-/// ورقة وسوم العنصر (م-26 · ر-7 خطوة 3): تبديل وسوم موجودة، إنشاء وسم،
-/// وزر «إدارة الوسوم». تعمل على عنصر واحد أو تحديد جماعي (ر-6).
+/// The item tags sheet: toggle existing tags, create a tag, and a "manage
+/// tags" button. It works on a single item or on a multi-selection (rule
+/// 6).
 void showItemTagsSheet(
   BuildContext context,
   WidgetRef ref,
@@ -23,8 +24,7 @@ void showItemTagsSheet(
     context: context,
     useRootNavigator: true,
     isScrollControlled: true,
-    builder: (_) =>
-        _ItemTagsSheet(canonicalUrls: canonicalUrls, host: context),
+    builder: (_) => _ItemTagsSheet(canonicalUrls: canonicalUrls, host: context),
   );
 }
 
@@ -33,31 +33,35 @@ class _ItemTagsSheet extends ConsumerStatefulWidget {
 
   final List<String> canonicalUrls;
 
-  /// سياق الشاشة المستضيفة — تُفتح به ورقة الإدارة بعد إغلاق هذه.
+  /// The hosting screen's context, used to open the management sheet after
+  /// this one closes.
   final BuildContext host;
 
   @override
   ConsumerState<_ItemTagsSheet> createState() => _ItemTagsSheetState();
 }
 
-/// **حالة محلية متفائلة** (بلاغ المالك 2026-09-02: «الوسوم لا تزال
-/// تسبب ربكة»).
+/// **Optimistic local state** (field report 2026-09-02: "the tags still
+/// cause confusion").
 ///
-/// السبب كان في البناء لا في المنطق: الورقة كانت تقرأ الوسوم بـ
-/// `FutureBuilder` وتُبطل `tagCountsProvider` عند **كل نقرة**. بين
-/// النقرة ووصول القراءة الجديدة يكون `snapshot.data` فارغاً والعدّادات
-/// مُبطَلة — فتُرسم الرقائق كلها **غير مُحدَّدة**، وبعضها يختفي تماماً،
-/// ثم تعود بعد جزء من الثانية. النقرة الواحدة تبدو وكأنها ألغت كل شيء.
+/// The cause was in the build, not the logic: the sheet read the tags with
+/// a `FutureBuilder` and invalidated `tagCountsProvider` on **every tap**.
+/// Between the tap and the new read arriving, `snapshot.data` was empty and
+/// the counters invalidated, so every chip was drawn **unselected**, some
+/// disappeared entirely, and they came back a fraction of a second later. A
+/// single tap looked as though it had undone everything.
 ///
-/// الآن: تُقرأ الحالة **مرة** عند الفتح، والنقرة تغيّر الحالة المحلية
-/// فوراً وتكتب في الخلفية. لا وميض ولا انتظار.
+/// Now the state is read **once** on opening, and a tap changes the local
+/// state immediately and writes in the background. No flicker and no wait.
 class _ItemTagsSheetState extends ConsumerState<_ItemTagsSheet> {
   final TextEditingController _newTag = TextEditingController();
 
-  /// كل الوسوم المعروضة (مرتّبة) — تشمل ما ليس على هذا التحديد.
+  /// Those applied to **all** of the selection; a bulk edit shows only what
+  /// is common.
   List<String> _all = const [];
 
-  /// المطبَّقة على **كل** المحدد (الجماعي يوضح المشترك فقط).
+  /// Those applied to **all** of the selection; a bulk edit shows only what
+  /// is common.
   Set<String> _selected = {};
   bool _loading = true;
 
@@ -97,7 +101,7 @@ class _ItemTagsSheetState extends ConsumerState<_ItemTagsSheet> {
     });
   }
 
-  /// النقرة تُطبَّق محلياً فوراً، والكتابة تتبعها.
+  /// The tap is applied locally at once, and the write follows it.
   Future<void> _toggle(String tag) async {
     final adding = !_selected.contains(tag);
     setState(() {
@@ -110,12 +114,14 @@ class _ItemTagsSheetState extends ConsumerState<_ItemTagsSheet> {
     });
     for (final url in widget.canonicalUrls) {
       final has = (await _tags.tagsOf(url)).contains(tag);
-      // `toggleTag` يقلب الحالة، فلا يُستدعى إلا حين تختلف عن المطلوب.
+      // `toggleTag` flips the state, so it is only called when the state
+      // differs from what is wanted.
       if (has != adding) await _tags.toggleTag(url, tag);
     }
-    // **حارس مفقود (العطل ط-7):** وسم 30 عنصراً ثم إغلاق الورقة قبل
-    // اكتمال الحلقة كان يستدعي `ref.invalidate` على ودجت ميت ⇒
-    // `StateError` غير ملتقط. (`_load` المجاور محروس — هذه نُسيت.)
+    // **A missing guard (defect ط-7):** tagging 30 items and then closing
+    // the sheet before the loop finished called `ref.invalidate` on a dead
+    // widget, an uncaught `StateError`. The neighbouring `_load` was
+    // guarded; this one had been forgotten.
     if (!mounted) return;
     _refreshHost();
   }
@@ -132,13 +138,15 @@ class _ItemTagsSheetState extends ConsumerState<_ItemTagsSheet> {
     await _toggle(name);
   }
 
-  /// المكتبة والعدّادات تتجدد **بعد** الكتابة — لا قبلها ولا أثناءها.
+  /// The library and the counters refresh **after** the write, never before
+  /// or during it.
   void _refreshHost() {
     ref.invalidate(tagCountsProvider);
     ref.invalidate(libraryItemsProvider);
-    // **وسطر «الوسوم» في التفاصيل والمشغلين**: الفهرس يقرأ `TagsIndex`
-    // مرة، ولا شيء كان يُبطله بعد الكتابة — فيبقى السطر معروضاً بوسم
-    // أُزيل للتو (فحص 2026-09-04).
+    // **And the tags line in the details and both players**: the index
+    // reads `TagsIndex` once and nothing invalidated it after a write, so
+    // the line kept showing a tag that had just been removed (review
+    // 2026-09-04).
     ref.invalidate(membershipIndexProvider);
   }
 
@@ -175,8 +183,7 @@ class _ItemTagsSheetState extends ConsumerState<_ItemTagsSheet> {
                 ),
               )
             else if (_all.isEmpty)
-              Text(l10n.noTagsYet,
-                  style: Theme.of(context).textTheme.bodySmall)
+              Text(l10n.noTagsYet, style: Theme.of(context).textTheme.bodySmall)
             else
               Wrap(
                 spacing: MTSpace.xs + 1,
@@ -202,10 +209,7 @@ class _ItemTagsSheetState extends ConsumerState<_ItemTagsSheet> {
                   ),
                 ),
                 const SizedBox(width: MTSpace.xs),
-                FilledButton(
-                  onPressed: _createTag,
-                  child: Text(l10n.create),
-                ),
+                FilledButton(onPressed: _createTag, child: Text(l10n.create)),
               ],
             ),
             const SizedBox(height: MTSpace.sm),

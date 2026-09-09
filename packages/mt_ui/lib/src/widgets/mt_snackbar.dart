@@ -17,16 +17,15 @@ void showMTSnack(
   String? actionLabel,
   VoidCallback? onAction,
   Duration duration = mtSnackDuration,
-}) =>
-    showMTSnackOn(
-      ScaffoldMessenger.of(context),
-      message,
-      type: type,
-      actionLabel: actionLabel,
-      onAction: onAction,
-      themeContext: context,
-      duration: duration,
-    );
+}) => showMTSnackOn(
+  ScaffoldMessenger.of(context),
+  message,
+  type: type,
+  actionLabel: actionLabel,
+  onAction: onAction,
+  themeContext: context,
+  duration: duration,
+);
 
 /// The same, with a **pre-captured** messenger. Used when the original
 /// context has already been deactivated, such as a bottom sheet that just
@@ -53,16 +52,11 @@ void showMTSnackOn(
       SnackBar(
         // **It dismisses itself even when it has an action** (field report
         // 2026-09-04: "the notices that appear over the add-link button
-        // never go
-        // away"). In Flutter, `persist = persist ?? action != null`, so
-        // every bar
-        // with a button, such as "download started · change quality",
-        // stayed
-        // **forever** until the user swiped it away, while "added to
-        // favourites"
-        // with no action vanished after four seconds. The decision: one
-        // duration
-        // for all.
+        // never go away"). In Flutter, `persist = persist ?? action !=
+        // null`, so every bar with a button, such as "download started ·
+        // change quality", stayed **forever** until the user swiped it
+        // away, while "added to favourites" with no action vanished after
+        // four seconds. The decision: one duration for all.
         persist: false,
         duration: duration,
         content: Row(

@@ -29,12 +29,9 @@ void main() {
       arb.keys.where((k) => !k.startsWith('@')).toSet();
 
   /// Placeholder names inside the text: `{percent}`, `{count}`. Plural
-  /// forms
-  /// are picked up from their branches so the two files match.
-  Set<String> placeholdersOf(String value) => RegExp(r'\{(\w+)\}')
-      .allMatches(value)
-      .map((m) => m.group(1)!)
-      .toSet();
+  /// forms are picked up from their branches so the two files match.
+  Set<String> placeholdersOf(String value) =>
+      RegExp(r'\{(\w+)\}').allMatches(value).map((m) => m.group(1)!).toSet();
 
   late Map<String, dynamic> en;
   late Map<String, dynamic> ar;
@@ -76,26 +73,31 @@ void main() {
       expect(
         placeholdersOf(ar[key] as String),
         placeholdersOf(en[key] as String),
-        reason: 'معاملات مختلفة في المفتاح "$key" — '
+        reason:
+            'معاملات مختلفة في المفتاح "$key" — '
             'EN: ${en[key]} · AR: ${ar[key]}',
       );
     }
   });
 
   /// **The metadata block is required in the template (`app_en.arb`)
-  /// only**,
-  /// verified against `gen-l10n`'s actual behaviour rather than assumed:
-  /// `resultsFound` is a plural in both languages with its block in English
-  /// alone, and generation passes. Requiring it in Arabic too used to fail
-  /// the test on **healthy** files.
+  /// only**, verified against `gen-l10n`'s actual behaviour rather than
+  /// assumed: `resultsFound` is a plural in both languages with its block
+  /// in English alone, and generation passes. Requiring it in Arabic too
+  /// used to fail the test on **healthy** files.
   test('كل مفتاح بصيغة جمع له كتلة @ في القالب الإنجليزي', () {
     for (final key in messageKeys(en)) {
-      final isPlural = (en[key] as String).contains(', plural,') ||
+      final isPlural =
+          (en[key] as String).contains(', plural,') ||
           ((ar[key] as String?) ?? '').contains(', plural,');
       if (!isPlural) continue;
-      expect(en['@$key'], isNotNull,
-          reason: 'صيغة جمع بلا كتلة @$key في app_en.arb — '
-              'gen-l10n لن يعرف نوع المعامل');
+      expect(
+        en['@$key'],
+        isNotNull,
+        reason:
+            'صيغة جمع بلا كتلة @$key في app_en.arb — '
+            'gen-l10n لن يعرف نوع المعامل',
+      );
     }
   });
 
@@ -111,10 +113,16 @@ void main() {
           .where((e) => !e.key.startsWith('@'))
           .map((e) => e.value.toString().toLowerCase());
       for (final v in values) {
-        expect(v.contains('all rights reserved'), isFalse,
-            reason: 'نصّ يناقض GPL في $name');
-        expect(v.contains('جميع الحقوق محفوظة'), isFalse,
-            reason: 'نصّ يناقض GPL في $name');
+        expect(
+          v.contains('all rights reserved'),
+          isFalse,
+          reason: 'نصّ يناقض GPL في $name',
+        );
+        expect(
+          v.contains('جميع الحقوق محفوظة'),
+          isFalse,
+          reason: 'نصّ يناقض GPL في $name',
+        );
       }
     }
   });
@@ -124,11 +132,13 @@ void main() {
   test('نصوص الرخصة موجودة وتسمّيها', () {
     for (final name in ['app_en.arb', 'app_ar.arb']) {
       final arb = load(name);
-      expect(arb['licensedUnder'].toString(), contains('GPL-3.0'),
-          reason: name);
+      expect(
+        arb['licensedUnder'].toString(),
+        contains('GPL-3.0'),
+        reason: name,
+      );
       expect(arb['copyright'].toString(), contains('2026'), reason: name);
-      expect(arb['notAffiliated'].toString(), contains('MeTube'),
-          reason: name);
+      expect(arb['notAffiliated'].toString(), contains('MeTube'), reason: name);
       expect(arb['noWarranty'], isNotNull, reason: name);
     }
   });

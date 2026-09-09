@@ -4,9 +4,10 @@ import 'package:mt_core/mt_core.dart';
 
 import '../../di.dart';
 
-/// حالة إعدادات Lite — رابط سيرفر **واحد** (لا تبديل تلقائي: م-28 ميزة
-/// Super). أسماء مفاتيح التخزين من `05-DATA-SCHEMA.md` §5.1 حرفياً،
-/// وهي نفس أسماء Lite القديم فتُستعاد نسخته الاحتياطية كما هي.
+/// Lite's settings state: **one** server URL, with no automatic switching,
+/// which is a Super feature. Storage key names follow `05-DATA-SCHEMA.md`
+/// §5.1 exactly, and they are the same names the old Lite used, so its
+/// backup restores as it is.
 class LiteSettings {
   const LiteSettings({
     this.serverUrl = '',
@@ -26,31 +27,34 @@ class LiteSettings {
   final String? password;
   final Quality quality;
 
-  /// **التحميل السريع**: الرابط المشارَك/الملصوق ينزل فوراً بالجودة
-  /// الافتراضية بلا ورقة — يجعلها إعداداً فاعلاً لا قيمة مبدئية.
+  /// **Quick download**: a shared or pasted link downloads immediately at
+  /// the default quality with no sheet, which makes that an effective
+  /// setting rather than an initial value.
   final bool quickDownload;
 
-  /// السحب إلى الجهاز على Wi‑Fi فقط — يهمّ نسخة العائلة أكثر من غيرها.
+  /// Pulling to the device on Wi-Fi only, which matters more in the family
+  /// edition than anywhere else.
   final bool wifiOnly;
 
-  /// إعادة ما فشل بسبب الشبكة عند عودتها (لا ما رفضه الخادم).
+  /// Retries what failed because of the network once it returns, never what
+  /// the server refused.
   final bool autoRetry;
 
-  /// **أفضل توافق للتشغيل (H.264/AAC)** — بلاغ المالك 2026-09-03.
-  /// مقيس على سيرفره: `quality:best` وحدها تعطي VP9/AV1 في webm، وفكّ
-  /// AV1 عتادياً غائب عن أغلب الهواتف فتظهر الصورة ممزقة. مفعّل
-  /// افتراضياً؛ إطفاؤه يتيح أعلى دقة على حساب التوافق.
+  /// **Best playback compatibility (H.264/AAC)**, from field report
+  /// 2026-09-03. Measured against a real server: `quality:best` alone
+  /// yields VP9 or AV1 in webm, and hardware AV1 decoding is missing from
+  /// most phones, so the picture appears torn. On by default; turning it
+  /// off allows the highest resolution at the cost of compatibility.
   final bool compatiblePlayback;
   final ThemeMode themeMode;
 
-  /// null = لغة النظام (كشف أول تشغيل — م-30).
+  /// null means the system language (detected on first run).
   final String? localeCode;
 
   bool get isConfigured => serverUrl.trim().isNotEmpty;
 
   ServerConfig? get serverConfig => isConfigured
-      ? ServerConfig(
-          baseUrl: serverUrl, username: username, password: password)
+      ? ServerConfig(baseUrl: serverUrl, username: username, password: password)
       : null;
 
   LiteSettings copyWith({
@@ -64,25 +68,28 @@ class LiteSettings {
     bool? compatiblePlayback,
     ThemeMode? themeMode,
     String? localeCode,
-    /// م-50: تمييز «امسح اللغة» عن «لا تغيّرها» — `null` وحدها لا تكفي.
-    bool clearLocale = false,
-  }) =>
-      LiteSettings(
-        serverUrl: serverUrl ?? this.serverUrl,
-        username: username ?? this.username,
-        password: password ?? this.password,
-        quality: quality ?? this.quality,
-        quickDownload: quickDownload ?? this.quickDownload,
-        wifiOnly: wifiOnly ?? this.wifiOnly,
-        autoRetry: autoRetry ?? this.autoRetry,
-        compatiblePlayback: compatiblePlayback ?? this.compatiblePlayback,
-        themeMode: themeMode ?? this.themeMode,
-        localeCode: clearLocale ? null : (localeCode ?? this.localeCode),
-      );
 
-  /// تحميل اللقطة الأولية قبل runApp.
+    /// Distinguishes "clear the language" from "do not change it": `null`
+    /// alone is not enough.
+    bool clearLocale = false,
+  }) => LiteSettings(
+    serverUrl: serverUrl ?? this.serverUrl,
+    username: username ?? this.username,
+    password: password ?? this.password,
+    quality: quality ?? this.quality,
+    quickDownload: quickDownload ?? this.quickDownload,
+    wifiOnly: wifiOnly ?? this.wifiOnly,
+    autoRetry: autoRetry ?? this.autoRetry,
+    compatiblePlayback: compatiblePlayback ?? this.compatiblePlayback,
+    themeMode: themeMode ?? this.themeMode,
+    localeCode: clearLocale ? null : (localeCode ?? this.localeCode),
+  );
+
+  /// Loads the initial snapshot before runApp.
   static Future<LiteSettings> load(
-      KeyValueStore store, SecretStore secrets) async {
+    KeyValueStore store,
+    SecretStore secrets,
+  ) async {
     final themeName = await store.getString('theme_mode');
     return LiteSettings(
       serverUrl: await store.getString('server_url') ?? '',
@@ -92,8 +99,7 @@ class LiteSettings {
       quickDownload: await store.getBool('quick_download_enabled') ?? false,
       wifiOnly: await store.getBool('wifi_only_downloads') ?? false,
       autoRetry: await store.getBool('auto_retry_downloads') ?? true,
-      compatiblePlayback:
-          await store.getBool('compatible_playback') ?? true,
+      compatiblePlayback: await store.getBool('compatible_playback') ?? true,
       themeMode: ThemeMode.values.firstWhere(
         (m) => m.name == themeName,
         orElse: () => ThemeMode.system,
@@ -111,19 +117,24 @@ class SettingsNotifier extends Notifier<LiteSettings> {
   SecretStore get _secrets => ref.read(secretStoreProvider);
   PrefsMutex get _mutex => ref.read(prefsMutexProvider);
 
-  /// إعادة قراءة كل الإعدادات من التخزين — بعد استيراد نسخة (ر-8).
+  /// Re-reads every setting from storage, after importing a backup (rule
+  /// 8).
   Future<void> reloadFromStore() async =>
       state = await LiteSettings.load(_store, _secrets);
 
-  /// ر-1: اختبار الاتصال ثم الحفظ — **لا حفظ صامت لإعداد فاسد**.
-  /// يرمي [MTApiException] مصنفاً ليعرضه UI.
+  /// Rule 1: test the connection, then save. **A broken setting is never
+  /// saved silently.** Throws a classified [MTApiException] for the UI to
+  /// display.
   Future<void> saveServer({
     required String url,
     String? username,
     String? password,
   }) async {
     final config = ServerConfig(
-        baseUrl: url, username: username, password: password);
+      baseUrl: url,
+      username: username,
+      password: password,
+    );
     final client = MeTubeApiClient(config: config);
     try {
       await client.testConnection();
@@ -178,14 +189,18 @@ class SettingsNotifier extends Notifier<LiteSettings> {
     state = state.copyWith(themeMode: mode);
   }
 
-  /// **`null` ⇒ «اتبع لغة النظام»** (م-50): يُمحى المفتاح فيعود
-  /// `localeCode` فارغاً كما كان يوم التركيب. بدون هذا كان الخيار
-  /// **باباً يُغلق ولا يُفتح**: أول لمسة للمبدّل تثبّت لغةً إلى الأبد،
-  /// ولا رجعة إلا بحذف بيانات التطبيق (ومعها المكتبة والمفضلة).
+  /// **`null` means "follow the system language"**: the key is erased so
+  /// `localeCode` returns empty, as it was on the day of installation.
+  /// Without this the option was **a door that closes and never opens**:
+  /// the first touch of the switch pinned a language forever, with no way
+  /// back short of clearing the app's data, and with it the library and the
+  /// favourites.
   Future<void> setLocale(String? code) async {
-    await _mutex.run(() => code == null
-        ? _store.remove('app_locale')
-        : _store.setString('app_locale', code));
+    await _mutex.run(
+      () => code == null
+          ? _store.remove('app_locale')
+          : _store.setString('app_locale', code),
+    );
     state = state.copyWith(localeCode: code, clearLocale: code == null);
   }
 }

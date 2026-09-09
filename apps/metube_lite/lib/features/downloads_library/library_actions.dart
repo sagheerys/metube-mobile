@@ -12,14 +12,16 @@ import 'local_item.dart';
 
 final libraryActionsProvider = Provider((ref) => LibraryActions(ref));
 
-/// إجراءات عنصر المكتبة المحلية (ر-5 مبسطة لـ Lite): لا إجراءات سيرفر
-/// — الملف على الهاتف هو كل شيء، والسيرفر نُظّف تلقائياً وقت التحميل.
+/// Actions on a local library item (rule 5, simplified for Lite): there are
+/// no server actions, since the file on the phone is everything and the
+/// server was cleaned automatically at download time.
 class LibraryActions {
   LibraryActions(this._ref);
 
   final Ref _ref;
 
-  /// م-36: المفضلة وسم نظامي بمفتاح العنصر — تدخل النسخة تلقائياً.
+  /// Favourites are a system tag under the item key, so they enter the
+  /// backup automatically.
   Future<bool> toggleFavorite(String key) async {
     final tags = _ref.read(tagsIndexProvider);
     await tags.toggleTag(key, MTConstants.favoritesSystemTag);
@@ -28,8 +30,8 @@ class LibraryActions {
     return (await tags.tagsOf(key)).contains(MTConstants.favoritesSystemTag);
   }
 
-  /// حذف الملفات نهائياً + تنظيف الفهارس + إعادة فحص المعرض حتى لا
-  /// يبقى للملف المحذوف أثر في MediaStore (م-10).
+  /// Deletes the files for good, cleans the indexes, and rescans the
+  /// gallery so no trace of the deleted file is left in MediaStore.
   Future<int> deleteFiles(List<LocalItem> items) async {
     var deleted = 0;
     for (final item in items) {
@@ -41,27 +43,27 @@ class LibraryActions {
       final url = item.canonicalUrl;
       if (url != null) await _ref.read(offlineIndexProvider).removeKey(url);
       await _ref.read(titleIndexProvider).removeKey(item.key);
-      // **تشذيب البقية (إصلاح خ-4):** الوسوم والمواضع والأبعاد كانت
-      // تبقى للأبد في نفس ملف XML الذي يُعاد تسلسله مع كل كتابة،
-      // وينسخه `exportToString` كاملاً — نسخ احتياطية تتضخم بجثث.
+      // **Pruning the rest (fix خ-4):** tags, positions and dimensions used
+      // to stay forever in the same XML file that is re-serialised on every
+      // write, and `exportToString` copies whole, so backups swelled with
+      // corpses.
       await _ref.read(tagsIndexProvider).removeKey(item.key);
       await _ref.read(mediaShapeIndexProvider).removeKey(item.key);
       await _ref.read(playbackPositionsProvider).clear(item.key);
       await _ref.read(mediaStoreProvider).scanFile(item.path);
     }
-    // الغلاف يحذف **ملف المصغرة نفسه** مع المدخلة — دفعةً واحدة لأن
-    // الفحص «هل يستعمله مفتاح آخر؟» يلزمه المشهد كاملاً.
-    await _ref
-        .read(artworkIndexProvider)
-        .removeKeysAndFiles([for (final item in items) item.key]);
-    // **والقوائم المحفوظة** (بلاغ المالك 2026-09-04): كل الفهارس كانت
-    // تُشذَّب إلا القوائم، فيبقى مدخل ميت يشغّل غيره عند النقر.
+    // The artwork step deletes **the thumbnail file itself** along with the
+    // entry, in one pass, because the check "is another key using it?"
+    // needs the whole picture.
+    await _ref.read(artworkIndexProvider).removeKeysAndFiles([
+      for (final item in items) item.key,
+    ]);
+    // **And the saved playlists** (field report 2026-09-04): every index
+    // was
+    // pruned except the playlists, so a dead entry stayed and played
+    // something else when tapped.
     await _ref.read(playlistsStoreProvider).removeFromAll([
-      for (final item in items) ...[
-        item.key,
-        item.path,
-        ?item.canonicalUrl,
-      ],
+      for (final item in items) ...[item.key, item.path, ?item.canonicalUrl],
     ]);
     _ref.read(playlistsRevisionProvider.notifier).state++;
     _ref.invalidate(localMediaProvider);
@@ -69,7 +71,8 @@ class LibraryActions {
     return deleted;
   }
 
-  /// مشاركة الملف نفسه — لا تحميل ولا سيرفر (كله محلي في Lite).
+  /// Shares the file itself: no download and no server, since everything in
+  /// Lite is local.
   Future<void> share(List<LocalItem> items) async {
     final files = [
       for (final item in items)

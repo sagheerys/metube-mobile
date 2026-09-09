@@ -8,18 +8,21 @@ import '../../di.dart';
 import '../shared/async_view.dart';
 import 'local_item.dart';
 
-/// المكتبة المحلية (م-12): **مسح المجلد** هو المصدر — الملف الموجود
-/// فعلاً يُعرض، والفهارس تُثريه فقط. هكذا تظهر ملفات Lite القديم بعد
-/// الهجرة، وتختفي الملفات المحذوفة من خارج التطبيق بلا أشباح.
+/// The local library: **scanning the folder** is the source. A file that
+/// actually exists is shown, and the indexes only enrich it. That is how
+/// files from the old Lite appear after migration, and how files deleted
+/// from outside the app disappear with no ghosts.
 final localMediaProvider = FutureProvider<List<LocalItem>>((ref) async {
   final offline = await ref.watch(offlineIndexProvider).readAll();
   final titles = await ref.watch(titleIndexProvider).readAll();
   final artwork = await ref.watch(artworkIndexProvider).readAll();
   final tags = await ref.watch(tagsIndexProvider).readAll();
-  final Map<String, MediaShape> shapes =
-      await ref.watch(mediaShapeIndexProvider).readAll();
+  final Map<String, MediaShape> shapes = await ref
+      .watch(mediaShapeIndexProvider)
+      .readAll();
 
-  // عكس فهرس «دون اتصال» (canonicalUrl → مسار) لنعرف رابط كل ملف.
+  // The offline index inverted (canonicalUrl to path) so every file's URL
+  // is known.
   final urlOfPath = {
     for (final MapEntry(:key, :value) in offline.entries) value: key,
   };
@@ -35,26 +38,30 @@ final localMediaProvider = FutureProvider<List<LocalItem>>((ref) async {
     final key = url ?? path;
     final stat = await entity.stat();
     final shape = shapes[key];
-    items.add(LocalItem(
-      key: key,
-      path: path,
-      canonicalUrl: url,
-      title: titles[key] ??
-          titles[path] ??
-          LocalItem.titleFromFilename(path.split('/').last),
-      sizeBytes: stat.size,
-      modified: stat.modified,
-      thumbnail: artwork[key] ?? artwork[path],
-      favorite: (tags[key] ?? tags[path] ?? const [])
-          .contains(MTConstants.favoritesSystemTag),
-      duration: shape?.duration,
-      aspectRatio: shape?.aspectRatio,
-    ));
+    items.add(
+      LocalItem(
+        key: key,
+        path: path,
+        canonicalUrl: url,
+        title:
+            titles[key] ??
+            titles[path] ??
+            LocalItem.titleFromFilename(path.split('/').last),
+        sizeBytes: stat.size,
+        modified: stat.modified,
+        thumbnail: artwork[key] ?? artwork[path],
+        favorite: (tags[key] ?? tags[path] ?? const []).contains(
+          MTConstants.favoritesSystemTag,
+        ),
+        duration: shape?.duration,
+        aspectRatio: shape?.aspectRatio,
+      ),
+    );
   }
   return items;
 });
 
-/// خيارات العرض + التحديد المتعدد — الفرز والعرض محفوظان (م-14).
+/// View options plus multi-select. Sorting and the view mode are saved.
 class LibraryViewOptions {
   const LibraryViewOptions({
     this.scope = LocalScope.all,
@@ -70,19 +77,19 @@ class LibraryViewOptions {
   final MediaTypeFilter type;
   final String query;
 
-  /// مرشح المنصة بعدادات حية (م-14 — خاص بـ Lite).
+  /// The platform filter with live counts (Lite specific).
   final MediaPlatform? platform;
   final LibrarySort sort;
 
-  /// وضع العرض المحفوظ — واحد من أربعة، لا أعلام متداخلة (نُقل الشبكي
-  /// من Super بطلب المالك 2026-09-04، والبطاقات 2026-09-08).
+  /// The saved view mode: one of four, not overlapping flags. Grid came
+  /// over from Super on request 2026-09-04, and cards on 2026-09-08.
   final LibraryViewMode mode;
 
   bool get compact => mode == LibraryViewMode.compact;
   bool get grid => mode == LibraryViewMode.grid;
   bool get cards => mode == LibraryViewMode.cards;
 
-  /// مفاتيح العناصر المحددة — غير فارغة = وضع التحديد (ر-6).
+  /// The selected item keys; a non-empty set means selection mode (rule 6).
   final Set<String> selection;
 
   bool get selecting => selection.isNotEmpty;
@@ -95,16 +102,15 @@ class LibraryViewOptions {
     LibrarySort? sort,
     LibraryViewMode? mode,
     Set<String>? selection,
-  }) =>
-      LibraryViewOptions(
-        scope: scope ?? this.scope,
-        type: type ?? this.type,
-        query: query ?? this.query,
-        platform: platform == null ? this.platform : platform(),
-        sort: sort ?? this.sort,
-        mode: mode ?? this.mode,
-        selection: selection ?? this.selection,
-      );
+  }) => LibraryViewOptions(
+    scope: scope ?? this.scope,
+    type: type ?? this.type,
+    query: query ?? this.query,
+    platform: platform == null ? this.platform : platform(),
+    sort: sort ?? this.sort,
+    mode: mode ?? this.mode,
+    selection: selection ?? this.selection,
+  );
 }
 
 class LibraryViewNotifier extends Notifier<LibraryViewOptions> {
@@ -118,19 +124,22 @@ class LibraryViewNotifier extends Notifier<LibraryViewOptions> {
     final store = ref.read(keyValueStoreProvider);
     final sortName = await store.getString('video_sort_option');
     state = state.copyWith(
-      sort: LibrarySort.values.where((s) => s.name == sortName).firstOrNull ??
+      sort:
+          LibrarySort.values.where((s) => s.name == sortName).firstOrNull ??
           LibrarySort.newest,
       mode: await _restoreMode(store),
     );
   }
 
-  /// **هجرة صامتة من المفتاحين القديمين**: من يحدّث التطبيق وهو على
-  /// «مضغوط» أو «شبكي» يجب أن يجد وضعه كما تركه — لا أن يرتد للقائمة.
-  /// المفتاح الجديد يُكتب عند أول تغيير، والقديمان يُقرآن ما لم يوجد.
+  /// **A silent migration from the two old keys**: someone updating the app
+  /// while on compact or grid must find their mode as they left it, not be
+  /// thrown back to the list. The new key is written on the first change,
+  /// and the old two are read when it is absent.
   Future<LibraryViewMode> _restoreMode(KeyValueStore store) async {
     final name = await store.getString('library_view_mode');
-    final saved =
-        LibraryViewMode.values.where((m) => m.name == name).firstOrNull;
+    final saved = LibraryViewMode.values
+        .where((m) => m.name == name)
+        .firstOrNull;
     if (saved != null) return saved;
     if (await store.getBool('library_grid_view') ?? false) {
       return LibraryViewMode.grid;
@@ -149,15 +158,24 @@ class LibraryViewNotifier extends Notifier<LibraryViewOptions> {
 
   Future<void> setSort(LibrarySort sort) async {
     state = state.copyWith(sort: sort);
-    await ref.read(prefsMutexProvider).run(() =>
-        ref.read(keyValueStoreProvider).setString('video_sort_option', sort.name));
+    await ref
+        .read(prefsMutexProvider)
+        .run(
+          () => ref
+              .read(keyValueStoreProvider)
+              .setString('video_sort_option', sort.name),
+        );
   }
 
   Future<void> setMode(LibraryViewMode mode) async {
     state = state.copyWith(mode: mode);
-    await ref.read(prefsMutexProvider).run(() => ref
-        .read(keyValueStoreProvider)
-        .setString('library_view_mode', mode.name));
+    await ref
+        .read(prefsMutexProvider)
+        .run(
+          () => ref
+              .read(keyValueStoreProvider)
+              .setString('library_view_mode', mode.name),
+        );
   }
 
   void toggleSelected(String key) {
@@ -174,19 +192,22 @@ class LibraryViewNotifier extends Notifier<LibraryViewOptions> {
 
 final libraryViewProvider =
     NotifierProvider<LibraryViewNotifier, LibraryViewOptions>(
-        LibraryViewNotifier.new);
+      LibraryViewNotifier.new,
+    );
 
-/// القائمة المعروضة بعد التصفية والفرز.
+/// The list on screen after filtering and sorting.
 ///
-/// **`whenData` كان يمحو البيانات المحفوظة** (بلاغ المالك 2026-09-03،
-/// مُستنسخ على Super بتسجيل شاشة: المكتبة استُبدلت بدوّارة ١٣ ثانية
-/// أثناء تحميل واحد). الدالة توزّع على **نوع** الحالة لا على وجود
-/// قيمة، فتعيد عند `AsyncLoading` نسخة **جديدة فارغة** — فيضيع ما
-/// يحتفظ به Riverpod من بيانات سابقة، ويظهر الترتيب في الشاشة كأنه
-/// بلا أثر. Lite يعيد مسح المجلد بعد كل اكتمال فيصيبه الشيء نفسه.
+/// **`whenData` was erasing the retained data** (field report 2026-09-03,
+/// reproduced on Super with a screen recording: the library was replaced by
+/// a spinner for 13 seconds during a single download). That function
+/// dispatches on the **type** of the state rather than on whether a value
+/// exists, so on `AsyncLoading` it returns a **new empty** instance, losing
+/// whatever Riverpod held from before, and the ordering in the screen looks
+/// to have no effect. Lite rescans the folder after every completion and
+/// suffers the same thing.
 ///
-/// القاعدة الآن صريحة: **قيمة موجودة ⇒ تُعرض · وإلا الخطأ · وإلا
-/// التحميل**.
+/// The rule is now explicit: **a value exists, show it; else the error;
+/// else loading.**
 final visibleLibraryProvider = Provider<AsyncValue<List<LocalItem>>>((ref) {
   final options = ref.watch(libraryViewProvider);
   return asyncViewOf(
@@ -202,13 +223,15 @@ final visibleLibraryProvider = Provider<AsyncValue<List<LocalItem>>>((ref) {
   );
 });
 
-/// عدّادات رقائق المنصات — تُحسب على المكتبة كاملة لا على المعروض،
-/// كي لا تختفي الرقاقة التي تنقر عليها.
-final platformCountsProvider =
-    Provider<List<MapEntry<MediaPlatform, int>>>((ref) {
+/// Platform chip counters, computed over the whole library rather than over
+/// what is displayed, so the chip you tap does not vanish.
+final platformCountsProvider = Provider<List<MapEntry<MediaPlatform, int>>>((
+  ref,
+) {
   final items = ref.watch(localMediaProvider).valueOrNull ?? const [];
   return platformCounts(items);
 });
 
-/// العنصر الذي يجب إبرازه (نقرة إشعار الاكتمال — `03-APP-FLOW.md` §1).
+/// The item to highlight, from a tap on the completion notification
+/// (`03-APP-FLOW.md` §1).
 final highlightedItemProvider = StateProvider<String?>((ref) => null);

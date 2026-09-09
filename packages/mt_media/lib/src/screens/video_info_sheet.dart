@@ -27,7 +27,7 @@ class MTVideoInfoSheet extends StatelessWidget {
   final List<MTPlayerAction> actions;
   final MTArtworkBuilder? artwork;
   final String Function(BuildContext context, PlaylistItem item)?
-      subtitleBuilder;
+  subtitleBuilder;
   final VoidCallback? onShowPlaylist;
   final String? playlistName;
 
@@ -38,8 +38,9 @@ class MTVideoInfoSheet extends StatelessWidget {
     final item = session.current;
     if (item == null) return const SizedBox.shrink();
     final ordered = session.orderedItems;
-    final currentIndex =
-        ordered.indexWhere((i) => i.canonicalUrl == item.canonicalUrl);
+    final currentIndex = ordered.indexWhere(
+      (i) => i.canonicalUrl == item.canonicalUrl,
+    );
 
     return Transform.translate(
       offset: const Offset(0, -14),
@@ -47,17 +48,24 @@ class MTVideoInfoSheet extends StatelessWidget {
         decoration: BoxDecoration(
           color: p.bg,
           borderRadius: const BorderRadius.vertical(
-              top: Radius.circular(MTRadius.sheet - 4)),
+            top: Radius.circular(MTRadius.sheet - 4),
+          ),
         ),
         padding: const EdgeInsets.fromLTRB(
-            MTSpace.pagePad, MTSpace.xl, MTSpace.pagePad, 0),
+          MTSpace.pagePad,
+          MTSpace.xl,
+          MTSpace.pagePad,
+          0,
+        ),
         child: ListView(
           padding: EdgeInsets.zero,
           children: [
-            Text(item.title,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: text.titleMedium!.copyWith(fontSize: 16)),
+            Text(
+              item.title,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: text.titleMedium!.copyWith(fontSize: 16),
+            ),
             if (subtitleBuilder != null) ...[
               const SizedBox(height: MTSpace.xxs),
               Text(
@@ -86,8 +94,8 @@ class MTVideoInfoSheet extends StatelessWidget {
             const SizedBox(height: MTSpace.md),
             MTQueuePanel(
               // Inside the `ListView` above; without this its inner scroll
-              // swallows the
-              // drag and the "up next" section never scrolls at all.
+              // swallows the drag and the "up next" section never scrolls
+              // at all.
               nested: true,
               items: ordered,
               currentIndex: currentIndex,
@@ -126,9 +134,10 @@ class _ActionTile extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(MTRadius.field + 1),
             border: Border.all(
-                color: action.highlighted
-                    ? p.accent.withValues(alpha: 0.3)
-                    : p.line),
+              color: action.highlighted
+                  ? p.accent.withValues(alpha: 0.3)
+                  : p.line,
+            ),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -141,12 +150,11 @@ class _ActionTile extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.labelSmall!.copyWith(
-                      color: fg,
-                      fontSize: 9.5,
-                      height: 1.35,
-                      fontWeight:
-                          action.highlighted ? FontWeight.w700 : null,
-                    ),
+                  color: fg,
+                  fontSize: 9.5,
+                  height: 1.35,
+                  fontWeight: action.highlighted ? FontWeight.w700 : null,
+                ),
               ),
             ],
           ),
@@ -172,8 +180,10 @@ class _ModeRow extends StatelessWidget {
 
     return Row(
       children: [
-        Text('${l10n.playModeLabel}:',
-            style: text.labelSmall!.copyWith(color: p.ink3)),
+        Text(
+          '${l10n.playModeLabel}:',
+          style: text.labelSmall!.copyWith(color: p.ink3),
+        ),
         const SizedBox(width: MTSpace.xs),
         _Chip(
           label: mtPlayModeLabel(context, session.playMode),
@@ -219,7 +229,9 @@ class _Chip extends StatelessWidget {
         borderRadius: BorderRadius.circular(MTRadius.chip),
         child: Container(
           padding: const EdgeInsets.symmetric(
-              horizontal: MTSpace.md, vertical: MTSpace.xs),
+            horizontal: MTSpace.md,
+            vertical: MTSpace.xs,
+          ),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(MTRadius.chip),
             border: Border.all(color: selected ? p.accent : p.line2),
@@ -227,9 +239,9 @@ class _Chip extends StatelessWidget {
           child: Text(
             label,
             style: Theme.of(context).textTheme.labelSmall!.copyWith(
-                  color: selected ? p.accentInk : p.ink2,
-                  fontWeight: selected ? FontWeight.w700 : null,
-                ),
+              color: selected ? p.accentInk : p.ink2,
+              fontWeight: selected ? FontWeight.w700 : null,
+            ),
           ),
         ),
       ),

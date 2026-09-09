@@ -6,18 +6,21 @@ import '../downloads_library/library_actions.dart';
 import '../downloads_library/local_item.dart';
 import '../playlists/add_to_playlist_sheet.dart';
 
-/// **«أضف إلى…» — مكان واحد لكل انتماء** (بلاغ المالك 2026-09-04).
+/// **"Add to…": one place for every kind of belonging** (field report
+/// 2026-09-04).
 ///
-/// في الريلز كان القلب زراً مستقلاً في العمود، و«أضف لقائمة» لا مدخل
-/// له إطلاقاً. الزر الواحد يجمعهما فيغني عن القلب — وهذا سبب إزالته
-/// من العمود.
+/// In reels the heart was a standalone button in the rail, and "add to a
+/// playlist" had no entry point at all. One button gathers both and makes
+/// the heart redundant, which is why it was removed from the rail.
 ///
-/// **بلا وسوم في Lite** بقصد: الوسوم ميزة Super (CLAUDE.md §4).
+/// **No tags in Lite**, deliberately: tags are a Super feature.
 void showAddToSheet(BuildContext context, WidgetRef ref, LocalItem item) {
   showModalBottomSheet<void>(
     context: context,
     useRootNavigator: true,
-    // سياق الشاشة لا سياق الورقة: الأوراق التالية تُفتح بعد إغلاق هذه.
+    // The screen's context, not the sheet's: the later sheets open after
+    // this
+    // one closes.
     builder: (_) => _AddToSheet(item: item, host: context),
   );
 }
@@ -39,7 +42,11 @@ class _AddToSheet extends ConsumerWidget {
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(
-                MTSpace.xl, MTSpace.lg, MTSpace.xl, MTSpace.sm),
+              MTSpace.xl,
+              MTSpace.lg,
+              MTSpace.xl,
+              MTSpace.sm,
+            ),
             child: Text(
               item.title,
               maxLines: 1,
@@ -61,17 +68,22 @@ class _AddToSheet extends ConsumerWidget {
             ),
             onTap: () async {
               Navigator.pop(context);
-              final added =
-                  await ref.read(libraryActionsProvider).toggleFavorite(item.key);
+              final added = await ref
+                  .read(libraryActionsProvider)
+                  .toggleFavorite(item.key);
               if (!host.mounted) return;
-              showMTSnack(host,
-                  added ? l10n.addedToFavorites : l10n.removedFromFavorites);
+              showMTSnack(
+                host,
+                added ? l10n.addedToFavorites : l10n.removedFromFavorites,
+              );
             },
           ),
           ListTile(
             leading: Icon(Icons.playlist_add_rounded, color: p.ink2),
-            title: Text(l10n.addToPlaylist,
-                style: Theme.of(context).textTheme.bodyMedium),
+            title: Text(
+              l10n.addToPlaylist,
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
             onTap: () {
               Navigator.pop(context);
               showAddToPlaylistSheet(host, ref, [item]);

@@ -36,7 +36,8 @@ void main() {
   setUp(() {
     store = MemoryKeyValueStore();
     logFile = File(
-        '${Directory.systemTemp.path}/mtf_probe_${DateTime.now().microsecondsSinceEpoch}.log');
+      '${Directory.systemTemp.path}/mtf_probe_${DateTime.now().microsecondsSinceEpoch}.log',
+    );
     logger = MTLogger(filePath: logFile.path);
     clearErrorSignature('probe');
   });
@@ -55,42 +56,52 @@ void main() {
       config: ServerConfig(baseUrl: 'https://srv.example.com'),
       dio: dio,
     );
-    return ProviderContainer(overrides: [
-      keyValueStoreProvider.overrideWithValue(store),
-      secretStoreProvider.overrideWithValue(MemorySecretStore()),
-      prefsMutexProvider.overrideWithValue(PrefsMutex()),
-      initialSettingsProvider.overrideWithValue(
-          const SuperSettings(activeUrl: 'https://srv.example.com')),
-      loggerProvider.overrideWithValue(logger),
-      apiClientProvider.overrideWithValue(api),
-      playbackResolverProvider.overrideWithValue(PlaybackSourceResolver(
-        endpoint: ServerStreamEndpoint.fromApi(api),
-        fileExists: (_) => false,
-      )),
-    ]);
+    return ProviderContainer(
+      overrides: [
+        keyValueStoreProvider.overrideWithValue(store),
+        secretStoreProvider.overrideWithValue(MemorySecretStore()),
+        prefsMutexProvider.overrideWithValue(PrefsMutex()),
+        initialSettingsProvider.overrideWithValue(
+          const SuperSettings(activeUrl: 'https://srv.example.com'),
+        ),
+        loggerProvider.overrideWithValue(logger),
+        apiClientProvider.overrideWithValue(api),
+        playbackResolverProvider.overrideWithValue(
+          PlaybackSourceResolver(
+            endpoint: ServerStreamEndpoint.fromApi(api),
+            fileExists: (_) => false,
+          ),
+        ),
+      ],
+    );
   }
 
-  test('ملف مفقود على السيرفر ⇒ لا يُسلَّم للمنصة أصلاً، ويُسجَّل سببه',
-      () async {
-    final probe = _RecordingProbe();
-    final container = containerWith(404, probe);
-    addTearDown(container.dispose);
+  test(
+    'ملف مفقود على السيرفر ⇒ لا يُسلَّم للمنصة أصلاً، ويُسجَّل سببه',
+    () async {
+      final probe = _RecordingProbe();
+      final container = containerWith(404, probe);
+      addTearDown(container.dispose);
 
-    await LibraryEnricher(container.read(_refProvider), probe: probe)
-        .enrich(const [item]);
+      await LibraryEnricher(
+        container.read(_refProvider),
+        probe: probe,
+      ).enrich(const [item]);
 
-    // **الحارس الأول**: بلا الفحص المسبق كان الرابط الميت يذهب إلى
-    // `MediaMetadataRetriever` فيجمّد الطابور ٨٠ ثانية.
-    expect(probe.calls, isEmpty,
-        reason: 'رابط ميت لا يُسلَّم للمنصة');
+      // **الحارس الأول**: بلا الفحص المسبق كان الرابط الميت يذهب إلى
+      // `MediaMetadataRetriever` فيجمّد الطابور ٨٠ ثانية.
+      expect(probe.calls, isEmpty, reason: 'رابط ميت لا يُسلَّم للمنصة');
 
-    // **الحارس الثاني**: الإخفاق يُكتب — كان يُبتلع بصمت تاماً.
-    expect(await logger.readAll(), contains('file missing on server'));
+      // **الحارس الثاني**: الإخفاق يُكتب — كان يُبتلع بصمت تاماً.
+      expect(await logger.readAll(), contains('file missing on server'));
 
-    // **الحارس الثالث**: يُؤجَّل يوماً فلا يُعاد كل إقلاع.
-    final failures = await container.read(probeFailureIndexProvider).readAll();
-    expect(failures.containsKey(item.canonicalUrl), isTrue);
-  });
+      // **الحارس الثالث**: يُؤجَّل يوماً فلا يُعاد كل إقلاع.
+      final failures = await container
+          .read(probeFailureIndexProvider)
+          .readAll();
+      expect(failures.containsKey(item.canonicalUrl), isTrue);
+    },
+  );
 
   test('عنصر أخفق قريباً يُتخطّى ولو عاد الملف', () async {
     final index = ProbeFailureIndex(store: store, mutex: PrefsMutex());
@@ -100,8 +111,10 @@ void main() {
     final container = containerWith(206, probe); // السيرفر سليم الآن
     addTearDown(container.dispose);
 
-    await LibraryEnricher(container.read(_refProvider), probe: probe)
-        .enrich(const [item]);
+    await LibraryEnricher(
+      container.read(_refProvider),
+      probe: probe,
+    ).enrich(const [item]);
 
     expect(probe.calls, isEmpty, reason: 'التبريد يمنع إعادة المحاولة فوراً');
   });
@@ -111,8 +124,10 @@ void main() {
     final container = containerWith(206, probe);
     addTearDown(container.dispose);
 
-    await LibraryEnricher(container.read(_refProvider), probe: probe)
-        .enrich(const [item]);
+    await LibraryEnricher(
+      container.read(_refProvider),
+      probe: probe,
+    ).enrich(const [item]);
 
     expect(probe.calls, hasLength(1));
     expect(probe.calls.single.single.url, contains('/download/'));
@@ -144,13 +159,17 @@ void main() {
       duration: Duration(seconds: 30),
       aspectRatio: 0.5625,
     );
-    await LibraryEnricher(container.read(_refProvider), probe: probe)
-        .enrich(const [withThumb]);
+    await LibraryEnricher(
+      container.read(_refProvider),
+      probe: probe,
+    ).enrich(const [withThumb]);
 
     expect(probe.calls, hasLength(1), reason: 'يُعاد سبره في نفس الجولة');
     // المسار الميت زال، وحلّ محلّه ما أعطاه السبر الجديد.
-    expect((await artwork.readAll())[item.canonicalUrl],
-        isNot('/data/cache/thumbs/gone.jpg'));
+    expect(
+      (await artwork.readAll())[item.canonicalUrl],
+      isNot('/data/cache/thumbs/gone.jpg'),
+    );
   });
 }
 
@@ -187,15 +206,20 @@ class _StatusAdapter implements HttpClientAdapter {
   final int status;
 
   @override
-  Future<ResponseBody> fetch(RequestOptions options,
-      Stream<Uint8List>? requestStream, Future<void>? cancelFuture) async {
-    return ResponseBody.fromBytes(utf8.encode(status == 404 ? 'no' : 'x'),
-        status, headers: {
-      't': ['application/octet-stream'],
-    });
+  Future<ResponseBody> fetch(
+    RequestOptions options,
+    Stream<Uint8List>? requestStream,
+    Future<void>? cancelFuture,
+  ) async {
+    return ResponseBody.fromBytes(
+      utf8.encode(status == 404 ? 'no' : 'x'),
+      status,
+      headers: {
+        't': ['application/octet-stream'],
+      },
+    );
   }
 
   @override
   void close({bool force = false}) {}
-
 }

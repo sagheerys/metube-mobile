@@ -21,12 +21,13 @@ import 'innertube_parser.dart';
 /// token follows.
 class YoutubePlaylistResolver {
   YoutubePlaylistResolver({HttpPostJson? httpPost})
-      : _post = httpPost ?? ioHttpPostJson;
+    : _post = httpPost ?? ioHttpPostJson;
 
   final HttpPostJson _post;
 
-  static final Uri _browse =
-      Uri.parse('https://www.youtube.com/youtubei/v1/browse?prettyPrint=false');
+  static final Uri _browse = Uri.parse(
+    'https://www.youtube.com/youtubei/v1/browse?prettyPrint=false',
+  );
 
   /// A page ceiling: a playlist with thousands of items is not shown on a
   /// selection screen.
@@ -67,7 +68,7 @@ class YoutubePlaylistResolver {
           'clientName': 'WEB',
           'clientVersion': '2.20260902.01.00',
           'hl': 'en',
-        }
+        },
       },
       ...payload,
     });

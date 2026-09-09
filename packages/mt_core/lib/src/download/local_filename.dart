@@ -19,7 +19,8 @@ String buildLocalFilename(
   if (clean.isEmpty) clean = 'video';
 
   final time = now ?? DateTime.now();
-  final stamp = '${time.hour.toString().padLeft(2, '0')}'
+  final stamp =
+      '${time.hour.toString().padLeft(2, '0')}'
       '${time.minute.toString().padLeft(2, '0')}'
       '${time.second.toString().padLeft(2, '0')}';
 

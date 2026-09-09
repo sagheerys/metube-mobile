@@ -6,72 +6,80 @@ import 'package:test/test.dart';
 void main() {
   group('SoundCloudResolver — معزول فشل-آمن (§4)', () {
     test('trackArtwork عبر oEmbed مع التكبير t500x500', () async {
-      final resolver = SoundCloudResolver(httpGet: (uri) async {
-        expect(uri.host, 'soundcloud.com');
-        expect(uri.path, '/oembed');
-        expect(uri.queryParameters['url'], contains('soundcloud.com'));
-        return json.encode({
-          'thumbnail_url': 'https://i1.sndcdn.com/artworks-abc-large.jpg',
-        });
-      });
+      final resolver = SoundCloudResolver(
+        httpGet: (uri) async {
+          expect(uri.host, 'soundcloud.com');
+          expect(uri.path, '/oembed');
+          expect(uri.queryParameters['url'], contains('soundcloud.com'));
+          return json.encode({
+            'thumbnail_url': 'https://i1.sndcdn.com/artworks-abc-large.jpg',
+          });
+        },
+      );
       expect(
         await resolver.trackArtwork('https://soundcloud.com/a/t'),
         'https://i1.sndcdn.com/artworks-abc-t500x500.jpg',
       );
     });
 
-    test('resolveSet يحلل window.__sc_hydration من HTML حقيقي البنية',
-        () async {
-      final hydration = json.encode([
-        {'hydratable': 'anonymousId', 'data': 'x'},
-        {
-          'hydratable': 'playlist',
-          'data': {
-            'title': 'قائمة تجريبية',
-            'artwork_url': 'https://i1.sndcdn.com/artworks-cover-large.jpg',
-            'tracks': [
-              {
-                'id': 111,
-                'title': 'مقطع ١',
-                'duration': 185000,
-                'permalink_url': 'https://soundcloud.com/a/t1',
-                'artwork_url': 'https://i1.sndcdn.com/artworks-1-large.jpg',
-              },
-              {'id': 222}, // عنصر ناقص (stub) — يُتجاوز
-              {
-                'id': 333,
-                'title': 'مقطع ٢',
-                'duration': 60000,
-                'permalink_url': 'https://soundcloud.com/a/t2',
-              },
-            ],
+    test(
+      'resolveSet يحلل window.__sc_hydration من HTML حقيقي البنية',
+      () async {
+        final hydration = json.encode([
+          {'hydratable': 'anonymousId', 'data': 'x'},
+          {
+            'hydratable': 'playlist',
+            'data': {
+              'title': 'قائمة تجريبية',
+              'artwork_url': 'https://i1.sndcdn.com/artworks-cover-large.jpg',
+              'tracks': [
+                {
+                  'id': 111,
+                  'title': 'مقطع ١',
+                  'duration': 185000,
+                  'permalink_url': 'https://soundcloud.com/a/t1',
+                  'artwork_url': 'https://i1.sndcdn.com/artworks-1-large.jpg',
+                },
+                {'id': 222}, // عنصر ناقص (stub) — يُتجاوز
+                {
+                  'id': 333,
+                  'title': 'مقطع ٢',
+                  'duration': 60000,
+                  'permalink_url': 'https://soundcloud.com/a/t2',
+                },
+              ],
+            },
           },
-        },
-      ]);
-      final html = '<html><script>window.__sc_hydration = $hydration;'
-          '</script></html>';
-      final resolver = SoundCloudResolver(httpGet: (_) async => html);
-      final preview =
-          (await resolver.resolveSet('https://soundcloud.com/a/sets/s'))!;
+        ]);
+        final html =
+            '<html><script>window.__sc_hydration = $hydration;'
+            '</script></html>';
+        final resolver = SoundCloudResolver(httpGet: (_) async => html);
+        final preview = (await resolver.resolveSet(
+          'https://soundcloud.com/a/sets/s',
+        ))!;
 
-      expect(preview.kind, PlaylistKind.soundcloud);
-      expect(preview.title, 'قائمة تجريبية');
-      expect(preview.coverUrl, contains('t500x500'));
-      expect(preview.tracks, hasLength(2));
-      expect(preview.tracks.first.duration, const Duration(seconds: 185));
-      expect(preview.totalDuration, const Duration(seconds: 245));
-    });
+        expect(preview.kind, PlaylistKind.soundcloud);
+        expect(preview.title, 'قائمة تجريبية');
+        expect(preview.coverUrl, contains('t500x500'));
+        expect(preview.tracks, hasLength(2));
+        expect(preview.tracks.first.duration, const Duration(seconds: 185));
+        expect(preview.totalDuration, const Duration(seconds: 245));
+      },
+    );
 
     test('فشل الشبكة أو HTML بلا hydration ⇒ null بلا رمي', () async {
-      final failing =
-          SoundCloudResolver(httpGet: (_) async => throw Exception('down'));
-      expect(await failing.resolveSet('https://soundcloud.com/a/sets/s'),
-          isNull);
+      final failing = SoundCloudResolver(
+        httpGet: (_) async => throw Exception('down'),
+      );
+      expect(
+        await failing.resolveSet('https://soundcloud.com/a/sets/s'),
+        isNull,
+      );
       expect(await failing.trackArtwork('https://soundcloud.com/a/t'), isNull);
 
       final empty = SoundCloudResolver(httpGet: (_) async => '<html></html>');
-      expect(
-          await empty.resolveSet('https://soundcloud.com/a/sets/s'), isNull);
+      expect(await empty.resolveSet('https://soundcloud.com/a/sets/s'), isNull);
     });
 
     test('استخراج client_id (32 محرفاً) بأنماطه الثلاثة', () {

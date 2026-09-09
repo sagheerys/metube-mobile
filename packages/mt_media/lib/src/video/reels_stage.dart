@@ -26,36 +26,34 @@ class ReelsVideoLayer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: onTap,
-        onDoubleTap: onDoubleTap,
-        child: failed
-            ? Center(
-                child: Text(context.mtl.playerError,
-                    style: TextStyle(color: MTPalette.serverCardInk)),
-              )
-            : controller == null || !controller!.value.isInitialized
-                ? const Center(child: CircularProgressIndicator())
-                // **`contain`, not `cover`** (field report 2026-09-02: "it
-                // cuts part of
-                // the video off and shows it enlarged"). `cover` fills the
-                // screen by
-                // enlarging the clip until it covers the longer dimension
-                // and crops the
-                // rest: on a 20:9 phone that means cropping about 20% of a
-                // 16:9 portrait
-                // clip, which is the speaker's head. Instagram and Shorts
-                // fit the width
-                // and leave the space to the gradient and the chrome, which
-                // is what we do
-                // now: **the original framing, entire and uncropped**.
-                : Center(
-                    child: AspectRatio(
-                      aspectRatio: controller!.value.aspectRatio,
-                      child: VideoPlayer(controller!),
-                    ),
-                  ),
-      );
+    behavior: HitTestBehavior.opaque,
+    onTap: onTap,
+    onDoubleTap: onDoubleTap,
+    child: failed
+        ? Center(
+            child: Text(
+              context.mtl.playerError,
+              style: TextStyle(color: MTPalette.serverCardInk),
+            ),
+          )
+        : controller == null || !controller!.value.isInitialized
+        ? const Center(child: CircularProgressIndicator())
+        // **`contain`, not `cover`** (field report 2026-09-02: "it
+        // cuts part of the video off and shows it enlarged").
+        // `cover` fills the screen by enlarging the clip until it
+        // covers the longer dimension and crops the rest: on a 20:9
+        // phone that means cropping about 20% of a 16:9 portrait
+        // clip, which is the speaker's head. Instagram and Shorts
+        // fit the width and leave the space to the gradient and the
+        // chrome, which is what we do now: **the original framing,
+        // entire and uncropped**.
+        : Center(
+            child: AspectRatio(
+              aspectRatio: controller!.value.aspectRatio,
+              child: VideoPlayer(controller!),
+            ),
+          ),
+  );
 }
 
 class ReelsOverlayLayer extends StatelessWidget {
@@ -113,14 +111,10 @@ class ReelsOverlayLayer extends StatelessWidget {
               ),
             ),
             // **Below the top bar rather than behind it** (device check
-            // 2026-09-05):
-            // the bar is inside a `SafeArea` while the hint sat at a fixed
-            // `top: 64`,
-            // so the two strings overlapped on a device with a tall status
-            // bar. And
-            // the chevron was drawn in an Arabic font, where it looked like
-            // the digit
-            // eight.
+            // 2026-09-05): the bar is inside a `SafeArea` while the hint
+            // sat at a fixed `top: 64`, so the two strings overlapped on a
+            // device with a tall status bar. And the chevron was drawn in
+            // an Arabic font, where it looked like the digit eight.
             PositionedDirectional(
               top: 0,
               start: 0,
@@ -132,8 +126,8 @@ class ReelsOverlayLayer extends StatelessWidget {
                     child: Text(
                       '↑ ${l10n.reelsSwipeHint}',
                       style: Theme.of(context).textTheme.labelSmall!.copyWith(
-                          color:
-                              MTPalette.serverCardInk.withValues(alpha: 0.45)),
+                        color: MTPalette.serverCardInk.withValues(alpha: 0.45),
+                      ),
                     ),
                   ),
                 ),
@@ -150,10 +144,9 @@ class ReelsOverlayLayer extends StatelessWidget {
             ),
             // **Above the progress bar, not on it** (emulator screenshot
             // 2026-09-02): once the bar became permanently visible, the
-            // orange line
-            // ran straight through the middle of the clip title. 64 is the
-            // bar height
-            // (24) plus the bottom safe inset plus breathing room.
+            // orange line ran straight through the middle of the clip
+            // title. 64 is the bar height (24) plus the bottom safe inset
+            // plus breathing room.
             PositionedDirectional(
               start: 74,
               end: MTSpace.lg,
@@ -173,20 +166,20 @@ class ReelsOverlayLayer extends StatelessWidget {
 class _Gradient extends StatelessWidget {
   @override
   Widget build(BuildContext context) => IgnorePointer(
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                Colors.black.withValues(alpha: 0.45),
-                Colors.transparent,
-                Colors.transparent,
-                Colors.black.withValues(alpha: 0.6),
-              ],
-              stops: const [0, 0.22, 0.55, 1],
-            ),
-          ),
+    child: DecoratedBox(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Colors.black.withValues(alpha: 0.45),
+            Colors.transparent,
+            Colors.transparent,
+            Colors.black.withValues(alpha: 0.6),
+          ],
+          stops: const [0, 0.22, 0.55, 1],
         ),
-      );
+      ),
+    ),
+  );
 }

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:mt_ui/mt_ui.dart';
 
-/// زر مساعدة (؟) لحقل معقد (م-34) — يفتح حواراً بشرح من arb.
+/// A help button for a complex field, opening a dialog with an explanation
+/// from the arb files.
 class HelpButton extends StatelessWidget {
   const HelpButton({super.key, required this.title, required this.body});
 
@@ -18,15 +19,20 @@ class HelpButton extends StatelessWidget {
       onPressed: () => showDialog<void>(
         context: context,
         builder: (dialogContext) => AlertDialog(
-          title: Text(title,
-              style: Theme.of(dialogContext).textTheme.titleLarge),
-          content: Text(body,
-              style: Theme.of(dialogContext).textTheme.bodyMedium),
+          title: Text(
+            title,
+            style: Theme.of(dialogContext).textTheme.titleLarge,
+          ),
+          content: Text(
+            body,
+            style: Theme.of(dialogContext).textTheme.bodyMedium,
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(dialogContext),
-              child: Text(MaterialLocalizations.of(dialogContext)
-                  .okButtonLabel),
+              child: Text(
+                MaterialLocalizations.of(dialogContext).okButtonLabel,
+              ),
             ),
           ],
         ),
@@ -35,22 +41,23 @@ class HelpButton extends StatelessWidget {
   }
 }
 
-/// **فراغ بعرض زر المساعدة تماماً.** الحقل الذي لا شرح له يبقى محاذياً
-/// لجيرانه: بدونه كان اسم المستخدم يمتد وحده إلى الحافة بين حقلين
-/// مزاحين (فحص جهاز المالك 2026-09-05).
+/// **A gap exactly as wide as the help button.** A field with no
+/// explanation stays aligned with its neighbours: without it the username
+/// field alone reached the edge between two indented fields (device check
+/// 2026-09-05).
 class HelpButtonGap extends StatelessWidget {
   const HelpButtonGap({super.key});
 
   @override
   Widget build(BuildContext context) => const Visibility(
-        visible: false,
-        maintainSize: true,
-        maintainAnimation: true,
-        maintainState: true,
-        child: IconButton(
-          visualDensity: VisualDensity.compact,
-          onPressed: null,
-          icon: Icon(Icons.help_outline_rounded, size: 18),
-        ),
-      );
+    visible: false,
+    maintainSize: true,
+    maintainAnimation: true,
+    maintainState: true,
+    child: IconButton(
+      visualDensity: VisualDensity.compact,
+      onPressed: null,
+      icon: Icon(Icons.help_outline_rounded, size: 18),
+    ),
+  );
 }

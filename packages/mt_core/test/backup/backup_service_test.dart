@@ -34,8 +34,11 @@ void main() {
       expect(exported, startsWith('{'));
       expect(BackupCrypto.headerOf(exported), isNull);
       expect(exported, isNot(contains('sirri-jiddan')));
-      expect(exported, isNot(contains('user')),
-          reason: 'اسم المستخدم لم يعد يُنسخ — الملف بلا سرّ إطلاقاً');
+      expect(
+        exported,
+        isNot(contains('user')),
+        reason: 'اسم المستخدم لم يعد يُنسخ — الملف بلا سرّ إطلاقاً',
+      );
 
       // جهاز جديد: **بلا استيراد أي مفتاح**، وهذا هو المكسب كله.
       final freshStore = MemoryKeyValueStore();
@@ -49,13 +52,17 @@ void main() {
       final result = await freshService.importFromString(exported);
       expect(result.format, BackupFormat.plain);
       expect(result.keysRestored, 5);
-      expect(await freshStore.getString('server_url'),
-          'https://metube.example.com');
+      expect(
+        await freshStore.getString('server_url'),
+        'https://metube.example.com',
+      );
       expect(await freshStore.getBool('library_compact_view'), isTrue);
       expect(await freshStore.getInt('player_play_mode'), 2);
       expect(await freshStore.getDouble('player_playback_speed'), 1.5);
-      expect(await freshStore.getStringList('external_urls'),
-          ['https://a', 'https://b']);
+      expect(await freshStore.getStringList('external_urls'), [
+        'https://a',
+        'https://b',
+      ]);
     });
 
     test('الاعتمادات المضمّنة في الرابط تُحذف (إصلاح خ-2 باقٍ)', () async {
@@ -66,12 +73,18 @@ void main() {
     });
 
     test('نصّ ليس نسخة ⇒ BackupFormatException لا انهيار', () async {
-      expect(service.importFromString('مرحبا'),
-          throwsA(isA<BackupFormatException>()));
-      expect(service.importFromString('{"app":"شيء آخر"}'),
-          throwsA(isA<BackupFormatException>()));
-      expect(service.importFromString('{ليس json'),
-          throwsA(isA<BackupFormatException>()));
+      expect(
+        service.importFromString('مرحبا'),
+        throwsA(isA<BackupFormatException>()),
+      );
+      expect(
+        service.importFromString('{"app":"شيء آخر"}'),
+        throwsA(isA<BackupFormatException>()),
+      );
+      expect(
+        service.importFromString('{ليس json'),
+        throwsA(isA<BackupFormatException>()),
+      );
     });
   });
 
@@ -111,8 +124,10 @@ void main() {
         mutex: PrefsMutex(),
         variant: 'lite',
       );
-      expect(other.importFromString(file),
-          throwsA(isA<BackupKeyMismatchException>()));
+      expect(
+        other.importFromString(file),
+        throwsA(isA<BackupKeyMismatchException>()),
+      );
     });
   });
 
@@ -160,15 +175,19 @@ void main() {
       expect(await store.getString('video_quality'), '720');
       expect(await store.getString('theme_mode'), 'dark');
       expect(await store.getString('app_locale'), 'ar');
-      expect(await store.get('player_play_mode'), isNull,
-          reason: 'الوضع الرقمي القديم يُزال في هجرة الأشكال');
-      expect(await store.getInt('playback_pos_https://youtu.be/dQw4w9WgXcQ'),
-          42000);
+      expect(
+        await store.get('player_play_mode'),
+        isNull,
+        reason: 'الوضع الرقمي القديم يُزال في هجرة الأشكال',
+      );
+      expect(
+        await store.getInt('playback_pos_https://youtu.be/dQw4w9WgXcQ'),
+        42000,
+      );
       expect(await secrets.read(SecretKeys.username), 'family-user');
 
       // القوائم القديمة تُقرأ عبر PlaylistsStore بصيغة legacy
-      final playlists =
-          PlaylistsStore(store: store, mutex: PrefsMutex());
+      final playlists = PlaylistsStore(store: store, mutex: PrefsMutex());
       final imported = await playlists.readAll();
       expect(imported.single.items.single.isLegacy, isTrue);
     });
@@ -176,28 +195,35 @@ void main() {
     /// شكل مصطاد على **نسخة Lite الحقيقية للمالك** (2026-09-01): 32
     /// موضعاً بالثواني نصاً كانت تُستورد ميتة لأن هجرة الأشكال كانت
     /// تعمل على مسار `MTSBACKUP1` وحده.
-    test('مواضع Lite القديمة تُهاجَر لمفاتيح §5.1 والوضع الرقمي يُزال',
-        () async {
-      final key = BackupCrypto.generateKeyBase64();
-      await secrets.write(SecretKeys.backupAesKey, key);
-      await service.importFromString(BackupCrypto.encrypt(
-        plaintext: json.encode({
-          'app': 'MeTube Lite',
-          'settings': {'playMode': 1},
-          'playbackPositions': {
-            'https://youtu.be/abc': '12',
-            'https://youtu.be/def': 305,
-          },
-        }),
-        keyBase64: key,
-        header: BackupCrypto.headerLegacyLite,
-      ));
-      expect(await store.getInt('playback_pos_https://youtu.be/abc'), 12000);
-      expect(await store.getInt('playback_pos_https://youtu.be/def'), 305000);
-      expect(await store.getString('video_playback_positions'), isNull);
-      expect(await store.get('player_play_mode'), isNull,
-          reason: 'الرقم القديم يُزال ليعود الوضع للافتراضي');
-    });
+    test(
+      'مواضع Lite القديمة تُهاجَر لمفاتيح §5.1 والوضع الرقمي يُزال',
+      () async {
+        final key = BackupCrypto.generateKeyBase64();
+        await secrets.write(SecretKeys.backupAesKey, key);
+        await service.importFromString(
+          BackupCrypto.encrypt(
+            plaintext: json.encode({
+              'app': 'MeTube Lite',
+              'settings': {'playMode': 1},
+              'playbackPositions': {
+                'https://youtu.be/abc': '12',
+                'https://youtu.be/def': 305,
+              },
+            }),
+            keyBase64: key,
+            header: BackupCrypto.headerLegacyLite,
+          ),
+        );
+        expect(await store.getInt('playback_pos_https://youtu.be/abc'), 12000);
+        expect(await store.getInt('playback_pos_https://youtu.be/def'), 305000);
+        expect(await store.getString('video_playback_positions'), isNull);
+        expect(
+          await store.get('player_play_mode'),
+          isNull,
+          reason: 'الرقم القديم يُزال ليعود الوضع للافتراضي',
+        );
+      },
+    );
 
     test('جودة قديمة غير صالحة تُجبر على best', () async {
       final key = BackupCrypto.generateKeyBase64();
@@ -239,8 +265,7 @@ void main() {
       final result = await service.importFromString(file);
       expect(result.format, BackupFormat.legacySuper);
       expect(result.keysRestored, 3);
-      expect(await store.getString('server_url'),
-          'https://truenas.local:8081');
+      expect(await store.getString('server_url'), 'https://truenas.local:8081');
       expect(await store.getBool('auto_switch_enabled'), isTrue);
       expect(await secrets.read(SecretKeys.username), 'user');
 
@@ -254,11 +279,13 @@ void main() {
       Future<void> importLegacySuper(Map<String, dynamic> prefs) async {
         final key = BackupCrypto.generateKeyBase64();
         await secrets.write(SecretKeys.backupAesKey, key);
-        await service.importFromString(BackupCrypto.encrypt(
-          plaintext: json.encode({'app': 'MeTube Super', 'prefs': prefs}),
-          keyBase64: key,
-          header: BackupCrypto.headerLegacySuper,
-        ));
+        await service.importFromString(
+          BackupCrypto.encrypt(
+            plaintext: json.encode({'app': 'MeTube Super', 'prefs': prefs}),
+            keyBase64: key,
+            header: BackupCrypto.headerLegacySuper,
+          ),
+        );
       }
 
       test('قائمة بمصفوفة `entries` تُستورد بعناصرها لا فارغة', () async {
@@ -278,12 +305,14 @@ void main() {
                   },
                   {'canonicalUrl': 'https://youtu.be/def'},
                 ],
-              }
+              },
             ]),
           },
         });
-        final playlists =
-            await PlaylistsStore(store: store, mutex: PrefsMutex()).readAll();
+        final playlists = await PlaylistsStore(
+          store: store,
+          mutex: PrefsMutex(),
+        ).readAll();
         expect(playlists.single.name, 'Music');
         expect(playlists.single.items.length, 2);
         expect(playlists.single.items.first.cachedTitle, 'أول');
@@ -301,14 +330,18 @@ void main() {
             }),
           },
         });
+        expect(await store.getInt('playback_pos_https://youtu.be/abc'), 30000);
+        expect(await store.getInt('playback_pos_https://youtu.be/def'), 125000);
         expect(
-            await store.getInt('playback_pos_https://youtu.be/abc'), 30000);
+          await store.get('playback_pos_https://youtu.be/zero'),
+          isNull,
+          reason: 'الصفر لا يستحق مفتاحاً',
+        );
         expect(
-            await store.getInt('playback_pos_https://youtu.be/def'), 125000);
-        expect(await store.get('playback_pos_https://youtu.be/zero'), isNull,
-            reason: 'الصفر لا يستحق مفتاحاً');
-        expect(await store.getString('video_playback_positions'), isNull,
-            reason: 'المفتاح القديم يُزال فلا يتكرر في كل تصدير لاحق');
+          await store.getString('video_playback_positions'),
+          isNull,
+          reason: 'المفتاح القديم يُزال فلا يتكرر في كل تصدير لاحق',
+        );
       });
 
       test('قيمة كبيرة تُقرأ ميلي لا ثوانٍ', () async {
@@ -318,8 +351,7 @@ void main() {
             'v': json.encode({'https://youtu.be/ms': '900000'}),
           },
         });
-        expect(await store.getInt('playback_pos_https://youtu.be/ms'),
-            900000);
+        expect(await store.getInt('playback_pos_https://youtu.be/ms'), 900000);
       });
 
       test('وضع التشغيل الرقمي القديم يُزال ليعود للافتراضي', () async {
@@ -330,23 +362,27 @@ void main() {
         });
         expect(await store.get('player_play_mode'), isNull);
         expect(await store.get('player_play_mode_Music'), isNull);
-        expect(await store.getString('video_quality'), 'audio',
-            reason: 'بقية المفاتيح لا تُمس');
+        expect(
+          await store.getString('video_quality'),
+          'audio',
+          reason: 'بقية المفاتيح لا تُمس',
+        );
       });
 
       test('نسخة v2 لا تمر بالهجرة (أشكالها حديثة أصلاً)', () async {
         await store.setString('video_playback_positions', '{"u":"30"}');
         await service.importFromString(await service.exportToString());
-        expect(await store.getString('video_playback_positions'),
-            '{"u":"30"}');
+        expect(await store.getString('video_playback_positions'), '{"u":"30"}');
         expect(await store.get('playback_pos_u'), isNull);
       });
     });
   });
 
   test('ملف بلا ترويسة ⇒ BackupFormatException', () {
-    expect(service.importFromString('{"app": "x"}'),
-        throwsA(isA<BackupFormatException>()));
+    expect(
+      service.importFromString('{"app": "x"}'),
+      throwsA(isA<BackupFormatException>()),
+    );
   });
 
   /// **مفهوم المفتاح أُزيل من المنتج** (قرار المالك 2026-09-04): لا
@@ -359,9 +395,14 @@ void main() {
       keyBase64: BackupCrypto.generateKeyBase64(),
     );
     expect(await secrets.read(SecretKeys.backupAesKey), isNull);
-    await expectLater(service.importFromString(file),
-        throwsA(isA<BackupKeyMismatchException>()));
-    expect(await secrets.read(SecretKeys.backupAesKey), isNull,
-        reason: 'ولا يُولَّد مفتاح لا يفكّ شيئاً');
+    await expectLater(
+      service.importFromString(file),
+      throwsA(isA<BackupKeyMismatchException>()),
+    );
+    expect(
+      await secrets.read(SecretKeys.backupAesKey),
+      isNull,
+      reason: 'ولا يُولَّد مفتاح لا يفكّ شيئاً',
+    );
   });
 }

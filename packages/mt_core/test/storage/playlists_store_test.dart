@@ -25,10 +25,14 @@ void main() {
 
       expect(await playlists.removeFromAll(['u1']), 2);
       final all = await playlists.readAll();
-      expect(all.firstWhere((p) => p.id == a.id).items.single.canonicalUrl,
-          'u2');
-      expect(all.firstWhere((p) => p.id == b.id).items.single.canonicalUrl,
-          'u3');
+      expect(
+        all.firstWhere((p) => p.id == a.id).items.single.canonicalUrl,
+        'u2',
+      );
+      expect(
+        all.firstWhere((p) => p.id == b.id).items.single.canonicalUrl,
+        'u3',
+      );
     });
 
     test('removeFromAll يطابق مسار Lite القديم أيضاً', () async {
@@ -77,15 +81,20 @@ void main() {
       final p = await playlists.create('ق');
       await playlists.addItems(p.id, [entry('a'), entry('b'), entry('c')]);
       await playlists.reorderItem(p.id, 0, 2);
-      expect((await playlists.byId(p.id))!.items.map((e) => e.canonicalUrl),
-          ['b', 'c', 'a']);
+      expect((await playlists.byId(p.id))!.items.map((e) => e.canonicalUrl), [
+        'b',
+        'c',
+        'a',
+      ]);
     });
 
     test('التثبيت وآخر تشغيل (م-37/ب)', () async {
       final p = await playlists.create('ق');
       await playlists.setPinned(p.id, true);
-      await playlists.touchLastPlayed(p.id,
-          at: DateTime.parse('2026-09-01T10:00:00'));
+      await playlists.touchLastPlayed(
+        p.id,
+        at: DateTime.parse('2026-09-01T10:00:00'),
+      );
       final saved = (await playlists.byId(p.id))!;
       expect(saved.pinned, isTrue);
       expect(saved.lastPlayedAt, DateTime.parse('2026-09-01T10:00:00'));

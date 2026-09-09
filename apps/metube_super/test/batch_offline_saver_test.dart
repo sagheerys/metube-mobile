@@ -7,15 +7,15 @@ import 'package:mt_core/mt_core.dart';
 /// اتصال» (م-17) على أعضاء الدفعة التي طلبها المالك — وحدها.
 void main() {
   DownloadTask done(String id, {String? url}) => DownloadTask(
-        id: id,
-        inputUrl: url ?? 'https://sc/$id',
-        quality: Quality.audio,
-        canonicalUrl: url ?? 'https://sc/$id',
-        serverFilename: '$id.m4a',
-        title: id,
-        phase: TaskPhase.completed,
-        isBatchMember: true,
-      );
+    id: id,
+    inputUrl: url ?? 'https://sc/$id',
+    quality: Quality.audio,
+    canonicalUrl: url ?? 'https://sc/$id',
+    serverFilename: '$id.m4a',
+    title: id,
+    phase: TaskPhase.completed,
+    isBatchMember: true,
+  );
 
   test('يُسحب أعضاء الدفعة المطلوبة وحدهم', () async {
     final pulled = <String>[];
@@ -33,12 +33,14 @@ void main() {
   test('السحب متسلسل — لا 400 تنزيل معاً', () async {
     var active = 0;
     var peak = 0;
-    final saver = BatchOfflineSaver(pull: (t) async {
-      active++;
-      peak = peak > active ? peak : active;
-      await Future<void>.delayed(const Duration(milliseconds: 5));
-      active--;
-    });
+    final saver = BatchOfflineSaver(
+      pull: (t) async {
+        active++;
+        peak = peak > active ? peak : active;
+        await Future<void>.delayed(const Duration(milliseconds: 5));
+        active--;
+      },
+    );
     saver.want(['a', 'b', 'c']);
     for (final id in ['a', 'b', 'c']) {
       saver.onFinished(done(id));
@@ -83,13 +85,15 @@ void main() {
     final pulled = <String>[];
     final saver = BatchOfflineSaver(pull: (t) async => pulled.add(t.id));
     saver.want(['a']);
-    saver.onFinished(DownloadTask(
-      id: 'a',
-      inputUrl: 'https://sc/a',
-      quality: Quality.audio,
-      phase: TaskPhase.completed,
-      isBatchMember: true,
-    ));
+    saver.onFinished(
+      DownloadTask(
+        id: 'a',
+        inputUrl: 'https://sc/a',
+        quality: Quality.audio,
+        phase: TaskPhase.completed,
+        isBatchMember: true,
+      ),
+    );
     await saver.idle;
 
     expect(pulled, isEmpty);

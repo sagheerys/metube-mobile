@@ -39,8 +39,7 @@ abstract final class BackupCrypto {
   static String generateKeyBase64() => Key.fromSecureRandom(32).base64;
 
   /// The file header if it is a known one, to identify the format before
-  /// any
-  /// decryption.
+  /// any decryption.
   static String? headerOf(String contents) {
     final firstLine = contents.split('\n').first.trim();
     return knownHeaders.contains(firstLine) ? firstLine : null;
@@ -61,10 +60,7 @@ abstract final class BackupCrypto {
   /// Decrypts any of the three header formats. **No json.decode before this
   /// step** (rule §5.4). Throws [BackupFormatException] for a foreign file
   /// and [BackupKeyMismatchException] for a wrong key.
-  static String decrypt({
-    required String contents,
-    required String keyBase64,
-  }) {
+  static String decrypt({required String contents, required String keyBase64}) {
     if (headerOf(contents) == null) {
       throw const BackupFormatException('unknown header');
     }
@@ -83,8 +79,7 @@ abstract final class BackupCrypto {
 
   // The exported key file, for restoring on another device.
 
-  static String encodeKeyFile(String keyBase64) =>
-      '$keyHeaderV2\n$keyBase64\n';
+  static String encodeKeyFile(String keyBase64) => '$keyHeaderV2\n$keyBase64\n';
 
   /// Reads a key file with any known header, new or either legacy one.
   /// Returns null for an invalid file. The key is exactly 32 bytes.

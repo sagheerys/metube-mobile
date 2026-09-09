@@ -16,10 +16,15 @@ void main() {
   //   whenData ⇒ AsyncLoading<int>()   ← hasValue = false
   test('تحميلٌ فوق بيانات سابقة (إبطال مزوّد أدنى) ⇒ القيمة تبقى', () {
     const previous = AsyncData<List<int>>([1, 2, 3]);
-    final loading = const AsyncLoading<List<int>>()
-        .copyWithPrevious(previous, isRefresh: false);
-    expect(loading, isA<AsyncLoading<List<int>>>(),
-        reason: 'شرط الاختبار نفسه: الحالة تحميل لا بيانات-تُحدَّث');
+    final loading = const AsyncLoading<List<int>>().copyWithPrevious(
+      previous,
+      isRefresh: false,
+    );
+    expect(
+      loading,
+      isA<AsyncLoading<List<int>>>(),
+      reason: 'شرط الاختبار نفسه: الحالة تحميل لا بيانات-تُحدَّث',
+    );
 
     final view = asyncViewOf(loading, (items) => items.length);
 
@@ -28,21 +33,26 @@ void main() {
 
   test('إعادة تحميل هذا المزوّد نفسه ⇒ القيمة تبقى أيضاً', () {
     const previous = AsyncData<List<int>>([1, 2, 3]);
-    final refreshing = const AsyncLoading<List<int>>()
-        .copyWithPrevious(previous);
+    final refreshing = const AsyncLoading<List<int>>().copyWithPrevious(
+      previous,
+    );
     expect(asyncViewOf(refreshing, (items) => items.length).valueOrNull, 3);
   });
 
   test('بيانات مكتملة ⇒ تُبنى كالمعتاد', () {
     final view = asyncViewOf(
-        const AsyncData<List<int>>([1, 2]), (items) => items.length);
+      const AsyncData<List<int>>([1, 2]),
+      (items) => items.length,
+    );
     expect(view.valueOrNull, 2);
     expect(view.isLoading, isFalse);
   });
 
   test('تحميل أول بلا بيانات ⇒ تحميل', () {
-    final view =
-        asyncViewOf(const AsyncLoading<List<int>>(), (items) => items.length);
+    final view = asyncViewOf(
+      const AsyncLoading<List<int>>(),
+      (items) => items.length,
+    );
     expect(view.valueOrNull, isNull);
     expect(view.isLoading, isTrue);
   });
@@ -58,8 +68,10 @@ void main() {
 
   test('خطأ فوق بيانات سابقة ⇒ البيانات تفوز', () {
     const previous = AsyncData<List<int>>([9]);
-    final failed = AsyncError<List<int>>('boom', StackTrace.empty)
-        .copyWithPrevious(previous);
+    final failed = AsyncError<List<int>>(
+      'boom',
+      StackTrace.empty,
+    ).copyWithPrevious(previous);
     final view = asyncViewOf(failed, (items) => items.length);
     expect(view.valueOrNull, 1);
   });

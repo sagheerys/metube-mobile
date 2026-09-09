@@ -15,8 +15,7 @@ Future<void> main(List<String> args) async {
 
   MeTubeApiClient? working;
   for (final url in urls) {
-    final client =
-        MeTubeApiClient(config: ServerConfig(baseUrl: url));
+    final client = MeTubeApiClient(config: ServerConfig(baseUrl: url));
     final watch = Stopwatch()..start();
     try {
       await client.testConnection();
@@ -35,8 +34,10 @@ Future<void> main(List<String> args) async {
 
   // لقطة /history الحالية كما هي (fixture حقيقية "مكتمل")
   final history = await working.fetchHistory();
-  print('history: done=${history.done.length} '
-      'queue=${history.queue.length} pending=${history.pending.length}');
+  print(
+    'history: done=${history.done.length} '
+    'queue=${history.queue.length} pending=${history.pending.length}',
+  );
 
   // الخام للحفظ حرفياً
   final dio = working; // نلتقط الخام عبر طلب مباشر بنفس العميل
@@ -48,8 +49,10 @@ Future<void> main(List<String> args) async {
 
   // فحص التحليل المتسامح على العينة الحقيقية
   for (final item in history.done.take(3)) {
-    print('  عينة: url=${item.canonicalUrl.substring(0, 40)}… '
-        'status=${item.rawStatus} filename=${item.filename != null}');
+    print(
+      '  عينة: url=${item.canonicalUrl.substring(0, 40)}… '
+      'status=${item.rawStatus} filename=${item.filename != null}',
+    );
   }
   dio.close();
   exit(0);
@@ -58,8 +61,7 @@ Future<void> main(List<String> args) async {
 Future<String> _rawHistory(ServerConfig config) async {
   final client = HttpClient();
   try {
-    final request =
-        await client.getUrl(Uri.parse('${config.baseUrl}/history'));
+    final request = await client.getUrl(Uri.parse('${config.baseUrl}/history'));
     final auth = config.basicAuthHeader;
     if (auth != null) request.headers.set('Authorization', auth);
     final response = await request.close();

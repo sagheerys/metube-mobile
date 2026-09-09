@@ -8,23 +8,26 @@ import '../downloads_library/library_providers.dart';
 import '../playlists/playlists_providers.dart';
 import 'auto_backup.dart';
 
-/// ر-1 خطوة 4 (Lite): أول إطلاق بعد إعادة التثبيت — إن وُجدت نسخة
-/// تلقائية على القرص تُعرض «استعادة بياناتك السابقة؟».
+/// Rule 1, step 4 (Lite): on the first launch after a reinstall, if an
+/// automatic backup is found on disk, it offers "restore your previous
+/// data?".
 ///
-/// يُعرض مرة واحدة فقط (مفتاح `auto_restore_offered`) كي لا يلاحق
-/// المستخدم في كل إقلاع بعد رفضه.
+/// It is offered once only (the `auto_restore_offered` key), so it does not
+/// follow the user at every launch after they decline.
 Future<void> maybeOfferAutoRestore(BuildContext context, WidgetRef ref) async {
   final store = ref.read(keyValueStoreProvider);
   if (await store.getBool('auto_restore_offered') ?? false) return;
-  // تثبيت جديد فقط: وجود سيرفر مهيأ يعني أن هذه ليست بداية نظيفة —
-  // عرض استعادة نسخةٍ كتبها التطبيق نفسه للتو ضجيج لا فائدة فيه.
+  // A fresh install only: a configured server means this is not a clean
+  // start, and offering to restore a backup the app itself just wrote is
+  // noise with no benefit.
   if (ref.read(settingsProvider).isConfigured) return;
 
   final backup = ref.read(autoBackupProvider);
-  // **أحدث نسخة من الدوّار** (قرار المالك 2026-09-04): كانت نسخة واحدة
-  // بملف ثابت، وقد تكون **يتيمة** لأن مفتاحها مات مع إعادة التثبيت.
-  // النسخ الآن نصّية فلا يتيم فيها، ومؤرَّخة فيمكن الرجوع لأقدم منها
-  // من شاشة النسخ إن كانت الأحدث هي المشكلة.
+  // **The newest copy from the rotation** (decision 2026-09-04): it used to
+  // be a single copy in a fixed file, and it could be **orphaned**, because
+  // its key died with the reinstall. The copies are plain text now, so none
+  // can be orphaned, and dated, so an older one can be reached from the
+  // backup screen if the newest is the problem.
   final latest = await backup.latest();
   if (latest == null) return;
 
@@ -59,8 +62,7 @@ Future<void> maybeOfferAutoRestore(BuildContext context, WidgetRef ref) async {
     ref.invalidate(localMediaProvider);
     ref.invalidate(playlistsProvider);
     if (context.mounted) {
-      showMTSnack(context, l10n.autoRestoreSuccess,
-          type: MTSnackType.success);
+      showMTSnack(context, l10n.autoRestoreSuccess, type: MTSnackType.success);
     }
   } catch (_) {
     if (context.mounted) {

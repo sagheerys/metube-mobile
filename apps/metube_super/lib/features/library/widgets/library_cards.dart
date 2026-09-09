@@ -12,20 +12,18 @@ import '../library_models.dart';
 import '../library_providers.dart';
 import 'item_actions_sheet.dart';
 
-/// بطاقة عنصر المكتبة — **مصدر واحد لأوضاع العرض الأربعة**.
+/// The library item card: **one source for all four view modes**.
 ///
-/// فُصلت عن `library_screen.dart` عند إضافة العرض الشبكي (القاعدة 4):
-/// نسختان من نفس المنطق كانتا ستفترقان عند أول تعديل، ولن يتذكر أحد أن
-/// شارة «دون اتصال» تُضبط في مكانين.
+/// Split out of `library_screen.dart` when the grid view was added (rule
+/// 4): two copies of the same logic would have diverged at the first edit,
+/// and nobody would remember that the "offline" badge is set in two
+/// places.
 ///
-/// الوضع يُقرأ من الخيارات مباشرة لا من معامل: الشاشة كانت تمرّر
-/// `grid: true` والبطاقة تقرأ `compact` من المزوّد — مصدران لقرار واحد.
+/// The mode is read straight from the options rather than from a
+/// parameter: the screen used to pass `grid: true` while the card read
+/// `compact` from the provider, two sources for one decision.
 class LibraryItemCard extends ConsumerWidget {
-  const LibraryItemCard({
-    super.key,
-    required this.item,
-    required this.onPlay,
-  });
+  const LibraryItemCard({super.key, required this.item, required this.onPlay});
 
   final LibraryItem item;
   final VoidCallback onPlay;
@@ -36,12 +34,12 @@ class LibraryItemCard extends ConsumerWidget {
     final options = ref.watch(libraryViewProvider);
     final controller = ref.read(libraryViewProvider.notifier);
     final actions = ref.read(libraryActionsProvider);
-    // **تقدّم السحب كان يُحسب ولا يعرضه أحد** (بلاغ المالك 2026-09-02:
-    // «لا يظهر العداد، يبدو كأنه لا يستجيب») — سواء من «حفظ للجهاز»
-    // أو من المشاركة التي تسحب نسخة مؤقتة أولاً.
+    // **Pull progress was being computed and nobody displayed it** (field
+    // report 2026-09-02: "no counter appears, it looks unresponsive"),
+    // whether from "save to device" or from a share, which pulls a
+    // temporary copy first.
     final pulling = ref.watch(offlinePullProgressProvider)[item.canonicalUrl];
-    final highlighted =
-        ref.watch(highlightedItemProvider) == item.canonicalUrl;
+    final highlighted = ref.watch(highlightedItemProvider) == item.canonicalUrl;
 
     final subtitle = pulling != null
         ? '${l10n.pullingToDevice} ${(pulling * 100).round()}٪'
@@ -51,17 +49,20 @@ class LibraryItemCard extends ConsumerWidget {
           ].join(' · ');
     final locationLabel = switch (item.location) {
       MTMediaLocation.offline ||
-      MTMediaLocation.both =>
-        l10n.availabilityOffline,
+      MTMediaLocation.both => l10n.availabilityOffline,
       MTMediaLocation.onServer => l10n.filterServer,
       MTMediaLocation.none => null,
     };
-    // **الفك عند حجم العرض لا حجم الأصل**: مصغرة 1280×720 في صندوق
-    // 98 نقطة كانت تحجز ~3.5MB لكل بطاقة مرئية في ذاكرة الصور.
+    // **Decode at display size, not at original size**: a 1280x720
+    // thumbnail
+    // in a 98-point box reserved about 3.5MB per visible card in the image
+    // cache.
     final (thumbWidth, thumbHeight) = _thumbBox(context, options.mode);
-    final thumbnail = artworkFor(item.thumbnail,
-        headers: ref.read(apiClientProvider)?.streamingHeaders,
-        decodeWidth: mtDecodeWidth(context, thumbWidth, thumbHeight));
+    final thumbnail = artworkFor(
+      item.thumbnail,
+      headers: ref.read(apiClientProvider)?.streamingHeaders,
+      decodeWidth: mtDecodeWidth(context, thumbWidth, thumbHeight),
+    );
     final platform = platformKindOf(MediaPlatform.detect(item.canonicalUrl));
 
     Future<void> toggleFavorite() async {
@@ -119,16 +120,17 @@ class LibraryItemCard extends ConsumerWidget {
   }
 }
 
-/// مقاس صندوق المصغرة بالنقاط لكل وضع — مطابق لما ترسمه `mt_ui`
-/// (`MTMediaCard._Thumb` و`MTMediaGridCard._Cover`). الارتفاع `null`
-/// حيث الغلاف 16:9، فعرضه وحده يحدد الفك.
+/// The thumbnail box size in points for each mode, matching what `mt_ui`
+/// draws (`MTMediaCard._Thumb` and `MTMediaGridCard._Cover`). The height is
+/// `null` where the cover is 16:9, so its width alone determines the
+/// decode.
 (double, double?) _thumbBox(BuildContext context, LibraryViewMode mode) =>
     switch (mode) {
       LibraryViewMode.compact => (64, 40),
       LibraryViewMode.list => (98, 62),
       LibraryViewMode.grid => (210, null),
       LibraryViewMode.cards => (
-          MediaQuery.sizeOf(context).width - MTSpace.pagePad * 2,
-          null,
-        ),
+        MediaQuery.sizeOf(context).width - MTSpace.pagePad * 2,
+        null,
+      ),
     };

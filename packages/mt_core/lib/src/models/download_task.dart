@@ -47,15 +47,15 @@ class DownloadTask {
     this.error,
     this.isBatchMember = false,
     DateTime? createdAt,
-  })  : id = id ?? _uuid.v4(),
-        createdAt = createdAt ?? DateTime.now();
+  }) : id = id ?? _uuid.v4(),
+       createdAt = createdAt ?? DateTime.now();
 
   final String id;
 
-  /// As the user entered it, for display and for retrying.
+  /// After the short link is resolved. This is what is sent to `/add`.
   final String inputUrl;
 
-  /// After the short link is resolved. This is what is sent to `/add`.
+  /// From `/history`. The **only** value valid for deletion and indexing.
   final String? resolvedUrl;
 
   /// From `/history`. The **only** value valid for deletion and indexing.
@@ -77,8 +77,7 @@ class DownloadTask {
   final double progress;
 
   /// The classified error on failure. The app turns its type into
-  /// translated
-  /// text (TRD §3.3).
+  /// translated text (TRD §3.3).
   final MTApiException? error;
 
   /// A single item outranks members of a batch in the queue.
@@ -86,9 +85,8 @@ class DownloadTask {
   final DateTime createdAt;
 
   /// **Does this phase have known progress?** A waiting task and one held
-  /// by
-  /// the network gate do not move, so showing "0%" over them is a lie that
-  /// suggests a hang (the same reasoning as `waitingForNetwork`).
+  /// by the network gate do not move, so showing "0%" over them is a lie
+  /// that suggests a hang (the same reasoning as `waitingForNetwork`).
   bool get hasKnownProgress =>
       phase != TaskPhase.queued && phase != TaskPhase.waitingForNetwork;
 
@@ -109,23 +107,22 @@ class DownloadTask {
     TaskPhase? phase,
     double? progress,
     MTApiException? error,
-  }) =>
-      DownloadTask(
-        id: id,
-        inputUrl: inputUrl,
-        quality: quality,
-        resolvedUrl: resolvedUrl ?? this.resolvedUrl,
-        canonicalUrl: canonicalUrl ?? this.canonicalUrl,
-        serverFilename: serverFilename ?? this.serverFilename,
-        title: title ?? this.title,
-        thumbnail: thumbnail ?? this.thumbnail,
-        localPath: localPath ?? this.localPath,
-        phase: phase ?? this.phase,
-        progress: progress ?? this.progress,
-        error: error ?? this.error,
-        isBatchMember: isBatchMember,
-        createdAt: createdAt,
-      );
+  }) => DownloadTask(
+    id: id,
+    inputUrl: inputUrl,
+    quality: quality,
+    resolvedUrl: resolvedUrl ?? this.resolvedUrl,
+    canonicalUrl: canonicalUrl ?? this.canonicalUrl,
+    serverFilename: serverFilename ?? this.serverFilename,
+    title: title ?? this.title,
+    thumbnail: thumbnail ?? this.thumbnail,
+    localPath: localPath ?? this.localPath,
+    phase: phase ?? this.phase,
+    progress: progress ?? this.progress,
+    error: error ?? this.error,
+    isBatchMember: isBatchMember,
+    createdAt: createdAt,
+  );
 }
 
 /// The mean progress of a group of tasks (0 to 1), for the summary bar at

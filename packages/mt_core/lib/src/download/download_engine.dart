@@ -22,7 +22,9 @@ part 'download_engine_pull.dart';
 
 /// Where the pulled file is saved. The app decides.
 typedef SavePathBuilder = String Function(
-    DownloadTask task, String serverFilename);
+  DownloadTask task,
+  String serverFilename,
+);
 
 /// The four-stage engine (§3): add, poll, pull, delete-by-policy.
 /// Concurrency of at most 1, server errors fail **immediately** (trap
@@ -42,9 +44,9 @@ class DownloadEngine {
     this.pullGate,
     this.compatibleVideo,
     this.onLog,
-  })  : _resolver = shortLinkResolver ?? ShortLinkResolver(),
-        _transfer = transfer ?? Transfer(api: api),
-        _matcher = HistoryMatcher(api);
+  }) : _resolver = shortLinkResolver ?? ShortLinkResolver(),
+       _transfer = transfer ?? Transfer(api: api),
+       _matcher = HistoryMatcher(api);
 
   final MeTubeApi api;
   final DeletePolicy policy;
@@ -84,8 +86,8 @@ class DownloadEngine {
   final Map<String, CancelToken> _cancelTokens = {};
   final Set<String> _cancelRequested = {};
 
-  /// A `/history` snapshot from before the add (defect ح-3), which also
-  /// identifies the orphan left by a cancellation (defect ع-7).
+  /// The last **whole percentage** broadcast for each task, the filter used
+  /// by [_emitProgress].
   final Map<String, Set<String>> _snapshots = {};
 
   /// The last **whole percentage** broadcast for each task, the filter used
@@ -103,10 +105,8 @@ class DownloadEngine {
   bool _working = false;
 
   /// **The death flag (defect ع-1):** without it, the polling and gate
-  /// loops
-  /// keep running after disposal, against a closed Dio client, emitting
-  /// into
-  /// a closed stream.
+  /// loops keep running after disposal, against a closed Dio client,
+  /// emitting into a closed stream.
   bool _disposed = false;
 
   Stream<DownloadTask> get updates => _updates.stream;
@@ -138,14 +138,12 @@ class DownloadEngine {
   }
 
   /// Cancelling: a waiting task is marked at once, and a running one has
-  /// its
-  /// pull cut and its partial files deleted.
+  /// its pull cut and its partial files deleted.
   void cancel(String taskId) {
     _cancelRequested.add(taskId);
     final task = _tasks[taskId];
     // Queued or parked means no worker will reach it, so the announcement
-    // and
-    // the cleanup happen here.
+    // and the cleanup happen here.
     if (_queue.remove(taskId) || _parked.remove(taskId)) {
       if (task != null) _emit(task.copyWith(phase: TaskPhase.cancelled));
       _cancelRequested.remove(taskId); // م-8: وإلا تسرّب للأبد
@@ -215,8 +213,12 @@ class DownloadEngine {
       onLog?.call('task failed (local): $e');
       final task = _tasks[taskId];
       if (task != null) {
-        _emit(task.copyWith(
-            phase: TaskPhase.failed, error: LocalFailureException('$e')));
+        _emit(
+          task.copyWith(
+            phase: TaskPhase.failed,
+            error: LocalFailureException('$e'),
+          ),
+        );
       }
     } finally {
       _cancelTokens.remove(taskId);
@@ -236,8 +238,7 @@ class DownloadEngine {
     task = _emit(task.copyWith(resolvedUrl: resolved));
     _throwIfCancelRequested(taskId);
     // Defect ح-3: know what existed before us, so another operation is
-    // never
-    // attributed to this task.
+    // never attributed to this task.
     _snapshots[taskId] = await _matcher.snapshot(task.effectiveUrl);
     _throwIfCancelRequested(taskId);
     await api.add(
@@ -249,12 +250,14 @@ class DownloadEngine {
     // 2) Poll until completion or an immediate error.
     task = _emit(task.copyWith(phase: TaskPhase.polling));
     final done = await _pollUntilDone(taskId, task);
-    task = _emit(task.copyWith(
-      canonicalUrl: done.canonicalUrl,
-      serverFilename: done.filename,
-      title: done.title,
-      thumbnail: done.thumbnail,
-    ));
+    task = _emit(
+      task.copyWith(
+        canonicalUrl: done.canonicalUrl,
+        serverFilename: done.filename,
+        title: done.title,
+        thumbnail: done.thumbnail,
+      ),
+    );
 
     // Super: leaving the item on the server is the whole job. No pull, no
     // delete.

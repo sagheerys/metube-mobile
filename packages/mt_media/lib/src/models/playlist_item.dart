@@ -31,8 +31,7 @@ class PlaylistItem {
   final String? serverFilename;
   final bool isAudio;
 
-  /// The duration if known, from an earlier play or the index. Required for
-  /// the shorts path.
+  /// The aspect ratio if known; below 1 means a portrait video.
   final Duration? duration;
 
   /// The aspect ratio if known; below 1 means a portrait video.
@@ -60,30 +59,29 @@ class PlaylistItem {
     bool? isAudio,
     Duration? duration,
     double? aspectRatio,
-  }) =>
-      PlaylistItem(
-        canonicalUrl: canonicalUrl,
-        title: title ?? this.title,
-        uploader: uploader ?? this.uploader,
-        artworkUrl: artworkUrl ?? this.artworkUrl,
-        localPath: localPath ?? this.localPath,
-        serverFilename: serverFilename ?? this.serverFilename,
-        isAudio: isAudio ?? this.isAudio,
-        duration: duration ?? this.duration,
-        aspectRatio: aspectRatio ?? this.aspectRatio,
-      );
+  }) => PlaylistItem(
+    canonicalUrl: canonicalUrl,
+    title: title ?? this.title,
+    uploader: uploader ?? this.uploader,
+    artworkUrl: artworkUrl ?? this.artworkUrl,
+    localPath: localPath ?? this.localPath,
+    serverFilename: serverFilename ?? this.serverFilename,
+    isAudio: isAudio ?? this.isAudio,
+    duration: duration ?? this.duration,
+    aspectRatio: aspectRatio ?? this.aspectRatio,
+  );
 
   Map<String, dynamic> toJson() => {
-        'url': canonicalUrl,
-        'title': title,
-        if (uploader != null) 'uploader': uploader,
-        if (artworkUrl != null) 'artwork': artworkUrl,
-        if (localPath != null) 'localPath': localPath,
-        if (serverFilename != null) 'filename': serverFilename,
-        'isAudio': isAudio,
-        if (duration != null) 'durationMs': duration!.inMilliseconds,
-        if (aspectRatio != null) 'aspectRatio': aspectRatio,
-      };
+    'url': canonicalUrl,
+    'title': title,
+    if (uploader != null) 'uploader': uploader,
+    if (artworkUrl != null) 'artwork': artworkUrl,
+    if (localPath != null) 'localPath': localPath,
+    if (serverFilename != null) 'filename': serverFilename,
+    'isAudio': isAudio,
+    if (duration != null) 'durationMs': duration!.inMilliseconds,
+    if (aspectRatio != null) 'aspectRatio': aspectRatio,
+  };
 
   /// Tolerant parsing: an item with no URL is invalid and is dropped above
   /// as null.

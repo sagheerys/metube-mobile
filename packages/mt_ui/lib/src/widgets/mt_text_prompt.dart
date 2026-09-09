@@ -21,18 +21,17 @@ Future<String?> promptMTText(
   String? labelText,
   String? hintText,
   TextDirection? fieldDirection,
-}) =>
-    showDialog<String>(
-      context: context,
-      builder: (_) => _MTTextPrompt(
-        title: title,
-        confirmLabel: confirmLabel,
-        initialValue: initialValue,
-        labelText: labelText,
-        hintText: hintText,
-        fieldDirection: fieldDirection,
-      ),
-    );
+}) => showDialog<String>(
+  context: context,
+  builder: (_) => _MTTextPrompt(
+    title: title,
+    confirmLabel: confirmLabel,
+    initialValue: initialValue,
+    labelText: labelText,
+    hintText: hintText,
+    fieldDirection: fieldDirection,
+  ),
+);
 
 class _MTTextPrompt extends StatefulWidget {
   const _MTTextPrompt({
@@ -58,8 +57,9 @@ class _MTTextPrompt extends StatefulWidget {
 }
 
 class _MTTextPromptState extends State<_MTTextPrompt> {
-  late final TextEditingController _controller =
-      TextEditingController(text: widget.initialValue);
+  late final TextEditingController _controller = TextEditingController(
+    text: widget.initialValue,
+  );
 
   @override
   void dispose() {

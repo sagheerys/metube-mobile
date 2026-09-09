@@ -10,12 +10,12 @@ enum ItemStatus { inProgress, completed, failed, unknown }
 
 /// One item from `GET /history`, parsed **tolerantly** per the table in
 /// `05-DATA-SCHEMA.md` §2.3. The hard rules:
-/// - - [canonicalUrl] is the primary key for all app data.
-/// - - A missing [filename] stays null; it is **never invented from the
-/// title** (trap §6.3).
-/// - - The `i.ytimg.com` fallback thumbnail is for YouTube **only**;
-/// anything else stays imageless, and ArtworkIndex fills it in a layer
-/// above.
+/// - [canonicalUrl] is the primary key for all app data.
+/// - A missing [filename] stays null; it is **never invented from the
+///   title** (trap §6.3).
+/// - The `i.ytimg.com` fallback thumbnail is for YouTube **only**;
+///   anything else stays imageless, and ArtworkIndex fills it in a layer
+///   above.
 class HistoryItem {
   const HistoryItem({
     required this.id,
@@ -54,8 +54,7 @@ class HistoryItem {
   final String? format;
 
   /// The file's size on the server in bytes if it reported one (`size`),
-  /// for
-  /// sorting and display.
+  /// for sorting and display.
   final int? sizeBytes;
 
   bool get isDownloading => status == ItemStatus.inProgress;
@@ -72,7 +71,8 @@ class HistoryItem {
     final url = _str(json['url']) ?? '';
 
     final rawStatus = _str(json['status']) ?? _str(json['state']);
-    final error = _str(json['error']) ?? _str(json['msg']) ?? _str(json['message']);
+    final error =
+        _str(json['error']) ?? _str(json['msg']) ?? _str(json['message']);
 
     return HistoryItem(
       id: _str(json['id']) ?? _str(json['_id']) ?? _uuid.v4(),
@@ -101,7 +101,8 @@ class HistoryItem {
   }
 
   static String? _parseUploader(Map<String, dynamic> json) {
-    final raw = _str(json['uploader']) ??
+    final raw =
+        _str(json['uploader']) ??
         _str(json['channel']) ??
         _str(json['creator']) ??
         _str(json['artist']) ??
@@ -113,7 +114,8 @@ class HistoryItem {
   }
 
   static String? _parseThumbnail(Map<String, dynamic> json, String url) {
-    var thumb = _str(json['thumbnail']) ??
+    var thumb =
+        _str(json['thumbnail']) ??
         _str(json['thumb']) ??
         _str(json['thumbnail_url']) ??
         _str(json['thumbnailUrl']);

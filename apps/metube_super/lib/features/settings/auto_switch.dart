@@ -8,17 +8,19 @@ import 'package:mt_core/mt_core.dart';
 import '../../di.dart';
 import 'settings_state.dart';
 
-/// **م-28 / ر-9 — التبديل التلقائي الفعلي.**
+/// **Endpoint switching, as actually implemented.**
 ///
-/// خلل مصطاد على جهاز المالك (2026-09-01): كان المنفَّذ هو *العرض*
-/// و*التبديل اليدوي* فقط — `connectivity_plus` معلن في الحزم ولا يُستورد
-/// في أي ملف، ولا مستمع لتغيّر الشبكة، و`adoptActiveUrl` لا يُستدعى إلا
-/// بنقرة في شاشة الشبكة. النتيجة على شبكة المالك المنزلية: الجوال بجانب
-/// السيرفر ومع ذلك يبث عبر نفق Cloudflare — **أبطأ ٤١×** بالقياس
-/// (2MB: 2.3s محلياً مقابل 94.8s عبر النفق).
+/// A defect caught on a real device (2026-09-01): only the *display* and
+/// the *manual switch* had been built. `connectivity_plus` was declared in
+/// the packages and imported in no file, there was no listener for network
+/// changes, and `adoptActiveUrl` was called only by a tap in the network
+/// screen. The result on a home network: the phone was beside the server
+/// and still streamed through a Cloudflare tunnel, **41x slower** by
+/// measurement (2MB: 2.3s locally against 94.8s through the tunnel).
 ///
-/// المحفّزات الثلاثة: تغيّر الشبكة (واي-فاي/بيانات/انقطاع)، وعودة
-/// التطبيق للمقدمة (الشبكة قد تكون تبدلت والتطبيق بالخلفية)، والإقلاع.
+/// The three triggers: a network change (Wi-Fi, mobile data,
+/// disconnection), the app returning to the foreground (the network may
+/// have changed while it was in the background), and startup.
 class AutoSwitchService {
   AutoSwitchService(
     this._ref, {
@@ -29,8 +31,9 @@ class AutoSwitchService {
   final Ref _ref;
   final Stream<Object?> _changes;
 
-  /// تغيّر الشبكة يصل **دفعات** (فقد ثم اتصال ثم عنوان) — بلا تهدئة
-  /// نطلق ثلاثة فحوص متوازية على نفس الحدث.
+  /// Network changes arrive in **bursts** (loss, then connection, then
+  /// address), so without debouncing we fire three parallel probes for one
+  /// event.
   final Duration debounce;
 
   StreamSubscription<Object?>? _sub;
@@ -39,7 +42,8 @@ class AutoSwitchService {
   bool _running = false;
   bool _pending = false;
 
-  /// آخر رابط اعتُمد تلقائياً — لبطاقة الحالة والتشخيص.
+  /// The last endpoint adopted automatically, for the status card and for
+  /// diagnostics.
   String? lastAdopted;
 
   void start() {
@@ -48,41 +52,48 @@ class AutoSwitchService {
     schedule(immediate: true);
   }
 
-  /// **التهدئة هنا لا في التنفيذ (إصلاح عاصفة ط-6):** استطلاع المكتبة
-  /// كل ثانيتين يُبطل `historyProvider`، ومستمع الخطأ كان يجدول فحصاً عند
-  /// **كل** إخفاق — وتهدئة 700ms أقصر من الثانيتين فلا تجمع شيئاً:
-  /// سيرفر معطّل + شاشة مكتبة مفتوحة = فحص لكل الروابط كل ثانيتين بلا
-  /// توقف، بعملاء جدد ومهلة 4s. الآن الفحوص المجدولة تتباعد بـ
-  /// [minInterval] على الأقل، والمحفّز الفوري (الإقلاع) وحده يستثنى.
+  /// **Debouncing lives here rather than in the execution (fix for the ط-6
+  /// storm):** the library polls every two seconds and invalidates
+  /// `historyProvider`, and the error listener used to schedule a probe on
+  /// **every** failure. A 700ms debounce is shorter than two seconds and so
+  /// gathers nothing: a broken server plus an open library screen meant
+  /// probing every endpoint every two seconds without pause, with new
+  /// clients and a 4s timeout. Scheduled probes are now at least
+  /// [minInterval] apart, and only the immediate trigger, startup, is
+  /// exempt.
   void schedule({bool immediate = false}) {
     _timer?.cancel();
     if (immediate) {
       _timer = Timer(Duration.zero, () => unawaited(resolveNow()));
       return;
     }
-    final since =
-        _lastRun == null ? null : DateTime.now().difference(_lastRun!);
+    final since = _lastRun == null
+        ? null
+        : DateTime.now().difference(_lastRun!);
     final wait = since == null || since >= minInterval
         ? debounce
         : minInterval - since;
     _timer = Timer(wait, () => unawaited(resolveNow()));
   }
 
-  /// فحص متوازٍ لكل المرشحين واعتماد أولهم استجابةً (المحلي أولاً).
-  /// لا يفعل شيئاً إن أُطفئ التبديل أو لم تُسجَّل روابط.
-  /// أقل فاصل بين فحصين **مجدولين** — انظر [schedule].
+  /// Probes every candidate in parallel and adopts the first to respond,
+  /// local first. It does nothing when switching is off or no endpoints are
+  /// registered. The minimum gap between two **scheduled** probes is in
+  /// [schedule].
   static const minInterval = Duration(seconds: 20);
   DateTime? _lastRun;
 
   Future<void> resolveNow() async {
     final settings = _ref.read(settingsProvider);
     if (!settings.autoSwitch) return;
-    // **لا تبديل والعمل جارٍ (العطل ع-1):** تبديل الرابط يعيد بناء
-    // المحرك فيبيد كل مهامه بصمت. التأجيل حتى يهدأ الطابور أرحم من
-    // تحميل ضائع بلا رسالة.
+    // **No switching while work is in flight (defect ع-1):** switching the
+    // endpoint rebuilds the engine and silently destroys all of its tasks.
+    // Waiting until the queue is quiet is kinder than a download lost with
+    // no message.
     final engine = _ref.read(downloadEngineProvider);
     if (engine != null && engine.hasActiveWork) {
-      // إعادة المحاولة بنفسها — لا مستمع آخر سيوقظنا حين يهدأ الطابور.
+      // It retries itself: no other listener will wake us when the queue
+      // goes quiet.
       _timer?.cancel();
       _timer = Timer(minInterval, () => unawaited(resolveNow()));
       return;
@@ -90,47 +101,64 @@ class AutoSwitchService {
     _lastRun = DateTime.now();
     final candidates = settings.candidateUrls;
     if (candidates.isEmpty) return;
-    // مرشح واحد وهو المعتمد أصلاً ⇒ لا شيء يُبدَّل، ولا داعي لـ probe.
+    // One candidate and it is already the active one, so there is nothing
+    // to switch and no reason to probe.
     if (candidates.length == 1 && candidates.first == settings.activeUrl) {
       return;
     }
-    // المعتمد **ليس من المرشحين** (حُذف أو عُدّل الرابط) ⇒ نتبنى النتيجة
-    // ولو ساوت القديم — وإلا بقي التطبيق معلّقاً على عنوان لا وجود له.
+    // The active endpoint is **not among the candidates**, deleted or
+    // edited, so we adopt the result even if it equals the old one, or the
+    // app stays pinned to an address that no longer exists.
     final activeIsStale = !candidates.contains(settings.activeUrl);
-    // فحص جارٍ؟ نؤجل واحداً فقط بدل تكديس الطلبات.
+    // Nothing responds, so **we keep the active endpoint as it is**: the
+    // network may be mid-switch, and clearing the URL empties the library
+    // in
+    // front of the user.
     if (_running) {
       _pending = true;
       return;
     }
     _running = true;
     try {
-      final probe = await _ref.read(endpointResolverProvider).resolveDetailed(
+      final probe = await _ref
+          .read(endpointResolverProvider)
+          .resolveDetailed(
             localUrl: settings.localUrl,
             externalUrls: settings.externalUrls,
           );
       final best = probe.url;
-      // لا شيء يستجيب ⇒ **نُبقي المعتمد كما هو**: الشبكة قد تكون في
-      // منتصف التبديل، وتصفير الرابط يفرّغ المكتبة أمام المستخدم.
+      // Nothing responds, so **we keep the active endpoint as it is**: the
+      // network may be mid-switch, and clearing the URL empties the library
+      // in front of the user.
       if (best == null) {
-        // **السبب يُسجَّل** (بلاغ المالك 2026-09-05): قفل السيرفر
-        // بكلاودفلير أوقف التبديل، ولم يكن في السجل ما يميّز «مقفل»
-        // عن «مقطوع» — فبدا العطل بلا سبب.
+        // **The reason is logged** (field report 2026-09-05): putting the
+        // server behind Cloudflare Access stopped switching, and nothing in
+        // the log distinguished "locked" from "unreachable", so the fault
+        // looked causeless.
         final locked = probe.statuses.values
             .where((s) => s == MTEndpointStatus.unauthorized)
             .length;
-        unawaited(_ref.read(loggerProvider).log(
-            locked > 0
-                ? 'no usable endpoint — $locked rejected credentials (401)'
-                : 'no usable endpoint — none reachable',
-            tag: 'network'));
+        unawaited(
+          _ref
+              .read(loggerProvider)
+              .log(
+                locked > 0
+                    ? 'no usable endpoint — $locked rejected credentials (401)'
+                    : 'no usable endpoint — none reachable',
+                tag: 'network',
+              ),
+        );
         return;
       }
       if (best == settings.activeUrl && !activeIsStale) return;
       lastAdopted = best;
-      // م-32: تبديل السيرفر أهم حدث تشخيصي في Super — وكان لا يُسجَّل.
-      unawaited(_ref
-          .read(loggerProvider)
-          .log('server switched to $best', tag: 'network'));
+      // A server switch is the most important diagnostic event in Super,
+      // and it was not being logged.
+      unawaited(
+        _ref
+            .read(loggerProvider)
+            .log('server switched to $best', tag: 'network'),
+      );
       await _ref.read(settingsProvider.notifier).adoptActiveUrl(best);
     } finally {
       _running = false;
@@ -148,12 +176,14 @@ class AutoSwitchService {
   }
 }
 
-/// يعمل طوال عمر التطبيق — يُراقَب من [SuperApp] لا من شاشة.
+/// It runs for the life of the app, watched from [SuperApp] rather than
+/// from a screen.
 final autoSwitchProvider = Provider<AutoSwitchService>((ref) {
   final service = AutoSwitchService(ref)..start();
 
-  // **محفّز رابع مصطاد على الجهاز:** تعديل قائمة الروابط لم يكن يُطلق
-  // فحصاً، فبقي التطبيق معلّقاً على عنوان لم يعد مسجّلاً أصلاً.
+  // **A fourth trigger, caught on the device:** editing the endpoint list
+  // fired no probe, so the app stayed pinned to an address that was no
+  // longer registered at all.
   ref.listen<(String, String, bool)>(
     settingsProvider.select(
       (s) => (s.localUrl, s.externalUrls.join('|'), s.autoSwitch),
@@ -161,9 +191,10 @@ final autoSwitchProvider = Provider<AutoSwitchService>((ref) {
     (_, _) => service.schedule(),
   );
 
-  // **محفّز خامس:** فشل نداء السيرفر. لا كل انقطاع يرافقه حدث شبكة —
-  // السيرفر قد يُعاد تشغيله، أو ينتقل الجوال بين نقطتي وصول بلا مسار
-  // للـ LAN. الفشل نفسه هو الإشارة الوحيدة عندئذٍ.
+  // **A fifth trigger:** a failed server call. Not every outage comes with
+  // a network event; the server may be restarted, or the phone may move
+  // between access points with no route to the LAN. The failure itself is
+  // the only signal then.
   ref.listen(historyProvider, (_, next) {
     if (next.hasError) service.schedule();
   });
@@ -172,10 +203,12 @@ final autoSwitchProvider = Provider<AutoSwitchService>((ref) {
   return service;
 });
 
-/// **بذرة قائمة الروابط.** التثبيت القديم (والإعداد ر-1) يكتب `server_url`
-/// وحده، فتبقى قائمة م-28 فارغة و«التبديل التلقائي» بلا مرشحين — يظهر
-/// مفعّلاً ولا يبدّل شيئاً. هنا نصنّف الرابط المهيّأ مرة واحدة: عنوان
-/// شبكة خاصة ⇒ «المحلي»، وغيره ⇒ أول رابط خارجي.
+/// **Seeding the endpoint list.** An older install, and the first-run
+/// setup, write `server_url` alone, so the endpoint list stays empty and
+/// automatic switching has no candidates: it looks enabled and switches
+/// nothing. Here the configured URL is classified once: a private network
+/// address becomes "local", anything else becomes the first external
+/// endpoint.
 Future<void> seedEndpointsFromActive(
   KeyValueStore store,
   PrefsMutex mutex,
@@ -183,8 +216,7 @@ Future<void> seedEndpointsFromActive(
 ) async {
   final active = (settings.activeUrl ?? '').trim();
   if (active.isEmpty) return;
-  if (settings.localUrl.trim().isNotEmpty ||
-      settings.externalUrls.isNotEmpty) {
+  if (settings.localUrl.trim().isNotEmpty || settings.externalUrls.isNotEmpty) {
     return;
   }
   await mutex.run(() async {
@@ -196,8 +228,9 @@ Future<void> seedEndpointsFromActive(
   });
 }
 
-/// عنوان على شبكة محلية؟ (`10.x`، `192.168.x`، `172.16–31.x`، `127.x`،
-/// `*.local`، اسم بلا نقطة). يُستعمل لتصنيف الرابط المهيّأ وحده.
+/// Is this address on a local network? (`10.x`, `192.168.x`, `172.16-31.x`,
+/// `127.x`, `*.local`, or a name with no dot.) Used only to classify the
+/// configured URL.
 bool isPrivateHostUrl(String url) {
   final host = Uri.tryParse(url)?.host ?? '';
   if (host.isEmpty) return false;

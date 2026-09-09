@@ -12,7 +12,8 @@ class MediaShape {
 
   /// Portrait and three minutes or less enters the shorts path.
   bool get isShortForm =>
-      isVertical && duration > Duration.zero &&
+      isVertical &&
+      duration > Duration.zero &&
       duration <= const Duration(minutes: 3);
 }
 
@@ -25,7 +26,7 @@ class MediaShape {
 /// key: `media_shape_index`, a documented addition to §5.1.
 final class MediaShapeIndex extends UrlKeyedIndex<MediaShape> {
   MediaShapeIndex({required super.store, required super.mutex})
-      : super(prefsKey: 'media_shape_index');
+    : super(prefsKey: 'media_shape_index');
 
   @override
   MediaShape? decodeValue(dynamic raw) {
@@ -41,9 +42,9 @@ final class MediaShapeIndex extends UrlKeyedIndex<MediaShape> {
 
   @override
   dynamic encodeValue(MediaShape value) => {
-        'd': value.duration.inMilliseconds,
-        'r': value.aspectRatio,
-      };
+    'd': value.duration.inMilliseconds,
+    'r': value.aspectRatio,
+  };
 
   Future<void> remember(
     String canonicalUrl,

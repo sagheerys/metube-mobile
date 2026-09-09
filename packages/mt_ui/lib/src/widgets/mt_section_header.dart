@@ -17,7 +17,11 @@ class MTSectionHeader extends StatelessWidget {
     final text = Theme.of(context).textTheme;
     return Container(
       padding: const EdgeInsets.fromLTRB(
-          MTSpace.xxs, MTSpace.xxs, MTSpace.xxs, MTSpace.sm),
+        MTSpace.xxs,
+        MTSpace.xxs,
+        MTSpace.xxs,
+        MTSpace.sm,
+      ),
       decoration: BoxDecoration(
         border: Border(bottom: BorderSide(color: x.palette.line)),
       ),
@@ -27,8 +31,10 @@ class MTSectionHeader extends StatelessWidget {
         children: [
           Expanded(child: Text(title, style: text.titleMedium)),
           if (trailing != null)
-            Text(trailing!,
-                style: text.bodySmall!.copyWith(color: x.palette.ink3)),
+            Text(
+              trailing!,
+              style: text.bodySmall!.copyWith(color: x.palette.ink3),
+            ),
         ],
       ),
     );

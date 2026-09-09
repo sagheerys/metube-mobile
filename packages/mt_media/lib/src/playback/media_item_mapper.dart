@@ -7,19 +7,19 @@ import '../models/playlist_item.dart';
 /// the key stays the same across every layer.
 extension PlaylistItemMediaItem on PlaylistItem {
   MediaItem toMediaItem() => MediaItem(
-        id: canonicalUrl,
-        title: title,
-        artist: uploader,
-        duration: duration,
-        artUri: _artUri(artworkUrl),
-        playable: true,
-        extras: {
-          'localPath': localPath,
-          'filename': serverFilename,
-          'isAudio': isAudio,
-          if (aspectRatio != null) 'aspectRatio': aspectRatio,
-        },
-      );
+    id: canonicalUrl,
+    title: title,
+    artist: uploader,
+    duration: duration,
+    artUri: _artUri(artworkUrl),
+    playable: true,
+    extras: {
+      'localPath': localPath,
+      'filename': serverFilename,
+      'isAudio': isAudio,
+      if (aspectRatio != null) 'aspectRatio': aspectRatio,
+    },
+  );
 
   static Uri? _artUri(String? raw) {
     if (raw == null || raw.isEmpty) return null;

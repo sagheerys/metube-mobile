@@ -12,8 +12,9 @@ import 'playlist_dialogs.dart';
 import 'playlists_providers.dart';
 import 'widgets/playlist_cards.dart';
 
-/// تبويب القوائم (م-37) في Lite: **قسمان** — ذكية مثبتة ← قوائمك.
-/// قسم «وسومك» ميزة Super (م-26) فلا وجود له هنا.
+/// Lite's playlists tab has **two sections**: pinned smart playlists, then
+/// your playlists. The "your tags" section is a Super feature and does not
+/// exist here.
 class PlaylistsScreen extends ConsumerWidget {
   const PlaylistsScreen({super.key});
 
@@ -36,7 +37,11 @@ class PlaylistsScreen extends ConsumerWidget {
       ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(
-            MTSpace.pagePad, 0, MTSpace.pagePad, 140),
+          MTSpace.pagePad,
+          0,
+          MTSpace.pagePad,
+          140,
+        ),
         children: [
           MTSectionHeader(title: l10n.smartPlaylists),
           const SizedBox(height: MTSpace.sm),
@@ -74,9 +79,12 @@ class PlaylistsScreen extends ConsumerWidget {
     );
   }
 
-  /// نقرة قائمة ذكية ⇒ تشغيلها كاملة (ر-7 خطوة 1).
+  /// Tapping a smart playlist plays it in full (rule 7, step 1).
   Future<void> _playSmart(
-      BuildContext context, WidgetRef ref, SmartList list) async {
+    BuildContext context,
+    WidgetRef ref,
+    SmartList list,
+  ) async {
     final items = [for (final item in list.items) toPlaylistItem(item)];
     final visual = await ref.read(playlistPlayerProvider).play(items);
     if (visual && context.mounted) context.push('/player');
@@ -95,13 +103,14 @@ class _Grid extends ConsumerWidget {
     final byKey = {for (final item in library) item.key: item};
 
     List<Widget> coversOf(SavedPlaylist playlist) => [
-          for (final entry in playlist.items.take(4))
-            if ((byKey[entry.canonicalUrl]?.thumbnail ?? entry.cachedThumb)
-                case final String url)
-              ?artworkFor(url),
-        ];
+      for (final entry in playlist.items.take(4))
+        if ((byKey[entry.canonicalUrl]?.thumbnail ?? entry.cachedThumb)
+            case final String url)
+          ?artworkFor(url),
+    ];
 
-    // حالة فارغة صريحة (تدقيق 8.1): بلاطة «+» وحدها لا تشرح شيئاً.
+    // An explicit empty state (audit 8.1): a bare "+" tile explains
+    // nothing.
     if (playlists.isEmpty) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -111,9 +120,7 @@ class _Grid extends ConsumerWidget {
             child: Text(
               l10n.noPlaylistsMessage,
               textAlign: TextAlign.center,
-              style: Theme.of(context)
-                  .textTheme
-                  .bodySmall!
+              style: Theme.of(context).textTheme.bodySmall!
                   .copyWith(color: MTThemeX.of(context).palette.ink3),
             ),
           ),
@@ -142,8 +149,7 @@ class _Grid extends ConsumerWidget {
             thumbnails: coversOf(playlist),
             onTap: () => context.push('/playlists/${playlist.id}'),
             onPlay: () => _play(context, ref, playlist),
-            onLongPress: () =>
-                showPlaylistActionsSheet(context, ref, playlist),
+            onLongPress: () => showPlaylistActionsSheet(context, ref, playlist),
           ),
         _NewPlaylistTile(
           label: l10n.newPlaylistAction,
@@ -154,16 +160,18 @@ class _Grid extends ConsumerWidget {
   }
 
   Future<void> _play(
-      BuildContext context, WidgetRef ref, SavedPlaylist playlist) async {
-    // **الفشل يُقال لا يُرمى**: بناء القائمة يمرّ بالمكتبة، والمكتبة
-    // تمرّ بالسيرفر — فرفض الاعتماد كان يفلت من معالج اللمسة صامتاً.
+    BuildContext context,
+    WidgetRef ref,
+    SavedPlaylist playlist,
+  ) async {
+    // **A failure is stated rather than thrown**: building a playlist goes
+    // through the library, and the library goes through the server, so a
+    // credential rejection used to escape the tap handler in silence.
     try {
       final items = await ref.read(playlistItemsProvider(playlist.id).future);
-      final visual = await ref.read(playlistPlayerProvider).play(
-            items,
-            playlistId: playlist.id,
-            playlistName: playlist.name,
-          );
+      final visual = await ref
+          .read(playlistPlayerProvider)
+          .play(items, playlistId: playlist.id, playlistName: playlist.name);
       if (visual && context.mounted) context.push('/player');
     } on MTApiException catch (e) {
       if (context.mounted) {
@@ -203,11 +211,11 @@ class _NewPlaylistTile extends StatelessWidget {
               child: Icon(Icons.add_rounded, size: 17, color: p.accentInk),
             ),
             const SizedBox(height: MTSpace.xs),
-            Text(label,
-                style: Theme.of(context)
-                    .textTheme
-                    .labelSmall!
-                    .copyWith(color: p.ink3)),
+            Text(
+              label,
+              style: Theme.of(context).textTheme.labelSmall!
+                  .copyWith(color: p.ink3),
+            ),
           ],
         ),
       ),

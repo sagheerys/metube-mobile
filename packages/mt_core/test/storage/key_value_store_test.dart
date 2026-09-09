@@ -50,8 +50,11 @@ void main() {
       }
 
       await Future.wait([incrementNTimes(50), incrementNTimes(50)]);
-      expect(await store.getInt('counter'), 100,
-          reason: 'بلا قفل تضيع كتابات في نافذة السباق');
+      expect(
+        await store.getInt('counter'),
+        100,
+        reason: 'بلا قفل تضيع كتابات في نافذة السباق',
+      );
     });
   });
 }

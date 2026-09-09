@@ -1,16 +1,17 @@
 import 'package:flutter/services.dart';
 
-/// جسر التثبيت الأصلي (م-66) — الطرف المقابل `UpdateInstaller.kt`.
+/// The native install bridge; the other end is `UpdateInstaller.kt`.
 ///
-/// **اسم القناة موحّد بين التطبيقين** فالملف متطابق حرفياً فيهما.
-/// كل نداء فاشل-آمن: القناة غائبة في اختبارات الودجات وفي أي منصة
-/// غير أندرويد، وغيابها يجب ألا يرمي في وجه المستخدم.
+/// **The channel name is the same in both apps**, so this file is
+/// identical in each. Every call is fail-safe: the channel is absent in
+/// widget tests and on any platform other than Android, and its absence
+/// must never throw in the user's face.
 class UpdateChannel {
   const UpdateChannel();
 
   static const MethodChannel _channel = MethodChannel('mtf/update');
 
-  /// هل يملك التطبيق إذن «تثبيت تطبيقات غير معروفة»؟
+  /// Does the app hold the "install unknown apps" permission?
   Future<bool> canInstall() async {
     try {
       return await _channel.invokeMethod<bool>('canInstall') ?? false;
@@ -21,18 +22,19 @@ class UpdateChannel {
     }
   }
 
-  /// يفتح صفحة الإذن في إعدادات النظام لهذا التطبيق وحده.
+  /// Opens the permission page in the system settings for this app alone.
   Future<void> openInstallSettings() async {
     try {
       await _channel.invokeMethod<bool>('openInstallSettings');
     } on PlatformException {
-      // لا شيء نفعله: المستخدم سيُخبَر بالمسار نصياً في الحوار.
+      // Nothing to do: the dialog tells the user the path in words.
     } on MissingPluginException {
-      // منصة بلا القناة.
+      // A platform without the channel.
     }
   }
 
-  /// يسلّم ملف APK لمثبّت الحزم. `false` = لم تُفتح شاشة التثبيت.
+  /// Hands the APK to the package installer. `false` means the install
+  /// screen did not open.
   Future<bool> install(String path) async {
     try {
       return await _channel.invokeMethod<bool>('install', {'path': path}) ??

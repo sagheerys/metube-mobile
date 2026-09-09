@@ -9,8 +9,9 @@ import 'package:share_plus/share_plus.dart';
 
 import '../../di.dart';
 
-/// عارض السجلات التشخيصي (م-32): بحث/مسح/مشاركة — **المشاركة تمر
-/// بالتعقيم الإلزامي** (حذف الروابط وIP والاعتمادات والمسارات).
+/// The diagnostic log viewer: search, clear, share. **Sharing passes
+/// through mandatory sanitising**, which removes URLs, IP addresses,
+/// credentials and paths.
 class LogsScreen extends ConsumerStatefulWidget {
   const LogsScreen({super.key});
 
@@ -51,7 +52,8 @@ class _LogsScreenState extends ConsumerState<LogsScreen> {
     await _load();
   }
 
-  /// المشاركة **معقّمة دائماً** — لا رابط ولا IP ولا ترويسة مصادقة.
+  /// Sharing is **always sanitised**: no URL, no IP address, no
+  /// authentication header.
   Future<void> _share() async {
     final sanitized = await _logger.readForShare();
     final dir = await getTemporaryDirectory();
@@ -92,7 +94,11 @@ class _LogsScreenState extends ConsumerState<LogsScreen> {
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(
-                MTSpace.pagePad, MTSpace.sm, MTSpace.pagePad, MTSpace.xs),
+              MTSpace.pagePad,
+              MTSpace.sm,
+              MTSpace.pagePad,
+              MTSpace.xs,
+            ),
             child: MTSearchField(
               hint: l10n.searchLogs,
               onChanged: (value) => setState(() => _search.text = value),
@@ -105,11 +111,11 @@ class _LogsScreenState extends ConsumerState<LogsScreen> {
                 Icon(Icons.privacy_tip_outlined, size: 14, color: p.ink3),
                 const SizedBox(width: MTSpace.xs),
                 Expanded(
-                  child: Text(l10n.logsSanitizedNote,
-                      style: Theme.of(context)
-                          .textTheme
-                          .labelSmall!
-                          .copyWith(color: p.ink3)),
+                  child: Text(
+                    l10n.logsSanitizedNote,
+                    style: Theme.of(context).textTheme.labelSmall!
+                        .copyWith(color: p.ink3),
+                  ),
                 ),
               ],
             ),
@@ -119,34 +125,34 @@ class _LogsScreenState extends ConsumerState<LogsScreen> {
             child: _loading
                 ? const Center(child: CircularProgressIndicator())
                 : visible.isEmpty
-                    ? MTEmptyState(
-                        icon: Icons.article_outlined,
-                        title: query.isEmpty ? l10n.logsEmpty : l10n.noResults,
-                        message: query.isEmpty
-                            ? l10n.noLogsFound
-                            : l10n.noResultsMessage,
-                      )
-                    : ListView.builder(
-                        padding: const EdgeInsets.fromLTRB(MTSpace.pagePad, 0,
-                            MTSpace.pagePad, MTSpace.xxl),
-                        itemCount: visible.length,
-                        itemBuilder: (context, index) => Padding(
-                          padding:
-                              const EdgeInsets.symmetric(vertical: 3),
-                          child: Text(
-                            visible[index],
-                            style: Theme.of(context)
-                                .textTheme
-                                .labelSmall!
-                                .copyWith(
-                                  color: visible[index].contains('ERROR')
-                                      ? p.err
-                                      : p.ink2,
-                                  fontFamily: 'monospace',
-                                ),
-                          ),
+                ? MTEmptyState(
+                    icon: Icons.article_outlined,
+                    title: query.isEmpty ? l10n.logsEmpty : l10n.noResults,
+                    message: query.isEmpty
+                        ? l10n.noLogsFound
+                        : l10n.noResultsMessage,
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.fromLTRB(
+                      MTSpace.pagePad,
+                      0,
+                      MTSpace.pagePad,
+                      MTSpace.xxl,
+                    ),
+                    itemCount: visible.length,
+                    itemBuilder: (context, index) => Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 3),
+                      child: Text(
+                        visible[index],
+                        style: Theme.of(context).textTheme.labelSmall!.copyWith(
+                          color: visible[index].contains('ERROR')
+                              ? p.err
+                              : p.ink2,
+                          fontFamily: 'monospace',
                         ),
                       ),
+                    ),
+                  ),
           ),
         ],
       ),

@@ -17,12 +17,12 @@ void main() {
   const canonical = 'https://www.youtube.com/watch?v=dQw4w9WgXcQ';
 
   Map<String, dynamic> doneItem({String? filename = 'قناة.dQw4.mp4'}) => {
-        'id': 'dQw4w9WgXcQ',
-        'title': 'عنوان',
-        'url': canonical,
-        'status': 'finished',
-        'filename': ?filename,
-      };
+    'id': 'dQw4w9WgXcQ',
+    'title': 'عنوان',
+    'url': canonical,
+    'status': 'finished',
+    'filename': ?filename,
+  };
 
   DownloadEngine makeEngine(
     FakeApi api, {
@@ -30,19 +30,18 @@ void main() {
     int maxPollAttempts = 5,
     void Function(DownloadTask)? onCompleted,
     bool Function()? compatibleVideo,
-  }) =>
-      DownloadEngine(
-        api: api,
-        policy: policy,
-        maxPollAttempts: maxPollAttempts,
-        pollInterval: Duration.zero,
-        savePathBuilder: (task, serverFilename) =>
-            '${tempDir.path}${Platform.pathSeparator}${buildLocalFilename('عنوان', serverFilename: serverFilename)}',
-        transfer: Transfer(api: api, backoff: const [Duration.zero, Duration.zero]),
-        shortLinkResolver: ShortLinkResolver(redirectStep: (_) async => null),
-        onCompleted: onCompleted,
-        compatibleVideo: compatibleVideo,
-      );
+  }) => DownloadEngine(
+    api: api,
+    policy: policy,
+    maxPollAttempts: maxPollAttempts,
+    pollInterval: Duration.zero,
+    savePathBuilder: (task, serverFilename) =>
+        '${tempDir.path}${Platform.pathSeparator}${buildLocalFilename('عنوان', serverFilename: serverFilename)}',
+    transfer: Transfer(api: api, backoff: const [Duration.zero, Duration.zero]),
+    shortLinkResolver: ShortLinkResolver(redirectStep: (_) async => null),
+    onCompleted: onCompleted,
+    compatibleVideo: compatibleVideo,
+  );
 
   Future<DownloadTask> awaitFinished(DownloadEngine engine, String taskId) =>
       engine.updates
@@ -54,10 +53,12 @@ void main() {
     // كـ`pullGate`: قراءة لحظية فلا يحتاج تبديل الإعداد إعادة بناء.
     test('compatibleVideo يصل إلى api.add كما تقوله البوابة', () async {
       for (final answer in [true, false]) {
-        final api = FakeApi(historyScript: [
-          historyWith(),
-          historyWith(done: [doneItem()]),
-        ]);
+        final api = FakeApi(
+          historyScript: [
+            historyWith(),
+            historyWith(done: [doneItem()]),
+          ],
+        );
         final engine = makeEngine(api, compatibleVideo: () => answer);
         final task = engine.submit(canonical, Quality.best);
         await awaitFinished(engine, task.id);
@@ -67,10 +68,12 @@ void main() {
     });
 
     test('بلا بوابة توافق ⇒ false (سلوك ما قبل التغيير)', () async {
-      final api = FakeApi(historyScript: [
-        historyWith(),
-        historyWith(done: [doneItem()]),
-      ]);
+      final api = FakeApi(
+        historyScript: [
+          historyWith(),
+          historyWith(done: [doneItem()]),
+        ],
+      );
       final engine = makeEngine(api);
       final task = engine.submit(canonical, Quality.best);
       await awaitFinished(engine, task.id);
@@ -78,60 +81,75 @@ void main() {
       await engine.dispose();
     });
 
-    test('نجاح كامل بسياسة Lite: add ← poll ← pull ← delete بالمُقنون',
-        () async {
-      final api = FakeApi(historyScript: [
-        historyWith(), // لقطة ما قبل الإضافة (ح-3)
-        historyWith(queue: [
-          {'url': canonical, 'status': 'downloading', 'percent': 40}
-        ]),
-        historyWith(done: [doneItem()]),
-      ]);
-      final completed = <DownloadTask>[];
-      final engine = makeEngine(api, onCompleted: completed.add);
+    test(
+      'نجاح كامل بسياسة Lite: add ← poll ← pull ← delete بالمُقنون',
+      () async {
+        final api = FakeApi(
+          historyScript: [
+            historyWith(), // لقطة ما قبل الإضافة (ح-3)
+            historyWith(
+              queue: [
+                {'url': canonical, 'status': 'downloading', 'percent': 40},
+              ],
+            ),
+            historyWith(done: [doneItem()]),
+          ],
+        );
+        final completed = <DownloadTask>[];
+        final engine = makeEngine(api, onCompleted: completed.add);
 
-      final task = engine.submit(inputUrl, Quality.q720);
-      final result = await awaitFinished(engine, task.id);
+        final task = engine.submit(inputUrl, Quality.q720);
+        final result = await awaitFinished(engine, task.id);
 
-      expect(result.phase, TaskPhase.completed);
-      expect(api.adds.single.$1, inputUrl);
-      expect(result.canonicalUrl, canonical,
-          reason: 'المُقنون من /history لا المُدخل');
-      expect(api.deletes.single.$1, [canonical]);
-      expect(api.deletes.single.$2, 'done');
-      expect(File(result.localPath!).existsSync(), isTrue);
-      expect(completed.single.id, task.id);
-    });
+        expect(result.phase, TaskPhase.completed);
+        expect(api.adds.single.$1, inputUrl);
+        expect(
+          result.canonicalUrl,
+          canonical,
+          reason: 'المُقنون من /history لا المُدخل',
+        );
+        expect(api.deletes.single.$1, [canonical]);
+        expect(api.deletes.single.$2, 'done');
+        expect(File(result.localPath!).existsSync(), isTrue);
+        expect(completed.single.id, task.id);
+      },
+    );
 
-    test('وضع Super (pullToDevice=false): يكتمل بلا سحب ولا حذف — ر-2',
-        () async {
-      final api = FakeApi(historyScript: [
-        historyWith(),
-        historyWith(done: [doneItem()]),
-      ]);
-      final engine = DownloadEngine(
-        api: api,
-        policy: DeletePolicy.keepOnServer,
-        pullToDevice: false,
-        pollInterval: Duration.zero,
-        savePathBuilder: (t, f) => throw StateError('لا مسار في وضع السيرفر'),
-        shortLinkResolver: ShortLinkResolver(redirectStep: (_) async => null),
-      );
-      final task = engine.submit(inputUrl, Quality.best);
-      final result = await awaitFinished(engine, task.id);
-      expect(result.phase, TaskPhase.completed);
-      expect(result.canonicalUrl, canonical);
-      expect(result.serverFilename, isNotNull);
-      expect(result.localPath, isNull);
-      expect(api.downloadCalls, 0);
-      expect(api.deletes, isEmpty);
-    });
+    test(
+      'وضع Super (pullToDevice=false): يكتمل بلا سحب ولا حذف — ر-2',
+      () async {
+        final api = FakeApi(
+          historyScript: [
+            historyWith(),
+            historyWith(done: [doneItem()]),
+          ],
+        );
+        final engine = DownloadEngine(
+          api: api,
+          policy: DeletePolicy.keepOnServer,
+          pullToDevice: false,
+          pollInterval: Duration.zero,
+          savePathBuilder: (t, f) => throw StateError('لا مسار في وضع السيرفر'),
+          shortLinkResolver: ShortLinkResolver(redirectStep: (_) async => null),
+        );
+        final task = engine.submit(inputUrl, Quality.best);
+        final result = await awaitFinished(engine, task.id);
+        expect(result.phase, TaskPhase.completed);
+        expect(result.canonicalUrl, canonical);
+        expect(result.serverFilename, isNotNull);
+        expect(result.localPath, isNull);
+        expect(api.downloadCalls, 0);
+        expect(api.deletes, isEmpty);
+      },
+    );
 
     test('سياسة Super (keepOnServer): لا حذف بعد السحب', () async {
-      final api = FakeApi(historyScript: [
-        historyWith(),
-        historyWith(done: [doneItem()]),
-      ]);
+      final api = FakeApi(
+        historyScript: [
+          historyWith(),
+          historyWith(done: [doneItem()]),
+        ],
+      );
       final engine = makeEngine(api, policy: DeletePolicy.keepOnServer);
       final task = engine.submit(inputUrl, Quality.best);
       final result = await awaitFinished(engine, task.id);
@@ -140,32 +158,41 @@ void main() {
     });
 
     test('خطأ سيرفر أثناء الاستطلاع ⇒ فشل فوري مصنف (فخ §6.4)', () async {
-      final api = FakeApi(historyScript: [
-        historyWith(),
-        historyWith(queue: [
-          {
-            'url': canonical,
-            'status': 'error',
-            'msg': 'Sign in to confirm you are not a bot',
-          }
-        ]),
-      ]);
+      final api = FakeApi(
+        historyScript: [
+          historyWith(),
+          historyWith(
+            queue: [
+              {
+                'url': canonical,
+                'status': 'error',
+                'msg': 'Sign in to confirm you are not a bot',
+              },
+            ],
+          ),
+        ],
+      );
       final engine = makeEngine(api);
       final task = engine.submit(inputUrl, Quality.best);
       final result = await awaitFinished(engine, task.id);
       expect(result.phase, TaskPhase.failed);
       expect(result.error, isA<PlatformBlockedException>());
-      expect(api.historyCalls, 2,
-          reason: 'لقطة + استطلاع واحد — لا انتظار الـ10 دقائق');
+      expect(
+        api.historyCalls,
+        2,
+        reason: 'لقطة + استطلاع واحد — لا انتظار الـ10 دقائق',
+      );
     });
 
     test('filename غائب في done ⇒ ينتظر ولا يختلق (فخ §6.3)', () async {
-      final api = FakeApi(historyScript: [
-        historyWith(),
-        historyWith(done: [doneItem(filename: null)]),
-        historyWith(done: [doneItem(filename: null)]),
-        historyWith(done: [doneItem()]),
-      ]);
+      final api = FakeApi(
+        historyScript: [
+          historyWith(),
+          historyWith(done: [doneItem(filename: null)]),
+          historyWith(done: [doneItem(filename: null)]),
+          historyWith(done: [doneItem()]),
+        ],
+      );
       final engine = makeEngine(api);
       final task = engine.submit(inputUrl, Quality.best);
       final result = await awaitFinished(engine, task.id);
@@ -184,10 +211,12 @@ void main() {
     });
 
     test('إلغاء مهمة منتظرة قبل بدئها ⇒ cancelled بلا أي طلب', () async {
-      final api = FakeApi(historyScript: [
-        historyWith(),
-        historyWith(done: [doneItem()]),
-      ]);
+      final api = FakeApi(
+        historyScript: [
+          historyWith(),
+          historyWith(done: [doneItem()]),
+        ],
+      );
       final gate = Completer<void>();
       api.beforeAdd = () => gate.future;
       final engine = makeEngine(api);
@@ -215,13 +244,17 @@ void main() {
     });
 
     test('تقدم السيرفر أثناء polling يصل للبث', () async {
-      final api = FakeApi(historyScript: [
-        historyWith(),
-        historyWith(queue: [
-          {'url': canonical, 'status': 'downloading', 'percent': 45.3}
-        ]),
-        historyWith(done: [doneItem()]),
-      ]);
+      final api = FakeApi(
+        historyScript: [
+          historyWith(),
+          historyWith(
+            queue: [
+              {'url': canonical, 'status': 'downloading', 'percent': 45.3},
+            ],
+          ),
+          historyWith(done: [doneItem()]),
+        ],
+      );
       final engine = makeEngine(api);
       final seen = <double>[];
       final sub = engine.updates.listen((t) => seen.add(t.progress));
@@ -237,11 +270,12 @@ void main() {
     // عنصراً في `updates` ⇒ إعادة بناء المكتبة ونشرَ إشعار لكل مهمة.
     // ألف نبضة يجب ألا تتجاوز 101 بثّة (نسبة صحيحة واحدة لكل قيمة).
     test('ألف نبضة سحب ⇒ بثّ واحد لكل نسبة صحيحة لا أكثر', () async {
-      final api = FakeApi(historyScript: [
-        historyWith(),
-        historyWith(done: [doneItem()]),
-      ])
-        ..fineProgressTicks = 1000;
+      final api = FakeApi(
+        historyScript: [
+          historyWith(),
+          historyWith(done: [doneItem()]),
+        ],
+      )..fineProgressTicks = 1000;
       final engine = makeEngine(api);
       final pulls = <double>[];
       final sub = engine.updates
@@ -253,8 +287,11 @@ void main() {
 
       // 101 نسبة صحيحة + بثّتان ليستا تقدّماً: بداية الطور
       // (`progress: 0`) وتسجيل `localPath` بعد نجاح النقل.
-      expect(pulls.length, lessThanOrEqualTo(103),
-          reason: 'التقدّم يُبَثّ عند تغيّر النسبة الصحيحة فقط');
+      expect(
+        pulls.length,
+        lessThanOrEqualTo(103),
+        reason: 'التقدّم يُبَثّ عند تغيّر النسبة الصحيحة فقط',
+      );
       // ولا يُخنق حتى يختفي: التقدّم وصل فعلاً من أوله لآخره.
       expect(pulls.length, greaterThan(50));
       expect(pulls.last, closeTo(1.0, 0.0001));
@@ -263,14 +300,17 @@ void main() {
     /// النسبة تُصفَّر مع كل طور، فلا يبتلع المرشّحُ **تقدّمَ طورٍ جديد**
     /// لمجرد أن الطور السابق بلغ النسبة نفسها.
     test('المرشّح لا يمنع تقدّم طور جديد بنفس النسبة', () async {
-      final api = FakeApi(historyScript: [
-        historyWith(),
-        historyWith(queue: [
-          {'url': canonical, 'status': 'downloading', 'percent': 100.0}
-        ]),
-        historyWith(done: [doneItem()]),
-      ])
-        ..fineProgressTicks = 200;
+      final api = FakeApi(
+        historyScript: [
+          historyWith(),
+          historyWith(
+            queue: [
+              {'url': canonical, 'status': 'downloading', 'percent': 100.0},
+            ],
+          ),
+          historyWith(done: [doneItem()]),
+        ],
+      )..fineProgressTicks = 200;
       final engine = makeEngine(api);
       final pulling = <double>[];
       final sub = engine.updates

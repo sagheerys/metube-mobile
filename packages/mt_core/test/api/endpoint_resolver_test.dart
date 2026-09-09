@@ -8,15 +8,16 @@ import 'package:test/test.dart';
 
 void main() {
   group('EndpointResolver', () {
-    EndpointResolver makeResolver(Map<String, Future<bool> Function()> probes,
-        {Duration timeout = const Duration(milliseconds: 200)}) {
+    EndpointResolver makeResolver(
+      Map<String, Future<bool> Function()> probes, {
+      Duration timeout = const Duration(milliseconds: 200),
+    }) {
       return EndpointResolver(
         // الفحص صار مصنفاً (ok/unauthorized/unreachable)؛ هذه الحالات
         // تعنى بالأفضلية والتوازي فيكفيها «يستجيب أو لا».
-        probe: (url) async =>
-            await (probes[url]?.call() ?? Future.value(false))
-                ? MTEndpointStatus.ok
-                : MTEndpointStatus.unreachable,
+        probe: (url) async => await (probes[url]?.call() ?? Future.value(false))
+            ? MTEndpointStatus.ok
+            : MTEndpointStatus.unreachable,
         probeTimeout: timeout,
       );
     }
@@ -54,7 +55,9 @@ void main() {
       final resolver = makeResolver({});
       expect(
         await resolver.resolveActive(
-            localUrl: 'http://x', externalUrls: ['https://y']),
+          localUrl: 'http://x',
+          externalUrls: ['https://y'],
+        ),
         isNull,
       );
     });
@@ -66,7 +69,9 @@ void main() {
       });
       expect(
         await resolver.resolveActive(
-            localUrl: 'http://hangs', externalUrls: ['https://ok.example.com']),
+          localUrl: 'http://hangs',
+          externalUrls: ['https://ok.example.com'],
+        ),
         'https://ok.example.com',
       );
     });
@@ -75,8 +80,9 @@ void main() {
       final resolver = makeResolver({
         'http://boom': () async => throw const NetworkException('down'),
       });
-      expect(await resolver.probeAll(['http://boom']),
-          {'http://boom': MTEndpointStatus.unreachable});
+      expect(await resolver.probeAll(['http://boom']), {
+        'http://boom': MTEndpointStatus.unreachable,
+      });
     });
 
     test('لا مرشحين ⇒ null فوراً', () async {
@@ -96,8 +102,11 @@ void main() {
       final result = await resolver.probeAll(['a', 'b', 'c']);
       watch.stop();
       expect(result.values.every((v) => v.isUsable), isTrue);
-      expect(watch.elapsedMilliseconds, lessThan(200),
-          reason: 'تسلسلي كان سيستغرق ≥240ms');
+      expect(
+        watch.elapsedMilliseconds,
+        lessThan(200),
+        reason: 'تسلسلي كان سيستغرق ≥240ms',
+      );
     });
   });
 
@@ -105,13 +114,17 @@ void main() {
   /// كل رابط «أحمر» بلا سبب معلن — و«لا يستجيب» و«يرفض اعتمادك»
   /// علاجان مختلفان تماماً.
   group('القفل ليس انقطاعاً', () {
-    EndpointResolver clientResolver(Map<String, int> statusByHost,
-        {Set<String> html = const {}}) {
+    EndpointResolver clientResolver(
+      Map<String, int> statusByHost, {
+      Set<String> html = const {},
+    }) {
       return EndpointResolver.withClientFactory((baseUrl) {
         final host = Uri.parse(baseUrl).host;
         final dio = Dio()
-          ..httpClientAdapter = _StatusAdapter(statusByHost[host] ?? 200,
-              html: html.contains(host));
+          ..httpClientAdapter = _StatusAdapter(
+            statusByHost[host] ?? 200,
+            html: html.contains(host),
+          );
         return MeTubeApiClient(
           config: ServerConfig(baseUrl: baseUrl, username: 'u', password: 'p'),
           dio: dio,
@@ -121,8 +134,9 @@ void main() {
 
     test('401 ⇒ unauthorized لا unreachable', () async {
       final resolver = clientResolver({'locked.example.com': 401});
-      expect(await resolver.probeAll(['https://locked.example.com']),
-          {'https://locked.example.com': MTEndpointStatus.unauthorized});
+      expect(await resolver.probeAll(['https://locked.example.com']), {
+        'https://locked.example.com': MTEndpointStatus.unauthorized,
+      });
     });
 
     test('رابط مرفوض الاعتماد لا يُعتمد نشطاً ويُتخطى لما بعده', () async {
@@ -141,21 +155,27 @@ void main() {
       // 200 لكن الجسم HTML (خدمة أخرى على العنوان): «العنوان خطأ» علاجه
       // تصحيح العنوان، و«لا يستجيب» علاجه انتظار الشبكة — ولا يجوز
       // خلطهما في نقطة حمراء واحدة (قياس جهاز المالك 2026-09-06).
-      final resolver = clientResolver({'wrong.example.com': 200},
-          html: {'wrong.example.com'});
-      expect(await resolver.probeAll(['https://wrong.example.com']),
-          {'https://wrong.example.com': MTEndpointStatus.notMeTube});
+      final resolver = clientResolver(
+        {'wrong.example.com': 200},
+        html: {'wrong.example.com'},
+      );
+      expect(await resolver.probeAll(['https://wrong.example.com']), {
+        'https://wrong.example.com': MTEndpointStatus.notMeTube,
+      });
     });
 
     test('404 على المسار ⇒ notMeTube (خادم حيّ بلا واجهة MeTube)', () async {
       final resolver = clientResolver({'bare.example.com': 404});
-      expect(await resolver.probeAll(['https://bare.example.com']),
-          {'https://bare.example.com': MTEndpointStatus.notMeTube});
+      expect(await resolver.probeAll(['https://bare.example.com']), {
+        'https://bare.example.com': MTEndpointStatus.notMeTube,
+      });
     });
 
     test('عنوان ليس MeTube لا يُعتمد نشطاً', () async {
-      final resolver = clientResolver({'wrong.example.com': 200},
-          html: {'wrong.example.com'});
+      final resolver = clientResolver(
+        {'wrong.example.com': 200},
+        html: {'wrong.example.com'},
+      );
       expect(
         await resolver.resolveActive(
           localUrl: 'https://wrong.example.com',
@@ -191,8 +211,11 @@ class _StatusAdapter implements HttpClientAdapter {
   final bool html;
 
   @override
-  Future<ResponseBody> fetch(RequestOptions options,
-      Stream<Uint8List>? requestStream, Future<void>? cancelFuture) async {
+  Future<ResponseBody> fetch(
+    RequestOptions options,
+    Stream<Uint8List>? requestStream,
+    Future<void>? cancelFuture,
+  ) async {
     final body = switch ((status, html)) {
       (200, true) => '<html><body>TrueNAS</body></html>',
       (200, false) => '{"done":[],"queue":[]}',

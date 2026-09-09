@@ -15,10 +15,8 @@ void main() {
 
   String pathOf(String name) => '${tempDir.path}${Platform.pathSeparator}$name';
 
-  Transfer makeTransfer(FakeApi api) => Transfer(
-        api: api,
-        backoff: const [Duration.zero, Duration.zero],
-      );
+  Transfer makeTransfer(FakeApi api) =>
+      Transfer(api: api, backoff: const [Duration.zero, Duration.zero]);
 
   group('Transfer (§2.4)', () {
     test('نجاح مباشر مع تقدم 0..1', () async {
@@ -36,8 +34,7 @@ void main() {
     // انحدار (بلاغ المالك 2026-09-02): «يظهر المقطع في المكتبة قبل
     // اكتمال تحميله». مكتبة Lite تُبنى من **مسح المجلد**، وDio يكتب
     // تدريجياً — فكان الملف النهائي موجوداً منذ أول بايت.
-    test('الملف النهائي لا يظهر إلا بعد الاكتمال — الجزئي في .part',
-        () async {
+    test('الملف النهائي لا يظهر إلا بعد الاكتمال — الجزئي في .part', () async {
       final api = FakeApi();
       final finalPath = pathOf('a.mp4');
       final partPath = '$finalPath${Transfer.partSuffix}';
@@ -52,13 +49,22 @@ void main() {
         },
       );
 
-      expect(existedDuringPull, isFalse,
-          reason: 'المسار النهائي ظهر قبل الاكتمال ⇒ يراه مسح المكتبة');
+      expect(
+        existedDuringPull,
+        isFalse,
+        reason: 'المسار النهائي ظهر قبل الاكتمال ⇒ يراه مسح المكتبة',
+      );
       expect(File(finalPath).existsSync(), isTrue);
-      expect(File(partPath).existsSync(), isFalse,
-          reason: 'الجزئي يُعاد تسميته لا يُترك');
-      expect(Transfer.partSuffix, isNot(contains('mp4')),
-          reason: 'اللاحقة يجب ألا تكون امتداد وسائط');
+      expect(
+        File(partPath).existsSync(),
+        isFalse,
+        reason: 'الجزئي يُعاد تسميته لا يُترك',
+      );
+      expect(
+        Transfer.partSuffix,
+        isNot(contains('mp4')),
+        reason: 'اللاحقة يجب ألا تكون امتداد وسائط',
+      );
     });
 
     test('فشل كل المحاولات ⇒ لا ملف نهائي ولا جزئي متروك', () async {
@@ -74,22 +80,21 @@ void main() {
 
     test('فشلان ثم نجاح: 3 محاولات وحذف الجزئي قبل كل واحدة', () async {
       final api = FakeApi()..failDownloadsBeforeSuccess = 2;
-      await makeTransfer(api).pull(
-        serverFilename: 'a.mp4',
-        savePath: pathOf('a.mp4'),
-      );
+      await makeTransfer(api)
+          .pull(serverFilename: 'a.mp4', savePath: pathOf('a.mp4'));
       expect(api.downloadCalls, 3);
-      expect(await File(pathOf('a.mp4')).readAsString(), 'MEDIA-DATA',
-          reason: 'المحتوى الكامل لا الجزئي');
+      expect(
+        await File(pathOf('a.mp4')).readAsString(),
+        'MEDIA-DATA',
+        reason: 'المحتوى الكامل لا الجزئي',
+      );
     });
 
     test('فشل كل المحاولات ⇒ NetworkException والجزئي محذوف', () async {
       final api = FakeApi()..failDownloadsBeforeSuccess = 99;
       await expectLater(
-        makeTransfer(api).pull(
-          serverFilename: 'a.mp4',
-          savePath: pathOf('a.mp4'),
-        ),
+        makeTransfer(api)
+            .pull(serverFilename: 'a.mp4', savePath: pathOf('a.mp4')),
         throwsA(isA<NetworkException>()),
       );
       expect(api.downloadCalls, MTConstants.pullRetries);

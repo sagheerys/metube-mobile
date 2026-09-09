@@ -34,9 +34,8 @@ class UpdateChecker {
       Uri.parse('https://api.github.com/repos/$repo/releases/latest');
 
   /// Fail-safe: swallows every error and returns `null`. **For the
-  /// automatic
-  /// check**, which runs without the user's knowledge and must never
-  /// interrupt them with an error.
+  /// automatic check**, which runs without the user's knowledge and must
+  /// never interrupt them with an error.
   Future<UpdateRelease?> check({
     required String currentVersion,
     String? skippedVersion,
@@ -52,15 +51,14 @@ class UpdateChecker {
   }
 
   /// Throws when unreachable. **For the manual check only**: whoever
-  /// pressed
-  /// the button deserves to tell "you are on the latest version" apart from
-  /// "GitHub could not be reached", and in [check] those are one result.
+  /// pressed the button deserves to tell "you are on the latest version"
+  /// apart from "GitHub could not be reached", and in [check] those are one
+  /// result.
   ///
   /// Returns the available release if it is **genuinely newer** than
   /// [currentVersion], and `null` when there is nothing new.
-  /// [skippedVersion]
-  /// is what the user chose to skip; it stays muted while it is the newest,
-  /// and returns with whatever follows it.
+  /// [skippedVersion] is what the user chose to skip; it stays muted while
+  /// it is the newest, and returns with whatever follows it.
   Future<UpdateRelease?> checkOrThrow({
     required String currentVersion,
     String? skippedVersion,

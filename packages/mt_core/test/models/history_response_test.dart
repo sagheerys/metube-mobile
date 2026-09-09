@@ -36,7 +36,10 @@ void main() {
     });
 
     test('looksLikeMeTube: يشترط done وqueue معاً في Map', () {
-      expect(HistoryResponse.looksLikeMeTube({'done': [], 'queue': []}), isTrue);
+      expect(
+        HistoryResponse.looksLikeMeTube({'done': [], 'queue': []}),
+        isTrue,
+      );
       expect(HistoryResponse.looksLikeMeTube({'done': []}), isFalse);
       expect(HistoryResponse.looksLikeMeTube('<html></html>'), isFalse);
       expect(HistoryResponse.looksLikeMeTube(null), isFalse);

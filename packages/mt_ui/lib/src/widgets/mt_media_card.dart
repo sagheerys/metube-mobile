@@ -58,11 +58,10 @@ class MTMediaCard extends StatelessWidget {
   /// Callers used to pass `selected: true` to draw attention to an item the
   /// user had reached from a notification tap, or that had just finished
   /// downloading. But `selected` everywhere else means "inside a
-  /// multi-select",
-  /// so the item looked stuck in a selection it could not leave, which is
-  /// exactly what was described as "it stays marked forever". There are now
-  /// two states, distinct visually and in meaning: selection holds, a
-  /// highlight passes.
+  /// multi-select", so the item looked stuck in a selection it could not
+  /// leave, which is exactly what was described as "it stays marked
+  /// forever". There are now two states, distinct visually and in meaning:
+  /// selection holds, a highlight passes.
   final bool highlighted;
   final bool playing;
 
@@ -101,8 +100,7 @@ class MTMediaCard extends StatelessWidget {
       selected: selected,
       label: _semanticsLabel(l10n),
       // Inner buttons keep their own semantics; their labels are replaced
-      // by
-      // the combined description.
+      // by the combined description.
       explicitChildNodes: true,
       child: MTHighlightSurface(
         selected: selected,
@@ -152,9 +150,8 @@ class MTMediaCard extends StatelessWidget {
                       Row(
                         children: [
                           // An unknown platform deserves neither an icon
-                          // nor a separator: a bullet
-                          // followed by "3 minutes ago" is visual noise
-                          // (audit 8.1).
+                          // nor a separator: a bullet followed by "3
+                          // minutes ago" is visual noise (audit 8.1).
                           if (platform != MTPlatformKind.other)
                             MTPlatformChip(kind: platform),
                           if (subtitle != null) ...[
@@ -201,8 +198,7 @@ class MTMediaCard extends StatelessWidget {
                     },
                     visualDensity: VisualDensity.compact,
                     // The favourite heart fades and expands rather than
-                    // jumping (polish
-                    // 2026-09-04).
+                    // jumping (polish 2026-09-04).
                     icon: MTIconSwap(
                       icon: favorite
                           ? Icons.favorite_rounded

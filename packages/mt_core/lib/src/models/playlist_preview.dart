@@ -32,7 +32,7 @@ class PlaylistPreview {
   final List<PlaylistTrack> tracks;
 
   Duration get totalDuration => tracks.fold(
-        Duration.zero,
-        (sum, t) => sum + (t.duration ?? Duration.zero),
-      );
+    Duration.zero,
+    (sum, t) => sum + (t.duration ?? Duration.zero),
+  );
 }

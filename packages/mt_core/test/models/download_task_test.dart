@@ -26,11 +26,17 @@ void main() {
     });
 
     test('effectiveUrl يفضّل المحلول', () {
-      final task = DownloadTask(inputUrl: 'https://vt.tiktok.com/xyz/',
-          quality: Quality.best);
+      final task = DownloadTask(
+        inputUrl: 'https://vt.tiktok.com/xyz/',
+        quality: Quality.best,
+      );
       expect(task.effectiveUrl, 'https://vt.tiktok.com/xyz/');
-      expect(task.copyWith(resolvedUrl: 'https://www.tiktok.com/@u/video/1')
-          .effectiveUrl, 'https://www.tiktok.com/@u/video/1');
+      expect(
+        task
+            .copyWith(resolvedUrl: 'https://www.tiktok.com/@u/video/1')
+            .effectiveUrl,
+        'https://www.tiktok.com/@u/video/1',
+      );
     });
 
     test('isFinished للحالات النهائية فقط', () {
@@ -46,9 +52,10 @@ void main() {
   /// الشريط المُجمِّع أعلى المكتبة حين تتعدد التحميلات (بلاغ المالك
   /// 2026-09-03) — المنتظِرة **تُحسب صفراً لا تُستبعد**.
   group('averageTaskProgress', () {
-    DownloadTask make(TaskPhase phase, double progress) =>
-        DownloadTask(inputUrl: 'u', quality: Quality.best)
-            .copyWith(phase: phase, progress: progress);
+    DownloadTask make(TaskPhase phase, double progress) => DownloadTask(
+      inputUrl: 'u',
+      quality: Quality.best,
+    ).copyWith(phase: phase, progress: progress);
 
     test('فارغة ⇒ null', () => expect(averageTaskProgress(const []), isNull));
 

@@ -36,20 +36,24 @@ class MTGalleryScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-            'معرض وهج — ${x.variant == MTVariant.lite ? 'Lite' : 'Super'}'),
+          'معرض وهج — ${x.variant == MTVariant.lite ? 'Lite' : 'Super'}',
+        ),
         actions: [
           IconButton(
-              onPressed: onToggleVariant,
-              tooltip: 'Lite/Super',
-              icon: const Icon(Icons.swap_horiz_rounded)),
+            onPressed: onToggleVariant,
+            tooltip: 'Lite/Super',
+            icon: const Icon(Icons.swap_horiz_rounded),
+          ),
           IconButton(
-              onPressed: onToggleDirection,
-              tooltip: 'RTL/LTR',
-              icon: const Icon(Icons.format_textdirection_r_to_l_rounded)),
+            onPressed: onToggleDirection,
+            tooltip: 'RTL/LTR',
+            icon: const Icon(Icons.format_textdirection_r_to_l_rounded),
+          ),
           IconButton(
-              onPressed: onToggleTheme,
-              tooltip: 'ليل/نهار',
-              icon: const Icon(Icons.dark_mode_rounded)),
+            onPressed: onToggleTheme,
+            tooltip: 'ليل/نهار',
+            icon: const Icon(Icons.dark_mode_rounded),
+          ),
         ],
       ),
       floatingActionButton: MTFab(
@@ -58,14 +62,20 @@ class MTGalleryScreen extends StatelessWidget {
       ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(
-            MTSpace.pagePad, 0, MTSpace.pagePad, 120),
+          MTSpace.pagePad,
+          0,
+          MTSpace.pagePad,
+          120,
+        ),
         children: [
           const MTSectionHeader(title: 'الطباعة', trailing: 'كوفي + Tajawal'),
           const SizedBox(height: MTSpace.md),
           Text('عنوان رئيسي بالكوفي', style: text.headlineLarge),
           Text('عنوان ورقة', style: text.titleLarge),
-          Text('نص أساسي بخط Tajawal يجري مجرى السطور بارتياح — 13.5',
-              style: text.bodyMedium),
+          Text(
+            'نص أساسي بخط Tajawal يجري مجرى السطور بارتياح — 13.5',
+            style: text.bodyMedium,
+          ),
           Text('نص ثانوي خافت 11.5', style: text.bodySmall),
           const SizedBox(height: MTSpace.xl),
 
@@ -93,24 +103,27 @@ class MTGalleryScreen extends StatelessWidget {
             spacing: MTSpace.xs,
             children: [
               ChoiceChip(
-                  label: const Text('الكل'),
-                  selected: true,
-                  showCheckmark: false,
-                  labelStyle:
-                      text.labelMedium!.copyWith(color: p.bg),
-                  onSelected: (_) {}),
+                label: const Text('الكل'),
+                selected: true,
+                showCheckmark: false,
+                labelStyle: text.labelMedium!.copyWith(color: p.bg),
+                onSelected: (_) {},
+              ),
               ChoiceChip(
-                  label: const Text('♥ المفضلة'),
-                  selected: false,
-                  onSelected: (_) {}),
+                label: const Text('♥ المفضلة'),
+                selected: false,
+                onSelected: (_) {},
+              ),
               ChoiceChip(
-                  label: const Text('فيديو'),
-                  selected: false,
-                  onSelected: (_) {}),
+                label: const Text('فيديو'),
+                selected: false,
+                onSelected: (_) {},
+              ),
               ChoiceChip(
-                  label: const Text('صوت'),
-                  selected: false,
-                  onSelected: (_) {}),
+                label: const Text('صوت'),
+                selected: false,
+                onSelected: (_) {},
+              ),
             ],
           ),
           const SizedBox(height: MTSpace.xl),
@@ -187,17 +200,30 @@ class MTGalleryScreen extends StatelessWidget {
             spacing: MTSpace.xs,
             children: [
               ActionChip(
-                  label: const Text('نجاح'),
-                  onPressed: () => showMTSnack(context, 'تم الحفظ بنجاح',
-                      type: MTSnackType.success)),
+                label: const Text('نجاح'),
+                onPressed: () => showMTSnack(
+                  context,
+                  'تم الحفظ بنجاح',
+                  type: MTSnackType.success,
+                ),
+              ),
               ActionChip(
-                  label: const Text('خطأ'),
-                  onPressed: () => showMTSnack(context, 'تعذر الوصول للسيرفر',
-                      type: MTSnackType.error)),
+                label: const Text('خطأ'),
+                onPressed: () => showMTSnack(
+                  context,
+                  'تعذر الوصول للسيرفر',
+                  type: MTSnackType.error,
+                ),
+              ),
               ActionChip(
-                  label: const Text('تراجع'),
-                  onPressed: () => showMTSnack(context, 'حُذف العنصر',
-                      actionLabel: 'تراجع', onAction: () {})),
+                label: const Text('تراجع'),
+                onPressed: () => showMTSnack(
+                  context,
+                  'حُذف العنصر',
+                  actionLabel: 'تراجع',
+                  onAction: () {},
+                ),
+              ),
             ],
           ),
           const SizedBox(height: MTSpace.xl),
@@ -217,7 +243,8 @@ class MTGalleryScreen extends StatelessWidget {
 
   void _openUrlSheet(BuildContext context) {
     final controller = TextEditingController(
-        text: 'https://youtu.be/dQw4w9WgXcQ');
+      text: 'https://youtu.be/dQw4w9WgXcQ',
+    );
     showModalBottomSheet<void>(
       context: context,
       useRootNavigator: true,
@@ -241,13 +268,10 @@ class MTGalleryScreen extends StatelessWidget {
         onStart: () => Navigator.pop(sheetContext),
       ),
       // A development gallery, but a leak is still a leak: the controller
-      // is
-      // disposed once the sheet has actually left the tree, not the moment
-      // its
-      // future completes.
+      // is disposed once the sheet has actually left the tree, not the
+      // moment its future completes.
     ).whenComplete(() {
-      WidgetsBinding.instance
-          .addPostFrameCallback((_) => controller.dispose());
+      WidgetsBinding.instance.addPostFrameCallback((_) => controller.dispose());
     });
   }
 }
@@ -265,17 +289,18 @@ class _Swatch extends StatelessWidget {
     final on = ink ?? (color.computeLuminance() > 0.5 ? p.ink : p.bg);
     return Container(
       padding: const EdgeInsets.symmetric(
-          horizontal: MTSpace.md, vertical: MTSpace.xs),
+        horizontal: MTSpace.md,
+        vertical: MTSpace.xs,
+      ),
       decoration: BoxDecoration(
         color: color,
         borderRadius: BorderRadius.circular(MTRadius.chip),
         border: Border.all(color: p.line),
       ),
-      child: Text(label,
-          style: Theme.of(context)
-              .textTheme
-              .labelMedium!
-              .copyWith(color: on)),
+      child: Text(
+        label,
+        style: Theme.of(context).textTheme.labelMedium!.copyWith(color: on),
+      ),
     );
   }
 }

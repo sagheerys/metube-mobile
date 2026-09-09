@@ -19,28 +19,34 @@ void main() {
   const fb3 = 'https://m.facebook.com/watch/?v=1900817477558376&_rdr';
 
   HistoryItem item(String url, String name) => HistoryItem(
-        id: url,
-        canonicalUrl: url,
-        title: name,
-        filename: '$name.mp4',
-        status: ItemStatus.completed,
-      );
+    id: url,
+    canonicalUrl: url,
+    title: name,
+    filename: '$name.mp4',
+    status: ItemStatus.completed,
+  );
 
   late MemoryKeyValueStore store;
 
   ProviderContainer containerWith() {
     store = MemoryKeyValueStore();
-    final container = ProviderContainer(overrides: [
-      keyValueStoreProvider.overrideWithValue(store),
-      secretStoreProvider.overrideWithValue(MemorySecretStore()),
-      prefsMutexProvider.overrideWithValue(PrefsMutex()),
-      initialSettingsProvider.overrideWithValue(const SuperSettings()),
-      historyProvider.overrideWith((ref) async => HistoryResponse(done: [
-            item(fb1, 'الأول'),
-            item(fb2, 'الثاني'),
-            item(fb3, 'الثالث'),
-          ])),
-    ]);
+    final container = ProviderContainer(
+      overrides: [
+        keyValueStoreProvider.overrideWithValue(store),
+        secretStoreProvider.overrideWithValue(MemorySecretStore()),
+        prefsMutexProvider.overrideWithValue(PrefsMutex()),
+        initialSettingsProvider.overrideWithValue(const SuperSettings()),
+        historyProvider.overrideWith(
+          (ref) async => HistoryResponse(
+            done: [
+              item(fb1, 'الأول'),
+              item(fb2, 'الثاني'),
+              item(fb3, 'الثالث'),
+            ],
+          ),
+        ),
+      ],
+    );
     addTearDown(container.dispose);
     return container;
   }
@@ -72,8 +78,11 @@ void main() {
 
     final items = await container.read(libraryItemsProvider.future);
     final paths = [for (final i in items) i.localPath].nonNulls.toList();
-    expect(paths.toSet(), hasLength(paths.length),
-        reason: 'كل مسار محلي لعنصر واحد لا أكثر');
+    expect(
+      paths.toSet(),
+      hasLength(paths.length),
+      reason: 'كل مسار محلي لعنصر واحد لا أكثر',
+    );
   });
 
   test('كلٌّ دون اتصال ⇒ كلٌّ بملفه هو', () async {

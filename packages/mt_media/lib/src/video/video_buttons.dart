@@ -58,11 +58,11 @@ class MTVideoIconButton extends StatelessWidget {
 /// The speed button in **the player chrome** (review 2026-09-02).
 ///
 /// **Correcting an initial mistaken note:** the first reading was that
-/// speed had no entry point at all, when in fact it has a chip in the
-/// video info sheet at the bottom of the screen. But that sheet **does not
-/// exist in full screen**, which is exactly the situation where you want
-/// to slow a lesson down or speed an introduction up. So this button fills
-/// a real gap rather than an imagined one.
+/// speed had no entry point at all, when in fact it has a chip in the video
+/// info sheet at the bottom of the screen. But that sheet **does not exist
+/// in full screen**, which is exactly the situation where you want to slow
+/// a lesson down or speed an introduction up. So this button fills a real
+/// gap rather than an imagined one.
 ///
 /// A tap **cycles** through [mtNextSpeed], the same behaviour as the audio
 /// player and the sheet, word for word, so the user never learns two rules
@@ -82,10 +82,8 @@ class MTVideoSpeedButton extends StatelessWidget {
       message: context.mtl.playbackSpeed,
       child: Material(
         // A non-normal speed is **a persistent state** that should be
-        // visible
-        // without reading: the accent colour says "this clip is not running
-        // at
-        // its original speed".
+        // visible without reading: the accent colour says "this clip is not
+        // running at its original speed".
         color: normal
             ? Colors.black.withValues(alpha: 0.4)
             : p.accent.withValues(alpha: 0.85),
@@ -100,9 +98,7 @@ class MTVideoSpeedButton extends StatelessWidget {
               child: Center(
                 child: Text(
                   '${mtFormatSpeed(speed)}×',
-                  style: Theme.of(context)
-                      .textTheme
-                      .labelMedium!
+                  style: Theme.of(context).textTheme.labelMedium!
                       .copyWith(
                         color: normal ? MTPalette.serverCardInk : p.onAccent,
                         fontWeight: FontWeight.w700,

@@ -1,18 +1,22 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-/// **تحويل حالة غير متزامنة مع الحفاظ على القيمة السابقة.**
+/// **Mapping an async state while preserving the previous value.**
 ///
-/// بلاغ المالك 2026-09-03: «لا يزال هناك وميض في المكتبة أثناء
-/// التحميل». السبب كان `AsyncValue.whenData`: هي توزّع على **نوع**
-/// الحالة لا على وجود قيمة، فتعيد عند `AsyncLoading` نسخة **جديدة
-/// فارغة** — أي أنها تتلف ما يحتفظ به Riverpod من بيانات سابقة، فلا
-/// يصل الشاشةَ شيءٌ لتفضّله على الدوّارة.
+/// Field report 2026-09-03: "the library still flickers while loading".
+/// The cause was `AsyncValue.whenData`: it dispatches on the **type** of
+/// the state rather than on whether a value exists, so on `AsyncLoading`
+/// it returns a **new empty** instance, destroying what Riverpod was
+/// holding from before, and nothing reaches the screen for it to prefer
+/// over the spinner.
 ///
-/// الأثر مقيس بتسجيل شاشة على المحاكي (Super): إبطالٌ كل ثانيتين
-/// وجلبُ سجلٍّ يستغرق قريباً منها ⇒ **دوّارة ١٣ ثانية متصلة** محل
-/// المكتبة أثناء تحميل واحد، ثم عودتها لحظة توقف الاستطلاع.
+/// The effect was measured with a screen recording on the emulator
+/// (Super): an invalidation every two seconds and a history fetch taking
+/// about as long produced **13 unbroken seconds of spinner** in place of
+/// the library during a single download, returning the moment polling
+/// stopped.
 ///
-/// القاعدة: **قيمة موجودة ⇒ تُبنى وتُعرض · وإلا الخطأ · وإلا التحميل.**
+/// The rule: **a value exists, build and show it; else the error; else
+/// loading.**
 AsyncValue<R> asyncViewOf<T, R>(
   AsyncValue<T> source,
   R Function(T value) build,

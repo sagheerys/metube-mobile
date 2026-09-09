@@ -85,8 +85,11 @@ void main() {
 
         await index.removeKeysAndFiles(['u1']);
 
-        expect(shared.existsSync(), isTrue,
-            reason: 'وإلا فقد u2 غلافه لأن جاره حُذف');
+        expect(
+          shared.existsSync(),
+          isTrue,
+          reason: 'وإلا فقد u2 غلافه لأن جاره حُذف',
+        );
         expect(await index.artworkOf('u2'), shared.path);
       });
 

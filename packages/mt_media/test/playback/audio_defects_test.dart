@@ -7,11 +7,11 @@ import 'fake_player_port.dart';
 /// أعطال التشغيل 2026-09-02: ع-3 (حارس الأجيال)، ع-4 (الاتجاه المعاكس
 /// للقاعدة الذهبية)، ع-5 (استعادة تعزف تلقائياً).
 PlaylistItem _item(String id) => PlaylistItem(
-      canonicalUrl: 'https://x/$id',
-      title: id,
-      serverFilename: '$id.mp3',
-      isAudio: true,
-    );
+  canonicalUrl: 'https://x/$id',
+  title: id,
+  serverFilename: '$id.mp3',
+  isAudio: true,
+);
 
 void main() {
   late FakePlayerPort player;
@@ -51,8 +51,11 @@ void main() {
     await handler.stop();
     await pending;
 
-    expect(handler.mediaItem.value, isNull,
-        reason: 'قبل الإصلاح كان التحميل المعلّق يعيد نشر العنصر');
+    expect(
+      handler.mediaItem.value,
+      isNull,
+      reason: 'قبل الإصلاح كان التحميل المعلّق يعيد نشر العنصر',
+    );
     expect(handler.playbackState.value.playing, isFalse);
     expect(await states.read(), anyOf(isNull, predicate((s) => true)));
   });
@@ -97,8 +100,7 @@ void main() {
     expect(player.playing, isFalse);
   });
 
-  test('ع-5 — عنصر أول معطوب في الاستعادة لا يشغّل التالي تلقائياً',
-      () async {
+  test('ع-5 — عنصر أول معطوب في الاستعادة لا يشغّل التالي تلقائياً', () async {
     await AudioStateStore(store: store, mutex: mutex).write(
       AudioSessionSnapshot(
         items: [_item('broken'), _item('good')],
@@ -111,9 +113,15 @@ void main() {
 
     await handler.restoreSession();
 
-    expect(handler.currentItem?.canonicalUrl, 'https://x/good',
-        reason: 'التخطي نفسه سلوك صحيح');
-    expect(player.playing, isFalse,
-        reason: 'قبل الإصلاح كان يعزف بصوت مسموع فور الإقلاع بلا نقرة');
+    expect(
+      handler.currentItem?.canonicalUrl,
+      'https://x/good',
+      reason: 'التخطي نفسه سلوك صحيح',
+    );
+    expect(
+      player.playing,
+      isFalse,
+      reason: 'قبل الإصلاح كان يعزف بصوت مسموع فور الإقلاع بلا نقرة',
+    );
   });
 }

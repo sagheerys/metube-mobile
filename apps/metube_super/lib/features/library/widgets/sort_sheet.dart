@@ -6,7 +6,7 @@ import 'package:mt_ui/mt_ui.dart';
 import '../library_models.dart';
 import '../library_providers.dart';
 
-/// ورقة الفرز والعرض — زر واحد (النموذج أ)، والخياران محفوظان (م-14).
+/// The sort and view sheet: one button, with both choices saved.
 void showSortSheet(BuildContext context, WidgetRef ref) {
   showModalBottomSheet<void>(
     context: context,
@@ -33,12 +33,15 @@ class _SortSheet extends ConsumerWidget {
       LibrarySort.smallest: l10n.sortSmallest,
     };
 
-    // **قابلة للتمرير**: الورقة صارت ثلاثة أقسام، وعلى شاشة قصيرة أو
-    // بخط نظام مكبّر كان آخرها يتجاوز ارتفاع الورقة بلا مخرج.
+    // **Scrollable**: the sheet grew to three sections, and on a short
+    // screen
+    // or with an enlarged system font the last of them passed the sheet's
+    // height with no way out.
     return SingleChildScrollView(
       child: Padding(
-        // آخر خيار كان يقع تحت أزرار التنقل الثلاثة (بلاغ المالك
-        // 2026-09-04) — الورقة تمتد لحافة الشاشة دائماً.
+        // The last option used to fall under the three navigation buttons
+        // (field report 2026-09-04); a sheet always reaches the screen
+        // edge.
         padding: EdgeInsets.fromLTRB(
           MTSpace.xl,
           MTSpace.lg,
@@ -72,9 +75,10 @@ class _SortSheet extends ConsumerWidget {
             ),
             const SizedBox(height: MTSpace.xl),
             const _PlatformSection(),
-            // **أربعة أوضاع بدل أعلام متداخلة**: «مضغوط» و«شبكي» كانا
-            // مفتاحين يمكن تشغيلهما معاً بلا معنى، والرابع كان سيضاعف
-            // الحالات المستحيلة. الاختيار الواحد يمنعها من أصلها.
+            // **Four modes instead of overlapping flags**: compact and grid
+            // were two switches that could be on together meaninglessly,
+            // and a fourth would have doubled the impossible states. One
+            // choice prevents them at the root.
             MTSectionHeader(title: l10n.viewMode),
             const SizedBox(height: MTSpace.md),
             Wrap(
@@ -108,14 +112,17 @@ class _SortSheet extends ConsumerWidget {
   }
 }
 
-/// **مرشح المنصة داخل الورقة لا في صفٍّ ثالث** (طلب المالك 2026-09-08).
+/// **The platform filter lives inside the sheet, not in a third row**
+/// (requested 2026-09-08).
 ///
-/// Lite يعرضه صفَّ رقائق تحت المرشحات، لكن مكتبة Super فوقها صف مرشحات
-/// **وصف وسوم** أصلاً — وثالثٌ كان سيدفع أول بطاقة خارج الشاشة. فالخيار
-/// هنا، والمنصة المختارة تظهر رقاقةً قابلة للإزالة في الصف الأول كي لا
-/// تكون تصفيةٌ فعّالة مخبوءة خلف زر.
+/// Lite shows it as a chip row under the filters, but Super's library
+/// already has a filter row **and a tag row** above it, and a third would
+/// push the first card off screen. So the choice lives here, and the chosen
+/// platform appears as a removable chip in the first row, so an active
+/// filter is never hidden behind a button.
 ///
-/// يختفي القسم كلياً حين لا تكون في المكتبة أكثر من منصة واحدة.
+/// The section disappears entirely when the library holds only one
+/// platform.
 class _PlatformSection extends ConsumerWidget {
   const _PlatformSection();
 

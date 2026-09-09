@@ -24,11 +24,11 @@ double mtSheetBottomPad(BuildContext context, [double extra = MTSpace.xl]) =>
 /// reaches the very edge of the screen.
 ///
 /// Android 15+ forces a black or white contrast scrim behind the three
-/// navigation buttons unless the app says it does not want one, which
-/// shows as a band of a different colour immediately below the app's own
-/// bar: a visible cut in both themes (field report 2026-09-04). With
-/// gestures it never appears, because that bar is thin and transparent
-/// already, which is why it went unseen for so long.
+/// navigation buttons unless the app says it does not want one, which shows
+/// as a band of a different colour immediately below the app's own bar: a
+/// visible cut in both themes (field report 2026-09-04). With gestures it
+/// never appears, because that bar is thin and transparent already, which
+/// is why it went unseen for so long.
 ///
 /// Icon brightness follows the theme: dark icons over cream by day, light
 /// icons over espresso by night. Full-screen players declare their own
@@ -49,8 +49,7 @@ class MTSystemBars extends StatelessWidget {
         statusBarColor: Colors.transparent,
         statusBarIconBrightness: icons,
         // iOS reads the background brightness rather than the icons', so
-        // this is
-        // inverted on purpose.
+        // this is inverted on purpose.
         statusBarBrightness: dark ? Brightness.dark : Brightness.light,
         systemNavigationBarColor: Colors.transparent,
         systemNavigationBarDividerColor: Colors.transparent,

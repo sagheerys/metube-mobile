@@ -11,9 +11,9 @@ enum PlayMode {
   final String wire;
 
   static PlayMode fromWire(String? value) => values.firstWhere(
-        (m) => m.wire == value,
-        orElse: () => PlayMode.autoNext,
-      );
+    (m) => m.wire == value,
+    orElse: () => PlayMode.autoNext,
+  );
 
   /// The cycle driven by the single button in the players.
   PlayMode get next => values[(index + 1) % values.length];

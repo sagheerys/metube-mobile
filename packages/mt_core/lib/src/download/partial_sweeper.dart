@@ -31,8 +31,7 @@ Future<int> sweepPartialFiles(
         removed++;
       } on FileSystemException {
         // A locked file, or one deleted between the listing and here.
-        // Nothing to
-        // do.
+        // Nothing to do.
       }
     }
   } on FileSystemException {

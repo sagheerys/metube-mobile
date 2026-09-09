@@ -7,7 +7,11 @@ void main() {
   group('buildLocalFilename (§2.4)', () {
     test('عنوان عربي يبقى، الامتداد من اسم السيرفر', () {
       expect(
-        buildLocalFilename('أنشودة جميلة', serverFilename: 'x.abc.mp3', now: at),
+        buildLocalFilename(
+          'أنشودة جميلة',
+          serverFilename: 'x.abc.mp3',
+          now: at,
+        ),
         'أنشودة جميلة_143005.mp3',
       );
     });

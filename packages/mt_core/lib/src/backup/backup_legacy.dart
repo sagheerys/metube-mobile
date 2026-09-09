@@ -29,7 +29,9 @@ extension BackupServiceLegacy on BackupService {
       await putString('app_locale', settings['locale']?.toString());
       if (settings['playMode'] is num) {
         await store.setInt(
-            'player_play_mode', (settings['playMode'] as num).toInt());
+          'player_play_mode',
+          (settings['playMode'] as num).toInt(),
+        );
         restored++;
       }
       for (final MapEntry(:key, :value) in {
@@ -52,20 +54,20 @@ extension BackupServiceLegacy on BackupService {
     });
     await _restoreUsername(settings['username']?.toString());
     return ImportResult(
-        format: BackupFormat.legacyLite, keysRestored: restored);
+      format: BackupFormat.legacyLite,
+      keysRestored: restored,
+    );
   }
 
   /// **Legacy shape migrations inside the same keys** (confirmed against a
   /// real backup 2026-09-01). They run **inside the lock**, after the cells
   /// are applied:
-  /// - - `video_playback_positions`: a url-to-seconds string map becomes
-  /// `playback_pos_<url>` keys in milliseconds (§5.1); without it, resume
-  /// positions were lost.
-  /// - - `player_play_mode`: it used to be a number, an old enum index,
-  ///   while
-  /// the new reader expects a string, so it is removed and falls back to
-  /// the
-  /// default instead of holding a dead value.
+  /// - `video_playback_positions`: a url-to-seconds string map becomes
+  ///   `playback_pos_<url>` keys in milliseconds (§5.1); without it, resume
+  ///   positions were lost.
+  /// - `player_play_mode`: it used to be a number, an old enum index,
+  ///   while the new reader expects a string, so it is removed and falls
+  ///   back to the default instead of holding a dead value.
   Future<void> _migrateLegacyShapes() async {
     await _migratePlaybackPositions();
     for (final key in await store.keys()) {
@@ -92,7 +94,9 @@ extension BackupServiceLegacy on BackupService {
       if (url.isEmpty || value == null || value <= 0) continue;
       // The old format stored **seconds**; any value larger than a day in
       // seconds was already in milliseconds.
-      final ms = value > BackupService._secondsInDay ? value.toInt() : (value * 1000).toInt();
+      final ms = value > BackupService._secondsInDay
+          ? value.toInt()
+          : (value * 1000).toInt();
       await store.setInt('${BackupService._positionPrefix}$url', ms);
     }
     await store.remove(legacyKey);

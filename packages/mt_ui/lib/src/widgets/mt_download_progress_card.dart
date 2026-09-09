@@ -35,11 +35,11 @@ class MTDownloadProgressCard extends StatelessWidget {
 
     return Container(
       padding: const EdgeInsets.symmetric(
-          horizontal: MTSpace.md + 1, vertical: MTSpace.md),
+        horizontal: MTSpace.md + 1,
+        vertical: MTSpace.md,
+      ),
       decoration: BoxDecoration(
-        color: isError
-            ? p.err.withValues(alpha: 0.08)
-            : p.accentSoft,
+        color: isError ? p.err.withValues(alpha: 0.08) : p.accentSoft,
         borderRadius: BorderRadius.circular(MTRadius.card),
         border: Border.all(color: tint.withValues(alpha: 0.3)),
       ),
@@ -54,7 +54,8 @@ class MTDownloadProgressCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(MTRadius.thumb),
               border: Border.all(color: tint.withValues(alpha: 0.25)),
             ),
-            child: thumbnail ??
+            child:
+                thumbnail ??
                 Icon(
                   isError
                       ? Icons.error_outline_rounded
@@ -72,30 +73,28 @@ class MTDownloadProgressCard extends StatelessWidget {
                   title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: text.bodyMedium!
-                      .copyWith(fontWeight: FontWeight.w700),
+                  style: text.bodyMedium!.copyWith(fontWeight: FontWeight.w700),
                 ),
                 const SizedBox(height: 3),
                 Row(
                   children: [
                     Expanded(
-                      child: Text(statusText,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: text.bodySmall!.copyWith(color: softInk)),
+                      child: Text(
+                        statusText,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: text.bodySmall!.copyWith(color: softInk),
+                      ),
                     ),
                     // **The percentage follows every phase that knows its
-                    // progress** (field
-                    // report 2026-09-03: the counter did not appear while
-                    // pulling to the
-                    // device). The number used to be buried inside the "on
-                    // server %" string
+                    // progress** (field report 2026-09-03: the counter did
+                    // not appear while pulling to the device). The number
+                    // used to be buried inside the "on server %" string
                     // alone, so the pull phase, the longest one in Lite,
-                    // showed a moving bar
-                    // with no number. It is an independent element now, so
-                    // it appears during
-                    // both the pull and the poll without a separate string
-                    // per phase.
+                    // showed a moving bar with no number. It is an
+                    // independent element now, so it appears during both
+                    // the pull and the poll without a separate string per
+                    // phase.
                     if (!isError && progress != null) ...[
                       const SizedBox(width: MTSpace.sm),
                       Text(

@@ -8,28 +8,26 @@ SavedPlaylist _playlist(
   bool pinned = false,
   DateTime? lastPlayed,
   DateTime? created,
-}) =>
-    SavedPlaylist(
-      name: name,
-      pinned: pinned,
-      lastPlayedAt: lastPlayed,
-      createdAt: created ?? DateTime(2026),
-    );
+}) => SavedPlaylist(
+  name: name,
+  pinned: pinned,
+  lastPlayedAt: lastPlayed,
+  createdAt: created ?? DateTime(2026),
+);
 
 LibraryItem _item(
   String url, {
   bool favorite = false,
   String? localPath,
   DateTime? at,
-}) =>
-    LibraryItem(
-      canonicalUrl: url,
-      title: url,
-      favorite: favorite,
-      localPath: localPath,
-      timestamp: at,
-      onServer: true,
-    );
+}) => LibraryItem(
+  canonicalUrl: url,
+  title: url,
+  favorite: favorite,
+  localPath: localPath,
+  timestamp: at,
+  onServer: true,
+);
 
 void main() {
   group('ترتيب القوائم (م-37/ب)', () {
@@ -43,10 +41,16 @@ void main() {
 
     test('الترتيب بآخر تشغيل لا بتاريخ الإنشاء', () {
       final sorted = sortPlaylists([
-        _playlist('أُنشئت أخيراً',
-            created: DateTime(2026, 9), lastPlayed: DateTime(2026, 1)),
-        _playlist('شُغّلت اليوم',
-            created: DateTime(2020), lastPlayed: DateTime(2026, 9)),
+        _playlist(
+          'أُنشئت أخيراً',
+          created: DateTime(2026, 9),
+          lastPlayed: DateTime(2026, 1),
+        ),
+        _playlist(
+          'شُغّلت اليوم',
+          created: DateTime(2020),
+          lastPlayed: DateTime(2026, 9),
+        ),
       ]);
       expect(sorted.first.name, 'شُغّلت اليوم');
     });
@@ -74,13 +78,19 @@ void main() {
       _item('u1', favorite: true, at: DateTime(2026, 9, 1)),
       _item('u2', localPath: '/sd/2.mp4', at: DateTime(2026, 8, 30)),
       _item('u3', at: DateTime(2026, 8, 25)),
-      _item('u4', favorite: true, localPath: '/sd/4.mp4', at: DateTime(2026, 7)),
+      _item(
+        'u4',
+        favorite: true,
+        localPath: '/sd/4.mp4',
+        at: DateTime(2026, 7),
+      ),
     ];
 
     test('المفضلة تجمع المعلّمة فقط بأحدثية', () {
       final lists = buildSmartLists(items);
       final favorites = lists.firstWhere(
-          (l) => l.kind == SmartListKind.favorites);
+        (l) => l.kind == SmartListKind.favorites,
+      );
       expect(favorites.items.map((i) => i.canonicalUrl), ['u1', 'u4']);
     });
 

@@ -39,23 +39,25 @@ void main() {
   tearDown(() => handler.dispose());
 
   Widget app() => ProviderScope(
-        overrides: [
-          keyValueStoreProvider.overrideWithValue(store),
-          secretStoreProvider.overrideWithValue(MemorySecretStore()),
-          prefsMutexProvider.overrideWithValue(mutex),
-          initialSettingsProvider.overrideWithValue(const SuperSettings()),
-          playbackResolverProvider.overrideWithValue(handler.resolver),
-          audioHandlerProvider.overrideWithValue(handler),
-          // الغلاف صار يقود إشعارات التحميل (2026-09-06) وهي تسجّل
-          // إخفاقاتها — فالسجل صار جزءاً من إقلاع التطبيق.
-          loggerProvider.overrideWithValue(
-              MTLogger(filePath: '${Directory.systemTemp.path}/mtf_ui.log')),
-        ],
-        child: const SuperApp(),
-      );
+    overrides: [
+      keyValueStoreProvider.overrideWithValue(store),
+      secretStoreProvider.overrideWithValue(MemorySecretStore()),
+      prefsMutexProvider.overrideWithValue(mutex),
+      initialSettingsProvider.overrideWithValue(const SuperSettings()),
+      playbackResolverProvider.overrideWithValue(handler.resolver),
+      audioHandlerProvider.overrideWithValue(handler),
+      // الغلاف صار يقود إشعارات التحميل (2026-09-06) وهي تسجّل
+      // إخفاقاتها — فالسجل صار جزءاً من إقلاع التطبيق.
+      loggerProvider.overrideWithValue(
+        MTLogger(filePath: '${Directory.systemTemp.path}/mtf_ui.log'),
+      ),
+    ],
+    child: const SuperApp(),
+  );
 
-  testWidgets('الإقلاع بلا سيرفر ⇒ المكتبة بحالة «لا سيرفر بعد» (ر-1)',
-      (tester) async {
+  testWidgets('الإقلاع بلا سيرفر ⇒ المكتبة بحالة «لا سيرفر بعد» (ر-1)', (
+    tester,
+  ) async {
     await tester.pumpWidget(app());
     await tester.pump(const Duration(milliseconds: 100));
     expect(tester.takeException(), isNull);
@@ -63,31 +65,40 @@ void main() {
     expect(find.byType(MTFab), findsOneWidget);
   });
 
-  testWidgets('لا مشغل مصغر شبح عند الإقلاع بلا تشغيل (فخ §6.5)',
-      (tester) async {
+  testWidgets('لا مشغل مصغر شبح عند الإقلاع بلا تشغيل (فخ §6.5)', (
+    tester,
+  ) async {
     await tester.pumpWidget(app());
     await tester.pump(const Duration(milliseconds: 100));
-    expect(find.byType(MTMiniPlayer), findsOneWidget,
-        reason: 'الودجت موجودة لكنها فارغة');
-    expect(find.byIcon(Icons.close_rounded), findsNothing,
-        reason: 'لا شريط ظاهر ما دام mediaItem == null');
+    expect(
+      find.byType(MTMiniPlayer),
+      findsOneWidget,
+      reason: 'الودجت موجودة لكنها فارغة',
+    );
+    expect(
+      find.byIcon(Icons.close_rounded),
+      findsNothing,
+      reason: 'لا شريط ظاهر ما دام mediaItem == null',
+    );
   });
 
-  testWidgets(
-      'تشغيل نسخة محلية بلا سيرفر يُظهر المشغل المصغر ثم stop يخفيه',
-      (tester) async {
+  testWidgets('تشغيل نسخة محلية بلا سيرفر يُظهر المشغل المصغر ثم stop يخفيه', (
+    tester,
+  ) async {
     await tester.pumpWidget(app());
     await tester.pump(const Duration(milliseconds: 100));
 
     // عمل غير متزامن حقيقي خارج الساعة الوهمية (وإلا تجمّد الانتظار).
-    await tester.runAsync(() => handler.playItems(const [
-          PlaylistItem(
-            canonicalUrl: 'https://x/1',
-            title: 'مقطع صوتي',
-            localPath: '/sd/a.mp3',
-            isAudio: true,
-          ),
-        ]));
+    await tester.runAsync(
+      () => handler.playItems(const [
+        PlaylistItem(
+          canonicalUrl: 'https://x/1',
+          title: 'مقطع صوتي',
+          localPath: '/sd/a.mp3',
+          isAudio: true,
+        ),
+      ]),
+    );
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 50));
     expect(find.text('مقطع صوتي'), findsOneWidget);

@@ -2,8 +2,9 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:mt_core/mt_core.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// تنفيذ [KeyValueStore] فوق SharedPreferences — الوصول الوحيد للتخزين
-/// (القاعدة 3: كل قراءة-تعديل-كتابة عبر PrefsMutex في مواقع النداء).
+/// A [KeyValueStore] over SharedPreferences: the only access to storage
+/// (rule 3, with every read-modify-write going through PrefsMutex at the
+/// call sites).
 class SharedPrefsKeyValueStore implements KeyValueStore {
   SharedPrefsKeyValueStore(this._prefs);
 
@@ -37,7 +38,7 @@ class SharedPrefsKeyValueStore implements KeyValueStore {
   Future<Set<String>> keys() async => _prefs.getKeys();
 }
 
-/// تنفيذ [SecretStore] فوق flutter_secure_storage (Android Keystore).
+/// A [SecretStore] over flutter_secure_storage (the Android Keystore).
 class SecureSecretStore implements SecretStore {
   const SecureSecretStore();
 

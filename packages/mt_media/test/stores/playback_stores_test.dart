@@ -127,12 +127,14 @@ void main() {
     });
 
     test('كتابة وقراءة الجلسة كاملة', () async {
-      await states.write(const AudioSessionSnapshot(
-        items: items,
-        index: 1,
-        position: Duration(seconds: 75),
-        playlistId: 'p9',
-      ));
+      await states.write(
+        const AudioSessionSnapshot(
+          items: items,
+          index: 1,
+          position: Duration(seconds: 75),
+          playlistId: 'p9',
+        ),
+      );
       final back = (await states.read())!;
       expect(back.items.map((i) => i.title), ['أول', 'ثانٍ']);
       expect(back.index, 1);

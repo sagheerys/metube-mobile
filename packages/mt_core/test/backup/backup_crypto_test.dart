@@ -18,17 +18,19 @@ void main() {
       );
       expect(
         () => BackupCrypto.decrypt(
-            contents: file, keyBase64: BackupCrypto.generateKeyBase64()),
+          contents: file,
+          keyBase64: BackupCrypto.generateKeyBase64(),
+        ),
         throwsA(isA<BackupKeyMismatchException>()),
       );
     });
 
-    test('ترويسة غريبة ⇒ BackupFormatException (لا json.decode قبل الفك)',
-        () {
+    test('ترويسة غريبة ⇒ BackupFormatException (لا json.decode قبل الفك)', () {
       expect(
         () => BackupCrypto.decrypt(
-            contents: '{"app": "MeTube Lite"}',
-            keyBase64: BackupCrypto.generateKeyBase64()),
+          contents: '{"app": "MeTube Lite"}',
+          keyBase64: BackupCrypto.generateKeyBase64(),
+        ),
         throwsA(isA<BackupFormatException>()),
       );
     });
@@ -36,8 +38,9 @@ void main() {
     test('ملف مبتور ⇒ BackupFormatException', () {
       expect(
         () => BackupCrypto.decrypt(
-            contents: 'MTF1\nonly-iv',
-            keyBase64: BackupCrypto.generateKeyBase64()),
+          contents: 'MTF1\nonly-iv',
+          keyBase64: BackupCrypto.generateKeyBase64(),
+        ),
         throwsA(isA<BackupFormatException>()),
       );
     });
@@ -60,8 +63,11 @@ void main() {
     test('ملف مفتاح غير صالح ⇒ null', () {
       expect(BackupCrypto.decodeKeyFile('WRONG\nabc\n'), isNull);
       expect(BackupCrypto.decodeKeyFile('MTFKEY1\nnot-base64!!\n'), isNull);
-      expect(BackupCrypto.decodeKeyFile('MTFKEY1\naGk=\n'), isNull,
-          reason: 'المفتاح يجب أن يكون 32 بايتاً');
+      expect(
+        BackupCrypto.decodeKeyFile('MTFKEY1\naGk=\n'),
+        isNull,
+        reason: 'المفتاح يجب أن يكون 32 بايتاً',
+      );
     });
   });
 }

@@ -9,8 +9,9 @@ import '../../di.dart';
 import '../shared/error_text.dart';
 import 'batch_providers.dart';
 
-/// شاشة التحميل الدفعي (م-11 · ر-3): معاينة القائمة بمربعات اختيار،
-/// مدة كل عنصر ومجموع المحدد، اختيار الجودة، ثم إدراج في الطابور.
+/// The batch download screen (rule 3): a playlist preview with checkboxes,
+/// each item's duration and the selected total, a quality choice, then
+/// enqueueing.
 class BatchScreen extends ConsumerStatefulWidget {
   const BatchScreen({super.key, required this.playlistUrl});
 
@@ -25,10 +26,11 @@ class _BatchScreenState extends ConsumerState<BatchScreen> {
   bool _initialised = false;
   Quality? _quality;
 
-  /// اسم قائمة المصدر — تُجمَّع تحته العناصر في قائمة محفوظة واحدة.
+  /// The source playlist's name; the items are collected under it into one
+  /// saved playlist.
   String? _playlistName;
 
-  /// رابط الفيديو المفرد إن كان المُدخل `watch?v=…&list=…`.
+  /// The single video's URL when the input was `watch?v=…&list=…`.
   String? get _singleVideoUrl {
     final id = UrlKit.youtubeVideoId(widget.playlistUrl);
     return id == null ? null : 'https://www.youtube.com/watch?v=$id';
@@ -36,10 +38,9 @@ class _BatchScreenState extends ConsumerState<BatchScreen> {
 
   void _downloadSingle() {
     final l10n = context.mtl;
-    final count = ref.read(batchSubmitterProvider).submit(
-          [_singleVideoUrl!],
-          ref.read(settingsProvider).quality,
-        );
+    final count = ref.read(batchSubmitterProvider).submit([
+      _singleVideoUrl!,
+    ], ref.read(settingsProvider).quality);
     if (count == 0) {
       showMTSnack(context, l10n.noServerTitle, type: MTSnackType.error);
       return;
@@ -57,10 +58,11 @@ class _BatchScreenState extends ConsumerState<BatchScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.batchTitle),
-        // **مخرج للرابط الغامض.** `watch?v=X&list=Y` هو فيديو **داخل**
-        // قائمة: المشاركة من يوتيوب تحمل `list` كثيراً، فبعد أن صارت
-        // القوائم تُقرأ فعلاً صار من السهل أن تجد نفسك أمام 200 عنصر
-        // وأنت تريد واحداً. الزر يظهر فقط حين يكون في الرابط `v=`.
+        // **An exit for the ambiguous link.** `watch?v=X&list=Y` is a video
+        // **inside** a playlist, and YouTube shares carry `list` very
+        // often, so once playlists were genuinely readable it became easy
+        // to find yourself facing 200 items when you wanted one. The button
+        // appears only when the URL contains `v=`.
         actions: [
           if (_singleVideoUrl != null)
             TextButton(
@@ -83,8 +85,10 @@ class _BatchScreenState extends ConsumerState<BatchScreen> {
             children: [
               const CircularProgressIndicator(),
               const SizedBox(height: MTSpace.md),
-              Text(l10n.batchLoading,
-                  style: Theme.of(context).textTheme.bodySmall),
+              Text(
+                l10n.batchLoading,
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
             ],
           ),
         ),
@@ -107,14 +111,16 @@ class _BatchScreenState extends ConsumerState<BatchScreen> {
     );
   }
 
-  /// ر-3 خطوة 2: إدراج المحدد ثم العودة للرئيسية.
+  /// Rule 3, step 2: enqueue the selection, then return to the main screen.
   void _submit() {
     final l10n = context.mtl;
     if (_selected.isEmpty) {
       showMTSnack(context, l10n.batchNothingSelected, type: MTSnackType.error);
       return;
     }
-    final count = ref.read(batchSubmitterProvider).submit(
+    final count = ref
+        .read(batchSubmitterProvider)
+        .submit(
           _selected.toList(),
           _quality ?? Quality.best,
           groupName: _playlistName,
@@ -124,8 +130,7 @@ class _BatchScreenState extends ConsumerState<BatchScreen> {
       return;
     }
     context.go('/');
-    showMTSnack(context, l10n.addedNToServer(count),
-        type: MTSnackType.success);
+    showMTSnack(context, l10n.addedNToServer(count), type: MTSnackType.success);
   }
 
   Widget _content(PlaylistPreview preview, PlaylistKind kind) {
@@ -133,15 +138,19 @@ class _BatchScreenState extends ConsumerState<BatchScreen> {
       _initialised = true;
       _playlistName = preview.title;
       _selected.addAll(preview.tracks.map((t) => t.url));
-      // SoundCloud صوت فقط (§4) — الجودة تُثبَّت ولا تُعرض.
+      // SoundCloud is audio only (§4), so the quality is pinned and not
+      // shown.
       _quality = kind == PlaylistKind.soundcloud
           ? Quality.audio
           : ref.read(settingsProvider).quality;
     }
-    final selectedTracks =
-        preview.tracks.where((t) => _selected.contains(t.url)).toList();
+    final selectedTracks = preview.tracks
+        .where((t) => _selected.contains(t.url))
+        .toList();
     final total = selectedTracks.fold(
-        Duration.zero, (sum, t) => sum + (t.duration ?? Duration.zero));
+      Duration.zero,
+      (sum, t) => sum + (t.duration ?? Duration.zero),
+    );
 
     return Column(
       children: [
@@ -167,26 +176,34 @@ class _BatchScreenState extends ConsumerState<BatchScreen> {
         Expanded(
           child: ListView.builder(
             padding: const EdgeInsets.fromLTRB(
-                MTSpace.pagePad, 0, MTSpace.pagePad, MTSpace.xxl),
+              MTSpace.pagePad,
+              0,
+              MTSpace.pagePad,
+              MTSpace.xxl,
+            ),
             itemCount: preview.tracks.length,
             itemBuilder: (context, index) {
               final track = preview.tracks[index];
               return CheckboxListTile(
                 value: _selected.contains(track.url),
-                onChanged: (checked) => setState(() => checked == true
-                    ? _selected.add(track.url)
-                    : _selected.remove(track.url)),
+                onChanged: (checked) => setState(
+                  () => checked == true
+                      ? _selected.add(track.url)
+                      : _selected.remove(track.url),
+                ),
                 contentPadding: EdgeInsets.zero,
-                title: Text(track.title,
-                    maxLines: 2, overflow: TextOverflow.ellipsis),
+                title: Text(
+                  track.title,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
                 subtitle: track.duration == null
                     ? null
                     : Text(mtFormatDuration(track.duration!)),
                 secondary: track.thumbnail == null
                     ? null
                     : ClipRRect(
-                        borderRadius:
-                            BorderRadius.circular(MTRadius.thumb - 2),
+                        borderRadius: BorderRadius.circular(MTRadius.thumb - 2),
                         child: CachedNetworkImage(
                           imageUrl: track.thumbnail!,
                           width: 64,
@@ -204,7 +221,8 @@ class _BatchScreenState extends ConsumerState<BatchScreen> {
   }
 }
 
-/// نسخة محلية من التنسيق (mt_media ودجات فقط — لا نستورد شاشاته هنا).
+/// A local copy of the formatting; mt_media provides widgets only and we do
+/// not import its screens here.
 String mtFormatDuration(Duration d) {
   final minutes = d.inMinutes.remainder(60).toString().padLeft(2, '0');
   final seconds = d.inSeconds.remainder(60).toString().padLeft(2, '0');
@@ -232,7 +250,11 @@ class _Header extends StatelessWidget {
     final p = MTThemeX.of(context).palette;
     return Padding(
       padding: const EdgeInsets.fromLTRB(
-          MTSpace.pagePad, MTSpace.sm, MTSpace.pagePad, MTSpace.sm),
+        MTSpace.pagePad,
+        MTSpace.sm,
+        MTSpace.pagePad,
+        MTSpace.sm,
+      ),
       child: Row(
         children: [
           if (preview.coverUrl != null)
@@ -252,17 +274,17 @@ class _Header extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(preview.title,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.titleMedium),
+                Text(
+                  preview.title,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
                 const SizedBox(height: MTSpace.xxs),
                 Text(
                   '${l10n.batchSelectedOf(selectedCount, preview.tracks.length)}'
                   ' · ${mtFormatDuration(totalDuration)}',
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodySmall!
+                  style: Theme.of(context).textTheme.bodySmall!
                       .copyWith(color: p.ink3),
                 ),
               ],
@@ -291,9 +313,10 @@ class _QualityRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // القاعدة 2: الجودات الرقمية ليوتيوب فقط.
-    final options =
-        youtubeOnly ? Quality.values : [Quality.best, Quality.audio];
+    // Rule 2: numeric qualities are for YouTube only.
+    final options = youtubeOnly
+        ? Quality.values
+        : [Quality.best, Quality.audio];
     return SizedBox(
       height: 46,
       child: ListView(

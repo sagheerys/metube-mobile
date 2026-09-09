@@ -15,27 +15,31 @@ import 'package:mt_ui/mt_ui.dart';
 /// if `persist` ever falls back to its implicit value.
 void main() {
   Widget host(void Function(BuildContext context) onPressed) => MaterialApp(
-        theme: mtTheme(MTVariant.lite, Brightness.light),
-        locale: const Locale('ar'),
-        localizationsDelegates: MTLocalizations.localizationsDelegates,
-        supportedLocales: MTLocalizations.supportedLocales,
-        home: Scaffold(
-          body: Builder(
-            builder: (context) => TextButton(
-              onPressed: () => onPressed(context),
-              child: const Text('اعرض'),
-            ),
-          ),
+    theme: mtTheme(MTVariant.lite, Brightness.light),
+    locale: const Locale('ar'),
+    localizationsDelegates: MTLocalizations.localizationsDelegates,
+    supportedLocales: MTLocalizations.supportedLocales,
+    home: Scaffold(
+      body: Builder(
+        builder: (context) => TextButton(
+          onPressed: () => onPressed(context),
+          child: const Text('اعرض'),
         ),
-      );
+      ),
+    ),
+  );
 
   Future<void> show(WidgetTester tester, {String? actionLabel}) async {
-    await tester.pumpWidget(host((context) => showMTSnack(
+    await tester.pumpWidget(
+      host(
+        (context) => showMTSnack(
           context,
           'رسالة',
           actionLabel: actionLabel,
           onAction: actionLabel == null ? null : () {},
-        )));
+        ),
+      ),
+    );
     await tester.tap(find.text('اعرض'));
     // **Until the entrance animation completes**: `ScaffoldMessenger` only
     // schedules the hide timer after `isCompleted`, so a single pump shows
@@ -56,7 +60,10 @@ void main() {
     expect(find.text('تغيير'), findsOneWidget);
     await tester.pump(mtSnackDuration + const Duration(seconds: 1));
     await tester.pumpAndSettle();
-    expect(find.text('رسالة'), findsNothing,
-        reason: 'persist: false — وإلا بقي الشريط فوق زر إضافة رابط للأبد');
+    expect(
+      find.text('رسالة'),
+      findsNothing,
+      reason: 'persist: false — وإلا بقي الشريط فوق زر إضافة رابط للأبد',
+    );
   });
 }

@@ -14,8 +14,11 @@ class _FakeAdapter implements HttpClientAdapter {
   final List<RequestOptions> requests = [];
 
   @override
-  Future<ResponseBody> fetch(RequestOptions options,
-      Stream<Uint8List>? requestStream, Future<void>? cancelFuture) async {
+  Future<ResponseBody> fetch(
+    RequestOptions options,
+    Stream<Uint8List>? requestStream,
+    Future<void>? cancelFuture,
+  ) async {
     requests.add(options);
     return handler(options);
   }
@@ -42,49 +45,64 @@ class _FakeAdapter implements HttpClientAdapter {
   return (client, adapter);
 }
 
-ResponseBody _json(String body, {int status = 200}) =>
-    ResponseBody.fromString(body, status,
-        headers: {Headers.contentTypeHeader: ['application/json']});
+ResponseBody _json(String body, {int status = 200}) => ResponseBody.fromString(
+  body,
+  status,
+  headers: {
+    Headers.contentTypeHeader: ['application/json'],
+  },
+);
 
 void main() {
   group('ServerConfig', () {
     test('تطبيع الرابط: إزالة الشرطات الأخيرة والمسافات', () {
-      expect(ServerConfig(baseUrl: ' https://s.com// ').baseUrl,
-          'https://s.com');
+      expect(
+        ServerConfig(baseUrl: ' https://s.com// ').baseUrl,
+        'https://s.com',
+      );
     });
 
     test('basicAuthHeader يُبنى من الاعتمادات', () {
-      final config = ServerConfig(baseUrl: 'https://s.com',
-          username: 'user', password: 'p@ss');
-      expect(config.basicAuthHeader,
-          'Basic ${base64Encode(utf8.encode('user:p@ss'))}');
+      final config = ServerConfig(
+        baseUrl: 'https://s.com',
+        username: 'user',
+        password: 'p@ss',
+      );
+      expect(
+        config.basicAuthHeader,
+        'Basic ${base64Encode(utf8.encode('user:p@ss'))}',
+      );
       expect(ServerConfig(baseUrl: 'https://s.com').basicAuthHeader, isNull);
     });
   });
 
   group('testConnection (§2.1)', () {
-    test('200 + done/queue ⇒ نجاح، مع ترويسة Basic والاستعلام limit=1',
-        () async {
-      final (client, adapter) =
-          makeClient((o) => _json('{"done": [], "queue": []}'),
-              username: 'u', password: 'p');
-      await client.testConnection();
-      final req = adapter.requests.single;
-      expect(req.uri.path, '/history');
-      expect(req.uri.queryParameters['limit'], '1');
-      expect(req.headers['Authorization'], startsWith('Basic '));
-    });
+    test(
+      '200 + done/queue ⇒ نجاح، مع ترويسة Basic والاستعلام limit=1',
+      () async {
+        final (client, adapter) = makeClient(
+          (o) => _json('{"done": [], "queue": []}'),
+          username: 'u',
+          password: 'p',
+        );
+        await client.testConnection();
+        final req = adapter.requests.single;
+        expect(req.uri.path, '/history');
+        expect(req.uri.queryParameters['limit'], '1');
+        expect(req.headers['Authorization'], startsWith('Basic '));
+      },
+    );
 
     test('HTML ⇒ NotMeTubeServerException', () async {
-      final (client, _) = makeClient((o) => _json('<html><body></body></html>'));
-      expect(client.testConnection(),
-          throwsA(isA<NotMeTubeServerException>()));
+      final (client, _) = makeClient(
+        (o) => _json('<html><body></body></html>'),
+      );
+      expect(client.testConnection(), throwsA(isA<NotMeTubeServerException>()));
     });
 
     test('JSON بلا queue ⇒ NotMeTubeServerException', () async {
       final (client, _) = makeClient((o) => _json('{"done": []}'));
-      expect(client.testConnection(),
-          throwsA(isA<NotMeTubeServerException>()));
+      expect(client.testConnection(), throwsA(isA<NotMeTubeServerException>()));
     });
 
     test('401 ⇒ AuthFailureException', () async {
@@ -98,42 +116,56 @@ void main() {
     });
 
     test('انقطاع النقل ⇒ NetworkException', () async {
-      final (client, _) = makeClient((o) => throw DioException.connectionError(
-          requestOptions: o, reason: 'refused'));
+      final (client, _) = makeClient(
+        (o) => throw DioException.connectionError(
+          requestOptions: o,
+          reason: 'refused',
+        ),
+      );
       expect(client.testConnection(), throwsA(isA<NetworkException>()));
     });
   });
 
   group('fetchHistory (§2.3)', () {
     test('يفك نصاً plain ويبني HistoryResponse', () async {
-      final (client, _) = makeClient((o) => _json(
+      final (client, _) = makeClient(
+        (o) => _json(
           '{"done": [{"url": "https://youtu.be/dQw4w9WgXcQ", '
-          '"status": "finished", "filename": "a.mp4"}], "queue": []}'));
+          '"status": "finished", "filename": "a.mp4"}], "queue": []}',
+        ),
+      );
       final history = await client.fetchHistory();
       expect(history.done.single.canonicalUrl, 'https://youtu.be/dQw4w9WgXcQ');
     });
   });
 
   group('add (§2.2)', () {
-    test('يرسل url + quality، ويطبق قاعدة المنصة (رقمية+TikTok ⇒ best)',
-        () async {
-      final (client, adapter) = makeClient((o) => _json('{"status": "ok"}'));
-      await client.add(
-          'https://www.tiktok.com/@u/video/7301234567890123456', Quality.q1080);
-      final req = adapter.requests.single;
-      expect(req.uri.path, '/add');
-      final body = json.decode(req.data as String) as Map;
-      expect(body['quality'], 'best');
-      expect(body['url'], contains('tiktok.com'));
-    });
+    test(
+      'يرسل url + quality، ويطبق قاعدة المنصة (رقمية+TikTok ⇒ best)',
+      () async {
+        final (client, adapter) = makeClient((o) => _json('{"status": "ok"}'));
+        await client.add(
+          'https://www.tiktok.com/@u/video/7301234567890123456',
+          Quality.q1080,
+        );
+        final req = adapter.requests.single;
+        expect(req.uri.path, '/add');
+        final body = json.decode(req.data as String) as Map;
+        expect(body['quality'], 'best');
+        expect(body['url'], contains('tiktok.com'));
+      },
+    );
 
     // **توافق التشغيل** (بلاغ المالك 2026-09-03: «الريلز تظهر مشوشة»).
     // مقيس على السيرفر الحقيقي: `format:mp4` وحدها أعطت av1 داخل mp4،
     // والحقلان معاً أعطيا h264/aac. لذا يُتحقق من **كليهما**.
     test('توافق التشغيل يرسل download_type+format+codec للفيديو', () async {
       final (client, adapter) = makeClient((o) => _json('{"status": "ok"}'));
-      await client.add('https://youtu.be/dQw4w9WgXcQ', Quality.best,
-          compatibleVideo: true);
+      await client.add(
+        'https://youtu.be/dQw4w9WgXcQ',
+        Quality.best,
+        compatibleVideo: true,
+      );
       final body = json.decode(adapter.requests.single.data as String) as Map;
       expect(body['format'], 'mp4');
       expect(body['codec'], 'h264');
@@ -147,35 +179,48 @@ void main() {
     /// الـpreset يتخطّى تلك الخطوة.
     test('توافق التشغيل + best ⇒ يرسل preset التوافق', () async {
       final (client, adapter) = makeClient((o) => _json('{"status": "ok"}'));
-      await client.add('https://m.facebook.com/watch/?v=161924316', Quality.best,
-          compatibleVideo: true);
+      await client.add(
+        'https://m.facebook.com/watch/?v=161924316',
+        Quality.best,
+        compatibleVideo: true,
+      );
       final body = json.decode(adapter.requests.single.data as String) as Map;
       expect(body['ytdl_options_presets'], [MeTubeApiClient.compatPreset]);
     });
 
-    test('جودة رقمية ⇒ لا preset (المُحدِّد الثابت يبتلع سقف الارتفاع)',
-        () async {
-      final (client, adapter) = makeClient((o) => _json('{"status": "ok"}'));
-      await client.add('https://youtu.be/dQw4w9WgXcQ', Quality.q720,
-          compatibleVideo: true);
-      final body = json.decode(adapter.requests.single.data as String) as Map;
-      expect(body.containsKey('ytdl_options_presets'), isFalse,
-          reason: 'وإلا نزل 1080p لمن طلب 720p');
-      expect(body['quality'], '720');
-    });
+    test(
+      'جودة رقمية ⇒ لا preset (المُحدِّد الثابت يبتلع سقف الارتفاع)',
+      () async {
+        final (client, adapter) = makeClient((o) => _json('{"status": "ok"}'));
+        await client.add(
+          'https://youtu.be/dQw4w9WgXcQ',
+          Quality.q720,
+          compatibleVideo: true,
+        );
+        final body = json.decode(adapter.requests.single.data as String) as Map;
+        expect(
+          body.containsKey('ytdl_options_presets'),
+          isFalse,
+          reason: 'وإلا نزل 1080p لمن طلب 720p',
+        );
+        expect(body['quality'], '720');
+      },
+    );
 
     test('الصوت لا preset له', () async {
       final (client, adapter) = makeClient((o) => _json('{"status": "ok"}'));
-      await client.add('https://youtu.be/dQw4w9WgXcQ', Quality.audio,
-          compatibleVideo: true);
+      await client.add(
+        'https://youtu.be/dQw4w9WgXcQ',
+        Quality.audio,
+        compatibleVideo: true,
+      );
       final body = json.decode(adapter.requests.single.data as String) as Map;
       expect(body.containsKey('ytdl_options_presets'), isFalse);
     });
 
     /// سيرفر لم يُضبَط فيه الـpreset يردّ 400 — والتطبيق مفتوح المصدر
     /// يُشغَّل على حاويات غير حاويته. بلا هذا الرجوع يفشل **كل تنزيل**.
-    test('سيرفر يرفض الـpreset ⇒ إعادة المحاولة بلا preset لا فشل',
-        () async {
+    test('سيرفر يرفض الـpreset ⇒ إعادة المحاولة بلا preset لا فشل', () async {
       var calls = 0;
       final (client, adapter) = makeClient((o) {
         calls++;
@@ -185,8 +230,11 @@ void main() {
             : _json('{"status": "ok"}');
       });
 
-      await client.add('https://m.facebook.com/watch/?v=1', Quality.best,
-          compatibleVideo: true);
+      await client.add(
+        'https://m.facebook.com/watch/?v=1',
+        Quality.best,
+        compatibleVideo: true,
+      );
 
       expect(calls, 2, reason: 'محاولة ثم رجوع');
       final second = json.decode(adapter.requests.last.data as String) as Map;
@@ -201,9 +249,13 @@ void main() {
         return _json('{"status": "error", "msg": "boom"}');
       });
       await expectLater(
-          client.add('https://youtu.be/dQw4w9WgXcQ', Quality.q720,
-              compatibleVideo: true),
-          throwsA(isA<ServerErrorException>()));
+        client.add(
+          'https://youtu.be/dQw4w9WgXcQ',
+          Quality.q720,
+          compatibleVideo: true,
+        ),
+        throwsA(isA<ServerErrorException>()),
+      );
       expect(calls, 1);
     });
 
@@ -213,7 +265,10 @@ void main() {
     /// وفي Lite تبقى التسعة عشر يتيمة بعد سحب واحد وحذفه.
     test('رابط مفرد يحمل حدّ عنصر واحد', () async {
       final (client, adapter) = makeClient((o) => _json('{"status": "ok"}'));
-      await client.add('https://soundcloud.com/artist/some-track', Quality.best);
+      await client.add(
+        'https://soundcloud.com/artist/some-track',
+        Quality.best,
+      );
       final body = json.decode(adapter.requests.single.data as String) as Map;
       expect(body['playlist_item_limit'], 1);
     });
@@ -222,8 +277,11 @@ void main() {
       final (client, adapter) = makeClient((o) => _json('{"status": "ok"}'));
       await client.add('https://soundcloud.com/jazzhopcafe', Quality.best);
       final body = json.decode(adapter.requests.single.data as String) as Map;
-      expect(body['playlist_item_limit'], 1,
-          reason: 'مقيس على سيرفر المالك: ألبوم من ٣ + حدّ 1 ⇒ نزل واحد');
+      expect(
+        body['playlist_item_limit'],
+        1,
+        reason: 'مقيس على سيرفر المالك: ألبوم من ٣ + حدّ 1 ⇒ نزل واحد',
+      );
     });
 
     /// `watch?v=…&list=…` **قائمة معروفة** عند `PlaylistDetector`، فتذهب
@@ -231,8 +289,9 @@ void main() {
     test('watch مع list قائمة معروفة ⇒ بلا حدّ', () async {
       final (client, adapter) = makeClient((o) => _json('{"status": "ok"}'));
       await client.add(
-          'https://www.youtube.com/watch?v=dQw4w9WgXcQ&list=PLabc123',
-          Quality.best);
+        'https://www.youtube.com/watch?v=dQw4w9WgXcQ&list=PLabc123',
+        Quality.best,
+      );
       final body = json.decode(adapter.requests.single.data as String) as Map;
       expect(body.containsKey('playlist_item_limit'), isFalse);
     });
@@ -240,15 +299,20 @@ void main() {
     test('رابط قائمة صريح لا يُحدّ — الدفعي يرسل كل مقطع وحده', () async {
       final (client, adapter) = makeClient((o) => _json('{"status": "ok"}'));
       await client.add(
-          'https://soundcloud.com/artist/sets/album', Quality.best);
+        'https://soundcloud.com/artist/sets/album',
+        Quality.best,
+      );
       final body = json.decode(adapter.requests.single.data as String) as Map;
       expect(body.containsKey('playlist_item_limit'), isFalse);
     });
 
     test('توافق التشغيل لا يُرسل مع الصوت', () async {
       final (client, adapter) = makeClient((o) => _json('{"status": "ok"}'));
-      await client.add('https://youtu.be/dQw4w9WgXcQ', Quality.audio,
-          compatibleVideo: true);
+      await client.add(
+        'https://youtu.be/dQw4w9WgXcQ',
+        Quality.audio,
+        compatibleVideo: true,
+      );
       final body = json.decode(adapter.requests.single.data as String) as Map;
       expect(body.containsKey('format'), isFalse);
       expect(body.containsKey('codec'), isFalse);
@@ -274,28 +338,42 @@ void main() {
       expect(body['quality'], '720');
     });
 
-    test('200 مع status=error + نص كوكيز ⇒ PlatformBlockedException',
-        () async {
-      final (client, _) = makeClient((o) => _json(
-          '{"status": "error", "msg": "Sign in to confirm you are not a bot"}'));
-      expect(client.add('https://youtu.be/dQw4w9WgXcQ', Quality.best),
-          throwsA(isA<PlatformBlockedException>()));
+    test('200 مع status=error + نص كوكيز ⇒ PlatformBlockedException', () async {
+      final (client, _) = makeClient(
+        (o) => _json(
+          '{"status": "error", "msg": "Sign in to confirm you are not a bot"}',
+        ),
+      );
+      expect(
+        client.add('https://youtu.be/dQw4w9WgXcQ', Quality.best),
+        throwsA(isA<PlatformBlockedException>()),
+      );
     });
 
     test('خطأ عادي ⇒ ServerErrorException برسالة السيرفر', () async {
       final (client, _) = makeClient(
-          (o) => _json('{"status": "error", "msg": "Unsupported URL"}'));
+        (o) => _json('{"status": "error", "msg": "Unsupported URL"}'),
+      );
       expect(
-          client.add('https://example.com/x', Quality.best),
-          throwsA(isA<ServerErrorException>()
-              .having((e) => e.detail, 'detail', 'Unsupported URL')));
+        client.add('https://example.com/x', Quality.best),
+        throwsA(
+          isA<ServerErrorException>().having(
+            (e) => e.detail,
+            'detail',
+            'Unsupported URL',
+          ),
+        ),
+      );
     });
 
     test('خطأ Map (error كائن) يُسطّح نصاً', () async {
       final (client, _) = makeClient(
-          (o) => _json('{"error": {"code": 400, "msg": "bad url"}}'));
-      expect(client.add('https://example.com/x', Quality.best),
-          throwsA(isA<ServerErrorException>()));
+        (o) => _json('{"error": {"code": 400, "msg": "bad url"}}'),
+      );
+      expect(
+        client.add('https://example.com/x', Quality.best),
+        throwsA(isA<ServerErrorException>()),
+      );
     });
   });
 
@@ -312,8 +390,10 @@ void main() {
   group('downloadUrl (§2.4)', () {
     test('ترميز الاسم العربي بالمسافات', () {
       final (client, _) = makeClient((o) => _json('{}'));
-      expect(client.downloadUrl('ملف جميل.mp4'),
-          'https://metube.example.com/download/${Uri.encodeComponent('ملف جميل.mp4')}');
+      expect(
+        client.downloadUrl('ملف جميل.mp4'),
+        'https://metube.example.com/download/${Uri.encodeComponent('ملف جميل.mp4')}',
+      );
     });
 
     // **العنوان المقتطع بنقاط اسمٌ مشروع (بلاغ المالك 2026-09-03).**
@@ -327,23 +407,30 @@ void main() {
     ]) {
       test('حارس المسار يقبل "$good"', () {
         final (client, _) = makeClient((o) => _json('{}'));
-        expect(client.downloadUrl(good),
-            'https://metube.example.com/download/${Uri.encodeComponent(good)}');
+        expect(
+          client.downloadUrl(good),
+          'https://metube.example.com/download/${Uri.encodeComponent(good)}',
+        );
       });
     }
 
     for (final bad in ['', '.', '..', '../secret', 'a/b.mp4', r'a\b.mp4']) {
       test('حارس المسار يرفض "$bad"', () {
         final (client, _) = makeClient((o) => _json('{}'));
-        expect(() => client.downloadUrl(bad),
-            throwsA(isA<UnsafeFilenameException>()));
+        expect(
+          () => client.downloadUrl(bad),
+          throwsA(isA<UnsafeFilenameException>()),
+        );
       });
     }
   });
 
   test('streamingHeaders تحمل Basic وkeep-alive', () {
-    final (client, _) =
-        makeClient((o) => _json('{}'), username: 'u', password: 'p');
+    final (client, _) = makeClient(
+      (o) => _json('{}'),
+      username: 'u',
+      password: 'p',
+    );
     expect(client.streamingHeaders['Authorization'], startsWith('Basic '));
     expect(client.streamingHeaders['Connection'], 'keep-alive');
   });
@@ -358,41 +445,52 @@ void main() {
     });
     tearDown(() => tempDir.delete(recursive: true));
 
-    String path(String name) =>
-        '${tempDir.path}${Platform.pathSeparator}$name';
+    String path(String name) => '${tempDir.path}${Platform.pathSeparator}$name';
 
     Future<void> expectRejected(int status, TypeMatcher<Object> matcher) async {
-      final (client, _) = makeClient((o) => ResponseBody.fromString(
-            '<html>لست ملفاً</html>',
-            status,
-            headers: {
-              Headers.contentTypeHeader: ['text/html']
-            },
-          ));
+      final (client, _) = makeClient(
+        (o) => ResponseBody.fromString(
+          '<html>لست ملفاً</html>',
+          status,
+          headers: {
+            Headers.contentTypeHeader: ['text/html'],
+          },
+        ),
+      );
       await expectLater(
         client.downloadTo('clip.mp4', path('out_$status.mp4')),
         throwsA(matcher),
       );
     }
 
-    test('401 ⇒ AuthFailure لا «نجاح»', () => expectRejected(401,
-        isA<AuthFailureException>()));
-    test('403 ⇒ AuthFailure', () => expectRejected(403,
-        isA<AuthFailureException>()));
+    test(
+      '401 ⇒ AuthFailure لا «نجاح»',
+      () => expectRejected(401, isA<AuthFailureException>()),
+    );
+    test(
+      '403 ⇒ AuthFailure',
+      () => expectRejected(403, isA<AuthFailureException>()),
+    );
     test('404 ⇒ NoApi', () => expectRejected(404, isA<NoApiException>()));
-    test('500 ⇒ ServerError', () => expectRejected(500,
-        isA<ServerErrorException>()));
-    test('502 ⇒ ServerError (وكيل عكسي عابر)', () => expectRejected(502,
-        isA<ServerErrorException>()));
+    test(
+      '500 ⇒ ServerError',
+      () => expectRejected(500, isA<ServerErrorException>()),
+    );
+    test(
+      '502 ⇒ ServerError (وكيل عكسي عابر)',
+      () => expectRejected(502, isA<ServerErrorException>()),
+    );
 
     test('200 ⇒ يُكتب الملف بلا رمي', () async {
-      final (client, _) = makeClient((o) => ResponseBody.fromString(
-            'MEDIA',
-            200,
-            headers: {
-              Headers.contentTypeHeader: ['video/mp4']
-            },
-          ));
+      final (client, _) = makeClient(
+        (o) => ResponseBody.fromString(
+          'MEDIA',
+          200,
+          headers: {
+            Headers.contentTypeHeader: ['video/mp4'],
+          },
+        ),
+      );
       final out = path('ok.mp4');
       await client.downloadTo('clip.mp4', out);
       expect(File(out).readAsStringSync(), 'MEDIA');

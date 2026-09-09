@@ -18,8 +18,8 @@ class PlaybackPrefs {
 
   String _modeKey(String? playlistId) =>
       playlistId == null || playlistId.isEmpty
-          ? playModeKey
-          : '${playModeKey}_$playlistId';
+      ? playModeKey
+      : '${playModeKey}_$playlistId';
 
   Future<PlayMode> playMode({String? playlistId}) async {
     final specific = playlistId == null
@@ -31,13 +31,12 @@ class PlaybackPrefs {
   Future<void> setPlayMode(PlayMode mode, {String? playlistId}) =>
       mutex.run(() => store.setString(_modeKey(playlistId), mode.wire));
 
-  Future<double> speed() async =>
-      PlaybackSpeeds.clamp(await store.getDouble(speedKey) ??
-          PlaybackSpeeds.normal);
+  Future<double> speed() async => PlaybackSpeeds.clamp(
+    await store.getDouble(speedKey) ?? PlaybackSpeeds.normal,
+  );
 
-  Future<void> setSpeed(double value) => mutex.run(
-        () => store.setDouble(speedKey, PlaybackSpeeds.clamp(value)),
-      );
+  Future<void> setSpeed(double value) =>
+      mutex.run(() => store.setDouble(speedKey, PlaybackSpeeds.clamp(value)));
 
   Future<bool> shuffle() async => await store.getBool(shuffleKey) ?? false;
 

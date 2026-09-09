@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:mt_core/mt_core.dart';
 import 'package:mt_ui/mt_ui.dart';
 
-/// سطر حالة النسخ التلقائية — الثقة تأتي من رؤية أن الشيء يحدث.
+/// The automatic backup status line: confidence comes from seeing that the
+/// thing is happening.
 class BackupStatusLine extends StatelessWidget {
   const BackupStatusLine({super.key, required this.backups});
 
@@ -23,7 +24,7 @@ class BackupStatusLine extends StatelessWidget {
             backups.isEmpty
                 ? l10n.noBackupsYet
                 : '${l10n.lastBackup(mtTimeAgo(context, backups.first.at))}'
-                    ' · ${l10n.backupsKept(backups.length)}',
+                      ' · ${l10n.backupsKept(backups.length)}',
             style: text,
           ),
         ),

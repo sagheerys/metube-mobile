@@ -58,8 +58,8 @@ class AppVersion implements Comparable<AppVersion> {
     if (patch != other.patch) return patch.compareTo(other.patch);
     // **A pre-release ranks below the stable release** (SemVer §11.3):
     // `2.1.0-beta.1 < 2.1.0`. Without it, somebody on the stable build
-    // would
-    // be offered an "update" to a pre-release older than what they have.
+    // would be offered an "update" to a pre-release older than what they
+    // have.
     final a = preRelease;
     final b = other.preRelease;
     if (a == null && b == null) return 0;

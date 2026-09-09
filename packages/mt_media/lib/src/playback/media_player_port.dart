@@ -36,8 +36,7 @@ abstract interface class MediaPlayerPort {
   Stream<Duration> get positionStream;
 
   /// Playback errors, a broken source or a dropped network, which trigger
-  /// an
-  /// automatic skip.
+  /// an automatic skip.
   Stream<Object> get errors;
 
   Future<void> dispose();

@@ -41,7 +41,11 @@ class MTClipboardBanner extends StatelessWidget {
       color: p.accentSoft,
       child: Padding(
         padding: const EdgeInsets.fromLTRB(
-            MTSpace.pagePad, MTSpace.sm, MTSpace.sm, MTSpace.sm),
+          MTSpace.pagePad,
+          MTSpace.sm,
+          MTSpace.sm,
+          MTSpace.sm,
+        ),
         child: Row(
           children: [
             Icon(Icons.link_rounded, size: 18, color: p.accentInk),
@@ -51,13 +55,13 @@ class MTClipboardBanner extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(title,
-                      style: text.labelMedium!.copyWith(color: p.accentInk)),
+                  Text(
+                    title,
+                    style: text.labelMedium!.copyWith(color: p.accentInk),
+                  ),
                   // The URL is **always LTR** and truncated from the front:
-                  // its tail, the
-                  // clip id, is what distinguishes it, while its head
-                  // `https://www.` is the
-                  // same every time.
+                  // its tail, the clip id, is what distinguishes it, while
+                  // its head `https://www.` is the same every time.
                   Text(
                     url,
                     maxLines: 1,

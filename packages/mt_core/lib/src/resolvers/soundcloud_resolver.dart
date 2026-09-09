@@ -9,7 +9,7 @@ import 'http_fetch.dart';
 /// as it is. There are no official API keys.
 class SoundCloudResolver {
   SoundCloudResolver({HttpGetString? httpGet})
-      : _httpGet = httpGet ?? ioHttpGetString;
+    : _httpGet = httpGet ?? ioHttpGetString;
 
   final HttpGetString _httpGet;
 
@@ -34,8 +34,11 @@ class SoundCloudResolver {
   /// `-t500x500.`.
   Future<String?> trackArtwork(String trackUrl) async {
     try {
-      final body = await _httpGet(Uri.parse(
-          'https://soundcloud.com/oembed?format=json&url=${Uri.encodeComponent(trackUrl)}'));
+      final body = await _httpGet(
+        Uri.parse(
+          'https://soundcloud.com/oembed?format=json&url=${Uri.encodeComponent(trackUrl)}',
+        ),
+      );
       final decoded = json.decode(body);
       if (decoded is! Map) return null;
       final thumb = decoded['thumbnail_url']?.toString();
@@ -50,11 +53,9 @@ class SoundCloudResolver {
   ///
   /// **Field report 2026-09-02, "the album downloads strangely":**
   /// SoundCloud embeds the full object for only the first five or so
-  /// tracks;
-  /// the rest arrive as `{id, kind}` with no `permalink_url`, and the
-  /// parser
-  /// was dropping them silently, so an album of 432 tracks showed **5**.
-  /// Completion happens here in batches of [idsPerBatch].
+  /// tracks; the rest arrive as `{id, kind}` with no `permalink_url`, and
+  /// the parser was dropping them silently, so an album of 432 tracks
+  /// showed **5**. Completion happens here in batches of [idsPerBatch].
   Future<PlaylistPreview?> resolveSet(String setUrl) async {
     try {
       final html = await _httpGet(Uri.parse(setUrl));
@@ -79,12 +80,17 @@ class SoundCloudResolver {
   }
 
   Future<List<PlaylistTrack>> _fetchTracks(
-      List<int> ids, String clientId) async {
+    List<int> ids,
+    String clientId,
+  ) async {
     final out = <PlaylistTrack>[];
     for (var i = 0; i < ids.length; i += idsPerBatch) {
       final batch = ids.skip(i).take(idsPerBatch).join(',');
-      final body = await _httpGet(Uri.parse(
-          'https://api-v2.soundcloud.com/tracks?ids=$batch&client_id=$clientId'));
+      final body = await _httpGet(
+        Uri.parse(
+          'https://api-v2.soundcloud.com/tracks?ids=$batch&client_id=$clientId',
+        ),
+      );
       final decoded = json.decode(body);
       if (decoded is! List) break;
       out.addAll(tracksOf(decoded));
@@ -122,24 +128,24 @@ class SoundCloudResolver {
   /// The complete tracks out of any array, whether hydration or an api-v2
   /// response.
   static List<PlaylistTrack> tracksOf(List<dynamic> raw) => [
-        for (final track in raw)
-          if (track is Map && track['permalink_url'] != null)
-            PlaylistTrack(
-              url: track['permalink_url'].toString(),
-              title: track['title']?.toString() ?? '',
-              duration: track['duration'] is num
-                  ? Duration(milliseconds: (track['duration'] as num).toInt())
-                  : null,
-              thumbnail: _artOf(track),
-            ),
-      ];
+    for (final track in raw)
+      if (track is Map && track['permalink_url'] != null)
+        PlaylistTrack(
+          url: track['permalink_url'].toString(),
+          title: track['title']?.toString() ?? '',
+          duration: track['duration'] is num
+              ? Duration(milliseconds: (track['duration'] as num).toInt())
+              : null,
+          thumbnail: _artOf(track),
+        ),
+  ];
 
   /// Extracts the client_id, 32 characters.
   ///
   /// **The first source is `apiClient` in the hydration block** (confirmed
   /// against the live site 2026-09-02): the three textual patterns no
-  /// longer
-  /// match anything on today's page, so completion failed before it began.
+  /// longer match anything on today's page, so completion failed before it
+  /// began.
   static String? extractClientId(String content) {
     final hydration = _hydration(content);
     for (final entry in hydration) {

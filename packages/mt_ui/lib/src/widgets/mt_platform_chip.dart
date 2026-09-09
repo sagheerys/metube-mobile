@@ -39,9 +39,9 @@ class MTPlatformChip extends StatelessWidget {
     return Text(
       kind.label,
       style: Theme.of(context).textTheme.labelSmall!.copyWith(
-            color: kind == MTPlatformKind.other ? x.palette.ink3 : kind.tint,
-            fontWeight: FontWeight.w700,
-          ),
+        color: kind == MTPlatformKind.other ? x.palette.ink3 : kind.tint,
+        fontWeight: FontWeight.w700,
+      ),
     );
   }
 }

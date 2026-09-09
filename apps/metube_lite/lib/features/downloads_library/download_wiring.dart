@@ -8,16 +8,19 @@ import 'media_store.dart';
 
 final mediaStoreProvider = Provider((ref) => const MediaStoreScanner());
 
-/// ما بعد اكتمال التحميل (ر-2 خطوة 5): فهرسة العنصر بمفتاحه الموحد،
-/// تسجيله في معرض الهاتف (م-10)، تحديث المكتبة، ثم نسخة تلقائية (م-31).
+/// What happens after a download completes (rule 2, step 5): index the item
+/// under its unified key, register it in the phone's gallery, refresh the
+/// library, then take an automatic backup.
 ///
-/// الحذف من السيرفر تم داخل المحرك بسياسة [DeletePolicy.autoDelete]
-/// بالـ canonicalUrl من `/history` (القاعدة 2) — لا شيء منه هنا.
+/// Deletion from the server happened inside the engine under
+/// [DeletePolicy.autoDelete], using the canonicalUrl from `/history` (rule
+/// 2). None of that is here.
 Future<void> onDownloadCompleted(Ref ref, DownloadTask task) async {
   final path = task.localPath;
   if (path == null) return;
   final url = task.canonicalUrl;
-  // مفتاح العنصر: الرابط المُقنون إن عُرف وإلا المسار (نفس قاعدة المكتبة).
+  // The item key: the canonical URL when known, otherwise the path (the
+  // same rule as the library).
   final key = (url != null && url.isNotEmpty) ? url : path;
 
   try {
@@ -27,14 +30,15 @@ Future<void> onDownloadCompleted(Ref ref, DownloadTask task) async {
     if (task.title != null && task.title!.isNotEmpty) {
       await ref.read(titleIndexProvider).put(key, task.title!);
     }
-    // لا تُختلق روابط صور (فخ §6.3) — فقط ما أعطاه السيرفر.
+    // Image URLs are never invented (trap §6.3); only what the server gave.
     if (task.thumbnail != null && task.thumbnail!.isNotEmpty) {
       await ref.read(artworkIndexProvider).put(key, task.thumbnail!);
     }
     await ref.read(mediaStoreProvider).scanFile(path);
     await ref.read(loggerProvider).log('download completed', tag: 'download');
   } catch (e) {
-    // فهرسة فاشلة لا تُلغي ملفاً موجوداً على القرص — المكتبة تمسح المجلد.
+    // A failed indexing does not cancel a file that exists on disk; the
+    // library scans the folder.
     await ref
         .read(loggerProvider)
         .error('post-download indexing failed', cause: e, tag: 'download');

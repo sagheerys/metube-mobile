@@ -14,7 +14,7 @@ import 'metube_api.dart';
 /// stripping trailing slashes.
 class ServerConfig {
   ServerConfig({required String baseUrl, this.username, this.password})
-      : baseUrl = normalizeBaseUrl(baseUrl);
+    : baseUrl = normalizeBaseUrl(baseUrl);
 
   final String baseUrl;
   final String? username;
@@ -47,14 +47,12 @@ class ServerConfig {
 /// through here (rule 1). The four endpoints plus testConnection follow
 /// `05-DATA-SCHEMA.md` §2 exactly.
 class MeTubeApiClient implements MeTubeApi {
-  MeTubeApiClient({required this.config, Dio? dio})
-      : _dio = dio ?? Dio() {
+  MeTubeApiClient({required this.config, Dio? dio}) : _dio = dio ?? Dio() {
     _dio.options = BaseOptions(
       connectTimeout: MTConstants.connectTimeout,
       receiveTimeout: MTConstants.receiveTimeout,
       // The response can arrive as text, so plain first and then a
-      // defensive
-      // json.decode (§1).
+      // defensive json.decode (§1).
       responseType: ResponseType.plain,
       validateStatus: (status) => status != null && status < 600,
     );
@@ -70,10 +68,10 @@ class MeTubeApiClient implements MeTubeApi {
   /// Streaming headers for the players (just_audio, video_player).
   @override
   Map<String, String> get streamingHeaders => {
-        if (config.basicAuthHeader != null)
-          'Authorization': config.basicAuthHeader!,
-        'Connection': 'keep-alive',
-      };
+    if (config.basicAuthHeader != null)
+      'Authorization': config.basicAuthHeader!,
+    'Connection': 'keep-alive',
+  };
 
   /// §2.1: valid means 200 plus a JSON map carrying both `done` and
   /// `queue`.
@@ -97,9 +95,9 @@ class MeTubeApiClient implements MeTubeApi {
   /// §2.3: the full history used for polling.
   @override
   Future<HistoryResponse> fetchHistory() async {
-    final response = await _request(() => _dio.get<String>(
-          '${config.baseUrl}/history',
-        ));
+    final response = await _request(
+      () => _dio.get<String>('${config.baseUrl}/history'),
+    );
     final decoded = _decode(response);
     if (!HistoryResponse.looksLikeMeTube(decoded)) {
       throw const NotMeTubeServerException();
@@ -125,29 +123,24 @@ class MeTubeApiClient implements MeTubeApi {
   static const compatPreset = 'compat_h264';
 
   /// §2.2: adding a link. **The quality rule is applied here**, so a
-  /// numeric
-  /// quality can never escape to a non-YouTube link whatever the caller
-  /// does.
+  /// numeric quality can never escape to a non-YouTube link whatever the
+  /// caller does.
   ///
   /// **Playback compatibility ([compatibleVideo])**, from field report
   /// 2026-09-03: "YouTube clips in reels look torn and unclear". Measured
-  /// on
-  /// a real server: `quality:best` alone yields **VP9 or AV1 in webm** (av1
-  /// 1920x1080, vp9 480x848), and hardware AV1 decoding is missing from
-  /// most
-  /// phones, so a software decoder takes over and falls behind the frames:
-  /// a
-  /// torn picture.
+  /// on a real server: `quality:best` alone yields **VP9 or AV1 in webm**
+  /// (av1 1920x1080, vp9 480x848), and hardware AV1 decoding is missing
+  /// from most phones, so a software decoder takes over and falls behind
+  /// the frames: a torn picture.
   ///
   /// `format:mp4` alone is **not enough** (measured: it produced av1 inside
   /// mp4).
   ///
   /// And `codec` on its own **is ignored unless `download_type` is sent
-  /// with
-  /// it**, measured twice: without it the record comes back `codec:auto`
-  /// with an av1 file; with it, `codec:h264` and an **h264 Main / aac LC**
-  /// file. So all three go together or none do, which is exactly the set
-  /// MeTube's own interface sends.
+  /// with it**, measured twice: without it the record comes back
+  /// `codec:auto` with an av1 file; with it, `codec:h264` and an **h264
+  /// Main / aac LC** file. So all three go together or none do, which is
+  /// exactly the set MeTube's own interface sends.
   ///
   /// **Never sent with `audio`**: `format:mp4` on an audio path changes the
   /// requested container. [compatPreset] covers what `codec` cannot.
@@ -160,21 +153,27 @@ class MeTubeApiClient implements MeTubeApi {
     final applied = quality.applyRule(url);
     // **`best` only**: the selector is fixed with no `[height<=…]`, so
     // sending it alongside a numeric quality swallows the height ceiling
-    // and
-    // downloads 1080p for someone who asked for 720p.
+    // and downloads 1080p for someone who asked for 720p.
     final withPreset = compatibleVideo && applied == Quality.best;
     try {
-      await _postAdd(url, applied,
-          compatibleVideo: compatibleVideo, preset: withPreset);
+      await _postAdd(
+        url,
+        applied,
+        compatibleVideo: compatibleVideo,
+        preset: withPreset,
+      );
     } on ServerErrorException {
       if (!withPreset) rethrow;
       // **A server that does not know this preset answers 400** — and an
       // open-source app runs on containers nobody configured. Retrying
-      // without
-      // the preset restores yesterday's behaviour instead of failing the
-      // download outright.
-      await _postAdd(url, applied,
-          compatibleVideo: compatibleVideo, preset: false);
+      // without the preset restores yesterday's behaviour instead of
+      // failing the download outright.
+      await _postAdd(
+        url,
+        applied,
+        compatibleVideo: compatibleVideo,
+        preset: false,
+      );
     }
   }
 
@@ -197,22 +196,15 @@ class MeTubeApiClient implements MeTubeApi {
           },
           if (preset) 'ytdl_options_presets': const [compatPreset],
           // **What we take for a single item stays single on the server**
-          // (field
-          // report 2026-09-08). `PlaylistDetector` recognises YouTube
-          // playlists and
-          // SoundCloud `/sets/` only; an artist page, an `/albums` URL or a
-          // channel
-          // looks like one clip to it, and yt-dlp expands it server-side
-          // into
-          // dozens. The damage is worse in Lite: twenty download, one is
-          // pulled,
-          // and nineteen orphans stay on the family server with nobody
-          // deleting
-          // them.
+          // (field report 2026-09-08). `PlaylistDetector` recognises
+          // YouTube playlists and SoundCloud `/sets/` only; an artist page,
+          // an `/albums` URL or a channel looks like one clip to it, and
+          // yt-dlp expands it server-side into dozens. The damage is worse
+          // in Lite: twenty download, one is pulled, and nineteen orphans
+          // stay on the family server with nobody deleting them.
           //
           // Measured on a real server: a three-track album plus this limit
-          // yielded
-          // one download.
+          // yielded one download.
           if (!PlaylistDetector.isPlaylist(url)) 'playlist_item_limit': 1,
         }),
         options: Options(contentType: 'application/json'),
@@ -248,13 +240,7 @@ class MeTubeApiClient implements MeTubeApi {
     return '${config.baseUrl}/download/${Uri.encodeComponent(serverFilename)}';
   }
 
-  /// **A one-byte existence check**, the cheapest possible question, on a
-  /// timeout of our own.
-  ///
-  /// The reason is measured (2026-09-07): handing a dead URL to
-  /// `MediaMetadataRetriever` makes the Android platform retry **ten times
-  /// with an 8s timeout**, over 80 seconds that freeze the entire probe
-  /// queue. Refusing here takes a fraction of a second.
+  /// A one-byte range: the server answers 206 without sending the file.
   @override
   Future<bool> fileExists(String serverFilename, {Duration? timeout}) async {
     final String url;
@@ -317,8 +303,7 @@ class MeTubeApiClient implements MeTubeApi {
   ///
   /// `validateStatus` in [BaseOptions] applies to `dio.download` as well,
   /// and dio's download path **does not check the status afterwards**. So
-  /// an
-  /// error page (a 401 after a password change, a transient 502 from a
+  /// an error page (a 401 after a password change, a transient 502 from a
   /// reverse proxy) was streamed into `.part` and then promoted to a
   /// "successful" media file. In Lite the original is deleted from the
   /// server right after, so the file is lost at both ends. Checking here
@@ -362,8 +347,7 @@ class MeTubeApiClient implements MeTubeApi {
   }
 
   /// Defensive JSON decoding: HTML or broken text means this is not a
-  /// MeTube
-  /// server.
+  /// MeTube server.
   dynamic _decode(Response<String> response) {
     final decoded = _tryDecode(response.data);
     if (decoded == null) throw const NotMeTubeServerException();

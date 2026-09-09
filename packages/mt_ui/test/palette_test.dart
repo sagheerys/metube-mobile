@@ -21,8 +21,10 @@ void main() {
       expect(night.miniBg, night.card, reason: 'لا انقلاب ليلي');
       expect(night.miniInk, night.ink);
       // And the bar never ends up lighter than the screen ground itself.
-      expect(night.miniBg.computeLuminance(),
-          lessThan(night.miniInk.computeLuminance()));
+      expect(
+        night.miniBg.computeLuminance(),
+        lessThan(night.miniInk.computeLuminance()),
+      );
     });
   }
 }

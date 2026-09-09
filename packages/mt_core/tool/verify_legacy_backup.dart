@@ -52,27 +52,38 @@ Future<void> main(List<String> args) async {
     exit(70);
   }
 
-  print('الصيغة: ${result.format.name} · مفاتيح مستعادة: '
-      '${result.keysRestored}');
-  print('اسم مستخدم مستعاد: '
-      '${await secrets.read(SecretKeys.username) != null}');
+  print(
+    'الصيغة: ${result.format.name} · مفاتيح مستعادة: '
+    '${result.keysRestored}',
+  );
+  print(
+    'اسم مستخدم مستعاد: '
+    '${await secrets.read(SecretKeys.username) != null}',
+  );
 
   // ماذا وصل فعلاً؟ عدّ فقط.
   final mutex = PrefsMutex();
-  final playlists =
-      await PlaylistsStore(store: store, mutex: mutex).readAll();
+  final playlists = await PlaylistsStore(store: store, mutex: mutex).readAll();
   final tags = TagsIndex(store: store, mutex: mutex);
   final offline = await OfflineIndex(store: store, mutex: mutex).readAll();
   final artwork = await ArtworkIndex(store: store, mutex: mutex).readAll();
   final tagCounts = await tags.allTagsWithCounts();
 
-  print('قوائم محفوظة: ${playlists.length} '
-      '(عناصرها: ${playlists.fold<int>(0, (n, p) => n + p.items.length)})');
-  print('مداخل بصيغة المسارات القديمة: ${playlists.fold<int>(0, (n, p) => n + p.items.where((e) => e.isLegacy).length)}');
-  print('وسوم: ${tagCounts.length} · عناصر موسومة: '
-      '${(await tags.readAll()).length}');
-  print('فهرس دون اتصال: ${offline.length} · فهرس الأغلفة: '
-      '${artwork.length}');
+  print(
+    'قوائم محفوظة: ${playlists.length} '
+    '(عناصرها: ${playlists.fold<int>(0, (n, p) => n + p.items.length)})',
+  );
+  print(
+    'مداخل بصيغة المسارات القديمة: ${playlists.fold<int>(0, (n, p) => n + p.items.where((e) => e.isLegacy).length)}',
+  );
+  print(
+    'وسوم: ${tagCounts.length} · عناصر موسومة: '
+    '${(await tags.readAll()).length}',
+  );
+  print(
+    'فهرس دون اتصال: ${offline.length} · فهرس الأغلفة: '
+    '${artwork.length}',
+  );
 
   final keys = (await store.keys()).toList()..sort();
   print('كل المفاتيح المستعادة (${keys.length}): ${keys.join(', ')}');
@@ -96,8 +107,7 @@ Future<void> main(List<String> args) async {
   final externals = await store.getStringList('external_urls');
   if (externals != null) print('  external_urls = ${externals.length} روابط');
 
-  final positions =
-      keys.where((k) => k.startsWith('playback_pos_')).length;
+  final positions = keys.where((k) => k.startsWith('playback_pos_')).length;
   print('مواضع استئناف: $positions');
 
   // فحص سلامة JSON للقوائم بعد الاستعادة.

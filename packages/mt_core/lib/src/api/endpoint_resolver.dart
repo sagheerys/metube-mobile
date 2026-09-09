@@ -21,11 +21,12 @@ enum MTEndpointStatus {
 
   /// The address responds but is **not MeTube**: an HTML page, JSON without
   /// `done`/`queue`, or a 404 on the path. Adopting it fails every
-  /// operation
-  /// afterwards.
+  /// operation afterwards.
   notMeTube,
 
-  /// A drop, a timeout, DNS, or an address with no MeTube on it.
+  /// **Only `ok` may become the active endpoint**: one that answers 401
+  /// serves nothing, and adopting it leaves the app bleeding errors to no
+  /// purpose.
   unreachable;
 
   /// **Only `ok` may become the active endpoint**: one that answers 401
@@ -63,8 +64,7 @@ class EndpointResolver {
           return MTEndpointStatus.notMeTube;
         } on NoApiException {
           // 404: a live HTTP server with no MeTube interface. An address
-          // mistake,
-          // not a network one.
+          // mistake, not a network one.
           return MTEndpointStatus.notMeTube;
         } on MTApiException {
           return MTEndpointStatus.unreachable;
@@ -79,21 +79,20 @@ class EndpointResolver {
   final Duration probeTimeout;
 
   /// The first **valid** endpoint in preference order: local first, then
-  /// the
-  /// external ones. `null` means nothing was valid.
+  /// the external ones. `null` means nothing was valid.
   Future<String?> resolveActive({
     String? localUrl,
     List<String> externalUrls = const [],
-  }) async =>
-      (await resolveDetailed(localUrl: localUrl, externalUrls: externalUrls))
-          .url;
+  }) async => (await resolveDetailed(
+    localUrl: localUrl,
+    externalUrls: externalUrls,
+  )).url;
 
   /// The same choice **together with the state of every candidate** from
-  /// the
-  /// same probing round, so the caller can say *why* it found nothing
+  /// the same probing round, so the caller can say *why* it found nothing
   /// without probing twice.
   Future<({String? url, Map<String, MTEndpointStatus> statuses})>
-      resolveDetailed({
+  resolveDetailed({
     String? localUrl,
     List<String> externalUrls = const [],
   }) async {
@@ -117,15 +116,17 @@ class EndpointResolver {
   /// The state of every endpoint in one pass, for the live endpoint list in
   /// the network screen.
   Future<Map<String, MTEndpointStatus>> probeAll(List<String> urls) async {
-    final entries = await Future.wait(urls.map((url) async {
-      // try/catch around the await rather than onTimeout/catchError, so a
-      // probe that throws cannot hand us a future typed `Future<Never>`.
-      try {
-        return MapEntry(url, await _probe(url).timeout(probeTimeout));
-      } catch (_) {
-        return MapEntry(url, MTEndpointStatus.unreachable);
-      }
-    }));
+    final entries = await Future.wait(
+      urls.map((url) async {
+        // try/catch around the await rather than onTimeout/catchError, so a
+        // probe that throws cannot hand us a future typed `Future<Never>`.
+        try {
+          return MapEntry(url, await _probe(url).timeout(probeTimeout));
+        } catch (_) {
+          return MapEntry(url, MTEndpointStatus.unreachable);
+        }
+      }),
+    );
     return Map.fromEntries(entries);
   }
 }

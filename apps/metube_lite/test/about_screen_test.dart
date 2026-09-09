@@ -11,21 +11,23 @@ import 'device_matrix.dart';
 /// كانت تقول «جميع الحقوق محفوظة» ولا تذكر الرخصة ولا تنفي الانتساب
 /// لمشروع MeTube، وتطبع رقم البناء `+1` في وجه المستخدم.
 void main() {
-  setUp(() => PackageInfo.setMockInitialValues(
-        appName: 'MeTube Lite',
-        packageName: 'com.yasir.metubelite',
-        version: '2.0.0',
-        buildNumber: '7',
-        buildSignature: '',
-      ));
+  setUp(
+    () => PackageInfo.setMockInitialValues(
+      appName: 'MeTube Lite',
+      packageName: 'com.yasir.metubelite',
+      version: '2.0.0',
+      buildNumber: '7',
+      buildSignature: '',
+    ),
+  );
 
   Widget host() => MaterialApp(
-        theme: mtTheme(MTVariant.lite, Brightness.light),
-        locale: const Locale('ar'),
-        localizationsDelegates: MTLocalizations.localizationsDelegates,
-        supportedLocales: MTLocalizations.supportedLocales,
-        home: const AboutScreen(),
-      );
+    theme: mtTheme(MTVariant.lite, Brightness.light),
+    locale: const Locale('ar'),
+    localizationsDelegates: MTLocalizations.localizationsDelegates,
+    supportedLocales: MTLocalizations.supportedLocales,
+    home: const AboutScreen(),
+  );
 
   /// **سطح اختبار طويل**: `ListView` كسولة، وأقسام «حول» الأخيرة لا
   /// تُبنى أصلاً على 600 نقطة — فيفشل البحث عنها بلا أن يكون في الشاشة عطل.

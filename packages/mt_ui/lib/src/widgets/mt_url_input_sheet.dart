@@ -15,8 +15,8 @@ class MTQualityOption {
 }
 
 /// The "add link" bottom sheet: a URL field, a detected-platform badge,
-/// quality chips and a start button. Paste and detection logic lives in
-/// the app.
+/// quality chips and a start button. Paste and detection logic lives in the
+/// app.
 class MTUrlInputSheet extends StatelessWidget {
   const MTUrlInputSheet({
     super.key,
@@ -64,17 +64,17 @@ class MTUrlInputSheet extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           // **No drag handle here**: the theme sets `showDragHandle: true`
-          // for
-          // every bottom sheet, so drawing a second one showed two bars
-          // stacked on
-          // top of each other (screenshot 2026-09-04).
+          // for every bottom sheet, so drawing a second one showed two bars
+          // stacked on top of each other (screenshot 2026-09-04).
           Row(
             children: [
               Expanded(child: Text(title, style: text.titleLarge)),
               if (platform != null && platform != MTPlatformKind.other)
                 Container(
                   padding: const EdgeInsets.symmetric(
-                      horizontal: MTSpace.sm, vertical: 4),
+                    horizontal: MTSpace.sm,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: p.accentSoft,
                     borderRadius: BorderRadius.circular(MTRadius.chip),
@@ -85,9 +85,10 @@ class MTUrlInputSheet extends StatelessWidget {
                       MTPlatformChip(kind: platform!),
                       if (platformLabel != null) ...[
                         const SizedBox(width: 5),
-                        Text(platformLabel!,
-                            style: text.labelSmall!
-                                .copyWith(color: p.accentInk)),
+                        Text(
+                          platformLabel!,
+                          style: text.labelSmall!.copyWith(color: p.accentInk),
+                        ),
                       ],
                     ],
                   ),
@@ -103,8 +104,7 @@ class MTUrlInputSheet extends StatelessWidget {
             style: text.bodyMedium,
             decoration: InputDecoration(
               hintText: urlHint,
-              prefixIcon:
-                  Icon(Icons.link_rounded, size: 20, color: p.ink3),
+              prefixIcon: Icon(Icons.link_rounded, size: 20, color: p.ink3),
             ),
           ),
           const SizedBox(height: MTSpace.lg),

@@ -47,32 +47,31 @@ class MTRouteDepth extends NavigatorObserver {
   }
 }
 
-/// Shows [child] only while nothing is stacked above the shell, as a
-/// **pure fade**.
+/// Shows [child] only while nothing is stacked above the shell, as a **pure
+/// fade**.
 ///
 /// Three attempts led here (field reports 2026-09-02, then 09-04, then
 /// 09-05):
 ///
-/// 1. 1. Shrinking to **zero**: the disappearance reads as a fade, but
-/// coming back from zero is "growing out of a point", a slide-deck move.
-/// 2. 2. A light shrink (0.92) with different curves in and out: calmer,
-///    but
-/// the jump is still felt and the strong entry curve gives it a pulse.
-/// 3. 3. **A fade alone, one curve in both directions**: no size change,
-///    and
-/// no difference between appearing and disappearing except the direction
-/// of the opacity.
+/// 1. Shrinking to **zero**: the disappearance reads as a fade, but
+///    coming back from zero is "growing out of a point", a slide-deck move.
+/// 2. A light shrink (0.92) with different curves in and out: calmer,
+///    but the jump is still felt and the strong entry curve gives it a
+///    pulse.
+/// 3. **A fade alone, one curve in both directions**: no size change,
+///    and no difference between appearing and disappearing except the
+///    direction of the opacity.
 ///
 /// And the third was still not enough (field report 2026-09-05), **because
 /// the motion that annoyed was never ours**: `Scaffold` animates the
 /// floating action button slot with its own default
 /// `_ScalingFabMotionAnimator`, which says verbatim in the Flutter source:
-/// "This rotation will turn on the way **in**, but not on the way out".
-/// A rotation on appearance only. That matches the report exactly:
-/// appearing looked odd, disappearing looked normal. The fix lives in the
-/// shell: `FloatingActionButtonAnimator.noAnimation` while keeping the
-/// button **always mounted** in the slot, so `Scaffold` never sees a swap
-/// to animate and only the fade remains. [visible] is what hides it on the
+/// "This rotation will turn on the way **in**, but not on the way out". A
+/// rotation on appearance only. That matches the report exactly: appearing
+/// looked odd, disappearing looked normal. The fix lives in the shell:
+/// `FloatingActionButtonAnimator.noAnimation` while keeping the button
+/// **always mounted** in the slot, so `Scaffold` never sees a swap to
+/// animate and only the fade remains. [visible] is what hides it on the
 /// settings tab, instead of passing `null`.
 class MTHiddenUnderRoutes extends StatelessWidget {
   const MTHiddenUnderRoutes({
@@ -90,18 +89,18 @@ class MTHiddenUnderRoutes extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => ValueListenableBuilder<int>(
-        valueListenable: MTRouteDepth.depth,
-        builder: (context, depth, _) {
-          final shown = depth == 0 && visible;
-          return IgnorePointer(
-            ignoring: !shown,
-            child: AnimatedOpacity(
-              opacity: shown ? 1 : 0,
-              duration: MTMotion.reveal,
-              curve: MTMotion.ease,
-              child: child,
-            ),
-          );
-        },
+    valueListenable: MTRouteDepth.depth,
+    builder: (context, depth, _) {
+      final shown = depth == 0 && visible;
+      return IgnorePointer(
+        ignoring: !shown,
+        child: AnimatedOpacity(
+          opacity: shown ? 1 : 0,
+          duration: MTMotion.reveal,
+          curve: MTMotion.ease,
+          child: child,
+        ),
       );
+    },
+  );
 }

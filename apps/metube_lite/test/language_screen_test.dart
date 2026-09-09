@@ -14,28 +14,33 @@ import 'device_matrix.dart';
 /// والخطة المعلنة دعم اللغات الشائعة.
 void main() {
   ProviderContainer containerWith(String? locale, MemoryKeyValueStore store) =>
-      ProviderContainer(overrides: [
-        keyValueStoreProvider.overrideWithValue(store),
-        secretStoreProvider.overrideWithValue(MemorySecretStore()),
-        prefsMutexProvider.overrideWithValue(PrefsMutex()),
-        initialSettingsProvider
-            .overrideWithValue(LiteSettings(localeCode: locale)),
-      ]);
+      ProviderContainer(
+        overrides: [
+          keyValueStoreProvider.overrideWithValue(store),
+          secretStoreProvider.overrideWithValue(MemorySecretStore()),
+          prefsMutexProvider.overrideWithValue(PrefsMutex()),
+          initialSettingsProvider.overrideWithValue(
+            LiteSettings(localeCode: locale),
+          ),
+        ],
+      );
 
   Future<ProviderContainer> pump(WidgetTester tester, String? locale) async {
     final store = MemoryKeyValueStore();
     final container = containerWith(locale, store);
     addTearDown(container.dispose);
-    await tester.pumpWidget(UncontrolledProviderScope(
-      container: container,
-      child: MaterialApp(
-        locale: const Locale('ar'),
-        localizationsDelegates: MTLocalizations.localizationsDelegates,
-        supportedLocales: MTLocalizations.supportedLocales,
-        theme: mtTheme(MTVariant.lite, Brightness.light),
-        home: const LanguageScreen(),
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: MaterialApp(
+          locale: const Locale('ar'),
+          localizationsDelegates: MTLocalizations.localizationsDelegates,
+          supportedLocales: MTLocalizations.supportedLocales,
+          theme: mtTheme(MTVariant.lite, Brightness.light),
+          home: const LanguageScreen(),
+        ),
       ),
-    ));
+    );
     await tester.pump();
     return container;
   }
@@ -46,8 +51,11 @@ void main() {
     // **الحارس الحقيقي**: القائمة تُقرأ من `supportedLocales` لا من
     // ثلاث شرائح مكتوبة بيد — فإضافة `app_xx.arb` تظهر تلقائياً.
     for (final locale in MTLocalizations.supportedLocales) {
-      expect(find.text(mtLanguageName(locale.languageCode)), findsOneWidget,
-          reason: locale.languageCode);
+      expect(
+        find.text(mtLanguageName(locale.languageCode)),
+        findsOneWidget,
+        reason: locale.languageCode,
+      );
     }
     expect(find.text('العربية'), findsOneWidget);
     expect(find.text('English'), findsOneWidget);
@@ -65,8 +73,11 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(container.read(settingsProvider).localeCode, 'en');
-    expect(find.byIcon(Icons.check_rounded), findsOneWidget,
-        reason: 'علامة واحدة لا اثنتان');
+    expect(
+      find.byIcon(Icons.check_rounded),
+      findsOneWidget,
+      reason: 'علامة واحدة لا اثنتان',
+    );
   });
 
   testWidgets('العودة إلى «النظام» تمحو اللغة (م-50)', (tester) async {

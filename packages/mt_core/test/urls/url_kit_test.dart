@@ -4,24 +4,31 @@ import 'package:test/test.dart';
 void main() {
   group('UrlKit.extractUrl — سلّم م-4', () {
     test('رابط نقي يعود كما هو', () {
-      expect(UrlKit.extractUrl('https://youtu.be/dQw4w9WgXcQ'),
-          'https://youtu.be/dQw4w9WgXcQ');
+      expect(
+        UrlKit.extractUrl('https://youtu.be/dQw4w9WgXcQ'),
+        'https://youtu.be/dQw4w9WgXcQ',
+      );
     });
 
     test('جملة مشاركة SoundCloud عربية ملفوفة حول الرابط', () {
-      const share = 'استمع إلى أغنيتي عبر فنان #SoundCloud '
+      const share =
+          'استمع إلى أغنيتي عبر فنان #SoundCloud '
           'https://on.soundcloud.com/AbCd123';
       expect(UrlKit.extractUrl(share), 'https://on.soundcloud.com/AbCd123');
     });
 
     test('رابط متبوع بنص ⇒ يقص عند أول فراغ', () {
-      expect(UrlKit.extractUrl('https://vimeo.com/76979871 شاهد هذا'),
-          'https://vimeo.com/76979871');
+      expect(
+        UrlKit.extractUrl('https://vimeo.com/76979871 شاهد هذا'),
+        'https://vimeo.com/76979871',
+      );
     });
 
     test('تنظيف الترقيم الزائد بالنهاية', () {
-      expect(UrlKit.extractUrl('جرب (https://www.reddit.com/r/videos/abc).'),
-          'https://www.reddit.com/r/videos/abc');
+      expect(
+        UrlKit.extractUrl('جرب (https://www.reddit.com/r/videos/abc).'),
+        'https://www.reddit.com/r/videos/abc',
+      );
     });
 
     test('لا رابط ⇒ يعيد المدخل ليكشفه التحقق', () {
@@ -29,7 +36,8 @@ void main() {
     });
 
     test('extractAllUrls لمشاركة عدة روابط (م-3)', () {
-      const text = 'https://youtu.be/aaaaaaaaaaa و https://youtu.be/bbbbbbbbbbb';
+      const text =
+          'https://youtu.be/aaaaaaaaaaa و https://youtu.be/bbbbbbbbbbb';
       expect(UrlKit.extractAllUrls(text), hasLength(2));
     });
   });
@@ -50,8 +58,10 @@ void main() {
 
     test('غير يوتيوب ⇒ null حتى مع v= في الاستعلام', () {
       expect(UrlKit.youtubeVideoId('https://example.com/watch?v=$id'), isNull);
-      expect(UrlKit.youtubeVideoId('https://www.tiktok.com/@u/video/123'),
-          isNull);
+      expect(
+        UrlKit.youtubeVideoId('https://www.tiktok.com/@u/video/123'),
+        isNull,
+      );
     });
   });
 
@@ -62,52 +72,71 @@ void main() {
 
     test('youtu.be ⇄ watch (القنونة)', () {
       expect(
-          UrlKit.urlsMatch('https://youtu.be/dQw4w9WgXcQ',
-              'https://www.youtube.com/watch?v=dQw4w9WgXcQ'),
-          isTrue);
+        UrlKit.urlsMatch(
+          'https://youtu.be/dQw4w9WgXcQ',
+          'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+        ),
+        isTrue,
+      );
     });
 
     test('shorts ⇄ watch', () {
       expect(
-          UrlKit.urlsMatch('https://youtube.com/shorts/dQw4w9WgXcQ',
-              'https://www.youtube.com/watch?v=dQw4w9WgXcQ'),
-          isTrue);
+        UrlKit.urlsMatch(
+          'https://youtube.com/shorts/dQw4w9WgXcQ',
+          'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+        ),
+        isTrue,
+      );
     });
 
     test('معرف رقمي ≥10 (TikTok/FB)', () {
       expect(
-          UrlKit.urlsMatch('https://www.tiktok.com/@user/video/7301234567890123456',
-              'https://m.tiktok.com/v/7301234567890123456.html'),
-          isTrue);
+        UrlKit.urlsMatch(
+          'https://www.tiktok.com/@user/video/7301234567890123456',
+          'https://m.tiktok.com/v/7301234567890123456.html',
+        ),
+        isTrue,
+      );
     });
 
     test('تطبيع www/m والاستعلام', () {
       expect(
-          UrlKit.urlsMatch('https://www.soundcloud.com/artist/track?p=1',
-              'http://m.soundcloud.com/artist/track/'),
-          isTrue);
+        UrlKit.urlsMatch(
+          'https://www.soundcloud.com/artist/track?p=1',
+          'http://m.soundcloud.com/artist/track/',
+        ),
+        isTrue,
+      );
     });
 
     test('لا تطابق بين فيديوهين مختلفين', () {
       expect(
-          UrlKit.urlsMatch('https://youtu.be/aaaaaaaaaaa',
-              'https://youtu.be/bbbbbbbbbbb'),
-          isFalse);
+        UrlKit.urlsMatch(
+          'https://youtu.be/aaaaaaaaaaa',
+          'https://youtu.be/bbbbbbbbbbb',
+        ),
+        isFalse,
+      );
     });
 
-    test(
-        'انحدار السيرفر الحقيقي: رابطا watch بمعرفين مختلفين لا يتساويان '
+    test('انحدار السيرفر الحقيقي: رابطا watch بمعرفين مختلفين لا يتساويان '
         'عبر التطبيع (كاد يحذف عنصراً بريئاً)', () {
       expect(
-          UrlKit.urlsMatch(
-              'https://www.youtube.com/watch?v=jNQXAC9IVRw',
-              'https://www.youtube.com/watch?v=Z1qxr2b0-VA'),
-          isFalse);
+        UrlKit.urlsMatch(
+          'https://www.youtube.com/watch?v=jNQXAC9IVRw',
+          'https://www.youtube.com/watch?v=Z1qxr2b0-VA',
+        ),
+        isFalse,
+      );
       // ورابط watch لا يطابق رابط يوتيوب بلا معرف
       expect(
-          UrlKit.urlsMatch('https://www.youtube.com/watch?v=jNQXAC9IVRw',
-              'https://www.youtube.com/playlist?list=PLx'),
-          isFalse);
+        UrlKit.urlsMatch(
+          'https://www.youtube.com/watch?v=jNQXAC9IVRw',
+          'https://www.youtube.com/playlist?list=PLx',
+        ),
+        isFalse,
+      );
     });
 
     test('فارغ ⇒ false', () {
@@ -157,19 +186,25 @@ void main() {
     }
 
     test('الكامل لا يحتاج حلاً', () {
-      expect(UrlKit.needsResolution('https://www.tiktok.com/@u/video/1'),
-          isFalse);
-      expect(UrlKit.needsResolution('https://www.facebook.com/reel/123'),
-          isFalse);
+      expect(
+        UrlKit.needsResolution('https://www.tiktok.com/@u/video/1'),
+        isFalse,
+      );
+      expect(
+        UrlKit.needsResolution('https://www.facebook.com/reel/123'),
+        isFalse,
+      );
     });
   });
 
   group('UrlKit.longestNumericId', () {
     test('يختار الأطول من المسار', () {
       expect(
-          UrlKit.longestNumericId(
-              'https://www.facebook.com/12345/videos/9876543210987'),
-          '9876543210987');
+        UrlKit.longestNumericId(
+          'https://www.facebook.com/12345/videos/9876543210987',
+        ),
+        '9876543210987',
+      );
     });
 
     test('أقل من 10 خانات ⇒ فارغ', () {
@@ -201,10 +236,13 @@ void main() {
 
     test('نفس المقطع بصيغتين ما زال يتطابق', () {
       expect(
-          UrlKit.urlsMatch(a,
-              'https://www.facebook.com/watch/?v=1619243166301797&fbclid=x'),
-          isTrue,
-          reason: 'المعرف الرقمي مرجع قبل رتبة الاستعلام');
+        UrlKit.urlsMatch(
+          a,
+          'https://www.facebook.com/watch/?v=1619243166301797&fbclid=x',
+        ),
+        isTrue,
+        reason: 'المعرف الرقمي مرجع قبل رتبة الاستعلام',
+      );
     });
 
     test('الرابط نفسه حرفياً يتطابق', () {
@@ -214,16 +252,22 @@ void main() {
     /// الحارس العام: لا يقتصر على فيسبوك ولا على المعرفات الرقمية.
     test('استعلامان مختلفان على نفس المسار ⇒ لا تطابق', () {
       expect(
-          UrlKit.urlsMatch(
-              'https://site.com/watch?id=abc', 'https://site.com/watch?id=def'),
-          isFalse);
+        UrlKit.urlsMatch(
+          'https://site.com/watch?id=abc',
+          'https://site.com/watch?id=def',
+        ),
+        isFalse,
+      );
     });
 
     test('استعلام في طرف واحد لا يمنع المطابقة', () {
       expect(
-          UrlKit.urlsMatch('https://vimeo.com/1234567890',
-              'https://vimeo.com/1234567890?share=1'),
-          isTrue);
+        UrlKit.urlsMatch(
+          'https://vimeo.com/1234567890',
+          'https://vimeo.com/1234567890?share=1',
+        ),
+        isTrue,
+      );
     });
   });
 }

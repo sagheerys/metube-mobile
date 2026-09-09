@@ -38,9 +38,8 @@ class MTAudioScreen extends StatelessWidget {
 
   /// **The source chip, "streaming from the server" or "playing from your
   /// device"**: information that matters in Super where both sources
-  /// coexist,
-  /// and means nothing in Lite, where everything in the library is already
-  /// on the device (field report 2026-09-04).
+  /// coexist, and means nothing in Lite, where everything in the library is
+  /// already on the device (field report 2026-09-04).
   final bool showSourceChip;
 
   @override
@@ -54,17 +53,14 @@ class MTAudioScreen extends StatelessWidget {
       }
       // **Dragging down returns it to the mini player** (requested
       // 2026-09-04): the screen rose out of it like a sheet, so it is
-      // natural
-      // to drag it back. The scrubber and the buttons are unaffected, since
-      // the
-      // gesture is vertical.
+      // natural to drag it back. The scrubber and the buttons are
+      // unaffected, since the gesture is vertical.
       //
       // **The whole Scaffold moves, not its content** (reported with a
       // screenshot): moving the content alone left the screen background in
       // place, showing a dark void above it, whereas what is wanted is the
       // cover and the mini player showing behind it like a sheet being
-      // dragged
-      // away. That is why its route is non-opaque in the router.
+      // dragged away. That is why its route is non-opaque in the router.
       return MTDragToDismiss(
         child: Scaffold(
           body: SafeArea(

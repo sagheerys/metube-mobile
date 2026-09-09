@@ -14,8 +14,9 @@ import '../shared/add_to_sheet.dart';
 import '../shared/membership.dart';
 import 'playback_providers.dart';
 
-/// مشغل الريلز في Super (م-35) — يبني مسار القِصار من الطلب نفسه،
-/// ويصل الأفعال (مفضلة/تحميل/لقائمة/مشاركة) بمنطق التطبيق.
+/// Super's reels player: it builds the shorts lane from the request itself
+/// and wires the actions (favourite, download, add to a list, share) to the
+/// app's logic.
 class ReelsScreen extends ConsumerStatefulWidget {
   const ReelsScreen({super.key});
 
@@ -24,17 +25,20 @@ class ReelsScreen extends ConsumerStatefulWidget {
 }
 
 class _ReelsScreenState extends ConsumerState<ReelsScreen> {
-  /// **يُلتقط مرة واحدة وهذه الشاشة حية** (العطل الميداني 2026-09-03).
-  /// المشغل الابن ينادي [_setLive] من `dispose()` الخاص به، والشجرة
-  /// وقتها **مُبطلة**: `ref.read` حينئذٍ يرمي، والرمية كانت تُسقط بقية
-  /// `dispose()` فيبقى مقطع يعمل بلا مالك.
+  /// **Captured once while this screen is alive** (a field defect,
+  /// 2026-09-03). The child player calls [_setLive] from its own
+  /// `dispose()`, and the tree is **deactivated** by then: `ref.read`
+  /// throws there, and the throw used to abort the rest of `dispose()`,
+  /// leaving a clip playing with no owner.
   late final MTAudioHandler _audio = ref.read(audioHandlerProvider);
 
-  /// آخر «موقِف» سلّمناه للمشغل الخلفي — لتمييز تسجيلنا عن تسجيل غيرنا.
+  /// The last "stopper" we handed to the background player, to tell our
+  /// registration apart from anyone else's.
   Future<void> Function()? _pauser;
 
-  /// **لا نمسح تسجيل مالك آخر:** شاشة الفيديو تسجّل نفسها أيضاً، وموتنا
-  /// بعد ولادتها كان يمحو تسجيلها فيعزف مصدران معاً.
+  /// **We never clear another owner's registration:** the video screen
+  /// registers itself too, and our death after its birth used to erase its
+  /// registration, so two sources played together.
   void _setLive(Future<void> Function()? pauser) {
     if (pauser == null) {
       if (_audio.onTakeVideoFocus == _pauser) _audio.onTakeVideoFocus = null;
@@ -60,13 +64,15 @@ class _ReelsScreenState extends ConsumerState<ReelsScreen> {
       );
     }
 
-    // تُقرأ هنا لا داخل المُنشئات: `ref.watch` مسموح في `build` وحده،
-    // وهي التي تُعيد بناء الأفعال حين تتغير المكتبة أو يتقدم السحب.
+    // Read here rather than inside the constructors: `ref.watch` is allowed
+    // in `build` alone, and it is what rebuilds the actions when the
+    // library changes or a pull advances.
     final library = ref.watch(visibleLibraryProvider).valueOrNull ?? const [];
     final byUrl = {for (final item in library) item.canonicalUrl: item};
     final pulls = ref.watch(offlinePullProgressProvider);
-    // **يُقرأ في `build` لا داخل `subtitleBuilder`**: البنّاء يُنفَّذ
-    // أثناء بناء ودجت **ابن**، و`ref.watch` هناك خارج نطاقه المسموح.
+    // **Read in `build` rather than inside `subtitleBuilder`**: the builder
+    // runs while a **child** widget is being built, and `ref.watch` there
+    // is outside its permitted scope.
     final membership =
         ref.watch(membershipIndexProvider).valueOrNull ?? const {};
 
@@ -89,28 +95,33 @@ class _ReelsScreenState extends ConsumerState<ReelsScreen> {
       resolver: ref.watch(playbackResolverProvider),
       startIndex: laneIndex,
       onTakeAudioFocus: _audio.pause,
-      // ع-4: ما دام الريل حياً، تشغيل الصوت من الإشعار يُسكته أولاً.
+      // Defect ع-4: while the reel is alive, starting audio from the
+      // notification silences it first.
       onLive: _setLive,
       subtitleBuilder: (context, item) => [
         MediaPlatform.detect(item.canonicalUrl).label,
         if (item.uploader != null) item.uploader!,
-        // من المكتبة الحيّة: `item.hasLocal` لقطة قديمة لا تتحدث.
+        // From the live library: `item.hasLocal` is an old snapshot that
+        // never updates.
         if (byUrl[item.canonicalUrl]?.isOffline ?? item.hasLocal)
           l10n.availabilityOffline,
-        // **الانتماء تحت العنوان** (بلاغ المالك 2026-09-04): في أي وسم
-        // وأي قائمة — كانت المعلومة في المخزن ولا تظهر في أي مشغل.
+        // **Belonging under the title** (field report 2026-09-04): which
+        // tag and which playlist. The information was in the store and
+        // appeared in no player.
         ?membership[item.canonicalUrl]?.line(l10n),
       ].join(' · '),
       isFavorite: (item) => byUrl[item.canonicalUrl]?.favorite ?? false,
-      // **لا قلب في العمود** (بلاغ المالك 2026-09-04): زر «أضف إلى…»
-      // أدناه يغطي المفضلة والوسم والقائمة معاً. الضغطة المزدوجة على
-      // المقطع تبقى اختصار المفضلة (م-36) عبر [onDoubleTapFavorite].
+      // **No heart in the rail** (field report 2026-09-04): the "add to…"
+      // button below covers favourites, tags and playlists together. A
+      // double tap on the clip stays the favourite shortcut, through
+      // [onDoubleTapFavorite].
       onDoubleTapFavorite: (item) =>
           ref.read(libraryActionsProvider).toggleFavorite(item.canonicalUrl),
-      // **الحالة تُقرأ من المكتبة الحيّة لا من عنصر التشغيل** (بلاغ
-      // المالك 2026-09-02): `PlaylistItem` لقطة وقت فتح المشغل، فبقي
-      // زر التنزيل كما هو بعد اكتمال الإتاحة. و`pulls` يعرض النسبة
-      // فلا يبدو الزر ميتاً أثناء السحب.
+      // **The state is read from the live library rather than from the
+      // playback item** (field report 2026-09-02): a `PlaylistItem` is a
+      // snapshot from when the player opened, so the download button stayed
+      // as it was after the offline copy completed. And `pulls` supplies
+      // the percentage, so the button does not look dead while pulling.
       actionsBuilder: (item) {
         final match = byUrl[item.canonicalUrl];
         final offline = match?.isOffline ?? item.hasLocal;
@@ -137,8 +148,9 @@ class _ReelsScreenState extends ConsumerState<ReelsScreen> {
               onTap: () {},
             )
           else if (!offline)
-            // نفس تسمية المشغل العرضي: كان «تنزيل» هنا و«إتاحة دون
-            // اتصال» هناك لنفس الفعل بالضبط.
+            // The same label as the landscape player: it was "download"
+            // here and "available offline" there for exactly the same
+            // action.
             MTPlayerAction(
               icon: Icons.download_rounded,
               label: l10n.saveToDevice,
@@ -158,7 +170,8 @@ class _ReelsScreenState extends ConsumerState<ReelsScreen> {
           ),
         ];
       },
-      // لا يُعرض الزر أصلاً إن كانت القائمة المعروضة كلها قِصار.
+      // The button is not shown at all when the displayed list is entirely
+      // shorts.
       onContinueRest: lane.nextNonShortIndex(request.items) == null
           ? null
           : () => _continueRest(request, lane),
@@ -180,8 +193,11 @@ class _ReelsScreenState extends ConsumerState<ReelsScreen> {
     try {
       await ref.read(libraryActionsProvider).makeOffline(match);
       if (mounted) {
-        showMTSnack(context, l10n.availableOfflineNow,
-            type: MTSnackType.success);
+        showMTSnack(
+          context,
+          l10n.availableOfflineNow,
+          type: MTSnackType.success,
+        );
       }
     } on Object {
       if (mounted) {
@@ -196,14 +212,16 @@ class _ReelsScreenState extends ConsumerState<ReelsScreen> {
     await ref.read(libraryActionsProvider).smartShare(match);
   }
 
-  /// «متابعة بقية القائمة»: أول عنصر غير قصير يُفتح في مشغله الصحيح.
+  /// "Continue with the rest of the list": the first non-short item opens
+  /// in its correct player.
   Future<void> _continueRest(PlaybackRequest request, ShortsLane lane) async {
     final index = lane.nextNonShortIndex(request.items);
     if (index == null) return context.pop();
     final next = request.items[index];
     if (next.isAudio) {
-      // نغلق الريلز **أولاً** فيُصرَّف متحكمه: تشغيل الصوت قبل الإغلاق
-      // يترك الريل يعمل طوال تحميل المصدر — صوتان معاً.
+      // We close reels **first** so its controller is disposed: starting
+      // the audio before closing leaves the reel running for the whole
+      // load, two sounds at once.
       final handler = ref.read(audioHandlerProvider);
       context.pop();
       await handler.playItems(request.items, startIndex: index);

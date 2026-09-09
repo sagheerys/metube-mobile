@@ -20,19 +20,19 @@ import 'device_matrix.dart';
 /// النواة مُختبَرة في `mt_core/test/update`؛ هنا يُختبر ما يخصّ التطبيق:
 /// السياسة الصامتة، تخطّي إصدار، وما يعرضه صفّ الإعدادات.
 String releaseJson({String tag = 'v9.9.9'}) => json.encode({
-      'tag_name': tag,
-      'draft': false,
-      'prerelease': false,
-      'body': 'إصلاحات',
-      'html_url': 'https://example.invalid/r',
-      'assets': [
-        {
-          'name': 'MeTube-Super-$tag.apk',
-          'browser_download_url': 'https://example.invalid/app.apk',
-          'size': 12582912,
-        }
-      ],
-    });
+  'tag_name': tag,
+  'draft': false,
+  'prerelease': false,
+  'body': 'إصلاحات',
+  'html_url': 'https://example.invalid/r',
+  'assets': [
+    {
+      'name': 'MeTube-Super-$tag.apk',
+      'browser_download_url': 'https://example.invalid/app.apk',
+      'size': 12582912,
+    },
+  ],
+});
 
 void main() {
   late MemoryKeyValueStore store;
@@ -58,21 +58,25 @@ void main() {
     Object? failWith,
     ApkDownloader? downloader,
   }) {
-    final c = ProviderContainer(overrides: [
-      keyValueStoreProvider.overrideWithValue(store),
-      prefsMutexProvider.overrideWithValue(PrefsMutex()),
-      // `path_provider` قناة أصلية لا تعمل في اختبار ودجات.
-      updateCacheDirProvider.overrideWith((ref) => cacheDir.path),
-      if (downloader != null)
-        apkDownloaderProvider.overrideWithValue(downloader),
-      updateCheckerProvider.overrideWithValue(UpdateChecker(
-        assetMarker: 'super',
-        fetch: (_) async {
-          if (failWith != null) throw failWith;
-          return body ?? releaseJson();
-        },
-      )),
-    ]);
+    final c = ProviderContainer(
+      overrides: [
+        keyValueStoreProvider.overrideWithValue(store),
+        prefsMutexProvider.overrideWithValue(PrefsMutex()),
+        // `path_provider` قناة أصلية لا تعمل في اختبار ودجات.
+        updateCacheDirProvider.overrideWith((ref) => cacheDir.path),
+        if (downloader != null)
+          apkDownloaderProvider.overrideWithValue(downloader),
+        updateCheckerProvider.overrideWithValue(
+          UpdateChecker(
+            assetMarker: 'super',
+            fetch: (_) async {
+              if (failWith != null) throw failWith;
+              return body ?? releaseJson();
+            },
+          ),
+        ),
+      ],
+    );
     addTearDown(c.dispose);
     return c;
   }
@@ -87,8 +91,7 @@ void main() {
       expect(state.release!.apkUrl, 'https://example.invalid/app.apk');
     });
 
-    test('**الحارس**: عطل الشبكة لا يرمي ولا يترك أثراً في الواجهة',
-        () async {
+    test('**الحارس**: عطل الشبكة لا يرمي ولا يترك أثراً في الواجهة', () async {
       // المستودع خاصٌّ اليوم ⇒ GitHub يردّ 404 عند كل إقلاع. أي استثناء
       // هنا يصل إلى `initState` في الغلاف فيسقط أول إطار.
       final c = container(failWith: Exception('404'));
@@ -101,33 +104,41 @@ void main() {
 
     test('**الحارس**: يحترم الإيقاع فلا يطلب عند كل إقلاع', () async {
       var calls = 0;
-      final c = ProviderContainer(overrides: [
-        keyValueStoreProvider.overrideWithValue(store),
-        prefsMutexProvider.overrideWithValue(PrefsMutex()),
-        updateCheckerProvider.overrideWithValue(UpdateChecker(
-          assetMarker: 'super',
-          fetch: (_) async {
-            calls++;
-            return releaseJson();
-          },
-        )),
-      ]);
+      final c = ProviderContainer(
+        overrides: [
+          keyValueStoreProvider.overrideWithValue(store),
+          prefsMutexProvider.overrideWithValue(PrefsMutex()),
+          updateCheckerProvider.overrideWithValue(
+            UpdateChecker(
+              assetMarker: 'super',
+              fetch: (_) async {
+                calls++;
+                return releaseJson();
+              },
+            ),
+          ),
+        ],
+      );
       addTearDown(c.dispose);
 
       await c.read(updateControllerProvider.notifier).checkSilently();
       expect(calls, 1);
       // إقلاع ثانٍ بعد دقائق: الختم محفوظ في التخزين نفسه.
-      final second = ProviderContainer(overrides: [
-        keyValueStoreProvider.overrideWithValue(store),
-        prefsMutexProvider.overrideWithValue(PrefsMutex()),
-        updateCheckerProvider.overrideWithValue(UpdateChecker(
-          assetMarker: 'super',
-          fetch: (_) async {
-            calls++;
-            return releaseJson();
-          },
-        )),
-      ]);
+      final second = ProviderContainer(
+        overrides: [
+          keyValueStoreProvider.overrideWithValue(store),
+          prefsMutexProvider.overrideWithValue(PrefsMutex()),
+          updateCheckerProvider.overrideWithValue(
+            UpdateChecker(
+              assetMarker: 'super',
+              fetch: (_) async {
+                calls++;
+                return releaseJson();
+              },
+            ),
+          ),
+        ],
+      );
       addTearDown(second.dispose);
       await second.read(updateControllerProvider.notifier).checkSilently();
       expect(calls, 1, reason: 'لا طلب ثانٍ قبل انقضاء المهلة');
@@ -150,12 +161,14 @@ void main() {
 
       final broken = container(failWith: Exception('offline'));
       await broken.read(updateControllerProvider.notifier).checkNow();
-      expect(broken.read(updateControllerProvider).failure, UpdateFailure.check);
+      expect(
+        broken.read(updateControllerProvider).failure,
+        UpdateFailure.check,
+      );
       expect(broken.read(updateControllerProvider).upToDate, isFalse);
     });
 
-    test('**الحارس**: لا يحترم التخطّي — من ضغط الزر يريد أن يعرف',
-        () async {
+    test('**الحارس**: لا يحترم التخطّي — من ضغط الزر يريد أن يعرف', () async {
       await store.setString(UpdatePrefs.skippedVersionKey, '9.9.9');
       final c = container();
       // الصامت يكتمه…
@@ -175,7 +188,6 @@ void main() {
     expect(c.read(updateControllerProvider).release, isNull);
     expect(c.read(updateControllerProvider).phase, UpdatePhase.idle);
   });
-
 
   group('كنس ملف التحديث', () {
     File apkFile() => File('${cacheDir.path}/${MTConstants.updateApkFileName}');
@@ -208,17 +220,17 @@ void main() {
 
   group('صفّ الإعدادات', () {
     Widget host(ProviderContainer c) => UncontrolledProviderScope(
-          container: c,
-          child: MaterialApp(
-            theme: mtTheme(MTVariant.superApp, Brightness.light),
-            locale: const Locale('ar'),
-            localizationsDelegates: MTLocalizations.localizationsDelegates,
-            supportedLocales: MTLocalizations.supportedLocales,
-            home: const Scaffold(
-              body: SingleChildScrollView(child: UpdateSection()),
-            ),
-          ),
-        );
+      container: c,
+      child: MaterialApp(
+        theme: mtTheme(MTVariant.superApp, Brightness.light),
+        locale: const Locale('ar'),
+        localizationsDelegates: MTLocalizations.localizationsDelegates,
+        supportedLocales: MTLocalizations.supportedLocales,
+        home: const Scaffold(
+          body: SingleChildScrollView(child: UpdateSection()),
+        ),
+      ),
+    );
 
     testWidgets('بلا تحديث: دعوة للفحص ومفتاح تلقائي مفعّل', (tester) async {
       final c = container();
@@ -228,8 +240,10 @@ void main() {
 
       expect(find.text(l10n.checkForUpdates), findsOneWidget);
       expect(find.text(l10n.updateAvailable), findsNothing);
-      expect(tester.widget<SwitchListTile>(find.byType(SwitchListTile)).value,
-          isTrue);
+      expect(
+        tester.widget<SwitchListTile>(find.byType(SwitchListTile)).value,
+        isTrue,
+      );
     });
 
     testWidgets('مع تحديث: عنوان بلون الفعل ورقم الإصدار', (tester) async {
@@ -257,16 +271,16 @@ void main() {
 
   group('ورقة التحديث', () {
     Widget sheetHost(ProviderContainer c) => UncontrolledProviderScope(
-          container: c,
-          child: MaterialApp(
-            theme: mtTheme(MTVariant.superApp, Brightness.light),
-            locale: const Locale('ar'),
-            localizationsDelegates: MTLocalizations.localizationsDelegates,
-            supportedLocales: MTLocalizations.supportedLocales,
-            // كما في التطبيق: الورقة ليست داخل ممرّر خارجي.
-            home: const Scaffold(body: UpdateSheet()),
-          ),
-        );
+      container: c,
+      child: MaterialApp(
+        theme: mtTheme(MTVariant.superApp, Brightness.light),
+        locale: const Locale('ar'),
+        localizationsDelegates: MTLocalizations.localizationsDelegates,
+        supportedLocales: MTLocalizations.supportedLocales,
+        // كما في التطبيق: الورقة ليست داخل ممرّر خارجي.
+        home: const Scaffold(body: UpdateSheet()),
+      ),
+    );
 
     testWidgets('تعرض الإصدار والحجم وما الجديد وثلاثة أفعال', (tester) async {
       final c = container();
@@ -309,7 +323,8 @@ void main() {
       await tester.pump();
 
       final bar = tester.widget<LinearProgressIndicator>(
-          find.byType(LinearProgressIndicator));
+        find.byType(LinearProgressIndicator),
+      );
       expect(bar.value, 0.42);
       // **الحارس**: اللون من اللوحة — مسار Material الافتراضي يخرج
       // مخضرّاً على كريمي «وهج».
@@ -318,12 +333,14 @@ void main() {
       expect(find.text(l10n.updateNow), findsNothing);
     });
 
-    testWidgets('**مصفوفة الأجهزة**: لا تجاوز إطار على خمسة مقاسات × ثلاثة مقاييس خط',
-        (tester) async {
-      final c = container();
-      await c.read(updateControllerProvider.notifier).checkSilently();
-      await expectNoOverflow(tester, () => sheetHost(c));
-    });
+    testWidgets(
+      '**مصفوفة الأجهزة**: لا تجاوز إطار على خمسة مقاسات × ثلاثة مقاييس خط',
+      (tester) async {
+        final c = container();
+        await c.read(updateControllerProvider.notifier).checkSilently();
+        await expectNoOverflow(tester, () => sheetHost(c));
+      },
+    );
   });
 }
 

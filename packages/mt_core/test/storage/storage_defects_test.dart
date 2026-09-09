@@ -14,15 +14,21 @@ void main() {
         PlaylistsStore.prefsKey,
         json.encode([
           {'id': 'a', 'name': 'سليمة', 'items': []},
-          {'id': 'b', 'name': 'تالفة', 'items': {'x': 1}},
+          {
+            'id': 'b',
+            'name': 'تالفة',
+            'items': {'x': 1},
+          },
           {'id': 'c', 'name': 'سليمة ٢', 'items': []},
         ]),
       );
       final playlists = PlaylistsStore(store: store, mutex: PrefsMutex());
 
       final all = await playlists.readAll();
-      expect(all.map((p) => p.name), ['سليمة', 'سليمة ٢'],
-          reason: 'قبل الإصلاح كان TypeError يُفشل readAll كلها للأبد');
+      expect(all.map((p) => p.name), [
+        'سليمة',
+        'سليمة ٢',
+      ], reason: 'قبل الإصلاح كان TypeError يُفشل readAll كلها للأبد');
 
       // والكتابة تعمل بعدها (المخزن كان يشلّ نهائياً بلا شفاء ذاتي).
       await playlists.create('جديدة');
@@ -41,8 +47,10 @@ void main() {
     test('كلمة السر المضمّنة في الرابط لا تدخل النسخة', () async {
       final store = MemoryKeyValueStore();
       await store.setString('server_url', 'https://user:s3cret@mtube.example');
-      await store.setStringList(
-          'external_urls', ['https://u:p@a.example', 'https://b.example']);
+      await store.setStringList('external_urls', [
+        'https://u:p@a.example',
+        'https://b.example',
+      ]);
       final service = BackupService(
         store: store,
         secrets: MemorySecretStore(),
@@ -55,10 +63,14 @@ void main() {
       expect(exported, isNot(contains('user:')));
 
       // ويبقى الرابط نفسه صالحاً بعد التعقيم.
-      expect(BackupService.stripUrlCredentials('https://u:p@a.example/x'),
-          'https://a.example/x');
-      expect(BackupService.stripUrlCredentials('https://a.example'),
-          'https://a.example');
+      expect(
+        BackupService.stripUrlCredentials('https://u:p@a.example/x'),
+        'https://a.example/x',
+      );
+      expect(
+        BackupService.stripUrlCredentials('https://a.example'),
+        'https://a.example',
+      );
     });
   });
 
@@ -73,8 +85,7 @@ void main() {
       final old = File('${dir.path}/قديم.mp4.part')..writeAsStringSync('x');
       final fresh = File('${dir.path}/جارٍ.mp4.part')..writeAsStringSync('y');
       final media = File('${dir.path}/سليم.mp4')..writeAsStringSync('z');
-      old.setLastModifiedSync(
-          DateTime.now().subtract(const Duration(days: 2)));
+      old.setLastModifiedSync(DateTime.now().subtract(const Duration(days: 2)));
 
       final removed = await sweepPartialFiles(dir.path);
 

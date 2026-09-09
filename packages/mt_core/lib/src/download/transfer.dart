@@ -33,9 +33,8 @@ class Transfer {
   final List<Duration> backoff;
 
   /// Returns **the path actually used**, which may differ from [savePath]
-  /// if
-  /// that was taken (defect خ-3). The caller indexes what comes back, not
-  /// what it asked for.
+  /// if that was taken (defect خ-3). The caller indexes what comes back,
+  /// not what it asked for.
   Future<String> pull({
     required String serverFilename,
     required String savePath,
@@ -80,8 +79,7 @@ class Transfer {
 
   /// **An unoccupied target (fix خ-3).** The local filename carries an
   /// `HHmmss` stamp with no date (§2.4), so two identical titles in the
-  /// same
-  /// second, plausible in an audio batch, or at the same time on two
+  /// same second, plausible in an audio batch, or at the same time on two
   /// different days, made `rename` **silently overwrite the older file**.
   /// The format stays as the contract documented it, and the rare collision
   /// is resolved with a numeric suffix.

@@ -36,10 +36,10 @@ abstract final class UrlKit {
   }
 
   /// Every URL in a piece of text, for sharing several links at once.
-  static List<String> extractAllUrls(String input) =>
-      _urlPattern.allMatches(_stripBidiMarks(input))
-          .map((m) => _stripTrailingPunctuation(m.group(0)!))
-          .toList();
+  static List<String> extractAllUrls(String input) => _urlPattern
+      .allMatches(_stripBidiMarks(input))
+      .map((m) => _stripTrailingPunctuation(m.group(0)!))
+      .toList();
 
   /// Direction marks and zero-width spaces, which **WhatsApp and Telegram
   /// wrap around links inside Arabic messages** (defect خ-5). Without
@@ -69,8 +69,7 @@ abstract final class UrlKit {
   }
 
   /// The longest numeric id of at least 10 digits in the path **or the
-  /// query
-  /// string**, or '' when there is none.
+  /// query string**, or '' when there is none.
   ///
   /// **`=` alongside `/` (defect found 2026-09-08):** Facebook puts the id
   /// in the query rather than the path
@@ -127,8 +126,7 @@ abstract final class UrlKit {
     if (id2.isNotEmpty && url1.contains(id2)) return true;
     // When only one URL has a YouTube id and the other has none, we do not
     // continue to the lenient normalisation ranks, because of the
-    // flattening
-    // risk on the shared watch path.
+    // flattening risk on the shared watch path.
     if (id1.isNotEmpty || id2.isNotEmpty) return false;
 
     final numId1 = longestNumericId(url1);
@@ -140,16 +138,12 @@ abstract final class UrlKit {
     // **Two different query strings do not fall through to normalisation**
     // (defect found 2026-09-08): normalisation strips the query, and a
     // platform carrying identity in it (Facebook's `?v=…`) collapses
-    // entirely
-    // onto one path, `facebook.com/watch`, so **every clip matches every
-    // other clip**. The effect was measured: one item made available
-    // offline
-    // gave its file to every other Facebook item, and `/history` matching
-    // in
-    // Lite pulled an innocent file **and then deleted the original from the
-    // server**. This is the same rule written above for YouTube,
-    // generalised
-    // to every platform.
+    // entirely onto one path, `facebook.com/watch`, so **every clip matches
+    // every other clip**. The effect was measured: one item made available
+    // offline gave its file to every other Facebook item, and `/history`
+    // matching in Lite pulled an innocent file **and then deleted the
+    // original from the server**. This is the same rule written above for
+    // YouTube, generalised to every platform.
     final query1 = _queryOf(url1);
     final query2 = _queryOf(url2);
     if (query1.isNotEmpty && query2.isNotEmpty && query1 != query2) {
@@ -205,12 +199,11 @@ abstract final class UrlKit {
   ///
   /// **`..` inside a name is not traversal** (field report 2026-09-03). The
   /// condition used to be `contains('..')`, and yt-dlp truncates long
-  /// titles
-  /// with dots, so **every clip with a long title failed** with "unsafe
-  /// filename" even though the server served it happily. Measured against a
-  /// real Lite server: a truncated name with an embedded `...` returned
-  /// **HTTP 206 video/mp4**. Traversal needs a path separator, which is
-  /// rejected anyway.
+  /// titles with dots, so **every clip with a long title failed** with
+  /// "unsafe filename" even though the server served it happily. Measured
+  /// against a real Lite server: a truncated name with an embedded `...`
+  /// returned **HTTP 206 video/mp4**. Traversal needs a path separator,
+  /// which is rejected anyway.
   static bool isSafeServerFilename(String name) {
     if (name.isEmpty) return false;
     if (name == '.' || name == '..') return false;

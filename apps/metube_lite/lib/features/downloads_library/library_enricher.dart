@@ -8,37 +8,41 @@ import 'library_providers.dart';
 import 'local_item.dart';
 import 'media_probe.dart';
 
-/// **إثراء المكتبة المحلية (م-18 + م-35).**
+/// **Enriching the local library.**
 ///
-/// المكتبة تُبنى من مسح المجلد، فالملف المهاجَر من Lite القديم يصل بلا
-/// غلاف ولا أبعاد. قبل هذا الإثراء كانت الأبعاد تُتعلَّم **عند أول تشغيل
-/// فقط** — فمكتبة المالك (194 ملفاً) كانت كلها خارج «مسار القِصار» حتى
-/// يشغّل كل مقطع بيده مرة، وكلها بلا مصغرات.
+/// The library is built by scanning the folder, so a file migrated from the
+/// old Lite arrives with no cover and no dimensions. Before this
+/// enrichment, dimensions were learned **only on first play**, so a library
+/// of 194 files was entirely outside the shorts path until every clip had
+/// been played by hand once, and entirely without thumbnails.
 ///
-/// يعمل على دفعات ويُبطل المكتبة بعد كل دفعة، فتظهر المصغرات تباعاً بدل
-/// انتظار المسح كله.
+/// It works in batches and invalidates the library after each one, so
+/// thumbnails appear progressively rather than after the whole scan.
 class LibraryEnricher {
   LibraryEnricher(this._ref, {this.batchSize = 20, MediaProbe? probe})
-      : _probe = probe ?? const MediaProbe();
+    : _probe = probe ?? const MediaProbe();
 
   final Ref _ref;
   final MediaProbe _probe;
   final int batchSize;
 
-  /// ما سُبر في هذه الجلسة — ملف لم يعطِ شيئاً (تالف) لا يُعاد سبره في
-  /// كل بناء للمكتبة، ولا يُخزَّن على القرص: إعادة المحاولة بعد إعادة
-  /// التشغيل رخيصة وقد ينجح ما فشل.
+  /// What has been probed this session: a file that yielded nothing,
+  /// because it is corrupt, is not re-probed on every library build. It is
+  /// not stored on disk, because retrying after a restart is cheap and what
+  /// failed may succeed.
   final Set<String> _seen = {};
   bool _running = false;
 
-  /// يسبر ما ينقصه غلاف أو أبعاد. آمن للاستدعاء المتكرر.
+  /// Probes whatever is missing a cover or dimensions. Safe to call
+  /// repeatedly.
   Future<void> enrich(List<LocalItem> items) async {
     if (_running) return;
-    // ترتيب السبر = ترتيب العرض الافتراضي (الأحدث أولاً)، وإلا ظهرت
-    // الأغلفة في آخر القائمة أولاً حيث لا ينظر أحد.
-    // **غلافٌ في الفهرس لا يعني ملفاً على القرص** (نفس علاج Super
-    // 2026-09-07): المصغرات كانت تُكتب في `cacheDir` وأندرويد يمسحه،
-    // فتبقى البطاقة فارغة ولا تُعاد لأن الفهرس يقول «لها غلاف».
+    // Probe order equals the default display order, newest first, or the
+    // covers appear at the end of the list where nobody is looking.
+    // **A cover in the index does not mean a file on disk** (the same cure
+    // as Super, 2026-09-07): thumbnails used to be written into `cacheDir`,
+    // which Android wipes, so the card stayed empty and was never retried
+    // because the index said it had a cover.
     final stale = await _forgetMissingThumbs();
     final pending = [
       for (final item in items)
@@ -63,7 +67,8 @@ class LibraryEnricher {
     }
   }
 
-  /// يمسح من فهرس الأغلفة كل مسار لم يعد له ملف ويعيد مفاتيحه.
+  /// Clears from the artwork index every path whose file is gone, and
+  /// returns their keys.
   Future<Set<String>> _forgetMissingThumbs() async {
     final artwork = _ref.read(artworkIndexProvider);
     final all = await artwork.readAll();
@@ -84,11 +89,9 @@ class LibraryEnricher {
           item.duration == null ||
           (!item.isAudio && item.aspectRatio == null));
 
-  /// يكتب النتائج في الفهرسين بمفتاح العنصر الموحّد. true ⇔ تغيّر شيء.
-  Future<bool> _apply(
-    List<LocalItem> batch,
-    List<ProbedMedia> results,
-  ) async {
+  /// Writes the results into both indexes under the unified item key. true
+  /// means something changed.
+  Future<bool> _apply(List<LocalItem> batch, List<ProbedMedia> results) async {
     final byPath = {for (final probed in results) probed.path: probed};
     final shapes = _ref.read(mediaShapeIndexProvider);
     final artwork = _ref.read(artworkIndexProvider);
@@ -97,7 +100,8 @@ class LibraryEnricher {
     for (final item in batch) {
       final probed = byPath[item.path];
       if (probed == null || probed.isEmpty) continue;
-      // المفتاح هو canonicalUrl إن عُرف وإلا المسار — نفس قاعدة المكتبة.
+      // The key is the canonicalUrl when known, otherwise the path: the
+      // same rule as the library.
       if (probed.duration != null) {
         await shapes.remember(
           item.key,
@@ -115,11 +119,13 @@ class LibraryEnricher {
   }
 }
 
-final libraryEnricherProvider =
-    Provider<LibraryEnricher>((ref) => LibraryEnricher(ref));
+final libraryEnricherProvider = Provider<LibraryEnricher>(
+  (ref) => LibraryEnricher(ref),
+);
 
-/// يشتغل تلقائياً كلما تغيّرت المكتبة — يُراقَب من غلاف التطبيق مرة.
-/// يتوقف وحده: الدورة التالية لا تجد ما ينقصه فلا تُبطل شيئاً.
+/// It runs automatically whenever the library changes, watched once from
+/// the app shell. It stops by itself: the next round finds nothing missing
+/// and invalidates nothing.
 final libraryEnrichmentProvider = Provider<void>((ref) {
   final items = ref.watch(localMediaProvider).valueOrNull;
   if (items == null || items.isEmpty) return;

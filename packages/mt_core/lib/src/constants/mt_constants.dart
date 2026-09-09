@@ -16,8 +16,7 @@ abstract final class MTConstants {
   /// **How long short-link resolution may hold up a routing decision**
   /// (field report 2026-09-08): deciding "playlist or single" waits on the
   /// network and the user waits with it, so past this limit the link is
-  /// used
-  /// as it is rather than freezing the interface.
+  /// used as it is rather than freezing the interface.
   static const Duration routingResolveTimeout = Duration(seconds: 5);
 
   // Polling rhythm (§2.3).
@@ -69,7 +68,13 @@ abstract final class MTConstants {
   /// backup automatically and never appear among the user's own tags.
   static const String favoritesSystemTag = '__favorites__';
 
-  // Self-update from GitHub.
+  // `owner/name` for the releases repository. **The single switching
+  // point.**
+  //
+  // The `releases/latest` endpoint requires a **public** repository: while
+  // it is private GitHub answers 404, which is read as "no update" in
+  // silence (fail-safe). To separate releases from the code, changing this
+  // one line to an independent public releases repository is enough.
 
   /// `owner/name` for the releases repository. **The single switching
   /// point.**
@@ -80,8 +85,8 @@ abstract final class MTConstants {
   /// one line to an independent public releases repository is enough.
   static const String updateRepo = 'sagheerys/metube-mobile';
 
-  /// How often the automatic check runs. Checking at every launch floods
-  /// GitHub for nothing, and releases arrive in weeks rather than hours.
+  /// The update file's name in the app cache. Fixed, so the next download
+  /// overwrites it instead of piling old APKs on the device.
   static const Duration updateCheckInterval = Duration(hours: 12);
 
   /// The update file's name in the app cache. Fixed, so the next download

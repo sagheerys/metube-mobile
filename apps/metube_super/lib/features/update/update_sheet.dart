@@ -4,7 +4,8 @@ import 'package:mt_ui/mt_ui.dart';
 
 import 'update_state.dart';
 
-/// ورقة التحديث (م-66): ما الجديد، ثم فعل واحد بارز بحسب الطور.
+/// The update sheet: what is new, then one prominent action according to
+/// the phase.
 void showUpdateSheet(BuildContext context) {
   showModalBottomSheet<void>(
     context: context,
@@ -28,14 +29,16 @@ class UpdateSheet extends ConsumerWidget {
     if (release == null) return const SizedBox.shrink();
 
     return ConstrainedBox(
-      // **سقف الورقة نسبة من الشاشة لا رقم ثابت** (جولة الأجهزة
-      // 2026-09-09): ملاحظات إصدار طويلة عند تكبير الخط ×1.5 على شاشة
-      // قصيرة كانت تدفع الأزرار خارج المرئي. النسبة تتكيّف مع الجهازين.
+      // **The sheet's ceiling is a fraction of the screen, not a fixed
+      // number** (device round 2026-09-09): long release notes at 1.5x text
+      // scale on a short screen pushed the buttons out of sight. A fraction
+      // adapts to both devices.
       constraints: BoxConstraints(
         maxHeight: MediaQuery.sizeOf(context).height * 0.85,
       ),
       child: Padding(
-        // الورقة تمتد لحافة الشاشة دائماً — والأزرار الثلاثة تأكل ~48dp.
+        // The sheet always reaches the screen edge, and the three
+        // navigation buttons eat about 48dp.
         padding: EdgeInsets.fromLTRB(
           MTSpace.xl,
           MTSpace.lg,
@@ -46,10 +49,11 @@ class UpdateSheet extends ConsumerWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // **الوصف يمرَّر والأفعال مثبّتة**: على شاشة 320×534 بخط
-            // ×2.0 (سقف إتاحة أندرويد) لم يكن العنوان والإصدار
-            // والملاحظات تتسع أصلاً — تمرير الوصف وحده يبقي «تنزيل
-            // التحديث» مرئياً دائماً بدل أن يخرج أسفل الإطار.
+            // **The description scrolls and the actions are pinned**: on a
+            // 320x534 screen at 2.0x text scale, Android's accessibility
+            // ceiling, the title, version and notes did not fit at all.
+            // Scrolling the description alone keeps "download update"
+            // visible instead of letting it fall off the bottom.
             Flexible(
               child: SingleChildScrollView(
                 child: Column(
@@ -106,7 +110,8 @@ class _Actions extends ConsumerWidget {
 
   final UpdateState state;
 
-  /// إذن «تثبيت تطبيقات غير معروفة» ناقص — يُشرح ثم يُفتح مكانه.
+  /// The "install unknown apps" permission is missing: explain it, then
+  /// open where it lives.
   Future<void> _askPermission(BuildContext context, WidgetRef ref) async {
     final l10n = context.mtl;
     final go = await showDialog<bool>(
@@ -157,9 +162,11 @@ class _Actions extends ConsumerWidget {
             child: LinearProgressIndicator(
               value: state.progress,
               minHeight: 7,
-              // **اللونان من اللوحة صراحةً**: مسار Material الافتراضي
-              // يُشتقّ من `secondaryContainer` فيخرج مخضرّاً على كريمي
-              // «وهج» — لونٌ لا وجود له في الهوية (مقيس على المحاكي).
+              // **Both colours come from the palette explicitly**:
+              // Material's default track is derived from
+              // `secondaryContainer` and comes out greenish over the Wahaj
+              // cream, a colour that does not exist in the identity
+              // (measured on the emulator).
               backgroundColor: p.accent.withValues(alpha: 0.16),
               valueColor: AlwaysStoppedAnimation(p.accent),
             ),
@@ -215,10 +222,11 @@ class _Actions extends ConsumerWidget {
           label: Text(l10n.updateNow),
         ),
         const SizedBox(height: MTSpace.xxs),
-        // **`Wrap` لا `Row`** (مصفوفة الأجهزة 2026-09-09): «لاحقاً» مع
-        // «تخطّي هذا الإصدار» يتجاوزان إطار شاشة 320 نقطة بـ52 بكسل —
-        // وشريط التجاوز الأصفر يظهر على جهاز المستخدم لا على جهاز المطوّر.
-        // الالتفاف ينزل الثاني سطراً بدل بتر نصّه.
+        // **`Wrap`, not `Row`** (device matrix 2026-09-09): "later" plus
+        // "skip this version" overflow a 320-point screen by 52 pixels, and
+        // the yellow overflow stripe shows on the user's device, never on
+        // the developer's. Wrapping moves the second one to its own line
+        // instead of truncating its label.
         Wrap(
           alignment: WrapAlignment.spaceBetween,
           children: [

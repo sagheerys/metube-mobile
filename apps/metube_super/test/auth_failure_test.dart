@@ -46,21 +46,25 @@ void main() {
 
   /// تطبيق مهيَّأ بسيرفر، ومكتبته تفشل بالخطأ المعطى.
   Widget appFailingWith(Object error) => ProviderScope(
-        overrides: [
-          keyValueStoreProvider.overrideWithValue(store),
-          secretStoreProvider.overrideWithValue(MemorySecretStore()),
-          prefsMutexProvider.overrideWithValue(mutex),
-          initialSettingsProvider.overrideWithValue(
-              const SuperSettings(
-                  activeUrl: 'https://mtube.example.com', localeCode: 'ar')),
-          playbackResolverProvider.overrideWithValue(handler.resolver),
-          audioHandlerProvider.overrideWithValue(handler),
-          loggerProvider.overrideWithValue(
-              MTLogger(filePath: '${Directory.systemTemp.path}/mtf_auth.log')),
-          libraryItemsProvider.overrideWith((ref) async => throw error),
-        ],
-        child: const SuperApp(),
-      );
+    overrides: [
+      keyValueStoreProvider.overrideWithValue(store),
+      secretStoreProvider.overrideWithValue(MemorySecretStore()),
+      prefsMutexProvider.overrideWithValue(mutex),
+      initialSettingsProvider.overrideWithValue(
+        const SuperSettings(
+          activeUrl: 'https://mtube.example.com',
+          localeCode: 'ar',
+        ),
+      ),
+      playbackResolverProvider.overrideWithValue(handler.resolver),
+      audioHandlerProvider.overrideWithValue(handler),
+      loggerProvider.overrideWithValue(
+        MTLogger(filePath: '${Directory.systemTemp.path}/mtf_auth.log'),
+      ),
+      libraryItemsProvider.overrideWith((ref) async => throw error),
+    ],
+    child: const SuperApp(),
+  );
 
   Future<MTLocalizations> arabic() =>
       MTLocalizations.delegate.load(const Locale('ar'));

@@ -25,9 +25,8 @@ class HistoryMatcher {
       '${item.canonicalUrl}|${item.filename}|${item.status.name}|${item.error}';
 
   /// Fingerprints of everything matching [url] in the history **before**
-  /// the
-  /// add. A failed fetch returns an empty set, since the add that follows
-  /// will reveal the network outage by itself.
+  /// the add. A failed fetch returns an empty set, since the add that
+  /// follows will reveal the network outage by itself.
   Future<Set<String>> snapshot(String url) async {
     try {
       final history = await api.fetchHistory();

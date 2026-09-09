@@ -17,13 +17,14 @@ import '../shared/error_report.dart';
 import 'auto_backup.dart';
 import 'widgets/backup_picker.dart';
 
-/// النسخ الاحتياطي (م-31 · ر-8) — **نصّي دوّار بلا مفتاح** (قرار المالك
-/// 2026-09-04): سبع نسخ مؤرَّخة تتجدد وحدها، واستعادة من أيّها، وتصدير
-/// للمشاركة.
+/// Backup and restore: **plain text, rotating, with no key** (decision
+/// 2026-09-04). Seven dated copies that refresh themselves, a restore from
+/// any of them, and an export for sharing.
 ///
-/// **مفهوم «مفتاح النسخ» أُزيل من المنتج كله** (قرار المالك في نفس
-/// اليوم): لا تصدير ولا استيراد ولا تحذير «احفظه ككلمة مرور» — فالنسخة
-/// لم تعد مشفّرة، وما لا يوجد لا يُنسى ولا يضيع.
+/// **The concept of a backup key was removed from the product entirely**
+/// (decided the same day): no export, no import, and no "keep it like a
+/// password" warning. The backup is no longer encrypted, and what does not
+/// exist can be neither forgotten nor lost.
 class BackupScreen extends ConsumerStatefulWidget {
   const BackupScreen({super.key});
 
@@ -49,14 +50,16 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
     if (mounted) setState(() => _backups = all);
   }
 
-  Future<void> _run(Future<String> Function(MTLocalizations l10n) action) async {
+  Future<void> _run(
+    Future<String> Function(MTLocalizations l10n) action,
+  ) async {
     final l10n = context.mtl;
     setState(() => _busy = true);
     try {
       final message = await action(l10n);
       if (mounted) showMTSnack(context, message, type: MTSnackType.success);
     } on BackupCancelledException {
-      // إلغاء المستخدم ليس خطأ.
+      // A user cancelling is not an error.
     } catch (e) {
       if (mounted) {
         showErrorSnack(context, ref, e, tag: 'backup');
@@ -67,9 +70,9 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
     }
   }
 
-  /// **يُقرأ عبر منتقي النظام (SAF):** أندرويد 11+ يرفض قراءة ملف لم
-  /// ينشئه التطبيق ولو كان في نفس المجلد (`errno 13`) — ونسخة الهجرة
-  /// تأتي من جهاز آخر بطبيعتها (م-31).
+  /// **Read through the system picker (SAF):** Android 11+ refuses to read
+  /// a file the app did not create, even in the same folder (`errno 13`),
+  /// and a migration backup comes from another device by definition.
   Future<String?> _pickFileContents() async {
     final picked = await FilePicker.platform.pickFiles(withData: true);
     final file = picked?.files.singleOrNull;
@@ -79,13 +82,13 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
     return path == null ? null : File(path).readAsString();
   }
 
-  /// **التصدير للمشاركة ملفٌ مستقل عن الدوّار**: اسمٌ مؤرَّخ يُفتح عليه
-  /// اختيار المشاركة فوراً — هذا هدفه الوحيد. الخلط بينه وبين النسخة
-  /// التلقائية كان يجعل «انسخ الآن» يدهس ملفاً ويوهم أنه صدّره.
+  /// **An export for sharing is a separate file from the rotation**: a
+  /// dated name with the share chooser opening on it immediately, which is
+  /// its only purpose. Conflating it with the automatic backup made "back
+  /// up now" overwrite a file while suggesting it had exported it.
   Future<String> _exportAndShare(MTLocalizations l10n) async {
     final stamp = BackupRotation.stampOf(DateTime.now());
-    final file =
-        File('$liteBackupDir/share_${liteBackupPrefix}_$stamp.json');
+    final file = File('$liteBackupDir/share_${liteBackupPrefix}_$stamp.json');
     await file.parent.create(recursive: true);
     await file.writeAsString(await _service.exportToString(), flush: true);
     await Share.shareXFiles([XFile(file.path)]);
@@ -102,67 +105,83 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
       _applyRestore(l10n, await _backup.restore(file));
 
   Future<String> _applyRestore(
-      MTLocalizations l10n, ImportResult result) async {
+    MTLocalizations l10n,
+    ImportResult result,
+  ) async {
     await _refreshEverything();
     return '${l10n.restoreSuccess} · ${result.keysRestored}';
   }
 
-  /// كل ما قد تكون النسخة غيّرته يُعاد تحميله (ر-8 خطوة 1).
+  /// Everything the backup may have changed is reloaded (rule 8, step 1).
   Future<void> _refreshEverything() async {
     await ref.read(settingsProvider.notifier).reloadFromStore();
     ref.invalidate(localMediaProvider);
     ref.invalidate(playlistsProvider);
   }
 
-
-
   @override
   Widget build(BuildContext context) {
     final l10n = context.mtl;
     final p = MTThemeX.of(context).palette;
 
-    ListTile tile(IconData icon, String title, String subtitle,
-            VoidCallback onTap) =>
-        ListTile(
-          contentPadding: EdgeInsets.zero,
-          enabled: !_busy,
-          leading: Icon(icon, color: p.ink2),
-          title: Text(title),
-          subtitle:
-              Text(subtitle, style: Theme.of(context).textTheme.bodySmall),
-          onTap: onTap,
-        );
+    ListTile tile(
+      IconData icon,
+      String title,
+      String subtitle,
+      VoidCallback onTap,
+    ) => ListTile(
+      contentPadding: EdgeInsets.zero,
+      enabled: !_busy,
+      leading: Icon(icon, color: p.ink2),
+      title: Text(title),
+      subtitle: Text(subtitle, style: Theme.of(context).textTheme.bodySmall),
+      onTap: onTap,
+    );
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.backupSettings)),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(
-            MTSpace.pagePad, 0, MTSpace.pagePad, MTSpace.xxl),
+          MTSpace.pagePad,
+          0,
+          MTSpace.pagePad,
+          MTSpace.xxl,
+        ),
         children: [
-          // **لا رأس قسم يكرر عنوان الشاشة** (فحص 2026-09-05): الشريط
-          // العلوي يقول «نسخ جميع البيانات احتياطياً» وكان تحته مباشرة
-          // «النسخ الاحتياطي والاستعادة» — سطران بمعنى واحد.
+          // **No section header repeating the screen title** (review
+          // 2026-09-05): the app bar says "back up all data" and directly
+          // beneath it sat "backup and restore", two lines with one
+          // meaning.
           const SizedBox(height: MTSpace.md),
           BackupStatusLine(backups: _backups),
           const SizedBox(height: MTSpace.md),
-          tile(Icons.ios_share_rounded, l10n.exportShare,
-              l10n.exportShareSubtitle, () => _run(_exportAndShare)),
-          tile(Icons.folder_open_rounded, l10n.pickAnotherFile,
-              l10n.pickAnotherFileSubtitle, () => _run(_importPicked)),
+          tile(
+            Icons.ios_share_rounded,
+            l10n.exportShare,
+            l10n.exportShareSubtitle,
+            () => _run(_exportAndShare),
+          ),
+          tile(
+            Icons.folder_open_rounded,
+            l10n.pickAnotherFile,
+            l10n.pickAnotherFileSubtitle,
+            () => _run(_importPicked),
+          ),
           const SizedBox(height: MTSpace.lg),
-          // **النسخ معروضة لا مخبوءة خلف زر** (فحص 2026-09-05): الشاشة
-          // كانت فارغة في ثلثيها والمعلومة الوحيدة المفيدة — متى نُسخت
-          // وكم حجمها — خلف ورقة لا شيء يدلّ عليها.
+          // **The copies are shown rather than hidden behind a button**
+          // (review 2026-09-05): two thirds of the screen was empty and the
+          // only useful information, when each copy was made and how large
+          // it is, sat behind a sheet with nothing to hint at it.
           MTSectionHeader(title: l10n.restoreData),
           const SizedBox(height: MTSpace.sm),
           if (_backups.isEmpty)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: MTSpace.md),
-              child: Text(l10n.noBackupsYet,
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodySmall!
-                      .copyWith(color: p.ink3)),
+              child: Text(
+                l10n.noBackupsYet,
+                style: Theme.of(context).textTheme.bodySmall!
+                    .copyWith(color: p.ink3),
+              ),
             )
           else
             for (final (index, file) in _backups.indexed)
@@ -188,18 +207,18 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
                 ),
               ),
           const SizedBox(height: MTSpace.lg),
-          Text(l10n.backupNote,
-              style: Theme.of(context)
-                  .textTheme
-                  .bodySmall!
-                  .copyWith(color: p.ink3)),
+          Text(
+            l10n.backupNote,
+            style: Theme.of(context).textTheme.bodySmall!
+                .copyWith(color: p.ink3),
+          ),
         ],
       ),
     );
   }
 }
 
-/// ألغى المستخدم منتقي الملفات — رسالة هادئة لا خطأ صارخ.
+/// The user cancelled the file picker: a quiet message, not a loud error.
 class BackupCancelledException implements Exception {
   const BackupCancelledException();
 }

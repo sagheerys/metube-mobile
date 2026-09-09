@@ -16,9 +16,9 @@ class MTThemeX extends ThemeExtension<MTThemeX> {
 
   @override
   MTThemeX copyWith({MTPalette? palette, MTVariant? variant}) => MTThemeX(
-        palette: palette ?? this.palette,
-        variant: variant ?? this.variant,
-      );
+    palette: palette ?? this.palette,
+    variant: variant ?? this.variant,
+  );
 
   @override
   MTThemeX lerp(MTThemeX? other, double t) => t < 0.5 ? this : other ?? this;
@@ -35,20 +35,20 @@ ThemeData mtTheme(MTVariant variant, Brightness brightness) {
   // palette's own hue.
   final (lowest, low, container, high, highest) = isDark
       ? variant == MTVariant.lite
-          ? (
-              const Color(0xFF101516),
-              const Color(0xFF1A2122),
-              const Color(0xFF1E2627),
-              const Color(0xFF253030),
-              const Color(0xFF2C3839),
-            )
-          : (
-              const Color(0xFF16100C),
-              const Color(0xFF1F1712),
-              const Color(0xFF241B15),
-              const Color(0xFF2B211A),
-              const Color(0xFF332720),
-            )
+            ? (
+                const Color(0xFF101516),
+                const Color(0xFF1A2122),
+                const Color(0xFF1E2627),
+                const Color(0xFF253030),
+                const Color(0xFF2C3839),
+              )
+            : (
+                const Color(0xFF16100C),
+                const Color(0xFF1F1712),
+                const Color(0xFF241B15),
+                const Color(0xFF2B211A),
+                const Color(0xFF332720),
+              )
       : (
           const Color(0xFFFFFDF9),
           const Color(0xFFFAF3E7),
@@ -89,21 +89,21 @@ ThemeData mtTheme(MTVariant variant, Brightness brightness) {
   );
 
   TextStyle display(double size, FontWeight weight) => TextStyle(
-        fontFamily: MTType.display,
-        package: MTType.package,
-        fontWeight: weight,
-        fontSize: size,
-        color: p.ink,
-        height: 1.4,
-      );
+    fontFamily: MTType.display,
+    package: MTType.package,
+    fontWeight: weight,
+    fontSize: size,
+    color: p.ink,
+    height: 1.4,
+  );
   TextStyle body(double size, FontWeight weight, {Color? color}) => TextStyle(
-        fontFamily: MTType.body,
-        package: MTType.package,
-        fontWeight: weight,
-        fontSize: size,
-        color: color ?? p.ink,
-        height: 1.55,
-      );
+    fontFamily: MTType.body,
+    package: MTType.package,
+    fontWeight: weight,
+    fontSize: size,
+    color: color ?? p.ink,
+    height: 1.55,
+  );
 
   return ThemeData(
     useMaterial3: true,
@@ -152,17 +152,14 @@ ThemeData mtTheme(MTVariant variant, Brightness brightness) {
       selectedColor: p.ink,
       side: BorderSide(color: p.line2),
       // **Label colour follows the state** (full review 2026-09-02): a
-      // selected
-      // chip is painted with `p.ink` as its background and its label was
-      // `p.ink2`, dark ink on dark ink, so **a selected tag could not be
-      // read**.
-      // Screens that passed their own `labelStyle` were hiding the defect;
-      // the
-      // tags sheet, which uses a bare `FilterChip`, exposed it.
+      // selected chip is painted with `p.ink` as its background and its
+      // label was `p.ink2`, dark ink on dark ink, so **a selected tag could
+      // not be read**. Screens that passed their own `labelStyle` were
+      // hiding the defect; the tags sheet, which uses a bare `FilterChip`,
+      // exposed it.
       labelStyle: body(12.5, FontWeight.w500).copyWith(
         color: WidgetStateColor.resolveWith(
-          (states) =>
-              states.contains(WidgetState.selected) ? p.bg : p.ink2,
+          (states) => states.contains(WidgetState.selected) ? p.bg : p.ink2,
         ),
       ),
       checkmarkColor: p.bg,
@@ -170,14 +167,18 @@ ThemeData mtTheme(MTVariant variant, Brightness brightness) {
         borderRadius: BorderRadius.circular(MTRadius.chip),
       ),
       padding: const EdgeInsets.symmetric(
-          horizontal: MTSpace.md, vertical: MTSpace.xs),
+        horizontal: MTSpace.md,
+        vertical: MTSpace.xs,
+      ),
     ),
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
       fillColor: p.card,
       hintStyle: body(13.5, FontWeight.w400, color: p.ink3),
       contentPadding: const EdgeInsets.symmetric(
-          horizontal: MTSpace.lg, vertical: MTSpace.md),
+        horizontal: MTSpace.lg,
+        vertical: MTSpace.md,
+      ),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(MTRadius.field),
         borderSide: BorderSide(color: p.line2),
@@ -200,7 +201,9 @@ ThemeData mtTheme(MTVariant variant, Brightness brightness) {
           borderRadius: BorderRadius.circular(MTRadius.fab),
         ),
         padding: const EdgeInsets.symmetric(
-            horizontal: MTSpace.xl, vertical: MTSpace.md),
+          horizontal: MTSpace.xl,
+          vertical: MTSpace.md,
+        ),
       ),
     ),
     // Material 3 tints the selected state with secondaryContainer, which is
@@ -225,8 +228,9 @@ ThemeData mtTheme(MTVariant variant, Brightness brightness) {
       backgroundColor: p.bg,
       indicatorColor: Colors.transparent,
       height: 68,
-      labelTextStyle:
-          WidgetStatePropertyAll(body(11.5, FontWeight.w500, color: p.ink2)),
+      labelTextStyle: WidgetStatePropertyAll(
+        body(11.5, FontWeight.w500, color: p.ink2),
+      ),
       iconTheme: WidgetStateProperty.resolveWith(
         (states) => IconThemeData(
           color: states.contains(WidgetState.selected) ? p.accent : p.ink3,
@@ -237,17 +241,17 @@ ThemeData mtTheme(MTVariant variant, Brightness brightness) {
       backgroundColor: p.card,
       surfaceTintColor: Colors.transparent,
       // **One drag handle for all eighteen sheets** (review 2026-09-02: not
-      // a
-      // single sheet had one). Setting it in the theme rather than in each
-      // sheet is what stops the nineteenth sheet from being built without
-      // one,
-      // which is exactly how an interface starts to look assembled from
-      // different eras.
+      // a single sheet had one). Setting it in the theme rather than in
+      // each sheet is what stops the nineteenth sheet from being built
+      // without one, which is exactly how an interface starts to look
+      // assembled from different eras.
       showDragHandle: true,
       dragHandleColor: p.line2,
       dragHandleSize: const Size(38, 4),
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(MTRadius.sheet)),
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(MTRadius.sheet),
+        ),
       ),
     ),
     snackBarTheme: SnackBarThemeData(

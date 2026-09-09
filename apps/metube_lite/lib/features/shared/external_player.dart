@@ -1,22 +1,24 @@
 import 'package:flutter/services.dart';
 
-/// **«فتح في مشغل خارجي» — للملفات المحلية وحدها** (قرار المالك
+/// **"Open in an external player", for local files only** (decision
 /// 2026-09-05).
 ///
-/// يُسلَّم المشغلُ الخارجي `content://` من `FileProvider` بإذن مؤقت
-/// للملف المطلوب وحده: لا مسار، ولا رابط سيرفر، ولا وصول لغيره.
+/// The external player is handed a `content://` from `FileProvider` with a
+/// temporary grant for that one file: no path, no server URL, and no
+/// access to anything else.
 ///
-/// **ولا يُسلَّم رابط بثّ أبداً.** سيرفر Super بلا استيثاق، فرابطه في
-/// تطبيق آخر يعني وصولاً مفتوحاً لمن يقرأ سجلّ ذلك التطبيق — لذلك
-/// العنصر الذي لا نسخة محلية له يُخفى عنه هذا الخيار بدل أن يُفتح
-/// برابط.
+/// **And a streaming URL is never handed over.** A Super server runs
+/// without authentication, so its URL inside another app means open access
+/// for anyone reading that app's logs. An item with no local copy is not
+/// offered this option at all, rather than being offered it with a URL.
 class ExternalPlayer {
   const ExternalPlayer([this.channel = _defaultChannel]);
 
   static const _defaultChannel = MethodChannel('metube_lite/media');
   final MethodChannel channel;
 
-  /// `true` فُتح · `false` لا مشغل على الجهاز · رمي عند ملف مفقود.
+  /// `true` opened, `false` no player on the device, and a throw for a
+  /// missing file.
   Future<bool> open(String path, {bool audio = false}) async {
     final ok = await channel.invokeMethod<bool>('openExternal', {
       'path': path,

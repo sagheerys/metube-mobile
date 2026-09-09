@@ -26,9 +26,9 @@ class PlaybackSource {
   String toString() => 'PlaybackSource(${origin.name}, $uri)';
 }
 
-/// Everything playback needs from the server: building the file URL and
-/// the streaming headers. A deliberately narrow interface, so the player
-/// knows neither the rest of the server contract nor the network package.
+/// Everything playback needs from the server: building the file URL and the
+/// streaming headers. A deliberately narrow interface, so the player knows
+/// neither the rest of the server contract nor the network package.
 class ServerStreamEndpoint {
   const ServerStreamEndpoint({required this.buildUrl, required this.headers});
 
@@ -37,15 +37,15 @@ class ServerStreamEndpoint {
   final Map<String, String> headers;
 
   factory ServerStreamEndpoint.fromApi(MeTubeApi api) => ServerStreamEndpoint(
-        buildUrl: api.downloadUrl,
-        headers: api.streamingHeaders,
-      );
+    buildUrl: api.downloadUrl,
+    headers: api.streamingHeaders,
+  );
 
   /// No server configured means local files only.
   static ServerStreamEndpoint get none => ServerStreamEndpoint(
-        buildUrl: (_) => throw const UnsafeFilenameException(),
-        headers: const {},
-      );
+    buildUrl: (_) => throw const UnsafeFilenameException(),
+    headers: const {},
+  );
 }
 
 /// **The golden rule:** the local copy if it really exists on disk,

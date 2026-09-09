@@ -6,38 +6,44 @@ import 'package:mt_ui/mt_ui.dart';
 import '../../di.dart';
 import 'add_flow.dart';
 
-/// اسم الجودة كما يراها المستخدم — تُعرض **المطبَّقة فعلاً** لا المختارة.
-String qualityLabel(MTLocalizations l10n, Quality quality) =>
-    switch (quality) {
-      Quality.best => l10n.qualityBest,
-      Quality.q1080 => l10n.quality1080,
-      Quality.q720 => l10n.quality720,
-      Quality.q480 => l10n.quality480,
-      Quality.audio => l10n.audioOnly,
-    };
+/// The quality name as the user sees it: what was **actually applied**
+/// rather than what was chosen.
+String qualityLabel(MTLocalizations l10n, Quality quality) => switch (quality) {
+  Quality.best => l10n.qualityBest,
+  Quality.q1080 => l10n.quality1080,
+  Quality.q720 => l10n.quality720,
+  Quality.q480 => l10n.quality480,
+  Quality.audio => l10n.audioOnly,
+};
 
-/// **التحميل السريع**: الرابط ينزل فوراً بالجودة الافتراضية بلا ورقة.
+/// **Quick download**: the link downloads immediately at the default
+/// quality with no sheet.
 ///
-/// ثلاثة قرارات مقصودة:
-/// 1. **القوائم لا تُحمَّل بصمت أبداً** مهما كان الإعداد — رابط قائمة
-///    يفتح شاشة الدفعي ليقرر المستخدم؛ ٢٠٠ مقطع لا تبدأ بضغطة عمياء.
-/// 2. **الجودة المعروضة هي المطبَّقة**: `Quality.applyRule` يُجبر الرقمية
-///    على `best` خارج يوتيوب (قيد yt-dlp)، فعرض «1080» لرابط تيك توك
-///    كذب على المستخدم. نعرض ما ذهب للخادم حرفياً.
-/// 3. **تراجع لا تأكيد**: حوار تأكيد يُبطل معنى «سريع»؛ بدلاً منه فعل في
-///    الشريط يلغي المهمة ويفتح الورقة بنفس الرابط.
+/// Three deliberate decisions:
+/// 1. **Playlists are never downloaded silently**, whatever the
+///    setting. A playlist URL opens the batch screen so the user decides;
+///    200 clips do not start on a blind tap.
+/// 2. **The quality shown is the quality applied**:
+///    `Quality.applyRule` forces numeric qualities to `best` outside
+///    YouTube (a yt-dlp constraint), so showing "1080" for a TikTok link
+///    lies to the user. We show exactly what went to the server.
+/// 3. **An undo, not a confirmation**: a confirmation dialog defeats
+///    the meaning of "quick". Instead there is an action in the snack bar
+///    that cancels the task and opens the sheet with the same URL.
 ///
-/// **بوابة الإعداد هنا لا عند المنادي** (بلاغ المالك 2026-09-04:
-/// «التحميل السريع مفعّل على طول رغم إيقافه»). كان الشرط مكتوباً في
-/// مسار المشاركة وحده، بينما زر الإضافة العائم واختصار الأيقونة
-/// ينزّلان فوراً بلا سؤال — فبدا الإعداد بلا أثر. البوابة داخل الدالة
-/// تجعل نسيانها مستحيلاً.
+/// **The setting is gated here rather than at the call site** (field report
+/// 2026-09-04: "quick download is always on even though I turned it off").
+/// The condition used to be written into the share path alone, while the
+/// floating add button and the launcher shortcut downloaded immediately
+/// without asking, so the setting looked to have no effect. Gating inside
+/// the function makes forgetting it impossible.
 ///
-/// [explicit] لفعل صريح لا لبس فيه (زر «حمّل الآن» في شريط الحافظة،
-/// وبجانبه «اختر الخيارات») — هذا يعمل مهما كان الإعداد.
+/// [explicit] is for an unambiguous deliberate action, the "download now"
+/// button in the clipboard bar with "choose options" beside it, and that
+/// works whatever the setting says.
 ///
-/// يرجع `false` إن لم يستطع التنفيذ (الإعداد مطفأ، قائمة، لا خادم)
-/// فيتولى المنادي الورقة.
+/// Returns `false` when it cannot proceed (setting off, a playlist, no
+/// server), and the caller takes over with the sheet.
 bool startQuickDownload(
   BuildContext context,
   WidgetRef ref,

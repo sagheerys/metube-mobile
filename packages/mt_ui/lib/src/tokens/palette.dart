@@ -5,8 +5,8 @@ import 'dart:ui';
 enum MTVariant { lite, superApp }
 
 /// The Wahaj palette. Values are copied **verbatim** from the approved
-/// design references. Derived values, the ones not stated there, are
-/// marked with a `derived` comment.
+/// design references. Derived values, the ones not stated there, are marked
+/// with a `derived` comment.
 class MTPalette {
   const MTPalette({
     required this.bg,
@@ -90,12 +90,11 @@ class MTPalette {
   static const Color serverCardBg = Color(0xFF241B15);
   static const Color serverCardInk = Color(0xFFF4EBDF);
 
-  // Always-dark constants. Full review 2026-09-02 found these hard-coded
-  // in the screens, against rule 5: every colour comes from tokens, no
+  // Always-dark constants. Full review 2026-09-02 found these hard-coded in
+  // the screens, against rule 5: every colour comes from tokens, no
   // literals.
 
-  /// The far end of the espresso playlist-card gradient, lighter than
-  /// [serverCardBg].
+  /// The immersive landscape player scrim: near-opaque espresso over video.
   static const Color serverCardBgLift = Color(0xFF443327);
 
   /// The immersive landscape player scrim: near-opaque espresso over video.

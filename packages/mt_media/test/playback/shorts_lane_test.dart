@@ -3,29 +3,29 @@ import 'package:mt_core/mt_core.dart';
 import 'package:mt_media/mt_media.dart';
 
 PlaylistItem _short(String id) => PlaylistItem(
-      canonicalUrl: 'https://x/$id',
-      title: id,
-      serverFilename: '$id.mp4',
-      duration: const Duration(seconds: 45),
-      aspectRatio: 0.5625,
-    );
+  canonicalUrl: 'https://x/$id',
+  title: id,
+  serverFilename: '$id.mp4',
+  duration: const Duration(seconds: 45),
+  aspectRatio: 0.5625,
+);
 
 PlaylistItem _wide(String id) => PlaylistItem(
-      canonicalUrl: 'https://x/$id',
-      title: id,
-      serverFilename: '$id.mp4',
-      duration: const Duration(minutes: 12),
-      aspectRatio: 1.77,
-    );
+  canonicalUrl: 'https://x/$id',
+  title: id,
+  serverFilename: '$id.mp4',
+  duration: const Duration(minutes: 12),
+  aspectRatio: 1.77,
+);
 
 PlaylistItem _audio(String id) => PlaylistItem(
-      canonicalUrl: 'https://x/$id',
-      title: id,
-      serverFilename: '$id.mp3',
-      isAudio: true,
-      duration: const Duration(seconds: 30),
-      aspectRatio: 0.5,
-    );
+  canonicalUrl: 'https://x/$id',
+  title: id,
+  serverFilename: '$id.mp3',
+  isAudio: true,
+  duration: const Duration(seconds: 30),
+  aspectRatio: 0.5,
+);
 
 PlaylistItem _unknown(String id) =>
     PlaylistItem(canonicalUrl: 'https://x/$id', title: id);
@@ -90,14 +90,15 @@ void main() {
 
   group('MediaShapeIndex', () {
     late MediaShapeIndex index;
-    setUp(() => index = MediaShapeIndex(
-          store: MemoryKeyValueStore(),
-          mutex: PrefsMutex(),
-        ));
+    setUp(
+      () => index = MediaShapeIndex(
+        store: MemoryKeyValueStore(),
+        mutex: PrefsMutex(),
+      ),
+    );
 
     test('يحفظ الأبعاد ويقرؤها', () async {
-      await index.remember(
-          'https://x/1', const Duration(seconds: 50), 0.5625);
+      await index.remember('https://x/1', const Duration(seconds: 50), 0.5625);
       final shape = await index.valueOf('https://x/1');
       expect(shape!.duration, const Duration(seconds: 50));
       expect(shape.aspectRatio, closeTo(0.5625, 0.0001));
@@ -107,9 +108,13 @@ void main() {
 
     test('العرضي والطويل ليسا قِصاراً', () {
       const wide = MediaShape(
-          duration: Duration(seconds: 30), aspectRatio: 1.77);
+        duration: Duration(seconds: 30),
+        aspectRatio: 1.77,
+      );
       const longVertical = MediaShape(
-          duration: Duration(minutes: 9), aspectRatio: 0.56);
+        duration: Duration(minutes: 9),
+        aspectRatio: 0.56,
+      );
       expect(wide.isShortForm, isFalse);
       expect(longVertical.isShortForm, isFalse);
     });

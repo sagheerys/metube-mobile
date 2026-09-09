@@ -29,8 +29,7 @@ extension _ReelsPlayback on _MTReelsPlayerState {
       await WakelockPlus.toggle(enable: enabled);
     } on Object {
       // An unsupported platform: playback continues without keeping the
-      // screen
-      // awake.
+      // screen awake.
     }
   }
 
@@ -58,8 +57,7 @@ extension _ReelsPlayback on _MTReelsPlayerState {
     _controller = null;
     if (!_disposed) applyState(() => _failed = false);
     // Silence it first: `dispose()` may take a while, and the audio
-    // continues
-    // for the whole wait.
+    // continues for the whole wait.
     if (old != null) await _shutdownController(old);
     if (item == null) return;
 
@@ -70,8 +68,10 @@ extension _ReelsPlayback on _MTReelsPlayerState {
     }
     final controller = source.origin == PlaybackOrigin.local
         ? VideoPlayerController.file(File(source.uri.toFilePath()))
-        : VideoPlayerController.networkUrl(source.uri,
-            httpHeaders: source.headers);
+        : VideoPlayerController.networkUrl(
+            source.uri,
+            httpHeaders: source.headers,
+          );
     try {
       await controller.initialize();
     } on Object {
@@ -80,8 +80,7 @@ extension _ReelsPlayback on _MTReelsPlayerState {
       return;
     }
     // A newer swipe overtook us, so this controller is discarded rather
-    // than
-    // left running.
+    // than left running.
     if (_stale(generation)) return controller.dispose();
     await controller.setLooping(true); // يتكرر حتى السحب (م-35)
     await widget.onTakeAudioFocus?.call();
@@ -89,12 +88,10 @@ extension _ReelsPlayback on _MTReelsPlayerState {
     await controller.play();
     // **The guard after the last `await` as well (defect ط-1):** the check
     // used to stop one line short of the end. Going back during `play()` on
-    // a
-    // slow network meant `setState` on a dead screen, **a live looping
+    // a slow network meant `setState` on a dead screen, **a live looping
     // controller nobody disposes, playing for the rest of the process's
     // life**, and a wake lock switched back on after leaving had switched
-    // it
-    // off.
+    // it off.
     if (_stale(generation)) return controller.dispose();
     applyState(() => _controller = controller);
     await _setWakelock(true);

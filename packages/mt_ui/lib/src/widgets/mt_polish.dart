@@ -60,8 +60,8 @@ class _MTPressableState extends State<MTPressable> {
   );
 }
 
-/// **Swapping an icon in place**: the old one fades while shrinking and
-/// the new one grows from [MTMotion.iconSwapScale] to full size. No jump
+/// **Swapping an icon in place**: the old one fades while shrinking and the
+/// new one grows from [MTMotion.iconSwapScale] to full size. No jump
 /// between play and pause, or between an empty and a filled heart.
 ///
 /// The icon itself is the key, so nothing animates unless it changes.
@@ -108,13 +108,12 @@ class MTIconSwap extends StatelessWidget {
 }
 
 /// **A "rising sheet" transition**: the screen rises whole from the bottom
-/// while the one beneath it dims slightly. For screens that expand out of
-/// a bottom element, such as the mini player opening the audio screen.
-/// Going back reverses it, so it looks like it returned where it came
-/// from.
+/// while the one beneath it dims slightly. For screens that expand out of a
+/// bottom element, such as the mini player opening the audio screen. Going
+/// back reverses it, so it looks like it returned where it came from.
 ///
-/// Used with `CustomTransitionPage` in the route table. It does not
-/// replace the horizontal screen transition used everywhere else.
+/// Used with `CustomTransitionPage` in the route table. It does not replace
+/// the horizontal screen transition used everywhere else.
 Widget mtSheetPageTransition(
   BuildContext context,
   Animation<double> animation,

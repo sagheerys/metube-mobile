@@ -10,8 +10,10 @@ import 'package:mt_core/mt_core.dart';
 
 Future<void> main(List<String> args) async {
   if (args.length < 5) {
-    print('Usage: dart tool/gate2_scenario.dart '
-        '<baseUrl> <user> <pass> <videoUrl> <autoDelete|keepOnServer>');
+    print(
+      'Usage: dart tool/gate2_scenario.dart '
+      '<baseUrl> <user> <pass> <videoUrl> <autoDelete|keepOnServer>',
+    );
     exit(64);
   }
   final [baseUrl, user, pass, videoUrl, policyName, ...] = args;
@@ -40,9 +42,12 @@ Future<void> main(List<String> args) async {
         '${outDir.path}/${buildLocalFilename(serverFilename, serverFilename: serverFilename)}',
   );
 
-  engine.updates.listen((t) => print(
+  engine.updates.listen(
+    (t) => print(
       '  [${t.phase.name}] ${(t.progress * 100).toStringAsFixed(0)}%'
-      '${t.error == null ? '' : ' — ${t.error}'}'));
+      '${t.error == null ? '' : ' — ${t.error}'}',
+    ),
+  );
 
   print('▸ submit ($policyName)...');
   final task = engine.submit(videoUrl, Quality.best);

@@ -8,7 +8,8 @@ import '../library/artwork_view.dart';
 import '../library/library_models.dart';
 import '../library/library_providers.dart';
 
-/// طلب تشغيل معلّق: القائمة المعروضة وقت النقر بترتيبها وتصفيتها (ر-4).
+/// A pending play request: the list on screen at the moment of the tap, in
+/// its order and with its filtering (rule 4).
 class PlaybackRequest {
   const PlaybackRequest({
     required this.items,
@@ -23,13 +24,13 @@ class PlaybackRequest {
   final String? playlistName;
 }
 
-/// يوضع قبل الانتقال إلى `/player` ثم تقرؤه الشاشة مرة واحدة.
-final playbackRequestProvider =
-    StateProvider<PlaybackRequest?>((ref) => null);
+/// Set before navigating to `/player`, then read once by the screen.
+final playbackRequestProvider = StateProvider<PlaybackRequest?>((ref) => null);
 
-/// جلسة الفيديو — تُبنى عند فتح المشغل وتُصرَّف عند مغادرته.
-/// تسجّل أبعاد كل مقطع تشغّله في `media_shape_index` فتتراكم معرفة
-/// «القِصار» بلا طلب إضافي من السيرفر (م-35).
+/// The video session, built when the player opens and disposed when it is
+/// left. It records the dimensions of every clip it plays into
+/// `media_shape_index`, so knowledge of what counts as a short accumulates
+/// with no extra request to the server.
 final videoSessionProvider = Provider.autoDispose<MTVideoSession>((ref) {
   final session = MTVideoSession(
     resolver: ref.watch(playbackResolverProvider),
@@ -37,24 +38,26 @@ final videoSessionProvider = Provider.autoDispose<MTVideoSession>((ref) {
     prefs: ref.watch(playbackPrefsProvider),
   );
   final shapes = ref.watch(mediaShapeIndexProvider);
-  // **علم الحياة قبل الإبطال (إصلاح م-6):** `remember` تنتظر القرص، وقد
-  // يُغلق المشغل خلالها فيُصرَّف هذا المزوّد (autoDispose) ⇒ `StateError`
-  // في السجل عند كل إغلاق سريع.
+  // **The liveness flag before invalidating (fix م-6):** `remember` waits
+  // on the disk, and the player may close during that wait so this provider
+  // is disposed (autoDispose), giving a `StateError` in the log on every
+  // quick close.
   var alive = true;
   ref.onDispose(() => alive = false);
   session.onShapeKnown = (url, duration, aspectRatio) async {
     await shapes.remember(url, duration, aspectRatio);
     if (alive) ref.invalidate(libraryItemsProvider);
   };
-  // **مخرج صوت واحد — بالاتجاهين.** فتح فيديو والصوت الخلفي يعمل كان
-  // يشغّل الاثنين معاً (خلل مصطاد على جهاز المالك)، وبقي الاتجاه
-  // المعاكس مفتوحاً حتى العطل ع-4: زر التشغيل في إشعار الوسائط — أو
-  // تشغيل صوتيات من شاشة القوائم المفتوحة فوق المشغل — كان يعزف فوق
-  // الفيديو العامل.
+  // **One audio output, in both directions.** Opening a video while
+  // background audio played used to play both at once (caught on a real
+  // device), and the opposite direction stayed open until defect ع-4: the
+  // play button in the media notification, or starting audio from the
+  // playlists screen opened over the player, played over the running video.
   final handler = ref.read(audioHandlerProvider);
   session.onTakeAudioFocus = handler.pause;
-  // **يُمسح تسجيلنا وحده** (2026-09-03): الريلز يسجّل موقِفه أيضاً، وشطب
-  // التسجيل بلا تمييز كان يترك الطرف الحي بلا حماية فيعزف مصدران معاً.
+  // **Only our own registration is cleared** (2026-09-03): reels registers
+  // its stopper too, and clearing the registration indiscriminately left
+  // the live side unprotected, so two sources played together.
   final pauseVideo = session.pause;
   handler.onTakeVideoFocus = pauseVideo;
   ref.onDispose(() {
@@ -66,24 +69,28 @@ final videoSessionProvider = Provider.autoDispose<MTVideoSession>((ref) {
   return session;
 });
 
-/// تحويل عنصر المكتبة إلى عنصر تشغيل موحد (المفتاح canonicalUrl).
+/// Converts a library item into a unified playback item, keyed by
+/// canonicalUrl.
 PlaylistItem toPlaylistItem(LibraryItem item) => PlaylistItem(
-      canonicalUrl: item.canonicalUrl,
-      title: item.title,
-      uploader: item.uploader,
-      artworkUrl: item.thumbnail,
-      localPath: item.localPath,
-      serverFilename: item.serverFilename,
-      isAudio: item.isAudio,
-      duration: item.duration,
-      aspectRatio: item.aspectRatio,
+  canonicalUrl: item.canonicalUrl,
+  title: item.title,
+  uploader: item.uploader,
+  artworkUrl: item.thumbnail,
+  localPath: item.localPath,
+  serverFilename: item.serverFilename,
+  isAudio: item.isAudio,
+  duration: item.duration,
+  aspectRatio: item.aspectRatio,
+);
+
+/// The thumbnail builder for the players; remote images carry the
+/// authentication headers.
+/// **The headers are read on every image build rather than once (fix
+/// م-9):** capturing them in the closure kept the old server's credentials
+/// after an automatic switch, so covers failed with 401 until the screen
+/// was rebuilt.
+MTArtworkBuilder artworkBuilderFor(WidgetRef ref) =>
+    (context, item) => artworkFor(
+      item.artworkUrl,
+      headers: ref.read(apiClientProvider)?.streamingHeaders,
     );
-
-
-/// باني المصغرات للمشغلات — الصور البعيدة بترويسات المصادقة (م-18).
-/// **الترويسات تُقرأ عند كل بناء صورة لا مرة واحدة (إصلاح م-9):**
-/// التقاطها في الإغلاق كان يُبقي اعتمادات السيرفر القديم بعد التبديل
-/// التلقائي، فتفشل الأغلفة بـ401 حتى إعادة بناء الشاشة.
-MTArtworkBuilder artworkBuilderFor(WidgetRef ref) => (context, item) =>
-    artworkFor(item.artworkUrl,
-        headers: ref.read(apiClientProvider)?.streamingHeaders);

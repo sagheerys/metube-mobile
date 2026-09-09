@@ -47,13 +47,15 @@ Future<void> expectNoOverflow(
     for (final scale in scales) {
       tester.view.devicePixelRatio = 1;
       tester.view.physicalSize = device.size;
-      await tester.pumpWidget(MediaQuery(
-        data: MediaQueryData(
-          size: device.size,
-          textScaler: TextScaler.linear(scale),
+      await tester.pumpWidget(
+        MediaQuery(
+          data: MediaQueryData(
+            size: device.size,
+            textScaler: TextScaler.linear(scale),
+          ),
+          child: build(),
         ),
-        child: build(),
-      ));
+      );
       await tester.pumpAndSettle();
       final error = tester.takeException();
       expect(

@@ -6,37 +6,41 @@ import 'package:mt_core/mt_core.dart';
 import '../../di.dart';
 import '../library/library_actions.dart' show superMediaDir;
 
-/// مجلد النسخ داخل مجلد وسائط التطبيق (§5.3).
+/// The backups folder, inside the app's media folder (§5.3).
 const superBackupDir = '$superMediaDir/backups';
 
-/// بادئة أسماء النسخ — **جديدة عمداً** (طلب المالك 2026-09-04): الاسم
-/// القديم `metube_super_backup.json` يملكه تثبيت سابق، وأندرويد 11+
-/// يمنع الكتابة فوقه (`errno 13`).
+/// The backup name prefix, **new on purpose** (requested 2026-09-04): the
+/// old name `metube_super_backup.json` is owned by an earlier install, and
+/// Android 11+ refuses to let this one write over it (`errno 13`).
 const superBackupPrefix = 'metube_super';
 
-final backupRotationProvider = Provider((ref) => BackupRotation(
-      directory: superBackupDir,
-      prefix: superBackupPrefix,
-    ));
+final backupRotationProvider = Provider(
+  (ref) => BackupRotation(directory: superBackupDir, prefix: superBackupPrefix),
+);
 
-final autoBackupProvider = Provider((ref) => AutoBackup(
-      service: ref.watch(backupServiceProvider),
-      rotation: ref.watch(backupRotationProvider),
-      logger: ref.watch(loggerProvider),
-    ));
+final autoBackupProvider = Provider(
+  (ref) => AutoBackup(
+    service: ref.watch(backupServiceProvider),
+    rotation: ref.watch(backupRotationProvider),
+    logger: ref.watch(loggerProvider),
+  ),
+);
 
-/// م-31 (سوبر — أُضيف 2026-09-04): نسخة تلقائية بعد كل تغيير بيانات.
+/// Automatic backup for Super (added 2026-09-04): a copy after every data
+/// change.
 ///
-/// كان لايت وحده ينسخ تلقائياً، بينما بيانات سوبر (الوسوم والقوائم على
-/// مئات العناصر) أثمن ولا يمكن إعادة تحميلها.
+/// Lite alone used to back up automatically, while Super's data, tags and
+/// playlists over hundreds of items, is more valuable and cannot be
+/// reloaded from anywhere.
 ///
-/// **الفخ الذي زال** (قرار المالك 2026-09-04): كانت النسخة مشفّرة
-/// بمفتاح يعيش في التخزين الآمن، فإلغاء التثبيت أو «مسح البيانات» يمحوه
-/// وتبقى النسخة على القرص **غير قابلة للفك** ما لم يكن المستخدم صدّر
-/// المفتاح — وهو ما لا يفعله أحد. الملف الآن نصّي بلا سرّ، فينجو دائماً.
+/// **The trap that is gone** (decision 2026-09-04): the copy used to be
+/// encrypted with a key living in secure storage, so uninstalling or
+/// clearing data wiped it and left the backup on disk **undecryptable**
+/// unless the user had exported the key, which nobody does. The file is
+/// now plain text with no secret in it, so it always survives.
 ///
-/// الدوران والكتابة الذرّية ومنع التكرار في [BackupRotation]؛ هنا
-/// التجميع الزمني وحده.
+/// Rotation, atomic writing and duplicate prevention live in
+/// [BackupRotation]; only the time-based batching lives here.
 class AutoBackup {
   AutoBackup({
     required this.service,
@@ -49,24 +53,27 @@ class AutoBackup {
   final BackupRotation rotation;
   final MTLogger logger;
 
-  /// تجميع التغييرات المتتابعة في كتابة واحدة (دفعة تحميل = ملف واحد).
+  /// Batches consecutive changes into one write: a download batch becomes
+  /// one file.
   final Duration debounce;
 
   Timer? _pending;
   bool _writing = false;
   bool _pendingRewrite = false;
 
-  /// يُستدعى بعد أي تغيير بيانات — لا ينتظره المستدعي فعلياً.
+  /// Called after any data change; the caller does not actually await it.
   Future<void> requestBackup() async {
     _pending?.cancel();
     _pending = Timer(debounce, () => unawaited(writeNow()));
   }
 
-  /// كتابة فورية. تعيد الملف المكتوب، أو `null` إن لم يتغير شيء منذ
-  /// آخر نسخة (أو فشلت الكتابة — والسبب في السجل).
+  /// An immediate write. Returns the file written, or `null` when nothing
+  /// changed since the last copy, or the write failed and the reason is in
+  /// the log.
   Future<BackupFile?> writeNow() async {
-    // **الطلب أثناء كتابة جارية يُعاد لا يُسقط (إصلاح م-5):** التغيير
-    // الأحدث كان يضيع حتى يقع تغيير تالٍ — وربما لا يقع أبداً.
+    // **A request during an in-flight write is repeated rather than dropped
+    // (fix م-5):** the newest change used to be lost until another change
+    // happened, and one might never happen.
     if (_writing) {
       _pendingRewrite = true;
       return null;
@@ -93,7 +100,7 @@ class AutoBackup {
   Future<List<BackupFile>> list() => rotation.list();
   Future<BackupFile?> latest() => rotation.latest();
 
-  /// استعادة نسخة بعينها.
+  /// Restores one specific copy.
   Future<ImportResult> restore(BackupFile file) async =>
       service.importFromString(await rotation.read(file));
 }

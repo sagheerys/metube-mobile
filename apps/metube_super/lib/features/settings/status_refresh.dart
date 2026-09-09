@@ -4,17 +4,22 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'network_screen.dart';
 import 'widgets/server_status_card.dart';
 
-/// **بطاقة الحالة كانت تكذب** (فحص 2026-09-06): `serverStatusProvider`
-/// مزوّد بلا `autoDispose` ولا مؤقّت — يُحسب مرة ويبقى محفوظاً، فلو
-/// سقط السيرفر بعد آخر فحص بقيت البطاقة «متصل» حتى يضغط المستخدم ↻.
+/// **The status card was lying** (review 2026-09-06):
+/// `serverStatusProvider` is a provider with no `autoDispose` and no
+/// timer, computed once and then kept, so if the server went down after
+/// the last probe the card stayed "connected" until the user pressed
+/// refresh.
 ///
-/// العودة إلى التطبيق أنسب لحظة لإعادة السؤال: رخيصة (طلب واحد)، وتقع
-/// تماماً حين ينظر المستخدم إلى الشاشة. ولا نضيف مؤقتاً دورياً: فحصٌ
-/// كل دقيقة يوقظ الشبكة بلا أن ينظر أحد.
+/// Returning to the app is the right moment to ask again: it is cheap, one
+/// request, and it falls exactly when the user is looking at the screen.
+/// And we add no periodic timer: probing every minute wakes the network
+/// with nobody watching.
 final statusRefreshProvider = Provider<void>((ref) {
-  final listener = AppLifecycleListener(onResume: () {
-    ref.invalidate(serverStatusProvider);
-    ref.invalidate(endpointsStatusProvider);
-  });
+  final listener = AppLifecycleListener(
+    onResume: () {
+      ref.invalidate(serverStatusProvider);
+      ref.invalidate(endpointsStatusProvider);
+    },
+  );
   ref.onDispose(listener.dispose);
 });

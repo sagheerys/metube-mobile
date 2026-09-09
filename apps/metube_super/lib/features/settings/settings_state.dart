@@ -4,8 +4,8 @@ import 'package:mt_core/mt_core.dart';
 
 import '../../di.dart';
 
-/// حالة إعدادات Super — تُحمَّل مرة عند الإقلاع ثم تُدار هنا حصراً.
-/// أسماء مفاتيح التخزين من `05-DATA-SCHEMA.md` §5.1 حرفياً.
+/// Super's settings state: loaded once at startup and managed here alone.
+/// Storage key names follow `05-DATA-SCHEMA.md` §5.1 exactly.
 class SuperSettings {
   const SuperSettings({
     this.localUrl = '',
@@ -27,51 +27,60 @@ class SuperSettings {
   final String localUrl;
   final List<String> externalUrls;
 
-  /// الرابط المعتمد حالياً (نتيجة آخر اختيار يدوي أو تبديل تلقائي).
+  /// The currently adopted endpoint, from the last manual choice or
+  /// automatic switch.
   final String? activeUrl;
   final bool autoSwitch;
   final String? username;
   final String? password;
   final Quality quality;
 
-  /// **التحميل السريع**: الرابط المشارَك/الملصوق ينزل فوراً بالجودة
-  /// الافتراضية بلا ورقة. يجعل «الجودة الافتراضية» إعداداً فاعلاً بدل
-  /// قيمة مبدئية في نافذة يعيد المستخدم اختيارها كل مرة.
+  /// **Quick download**: a shared or pasted link downloads immediately at
+  /// the default quality with no sheet. It makes "default quality" an
+  /// effective setting rather than an initial value in a dialog the user
+  /// re-chooses every time.
   final bool quickDownload;
 
-  /// السحب إلى الجهاز على Wi‑Fi فقط — الإضافة للسيرفر تبقى متاحة دائماً.
+  /// Pulling to the device on Wi-Fi only; adding to the server stays
+  /// available always.
   final bool wifiOnly;
 
-  /// **دفعة القائمة تُحفظ على الجهاز أيضاً** (طلب المالك 2026-09-03).
-  /// Super يضيف للسيرفر ولا يسحب (ر-2)؛ هذا يطبّق «إتاحة دون اتصال»
-  /// (م-17) تلقائياً على كل عضو دفعة يكتمل — الأصل يبقى على السيرفر.
+  /// **A playlist batch is saved to the device as well** (requested
+  /// 2026-09-03). Super adds to the server and does not pull (rule 2); this
+  /// applies "available offline" automatically to every batch member that
+  /// completes, and the original stays on the server.
   final bool saveBatchToDevice;
 
-  /// إعادة ما فشل بسبب الشبكة عند عودتها (لا ما رفضه الخادم).
+  /// Retries what failed because of the network once it returns, never what
+  /// the server refused.
   final bool autoRetry;
 
-  /// **أفضل توافق للتشغيل (H.264/AAC)** — بلاغ المالك 2026-09-03.
-  /// مقيس على السيرفر الحقيقي: جودة «الأفضل» وحدها تعطي VP9/AV1 في
-  /// webm، وفكّ AV1 عتادياً غائب عن أغلب الهواتف فتظهر الصورة ممزقة.
-  /// مفعّل افتراضياً؛ إطفاؤه يتيح أعلى دقة على حساب التوافق.
+  /// **Best playback compatibility (H.264/AAC)**, from field report
+  /// 2026-09-03. Measured against a real server: the "best" quality alone
+  /// yields VP9 or AV1 in webm, and hardware AV1 decoding is missing from
+  /// most phones, so the picture appears torn. On by default; turning it
+  /// off allows the highest resolution at the cost of compatibility.
   final bool compatiblePlayback;
   final ThemeMode themeMode;
 
-  /// null = لغة النظام (كشف أول تشغيل — م-30).
+  /// null means the system language (detected on first run).
   final String? localeCode;
 
   bool get isConfigured => (activeUrl ?? '').trim().isNotEmpty;
 
   ServerConfig? get serverConfig => isConfigured
       ? ServerConfig(
-          baseUrl: activeUrl!, username: username, password: password)
+          baseUrl: activeUrl!,
+          username: username,
+          password: password,
+        )
       : null;
 
-  /// كل المرشحين بترتيب الأفضلية (المحلي أولاً — ر-9).
+  /// Every candidate in preference order, local first (rule 9).
   List<String> get candidateUrls => [
-        if (localUrl.trim().isNotEmpty) localUrl,
-        ...externalUrls.where((u) => u.trim().isNotEmpty),
-      ];
+    if (localUrl.trim().isNotEmpty) localUrl,
+    ...externalUrls.where((u) => u.trim().isNotEmpty),
+  ];
 
   SuperSettings copyWith({
     String? localUrl,
@@ -89,34 +98,38 @@ class SuperSettings {
     ThemeMode? themeMode,
     String? localeCode,
     bool clearCredentials = false,
-    /// م-50: تمييز «امسح اللغة» عن «لا تغيّرها» — `null` وحدها لا تكفي.
-    bool clearLocale = false,
-  }) =>
-      SuperSettings(
-        localUrl: localUrl ?? this.localUrl,
-        externalUrls: externalUrls ?? this.externalUrls,
-        activeUrl: activeUrl ?? this.activeUrl,
-        autoSwitch: autoSwitch ?? this.autoSwitch,
-        username: clearCredentials ? null : (username ?? this.username),
-        password: clearCredentials ? null : (password ?? this.password),
-        quality: quality ?? this.quality,
-        quickDownload: quickDownload ?? this.quickDownload,
-        wifiOnly: wifiOnly ?? this.wifiOnly,
-        saveBatchToDevice: saveBatchToDevice ?? this.saveBatchToDevice,
-        autoRetry: autoRetry ?? this.autoRetry,
-        compatiblePlayback: compatiblePlayback ?? this.compatiblePlayback,
-        themeMode: themeMode ?? this.themeMode,
-        localeCode: clearLocale ? null : (localeCode ?? this.localeCode),
-      );
 
-  /// تحميل اللقطة الأولية قبل runApp.
+    /// Distinguishes "clear the language" from "do not change it": `null`
+    /// alone is not enough.
+    bool clearLocale = false,
+  }) => SuperSettings(
+    localUrl: localUrl ?? this.localUrl,
+    externalUrls: externalUrls ?? this.externalUrls,
+    activeUrl: activeUrl ?? this.activeUrl,
+    autoSwitch: autoSwitch ?? this.autoSwitch,
+    username: clearCredentials ? null : (username ?? this.username),
+    password: clearCredentials ? null : (password ?? this.password),
+    quality: quality ?? this.quality,
+    quickDownload: quickDownload ?? this.quickDownload,
+    wifiOnly: wifiOnly ?? this.wifiOnly,
+    saveBatchToDevice: saveBatchToDevice ?? this.saveBatchToDevice,
+    autoRetry: autoRetry ?? this.autoRetry,
+    compatiblePlayback: compatiblePlayback ?? this.compatiblePlayback,
+    themeMode: themeMode ?? this.themeMode,
+    localeCode: clearLocale ? null : (localeCode ?? this.localeCode),
+  );
+
+  /// Loads the initial snapshot before runApp.
   static Future<SuperSettings> load(
-      KeyValueStore store, SecretStore secrets) async {
+    KeyValueStore store,
+    SecretStore secrets,
+  ) async {
     final themeName = await store.getString('theme_mode');
     return SuperSettings(
       localUrl: await store.getString('local_url') ?? '',
       externalUrls: await store.getStringList('external_urls') ?? const [],
-      activeUrl: await store.getString('active_url') ??
+      activeUrl:
+          await store.getString('active_url') ??
           await store.getString('server_url'),
       autoSwitch: await store.getBool('auto_switch_enabled') ?? true,
       username: await secrets.read(SecretKeys.username),
@@ -124,8 +137,7 @@ class SuperSettings {
       quality: Quality.fromWire(await store.getString('video_quality')),
       quickDownload: await store.getBool('quick_download_enabled') ?? false,
       wifiOnly: await store.getBool('wifi_only_downloads') ?? false,
-      saveBatchToDevice:
-          await store.getBool('batch_save_to_device') ?? false,
+      saveBatchToDevice: await store.getBool('batch_save_to_device') ?? false,
       autoRetry: await store.getBool('auto_retry_downloads') ?? true,
       compatiblePlayback: await store.getBool('compatible_playback') ?? true,
       themeMode: ThemeMode.values.firstWhere(
@@ -145,19 +157,24 @@ class SettingsNotifier extends Notifier<SuperSettings> {
   SecretStore get _secrets => ref.read(secretStoreProvider);
   PrefsMutex get _mutex => ref.read(prefsMutexProvider);
 
-  /// إعادة قراءة كل الإعدادات من التخزين — بعد استيراد نسخة (ر-8).
+  /// Re-reads every setting from storage, after importing a backup (rule
+  /// 8).
   Future<void> reloadFromStore() async =>
       state = await SuperSettings.load(_store, _secrets);
 
-  /// ر-1: اختبار الاتصال ثم الحفظ — **لا حفظ صامت لإعداد فاسد**.
-  /// يرمي [MTApiException] مصنفاً ليعرضه UI.
+  /// Rule 1: test the connection, then save. **A broken setting is never
+  /// saved silently.** Throws a classified [MTApiException] for the UI to
+  /// display.
   Future<void> saveServer({
     required String url,
     String? username,
     String? password,
   }) async {
     final config = ServerConfig(
-        baseUrl: url, username: username, password: password);
+      baseUrl: url,
+      username: username,
+      password: password,
+    );
     final client = MeTubeApiClient(config: config);
     try {
       await client.testConnection();
@@ -220,22 +237,27 @@ class SettingsNotifier extends Notifier<SuperSettings> {
     state = state.copyWith(themeMode: mode);
   }
 
-  /// **`null` ⇒ «اتبع لغة النظام»** (م-50): يُمحى المفتاح فيعود
-  /// `localeCode` فارغاً كما كان يوم التركيب. بدون هذا كان الخيار
-  /// **باباً يُغلق ولا يُفتح**: أول لمسة للمبدّل تثبّت لغةً إلى الأبد،
-  /// ولا رجعة إلا بحذف بيانات التطبيق (ومعها المكتبة والمفضلة).
+  /// **`null` means "follow the system language"**: the key is erased so
+  /// `localeCode` returns empty, as it was on the day of installation.
+  /// Without this the option was **a door that closes and never opens**:
+  /// the first touch of the switch pinned a language forever, with no way
+  /// back short of clearing the app's data, and with it the library and the
+  /// favourites.
   Future<void> setLocale(String? code) async {
-    await _mutex.run(() => code == null
-        ? _store.remove('app_locale')
-        : _store.setString('app_locale', code));
+    await _mutex.run(
+      () => code == null
+          ? _store.remove('app_locale')
+          : _store.setString('app_locale', code),
+    );
     state = state.copyWith(localeCode: code, clearLocale: code == null);
   }
 
-  // ── الشبكة (م-28 / ر-9) ──
+  // Networking (endpoint switching).
 
   Future<void> setLocalUrl(String url) async {
-    final normalized =
-        url.trim().isEmpty ? '' : ServerConfig.normalizeBaseUrl(url);
+    final normalized = url.trim().isEmpty
+        ? ''
+        : ServerConfig.normalizeBaseUrl(url);
     await _mutex.run(() => _store.setString('local_url', normalized));
     state = state.copyWith(localUrl: normalized);
   }
@@ -247,8 +269,7 @@ class SettingsNotifier extends Notifier<SuperSettings> {
   }
 
   Future<void> removeExternalUrl(String url) async {
-    await _saveExternal(
-        state.externalUrls.where((u) => u != url).toList());
+    await _saveExternal(state.externalUrls.where((u) => u != url).toList());
   }
 
   Future<void> reorderExternalUrl(int oldIndex, int newIndex) async {
@@ -269,7 +290,8 @@ class SettingsNotifier extends Notifier<SuperSettings> {
     state = state.copyWith(autoSwitch: enabled);
   }
 
-  /// اعتماد رابط مستجيب (يدوياً أو من التبديل التلقائي) — بصمت (ر-9).
+  /// Adopts a responding endpoint, manually or from the automatic switch,
+  /// silently (rule 9).
   Future<void> adoptActiveUrl(String url) async {
     final normalized = ServerConfig.normalizeBaseUrl(url);
     if (normalized == state.activeUrl) return;

@@ -11,10 +11,11 @@ typedef HttpGetString = Future<String> Function(Uri uri);
 typedef HttpPostJson = Future<String> Function(Uri uri, Object body);
 
 /// A desktop browser identity: YouTube and SoundCloud return different
-/// pages, or refuse outright, depending on the agent, and `SOCS` clears
-/// the European cookie-consent wall.
+/// pages, or refuse outright, depending on the agent, and `SOCS` clears the
+/// European cookie-consent wall.
 const _browserHeaders = {
-  'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+  'user-agent':
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
       'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
   'accept-language': 'en-US,en;q=0.9',
 };
@@ -23,8 +24,7 @@ const _browserHeaders = {
 /// Every resolver consuming it is fail-safe and returns null on any
 /// problem.
 Future<String> ioHttpGetString(Uri uri) async {
-  final client = HttpClient()
-    ..connectionTimeout = const Duration(seconds: 10);
+  final client = HttpClient()..connectionTimeout = const Duration(seconds: 10);
   try {
     final request = await client.getUrl(uri);
     _browserHeaders.forEach(request.headers.set);
@@ -41,8 +41,7 @@ Future<String> ioHttpGetString(Uri uri) async {
 }
 
 Future<String> ioHttpPostJson(Uri uri, Object body) async {
-  final client = HttpClient()
-    ..connectionTimeout = const Duration(seconds: 10);
+  final client = HttpClient()..connectionTimeout = const Duration(seconds: 10);
   try {
     final request = await client.postUrl(uri);
     _browserHeaders.forEach(request.headers.set);

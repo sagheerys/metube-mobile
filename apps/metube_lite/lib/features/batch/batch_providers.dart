@@ -5,27 +5,33 @@ import 'package:mt_core/mt_core.dart';
 
 import '../../di.dart';
 
-/// معاينة قائمة (م-11): YouTube عبر InnerTube مباشرة (الحزمة الجاهزة
-/// كانت تعيد صفر عناصر — بلاغ 2026-09-02) وSoundCloud عبر الـ resolver
-/// الهش المعزول — أي فشل يظهر رسالة ولا يكسر شيئاً.
-final playlistPreviewProvider =
-    FutureProvider.family<PlaylistPreview?, String>((ref, url) async {
-  final preview = switch (PlaylistDetector.detect(url)) {
-    PlaylistKind.youtube => await YoutubePlaylistResolver().resolve(url),
-    PlaylistKind.soundcloud => await SoundCloudResolver().resolveSet(url),
-    PlaylistKind.none => null,
-  };
-  if (preview == null) {
-    // م-32: سبب الشاشة الفارغة يجب أن يبقى أثراً — لا أن يتبخر.
-    unawaited(ref
-        .read(loggerProvider)
-        .error('playlist resolve failed', tag: 'playlist'));
-  }
-  return preview;
-});
+/// Playlist preview: YouTube through InnerTube directly (the ready-made
+/// package returned zero items, reported 2026-09-02) and SoundCloud through
+/// the fragile, isolated resolver. Any failure shows a message and breaks
+/// nothing.
+final playlistPreviewProvider = FutureProvider.family<PlaylistPreview?, String>(
+  (ref, url) async {
+    final preview = switch (PlaylistDetector.detect(url)) {
+      PlaylistKind.youtube => await YoutubePlaylistResolver().resolve(url),
+      PlaylistKind.soundcloud => await SoundCloudResolver().resolveSet(url),
+      PlaylistKind.none => null,
+    };
+    if (preview == null) {
+      // The reason for an empty screen must leave a trace rather than
+      // evaporate.
+      unawaited(
+        ref
+            .read(loggerProvider)
+            .error('playlist resolve failed', tag: 'playlist'),
+      );
+    }
+    return preview;
+  },
+);
 
-/// إدراج المحدد في طابور المحرك (ر-3 خطوة 2) — العناصر تدخل خلف أي
-/// مفرد جارٍ وتُعلَّم كأعضاء دفعة.
+/// Enqueues the selection into the engine's queue (rule 3, step 2): the
+/// items go behind any single item in flight and are marked as batch
+/// members.
 final batchSubmitterProvider = Provider((ref) => BatchSubmitter(ref));
 
 class BatchSubmitter {
@@ -33,11 +39,13 @@ class BatchSubmitter {
 
   final Ref _ref;
 
-  /// يعيد عدد ما أُدرج فعلاً (0 = لا سيرفر مُعد).
+  /// Returns how many were actually enqueued (0 means no server
+  /// configured).
   ///
-  /// **[groupName] يجمع الدفعة في قائمة محفوظة واحدة** (سؤال المالك
-  /// 2026-09-02): قبله كانت عناصر الدورة الواحدة تتناثر في المكتبة بلا
-  /// أي رابط بينها. التجميع يحدث عند اكتمال كل عنصر، بترتيب المصدر.
+  /// **[groupName] collects the batch into one saved playlist** (asked
+  /// 2026-09-02): before it, the items of a single course scattered through
+  /// the library with no link between them. Collection happens as each item
+  /// completes, in source order.
   int submit(List<String> urls, Quality quality, {String? groupName}) {
     final engine = _ref.read(downloadEngineProvider);
     if (engine == null || urls.isEmpty) return 0;

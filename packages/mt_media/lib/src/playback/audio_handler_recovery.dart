@@ -53,18 +53,17 @@ extension MTAudioHandlerRecovery on MTAudioHandler {
   Future<void> persist() async {
     if (_queue.isEmpty) return;
     await savePosition();
-    await stateStore.write(AudioSessionSnapshot(
-      items: _queue.items,
-      index: _queue.index,
-      position: player.position,
-      playlistId: _playlistId,
-    ));
+    await stateStore.write(
+      AudioSessionSnapshot(
+        items: _queue.items,
+        index: _queue.index,
+        position: player.position,
+        playlistId: _playlistId,
+      ),
+    );
   }
 
-  Future<void> _loadCurrent({
-    required bool autoPlay,
-    Duration? startAt,
-  }) async {
+  Future<void> _loadCurrent({required bool autoPlay, Duration? startAt}) async {
     final generation = ++_generation;
     final item = _queue.current;
     if (item == null) return stop();
@@ -72,7 +71,8 @@ extension MTAudioHandlerRecovery on MTAudioHandler {
     if (source == null) return _onError(autoPlay: autoPlay);
 
     mediaItem.add(item.toMediaItem());
-    final resume = startAt ??
+    final resume =
+        startAt ??
         await positions.positionOf(item.canonicalUrl) ??
         Duration.zero;
     if (_isStale(generation)) return;

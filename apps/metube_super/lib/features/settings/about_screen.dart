@@ -3,12 +3,15 @@ import 'package:mt_ui/mt_ui.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-/// حول (م-33): الإصدار، المطور، المشروع، ما بُني عليه، إخلاء المسؤولية.
+/// About: the version, the developer, the project, what it is built on,
+/// and the disclaimer.
 ///
-/// **حُدِّثت 2026-09-09 مع فتح المصدر**: الشاشة كانت تقول «جميع الحقوق
-/// محفوظة» — وهو نقيض GPL-3.0 حرفياً — ولا تذكر الرخصة ولا تنفي الانتساب
-/// لمشروع MeTube. الرخصة تتوقّع أن يجد المستخدم إشعار الحقوق ونفي الضمان
-/// **داخل البرنامج** لا في المستودع وحده.
+/// **Updated 2026-09-09 with the open-sourcing**: the screen used to say
+/// "all rights reserved", which is the literal opposite of GPL-3.0, and
+/// named neither the licence nor the absence of any affiliation with the
+/// MeTube project. The licence expects the user to find the copyright
+/// notice and the warranty disclaimer **inside the program**, not in the
+/// repository alone.
 class AboutScreen extends StatelessWidget {
   const AboutScreen({super.key});
 
@@ -29,26 +32,32 @@ class AboutScreen extends StatelessWidget {
       appBar: AppBar(title: Text(l10n.about)),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(
-            MTSpace.pagePad, 0, MTSpace.pagePad, MTSpace.xxl),
+          MTSpace.pagePad,
+          0,
+          MTSpace.pagePad,
+          MTSpace.xxl,
+        ),
         children: [
           const SizedBox(height: MTSpace.lg),
           Center(
             child: Column(
               children: [
-                // **أيقونة التطبيق نفسها** لا رمزاً عاماً: الشاشة التي
-                // تُعرِّف بالتطبيق أولى مكان يظهر فيه وجهه.
+                // **The app's own icon**, not a generic glyph: the screen
+                // that introduces the app is the first place its face
+                // should appear.
                 Image.asset(
                   'assets/icons/icon.png',
                   width: 76,
                   height: 76,
-                  cacheWidth:
-                      (76 * MediaQuery.devicePixelRatioOf(context)).round(),
+                  cacheWidth: (76 * MediaQuery.devicePixelRatioOf(context))
+                      .round(),
                 ),
                 const SizedBox(height: MTSpace.md),
                 Text(l10n.appTitle, style: text.headlineMedium),
                 const SizedBox(height: MTSpace.xxs),
-                // **بلا رقم البناء**: `2.0.0+1` صيغة Flutter، و`+1` عدّاد
-                // داخلي لأندرويد لا يعني المستخدم شيئاً (بلاغ المالك).
+                // **Without the build number**: `2.0.0+1` is Flutter's
+                // notation, and `+1` is an internal Android counter that
+                // means nothing to the user (field report).
                 FutureBuilder<PackageInfo>(
                   future: PackageInfo.fromPlatform(),
                   builder: (context, snapshot) => Text(
@@ -59,8 +68,10 @@ class AboutScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: MTSpace.xxs),
-                Text(l10n.licensedUnder,
-                    style: text.labelSmall!.copyWith(color: p.ink3)),
+                Text(
+                  l10n.licensedUnder,
+                  style: text.labelSmall!.copyWith(color: p.ink3),
+                ),
               ],
             ),
           ),
@@ -100,8 +111,8 @@ class AboutScreen extends StatelessWidget {
             onTap: () => showLicensePage(
               context: context,
               applicationName: l10n.appTitle,
-              // صفحة التراخيص تعرض الحزم وحدها؛ رخصة التطبيق نفسه تُمرَّر
-              // هنا وإلا بقيت غير معروضة في أي مكان.
+              // The licences page lists the packages alone; the app's own
+              // licence is passed here, or it would appear nowhere at all.
               applicationLegalese: '${l10n.copyright}\n${l10n.licensedUnder}',
             ),
           ),
@@ -124,20 +135,28 @@ class AboutScreen extends StatelessWidget {
           const SizedBox(height: MTSpace.xl),
           MTSectionHeader(title: l10n.disclaimer),
           const SizedBox(height: MTSpace.sm),
-          // نفي الانتساب أولاً: الاسم يقول ما يتصل به التطبيق لا من صنعه.
-          Text(l10n.notAffiliated,
-              style: text.bodySmall!.copyWith(
-                  color: p.ink2, fontWeight: FontWeight.w700)),
+          // The disclaimer of affiliation comes first: the name says what
+          // the app connects to, not who made it.
+          Text(
+            l10n.notAffiliated,
+            style: text.bodySmall!.copyWith(
+              color: p.ink2,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
           const SizedBox(height: MTSpace.sm),
-          Text(l10n.disclaimerText,
-              style: text.bodySmall!.copyWith(color: p.ink2)),
+          Text(
+            l10n.disclaimerText,
+            style: text.bodySmall!.copyWith(color: p.ink2),
+          ),
           const SizedBox(height: MTSpace.sm),
-          Text(l10n.noWarranty,
-              style: text.bodySmall!.copyWith(color: p.ink3)),
+          Text(l10n.noWarranty, style: text.bodySmall!.copyWith(color: p.ink3)),
           const SizedBox(height: MTSpace.xl),
           Center(
-            child: Text(l10n.copyright,
-                style: text.labelSmall!.copyWith(color: p.ink3)),
+            child: Text(
+              l10n.copyright,
+              style: text.labelSmall!.copyWith(color: p.ink3),
+            ),
           ),
         ],
       ),
@@ -159,8 +178,8 @@ class _LinkTile extends StatelessWidget {
   final String subtitle;
   final String url;
 
-  /// الروابط تُعزل LTR كي لا تنقلب أجزاؤها في العربية؛ أما الوصف المترجم
-  /// فيتبع اتجاه اللغة.
+  /// URLs are isolated as LTR so their parts do not reverse in Arabic,
+  /// while a translated description follows the language's direction.
   final bool ltrSubtitle;
 
   @override
@@ -170,9 +189,11 @@ class _LinkTile extends StatelessWidget {
       contentPadding: EdgeInsets.zero,
       leading: Icon(icon, color: p.ink2),
       title: Text(title),
-      subtitle: Text(subtitle,
-          textDirection: ltrSubtitle ? TextDirection.ltr : null,
-          style: Theme.of(context).textTheme.bodySmall),
+      subtitle: Text(
+        subtitle,
+        textDirection: ltrSubtitle ? TextDirection.ltr : null,
+        style: Theme.of(context).textTheme.bodySmall,
+      ),
       trailing: const Icon(Icons.open_in_new_rounded, size: 17),
       onTap: () =>
           launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication),

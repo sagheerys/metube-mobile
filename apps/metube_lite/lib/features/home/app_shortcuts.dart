@@ -1,14 +1,14 @@
 import 'package:flutter/services.dart';
 
-/// وجهات اختصارات ضغطة الأيقونة المطولة (م-41).
+/// Destinations for the long-press launcher shortcuts.
 enum AppShortcut {
-  /// لصق رابط الحافظة وبدء تحميله.
+  /// Paste the clipboard link and start downloading it.
   paste,
 
-  /// المكتبة مصفّاة على ⚡ القِصار.
+  /// The library filtered to shorts.
   shorts,
 
-  /// المكتبة مصفّاة على الصوتيات.
+  /// The library filtered to audio.
   audio;
 
   static AppShortcut? parse(String? name) {
@@ -19,14 +19,16 @@ enum AppShortcut {
   }
 }
 
-/// جسر قناة `consumeShortcut`.
+/// The bridge to the `consumeShortcut` channel.
 ///
-/// **يُستهلك مرة واحدة** من الجانب الأصلي: الاختصار نية لحظية، وإبقاؤه
-/// في النية يعيد تنفيذه عند كل عودة للتطبيق من المهام الأخيرة.
+/// **It is consumed once** on the native side: a shortcut is a momentary
+/// intention, and leaving it in the intent re-runs it every time the user
+/// returns to the app from recents.
 ///
-/// الوجهة تصل من **فعل** النية (`<pkg>.SHORTCUT_<NAME>`) لا من رابط —
-/// أي `data` في النية يختطفها Flutter كمسار إقلاع فيرمي go_router
-/// «Page Not Found» (خلل مصطاد على المحاكي 2026-09-02).
+/// The destination arrives in the intent's **action**
+/// (`<pkg>.SHORTCUT_<NAME>`) rather than in a URL: any `data` in the
+/// intent is hijacked by Flutter as a launch route and go_router throws
+/// "Page Not Found" (caught on the emulator 2026-09-02).
 class AppShortcuts {
   const AppShortcuts({this.channelName = 'metube_lite/media'});
 
@@ -38,7 +40,8 @@ class AppShortcuts {
           .invokeMethod<String>('consumeShortcut');
       return AppShortcut.parse(name);
     } on Object {
-      // منصة بلا القناة (اختبارات، سطح مكتب) ⇒ لا اختصار.
+      // A platform without the channel, tests or desktop, means no
+      // shortcut.
       return null;
     }
   }

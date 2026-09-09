@@ -24,11 +24,11 @@ class AudioSessionSnapshot {
   bool get isEmpty => items.isEmpty;
 
   Map<String, dynamic> toJson() => {
-        'items': items.map((i) => i.toJson()).toList(),
-        'index': index,
-        'positionMs': position.inMilliseconds,
-        if (playlistId != null) 'playlistId': playlistId,
-      };
+    'items': items.map((i) => i.toJson()).toList(),
+    'index': index,
+    'positionMs': position.inMilliseconds,
+    if (playlistId != null) 'playlistId': playlistId,
+  };
 }
 
 /// The `audio_state` store (§5.1): written periodically and on every item
@@ -53,8 +53,7 @@ class AudioStateStore {
       final items = <PlaylistItem>[];
       for (final entry in rawItems) {
         if (entry is Map) {
-          final item =
-              PlaylistItem.fromJson(Map<String, dynamic>.from(entry));
+          final item = PlaylistItem.fromJson(Map<String, dynamic>.from(entry));
           if (item != null) items.add(item);
         }
       }
@@ -64,8 +63,9 @@ class AudioStateStore {
       return AudioSessionSnapshot(
         items: items,
         index: index is num ? index.toInt().clamp(0, items.length - 1) : 0,
-        position:
-            Duration(milliseconds: ms is num ? ms.toInt().clamp(0, 1 << 40) : 0),
+        position: Duration(
+          milliseconds: ms is num ? ms.toInt().clamp(0, 1 << 40) : 0,
+        ),
         playlistId: decoded['playlistId']?.toString(),
       );
     } on FormatException {
@@ -73,9 +73,8 @@ class AudioStateStore {
     }
   }
 
-  Future<void> write(AudioSessionSnapshot snapshot) => mutex.run(
-        () => store.setString(key, json.encode(snapshot.toJson())),
-      );
+  Future<void> write(AudioSessionSnapshot snapshot) =>
+      mutex.run(() => store.setString(key, json.encode(snapshot.toJson())));
 
   /// Cleared on `stop()`, or the ghost player returns after a restart.
   Future<void> clear() => mutex.run(() => store.remove(key));

@@ -5,16 +5,16 @@ import 'package:mt_ui/mt_ui.dart';
 import 'di.dart';
 import 'router.dart';
 
-/// جذر MeTube Lite: ثيم «وهج» بلون الفعل الخليجي البترولي + الترجمة
-/// + الراوتر (الهوية واحدة والاختلاف وظيفي فقط — `01-PRD.md` §1.4).
+/// The MeTube Lite root: the Wahaj theme with the petrol bay accent, plus
+/// localisation and the router. The identity is one and the difference is
+/// functional only (`01-PRD.md` §1.4).
 class LiteApp extends ConsumerWidget {
   const LiteApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(settingsProvider.select((s) => s.themeMode));
-    final localeCode =
-        ref.watch(settingsProvider.select((s) => s.localeCode));
+    final localeCode = ref.watch(settingsProvider.select((s) => s.localeCode));
 
     return MaterialApp.router(
       title: 'MeTube Lite',
@@ -26,8 +26,10 @@ class LiteApp extends ConsumerWidget {
       localizationsDelegates: MTLocalizations.localizationsDelegates,
       supportedLocales: MTLocalizations.supportedLocales,
       routerConfig: router,
-      // **أشرطة النظام تتبع الثيم** — بلا حجاب التباين الذي يفرضه
-      // أندرويد خلف أزرار التنقل الثلاثة فيقطع لون الشريط السفلي.
+      // **The system bars follow the theme**, without the contrast scrim
+      // Android imposes behind the three navigation buttons, which cuts
+      // across
+      // the colour of the bottom bar.
       builder: (context, child) =>
           MTSystemBars(child: child ?? const SizedBox.shrink()),
     );

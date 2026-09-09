@@ -45,15 +45,16 @@ abstract final class InnertubeParser {
   static String? continuationToken(Object? data) {
     String? token;
     walk(data, (map) {
-      final item = map['continuationItemRenderer'] ?? map['continuationItemViewModel'];
+      final item =
+          map['continuationItemRenderer'] ?? map['continuationItemViewModel'];
       if (item is! Map) return;
       final direct = item['continuationEndpoint']?['continuationCommand'];
       if (direct is Map && direct['token'] is String) {
         token = direct['token'] as String;
         return;
       }
-      final nested = item['continuationCommand']?['innertubeCommand']
-          ?['continuationCommand'];
+      final nested =
+          item['continuationCommand']?['innertubeCommand']?['continuationCommand'];
       if (nested is Map && nested['token'] is String) {
         token = nested['token'] as String;
       }
@@ -65,9 +66,9 @@ abstract final class InnertubeParser {
     if (lockup['contentType'] != 'LOCKUP_CONTENT_TYPE_VIDEO') return null;
     final id = lockup['contentId']?.toString();
     if (id == null || id.isEmpty) return null;
-    final title = lockup['metadata']?['lockupMetadataViewModel']?['title']
-            ?['content']
-        ?.toString();
+    final title =
+        lockup['metadata']?['lockupMetadataViewModel']?['title']?['content']
+            ?.toString();
     return PlaylistTrack(
       url: 'https://www.youtube.com/watch?v=$id',
       title: title ?? id,
@@ -98,7 +99,10 @@ abstract final class InnertubeParser {
     return parts.length == 2
         ? Duration(minutes: numbers[0]!, seconds: numbers[1]!)
         : Duration(
-            hours: numbers[0]!, minutes: numbers[1]!, seconds: numbers[2]!);
+            hours: numbers[0]!,
+            minutes: numbers[1]!,
+            seconds: numbers[2]!,
+          );
   }
 
   /// A deep walk over the JSON: YouTube's structure changes often, so

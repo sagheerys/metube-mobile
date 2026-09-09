@@ -41,33 +41,47 @@ void main() {
   group('PlaylistDetector — التوجيه التلقائي (م-5)', () {
     test('يوتيوب list= ⇒ youtube', () {
       expect(
-          PlaylistDetector.detect(
-              'https://www.youtube.com/watch?v=dQw4w9WgXcQ&list=PLabc'),
-          PlaylistKind.youtube);
+        PlaylistDetector.detect(
+          'https://www.youtube.com/watch?v=dQw4w9WgXcQ&list=PLabc',
+        ),
+        PlaylistKind.youtube,
+      );
     });
 
     test('يوتيوب /playlist ⇒ youtube', () {
-      expect(PlaylistDetector.detect('https://www.youtube.com/playlist?list=PLx'),
-          PlaylistKind.youtube);
+      expect(
+        PlaylistDetector.detect('https://www.youtube.com/playlist?list=PLx'),
+        PlaylistKind.youtube,
+      );
     });
 
     test('SoundCloud /sets/ ⇒ soundcloud', () {
-      expect(PlaylistDetector.detect('https://soundcloud.com/artist/sets/mylist'),
-          PlaylistKind.soundcloud);
+      expect(
+        PlaylistDetector.detect('https://soundcloud.com/artist/sets/mylist'),
+        PlaylistKind.soundcloud,
+      );
     });
 
     test('فيديو مفرد ⇒ none', () {
-      expect(PlaylistDetector.detect('https://www.youtube.com/watch?v=dQw4w9WgXcQ'),
-          PlaylistKind.none);
-      expect(PlaylistDetector.detect('https://soundcloud.com/artist/track'),
-          PlaylistKind.none);
-      expect(PlaylistDetector.isPlaylist('https://youtu.be/dQw4w9WgXcQ'),
-          isFalse);
+      expect(
+        PlaylistDetector.detect('https://www.youtube.com/watch?v=dQw4w9WgXcQ'),
+        PlaylistKind.none,
+      );
+      expect(
+        PlaylistDetector.detect('https://soundcloud.com/artist/track'),
+        PlaylistKind.none,
+      );
+      expect(
+        PlaylistDetector.isPlaylist('https://youtu.be/dQw4w9WgXcQ'),
+        isFalse,
+      );
     });
 
     test('list فارغ ⇒ none', () {
-      expect(PlaylistDetector.detect('https://www.youtube.com/watch?v=x&list='),
-          PlaylistKind.none);
+      expect(
+        PlaylistDetector.detect('https://www.youtube.com/watch?v=x&list='),
+        PlaylistKind.none,
+      );
     });
   });
 }

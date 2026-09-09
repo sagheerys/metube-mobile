@@ -6,20 +6,21 @@ import '../../di.dart';
 import '../shared/async_view.dart';
 import 'library_models.dart';
 
-/// عناصر المكتبة الموحدة: done السيرفر + الفهرس المحلي، مفتاح الدمج
-/// canonicalUrl بالمطابقة الضبابية (م-13).
+/// The unified library items: the server's done list plus the local index,
+/// merged on canonicalUrl with fuzzy matching.
 final libraryItemsProvider = FutureProvider<List<LibraryItem>>((ref) async {
   final history = await ref.watch(historyProvider.future);
   final offline = await ref.watch(offlineIndexProvider).readAll();
   final tags = await ref.watch(tagsIndexProvider).readAll();
   final artwork = await ref.watch(artworkIndexProvider).readAll();
-  final Map<String, MediaShape> shapes =
-      await ref.watch(mediaShapeIndexProvider).readAll();
+  final Map<String, MediaShape> shapes = await ref
+      .watch(mediaShapeIndexProvider)
+      .readAll();
 
   List<String> userTags(String url) => [
-        for (final t in tags[url] ?? const <String>[])
-          if (t != MTConstants.favoritesSystemTag) t,
-      ];
+    for (final t in tags[url] ?? const <String>[])
+      if (t != MTConstants.favoritesSystemTag) t,
+  ];
   bool isFavorite(String url) =>
       (tags[url] ?? const []).contains(MTConstants.favoritesSystemTag);
 
@@ -31,9 +32,10 @@ final libraryItemsProvider = FutureProvider<List<LibraryItem>>((ref) async {
       if (entry.isCompleted) entry,
   ];
 
-  // **تمريرتان لا واحدة** (عطل المالك 2026-09-08): المطابقة الحرفية
-  // أولاً **لكل** العناصر، ثم الضبابية على ما بقي. بتمريرة واحدة يسرق
-  // عنصرٌ سابق بمطابقة ضبابية مفتاحاً يملكه عنصر لاحق حرفياً.
+  // **Two passes rather than one** (defect found 2026-09-08): exact
+  // matching first for **all** items, then fuzzy matching over what
+  // remains. With a single pass, an earlier item takes by a fuzzy match a
+  // key a later item owns exactly.
   final localOf = <String, String>{};
   for (final entry in done) {
     final exact = offline[entry.canonicalUrl];
@@ -44,10 +46,11 @@ final libraryItemsProvider = FutureProvider<List<LibraryItem>>((ref) async {
   for (final entry in done) {
     if (localOf.containsKey(entry.canonicalUrl)) continue;
     for (final MapEntry(:key, :value) in offline.entries) {
-      // **الملف الواحد لا يُمنح لعنصرين**: كانت روابط فيسبوك تتطابق
-      // كلها (أُصلح في `UrlKit`)، فيظهر ملف العنصر المُتاح دون اتصال
-      // تحت كل عناصر فيسبوك ويُفتح في المشغل الخارجي بدلاً عنها.
-      // الحدّ هنا يجعل العرَض مستحيلاً ولو تصادمت مطابقةٌ أخرى غداً.
+      // **One file is never given to two items**: Facebook URLs all matched
+      // each other (fixed in `UrlKit`), so the offline item's file appeared
+      // under every Facebook item and opened in the external player in
+      // their place. This bound makes the symptom impossible even if
+      // another matching rule collides tomorrow.
       if (matchedLocal.contains(key)) continue;
       if (UrlKit.urlsMatch(key, entry.canonicalUrl)) {
         localOf[entry.canonicalUrl] = value;
@@ -60,34 +63,39 @@ final libraryItemsProvider = FutureProvider<List<LibraryItem>>((ref) async {
   for (final entry in done) {
     final localPath = localOf[entry.canonicalUrl];
     final shape = shapes[entry.canonicalUrl];
-    items.add(LibraryItem.fromHistory(
-      entry,
-      localPath: localPath,
-      favorite: isFavorite(entry.canonicalUrl),
-      tags: userTags(entry.canonicalUrl),
-      duration: shape?.duration,
-      aspectRatio: shape?.aspectRatio,
-      cachedThumb: artwork[entry.canonicalUrl],
-    ));
+    items.add(
+      LibraryItem.fromHistory(
+        entry,
+        localPath: localPath,
+        favorite: isFavorite(entry.canonicalUrl),
+        tags: userTags(entry.canonicalUrl),
+        duration: shape?.duration,
+        aspectRatio: shape?.aspectRatio,
+        cachedThumb: artwork[entry.canonicalUrl],
+      ),
+    );
   }
 
-  // محلي لم يعد على السيرفر (حُذف هناك) — يبقى في المكتبة الموحدة.
+  // Local and no longer on the server, deleted there, but still in the
+  // unified library.
   for (final MapEntry(:key, :value) in offline.entries) {
     if (matchedLocal.contains(key)) continue;
-    items.add(LibraryItem.fromOfflineOnly(
-      key,
-      value,
-      favorite: isFavorite(key),
-      tags: userTags(key),
-      cachedThumb: artwork[key],
-      duration: shapes[key]?.duration,
-      aspectRatio: shapes[key]?.aspectRatio,
-    ));
+    items.add(
+      LibraryItem.fromOfflineOnly(
+        key,
+        value,
+        favorite: isFavorite(key),
+        tags: userTags(key),
+        cachedThumb: artwork[key],
+        duration: shapes[key]?.duration,
+        aspectRatio: shapes[key]?.aspectRatio,
+      ),
+    );
   }
   return items;
 });
 
-/// خيارات العرض + التحديد المتعدد — الفرز والعرض محفوظان (م-14).
+/// View options plus multi-select. Sorting and the view mode are saved.
 class LibraryViewOptions {
   const LibraryViewOptions({
     this.scope = LibraryScope.all,
@@ -105,30 +113,32 @@ class LibraryViewOptions {
   final MediaTypeFilter type;
   final String query;
 
-  /// وسوم التضمين (أو بينها) والاستثناء — تصفية مركبة بلا شاشة جديدة.
+  /// Included tags (OR between them) and excluded ones: compound filtering
+  /// with no extra screen.
   final Set<String> tags;
   final Set<String> excludedTags;
 
-  /// **مرشح المنصة** (طلب المالك 2026-09-08 — مثل Lite): يعيش في ورقة
-  /// الفرز لا في صفٍّ ثالث من الرقائق، فالمكتبة هنا فوقها صف مرشحات
-  /// وصف وسوم أصلاً وثالثٌ كان سيدفع أول بطاقة خارج الشاشة. المنصة
-  /// المختارة تظهر رقاقةً قابلة للإزالة في **الصف الأول**.
+  /// **The platform filter** (requested 2026-09-08, as in Lite): it lives
+  /// in the sort sheet rather than a third row of chips, because this
+  /// library already has a filter row and a tag row above it and a third
+  /// would push the first card off screen. The chosen platform appears as a
+  /// removable chip in **the first row**.
   final MediaPlatform? platform;
   final LibrarySort sort;
 
-  /// وضع العرض المحفوظ — واحد من أربعة، لا أعلام متداخلة.
+  /// The saved view mode: one of four, not overlapping flags.
   final LibraryViewMode mode;
 
   bool get compact => mode == LibraryViewMode.compact;
   bool get grid => mode == LibraryViewMode.grid;
   bool get cards => mode == LibraryViewMode.cards;
 
-  /// canonicalUrl المحددة — غير فارغة = وضع التحديد (ر-6).
+  /// How many filters are active above "all", for the sort button's badge.
   final Set<String> selection;
 
   bool get selecting => selection.isNotEmpty;
 
-  /// عدد المرشحات النشطة فوق «الكل» — لشارة زر الفرز.
+  /// How many filters are active above "all", for the sort button's badge.
   int get activeFilters =>
       (scope == LibraryScope.all ? 0 : 1) +
       (type == MediaTypeFilter.all ? 0 : 1) +
@@ -146,20 +156,20 @@ class LibraryViewOptions {
     LibrarySort? sort,
     LibraryViewMode? mode,
     Set<String>? selection,
-  }) =>
-      LibraryViewOptions(
-        scope: scope ?? this.scope,
-        type: type ?? this.type,
-        query: query ?? this.query,
-        tags: tags ?? this.tags,
-        excludedTags: excludedTags ?? this.excludedTags,
-        // دالة لا قيمة: `null` تعني «لا تغيير» في كل حقل آخر، وهنا
-        // `null` قيمةٌ صالحة تعني «كل المنصات».
-        platform: platform == null ? this.platform : platform(),
-        sort: sort ?? this.sort,
-        mode: mode ?? this.mode,
-        selection: selection ?? this.selection,
-      );
+  }) => LibraryViewOptions(
+    scope: scope ?? this.scope,
+    type: type ?? this.type,
+    query: query ?? this.query,
+    tags: tags ?? this.tags,
+    excludedTags: excludedTags ?? this.excludedTags,
+    // A function rather than a value: `null` means "no change" for
+    // every other field, and here `null` is a valid value meaning "all
+    // platforms".
+    platform: platform == null ? this.platform : platform(),
+    sort: sort ?? this.sort,
+    mode: mode ?? this.mode,
+    selection: selection ?? this.selection,
+  );
 }
 
 class LibraryViewNotifier extends Notifier<LibraryViewOptions> {
@@ -173,21 +183,22 @@ class LibraryViewNotifier extends Notifier<LibraryViewOptions> {
     final store = ref.read(keyValueStoreProvider);
     final sortName = await store.getString('video_sort_option');
     state = state.copyWith(
-      sort: LibrarySort.values
-          .where((s) => s.name == sortName)
-          .firstOrNull ??
+      sort:
+          LibrarySort.values.where((s) => s.name == sortName).firstOrNull ??
           LibrarySort.newest,
       mode: await _restoreMode(store),
     );
   }
 
-  /// **هجرة صامتة من المفتاحين القديمين**: من يحدّث التطبيق وهو على
-  /// «مضغوط» أو «شبكي» يجب أن يجد وضعه كما تركه — لا أن يرتد للقائمة.
-  /// المفتاح الجديد يُكتب عند أول تغيير، والقديمان يُقرآن ما لم يوجد.
+  /// **A silent migration from the two old keys**: someone updating the app
+  /// while on compact or grid must find their mode as they left it, not be
+  /// thrown back to the list. The new key is written on the first change,
+  /// and the old two are read when it is absent.
   Future<LibraryViewMode> _restoreMode(KeyValueStore store) async {
     final name = await store.getString('library_view_mode');
-    final saved =
-        LibraryViewMode.values.where((m) => m.name == name).firstOrNull;
+    final saved = LibraryViewMode.values
+        .where((m) => m.name == name)
+        .firstOrNull;
     if (saved != null) return saved;
     if (await store.getBool('library_grid_view') ?? false) {
       return LibraryViewMode.grid;
@@ -204,14 +215,14 @@ class LibraryViewNotifier extends Notifier<LibraryViewOptions> {
   void setPlatform(MediaPlatform? platform) =>
       state = state.copyWith(platform: () => platform);
 
-  /// وسم واحد يحل محل كل شيء — قدوم من تبويب «وسومك» (م-37/ج).
+  /// One tag replaces everything, arriving from the "your tags" tab.
   void setTag(String? tag) => state = state.copyWith(
-        tags: tag == null ? const {} : {tag},
-        excludedTags: const {},
-      );
+    tags: tag == null ? const {} : {tag},
+    excludedTags: const {},
+  );
 
-  /// **دورة الوسم الثلاثية**: محايد ← مُضمَّن ← مُستثنى ← محايد.
-  /// دورة واحدة على نفس الرقاقة تغني عن قائمة منسدلة وشاشة إعدادات.
+  /// **The three-state tag cycle**: neutral, included, excluded, neutral.
+  /// One cycle on the same chip saves a dropdown and a settings screen.
   void cycleTag(String tag) {
     final included = Set<String>.from(state.tags);
     final excluded = Set<String>.from(state.excludedTags);
@@ -229,16 +240,21 @@ class LibraryViewNotifier extends Notifier<LibraryViewOptions> {
   Future<void> setSort(LibrarySort sort) async {
     state = state.copyWith(sort: sort);
     final mutex = ref.read(prefsMutexProvider);
-    await mutex.run(() =>
-        ref.read(keyValueStoreProvider).setString('video_sort_option', sort.name));
+    await mutex.run(
+      () => ref
+          .read(keyValueStoreProvider)
+          .setString('video_sort_option', sort.name),
+    );
   }
 
   Future<void> setMode(LibraryViewMode mode) async {
     state = state.copyWith(mode: mode);
     final mutex = ref.read(prefsMutexProvider);
-    await mutex.run(() => ref
-        .read(keyValueStoreProvider)
-        .setString('library_view_mode', mode.name));
+    await mutex.run(
+      () => ref
+          .read(keyValueStoreProvider)
+          .setString('library_view_mode', mode.name),
+    );
   }
 
   void toggleSelected(String canonicalUrl) {
@@ -257,24 +273,28 @@ class LibraryViewNotifier extends Notifier<LibraryViewOptions> {
 
 final libraryViewProvider =
     NotifierProvider<LibraryViewNotifier, LibraryViewOptions>(
-        LibraryViewNotifier.new);
+      LibraryViewNotifier.new,
+    );
 
-/// القائمة المعروضة بعد التصفية والفرز.
+/// The list on screen after filtering and sorting.
 ///
-/// **`whenData` كان يمحو البيانات المحفوظة** (بلاغ المالك 2026-09-03:
-/// «لا يزال هناك وميض في المكتبة أثناء التحميل»). الدالة توزّع على
-/// **نوع** الحالة لا على وجود قيمة، فتعيد عند `AsyncLoading` نسخة
-/// **جديدة فارغة** — فيضيع ما يحتفظ به Riverpod من بيانات سابقة.
+/// **`whenData` was erasing the retained data** (field report 2026-09-03:
+/// "the library still flickers while loading"). That function dispatches on
+/// the **type** of the state rather than on whether a value exists, so on
+/// `AsyncLoading` it returns a **new empty** instance and whatever Riverpod
+/// was holding from before is lost.
 ///
-/// والأثر ليس وميضاً خاطفاً: الاستطلاع الحي يُبطل السجل كل ثانيتين
-/// وجلب `/history` لسيرفر فيه 261 عنصراً يستغرق قريباً من ذلك، فيبقى
-/// المزوّد في حالة تحميل شبه متصلة. **قياس بتسجيل شاشة على المحاكي:
-/// المكتبة استُبدلت بدوّارة ١٣ ثانية متصلة أثناء تحميل واحد، ثم عادت
-/// لحظة توقف الاستطلاع.** الترتيب في الشاشة كان سليماً — لكن القيمة
-/// كانت قد أُتلفت قبل أن تصله.
+/// And the effect is not a brief flicker: live polling invalidates the
+/// history every two seconds, and fetching `/history` for a server with 261
+/// items takes about that long, so the provider stays in a nearly
+/// continuous loading state. **Measured with a screen recording on the
+/// emulator: the library was replaced by a spinner for 13 unbroken seconds
+/// during one download, and returned the moment polling stopped.** The
+/// ordering in the screen was correct; the value had simply been destroyed
+/// before it arrived.
 ///
-/// القاعدة الآن صريحة: **قيمة موجودة ⇒ تُعرض · وإلا الخطأ · وإلا
-/// التحميل**.
+/// The rule is now explicit: **a value exists, show it; else the error;
+/// else loading.**
 final visibleLibraryProvider = Provider<AsyncValue<List<LibraryItem>>>((ref) {
   final options = ref.watch(libraryViewProvider);
   return asyncViewOf(
@@ -292,20 +312,25 @@ final visibleLibraryProvider = Provider<AsyncValue<List<LibraryItem>>>((ref) {
   );
 });
 
-/// عدّادات رقائق المنصات — تُحسب على المكتبة كاملة لا على المعروض،
-/// كي لا تختفي المنصة التي تنقر عليها من القائمة بعد النقر.
-final platformCountsProvider =
-    Provider<List<MapEntry<MediaPlatform, int>>>((ref) {
+/// **The peak moment**: it watches for task completions and highlights the
+/// item arriving in the library. It lives for the life of the app,
+/// watched from the shell, so it never misses a completion that happened
+/// while the user was on another screen.
+final platformCountsProvider = Provider<List<MapEntry<MediaPlatform, int>>>((
+  ref,
+) {
   final items = ref.watch(libraryItemsProvider).valueOrNull ?? const [];
   return platformCounts(items);
 });
 
-/// العنصر الذي يتوهّج الآن: نقرة إشعار أو اكتمال تحميل — يُطفأ من نفسه.
+/// The item currently highlighted, from a notification tap or a finished
+/// download. It extinguishes itself.
 final highlightedItemProvider = StateProvider<String?>((ref) => null);
 
-/// **لحظة الذروة**: يراقب اكتمال المهام فيوهّج العنصر الواصل للمكتبة.
-/// يعيش بعمر التطبيق (يُراقَب من الغلاف) كي لا يفوته اكتمال وقع بينما
-/// المستخدم في شاشة أخرى.
+/// **The peak moment**: it watches for task completions and highlights the
+/// item arriving in the library. It lives for the life of the app, watched
+/// from the shell, so it never misses a completion that happened while the
+/// user was on another screen.
 final completionGlowProvider = Provider<void>((ref) {
   final seen = <String>{};
   ref.listen<AsyncValue<List<DownloadTask>>>(engineTasksProvider, (_, next) {

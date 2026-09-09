@@ -9,8 +9,11 @@ import '../fixtures/fixtures.dart';
 void main() {
   group('fixture حقيقية: history_real_done', () {
     late HistoryResponse response;
-    setUp(() => response = HistoryResponse.fromJson(
-        loadFixture('real/history_real_done.json')));
+    setUp(
+      () => response = HistoryResponse.fromJson(
+        loadFixture('real/history_real_done.json'),
+      ),
+    );
 
     test('تتحلل بلا رمي وبعناصر كثيرة', () {
       expect(response.done.length, greaterThan(200));
@@ -24,15 +27,17 @@ void main() {
 
     test('لا اختلاق أسماء ملفات: الغائب يبقى null', () {
       // على الأقل كل عنصر finished الحقيقي يحمل filename من السيرفر
-      final finished =
-          response.done.where((i) => i.status == ItemStatus.completed);
-      expect(finished.where((i) => i.filename != null).length,
-          greaterThan(150));
+      final finished = response.done.where(
+        (i) => i.status == ItemStatus.completed,
+      );
+      expect(
+        finished.where((i) => i.filename != null).length,
+        greaterThan(150),
+      );
     });
 
     test('الطوابع الزمنية الحقيقية تُفك لأزمنة معقولة', () {
-      final withTime =
-          response.done.where((i) => i.timestamp != null).toList();
+      final withTime = response.done.where((i) => i.timestamp != null).toList();
       expect(withTime, isNotEmpty);
       for (final item in withTime.take(20)) {
         expect(item.timestamp!.year, inInclusiveRange(2023, 2027));
@@ -43,7 +48,8 @@ void main() {
   group('fixture حقيقية: history_real_active (لحظة تحميل جارٍ)', () {
     test('عنصر الطابور جارٍ بالحالة الصحيحة', () {
       final response = HistoryResponse.fromJson(
-          loadFixture('real/history_real_active.json'));
+        loadFixture('real/history_real_active.json'),
+      );
       expect(response.active, isNotEmpty);
       final running = response.active.first;
       expect(running.isDownloading, isTrue);

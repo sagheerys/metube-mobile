@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -15,11 +16,13 @@ import 'features/settings/auto_switch.dart';
 import 'features/settings/settings_state.dart';
 import 'features/shared/stores.dart';
 
-/// bootstrap فقط: التخزين، لقطة الإعدادات، مشغل الصوت الخلفي، runApp.
+/// Bootstrap only: storage, the settings snapshot, the background audio
+/// player, runApp.
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // **التطبيق طولي والمشغل وحده يدور** (قرار المالك 2026-09-05) —
-  // `MTRotationScope` يفكّ هذا القفل ما دام مشغل الفيديو مفتوحاً.
+  // **The app is portrait and only the player rotates** (decision
+  // 2026-09-05). `MTRotationScope` releases this lock while the video
+  // player is open.
   unawaited(MTOrientation.lockPortrait());
   initMTL10n();
 
@@ -28,17 +31,18 @@ Future<void> main() async {
   const secrets = SecureSecretStore();
   final mutex = PrefsMutex();
   var initialSettings = await SuperSettings.load(store, secrets);
-  // م-28: التثبيت الذي هُيّئ برابط واحد يبقى بلا مرشحين للتبديل — نبذر
-  // القائمة من الرابط المعتمد مرة واحدة قبل أول بناء.
+  // An installation configured with a single URL has no candidates to
+  // switch between, so the list is seeded once from the active URL before
+  // the first build.
   await seedEndpointsFromActive(store, mutex, initialSettings);
   initialSettings = await SuperSettings.load(store, secrets);
 
-  // السجل الحلقي (م-32) في مساحة التطبيق الخاصة (§5.3).
+  // The ring log in the app's private space (§5.3).
   final logsDir = await getApplicationSupportDirectory();
   final logger = MTLogger(filePath: '${logsDir.path}/logs/metube_super.log');
 
-  // قفل واحد لكل التخزين (القاعدة 3) — يُمرَّر للجميع لا يُنشأ مرتين
-  // (أُنشئ أعلاه قبل البذر).
+  // One lock for all storage (rule 3), passed to everyone rather than
+  // created twice. It was created above, before the seeding.
   final resolver = PlaybackSourceResolver(
     endpoint: ServerStreamEndpoint.none, // يضبطه playbackWiringProvider
   );
@@ -59,16 +63,19 @@ Future<void> main() async {
   );
   await handler.loadPreferences();
 
-  // م-32: أثر إقلاع دائم — شاشة السجلات يجب ألا تكون فارغة أبداً بعد
-  // أول تشغيل (كانت كذلك في Super لأن لا أحد يكتب فيها إطلاقاً).
+  // A permanent startup trace: the logs screen must never be empty after
+  // the first run, and it was in Super, because nothing wrote to it at all.
   unawaited(logger.log('app started (super)', tag: 'app'));
 
-  // **كنس الجزئيات اليتيمة (خ-3):** قتل التطبيق منتصف سحب كبير يترك
-  // `.part` لا ينظفه أحد — مسح المكتبة يتجاهله عمداً، فالمساحة تضيع
-  // بلا أن تُرى. لا ننتظره: الإقلاع لا يعلّق على تنظيف.
-  unawaited(sweepPartialFiles(superMediaDir).then(
-    (count) => count == 0 ? null : logger.log('swept $count partials'),
-  ));
+  // **Sweeping orphaned partials (defect خ-3):** killing the app mid-way
+  // through a large pull leaves a `.part` nobody cleans, and the library
+  // scan ignores it on purpose, so the space is lost unseen. We do not
+  // await it: startup never waits on a cleanup.
+  unawaited(
+    sweepPartialFiles(
+      superMediaDir,
+    ).then((count) => count == 0 ? null : logger.log('swept $count partials')),
+  );
 
   runApp(
     ProviderScope(

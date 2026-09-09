@@ -23,8 +23,9 @@ import '../settings/status_refresh.dart';
 import '../update/update_sheet.dart';
 import '../update/update_state.dart';
 
-/// غلاف النموذج أ: 3 وجهات سفلية + الطبقة العائمة (زر الإضافة الذكي) —
-/// الزر يظهر في المكتبة والقوائم ويختفي في الإعدادات.
+/// The shell: three bottom destinations plus the floating layer holding
+/// the smart add button, which appears in the library and the playlists
+/// and hides in settings.
 class ShellScreen extends ConsumerStatefulWidget {
   const ShellScreen({super.key, required this.navigationShell});
 
@@ -38,12 +39,13 @@ class _ShellScreenState extends ConsumerState<ShellScreen>
     with WidgetsBindingObserver {
   ShareReceiver? _shareReceiver;
 
-  /// **لا يُعرض إطلاقاً وشيء مفتوح فوق الغلاف** (م-66): ورقة المشاركة أو
-  /// حوار الاستعادة قد يكون على الشاشة لحظة انتهاء الفحص، وتكديس ورقة
-  /// فوق ورقة يبتلع لمسة المستخدم ويخفي ما كان يفعله.
+  /// **It is never shown while anything is open above the shell**: the
+  /// share sheet or the restore dialog may be on screen the moment the
+  /// check finishes, and stacking a sheet over a sheet swallows the user's
+  /// touch and hides what they were doing.
   ///
-  /// مرة واحدة لكل تشغيل: صفّ «التحديثات» في الإعدادات يبقى شاهداً
-  /// بلون الفعل لمن أغلق الورقة.
+  /// Once per run: the "updates" row in settings stays as a witness in the
+  /// accent colour for anyone who closed the sheet.
   bool _updatePrompted = false;
 
   Future<void> _maybeShowUpdate() async {
@@ -58,8 +60,9 @@ class _ShellScreenState extends ConsumerState<ShellScreen>
     showUpdateSheet(context);
   }
 
-  /// م-18/م-35: سبر الملفات المهاجَرة (غلاف + أبعاد) بعمر التطبيق —
-  /// يُراقَب هنا لا في شاشة المكتبة كي لا يتوقف عند مغادرتها.
+  /// Probing migrated files for covers and dimensions, for the life of the
+  /// app. It is watched here rather than in the library screen so it does
+  /// not stop when that screen is left.
   void _watchEnrichment() => ref.watch(libraryEnrichmentProvider);
 
   @override
@@ -74,7 +77,7 @@ class _ShellScreenState extends ConsumerState<ShellScreen>
     _shareReceiver!.start();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       ref.read(clipboardRefresherProvider)();
-      // م-21: إحياء جلسة الصوت المحفوظة (بلا تشغيل تلقائي).
+      // Revives the saved audio session, without autoplaying.
       ref.read(audioHandlerProvider).restoreSession();
       await initDownloadNotifications(ref);
       if (mounted) await maybeOfferAutoRestore(context, ref);
@@ -87,17 +90,20 @@ class _ShellScreenState extends ConsumerState<ShellScreen>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       ref.read(clipboardRefresherProvider)();
-      // ملفات قد تكون تغيّرت من خارج التطبيق (حذف من المعرض مثلاً).
+      // A shortcut arrives as a new intent on a running app, not as a fresh
+      // start.
       ref.invalidate(localMediaProvider);
-      // الاختصار يصل كنيّة جديدة على تطبيق يعمل — لا إقلاع جديد.
+      // A shortcut arrives as a new intent on a running app, not as a fresh
+      // start.
       unawaited(_handleShortcut());
       unawaited(_maybeShowUpdate());
     }
   }
 
-  /// م-41: تنفيذ اختصار الأيقونة. **الحافظة تُقرأ الآن لا من الحالة
-  /// المحفوظة**: المستخدم نسخ الرابط ثم ضغط الأيقونة مباشرة، ولقطة
-  /// `clipboardUrlProvider` قد تسبق النسخ بثوانٍ.
+  /// Executing a launcher shortcut. **The clipboard is read now rather than
+  /// from saved state**: the user copied the link and pressed the icon
+  /// immediately, and the `clipboardUrlProvider` snapshot may predate the
+  /// copy by seconds.
   Future<void> _handleShortcut() async {
     final shortcut = await const AppShortcuts().consume();
     if (shortcut == null || !mounted) return;
@@ -130,13 +136,15 @@ class _ShellScreenState extends ConsumerState<ShellScreen>
     super.dispose();
   }
 
-  /// م-3: مشاركة خارجية ⇒ فتح `/` وبدء ر-2 (عدة روابط = إرسال متتابع).
+  /// An external share opens `/` and starts rule 2 (several links are
+  /// submitted one after another).
   Future<void> _onSharedUrls(List<String> shared) async {
     if (!mounted || shared.isEmpty) return;
-    // **القرار على الرابط النهائي لا المُشارَك** (بلاغ المالك
-    // 2026-09-08): زرّ المشاركة في ساوندكلاود يعطي `on.soundcloud.com/…`
-    // بلا `/sets/`، فكان الألبوم يُعدّ مقطعاً مفرداً ويفكّه السيرفر إلى
-    // عشرين بلا شاشة اختيار. غير القصير لا يكلّف انتظاراً.
+    // **The decision is made on the final URL, not the shared one** (field
+    // report 2026-09-08): SoundCloud's share button gives
+    // `on.soundcloud.com/…` with no `/sets/`, so an album counted as a
+    // single clip and the server expanded it into twenty with no selection
+    // screen. A link that is not short costs no wait.
     final resolver = ref.read(shortLinkResolverProvider);
     final urls = [
       for (final url in shared) await resolver.resolveForRouting(url),
@@ -144,17 +152,19 @@ class _ShellScreenState extends ConsumerState<ShellScreen>
     if (!mounted) return;
     widget.navigationShell.goBranch(0);
     if (urls.length == 1) {
-      // **رابط قائمة صريح ⇒ شاشة الدفعي مباشرة** (م-5). مشاركة ألبوم
-      // واحد كانت تفتح ورقة «إضافة رابط» — الشرط كان في مسار الروابط
-      // المتعددة وحده. `watch?v=…&list=…` يبقى على سلوكه: هو فيديو
-      // مفرد بالدرجة الأولى، ويوتيوب يُلحق `list` بمشاركاته كثيراً.
+      // **An explicit playlist URL goes straight to the batch screen.**
+      // Sharing a single album used to open the "add link" sheet, because
+      // the condition lived in the multiple-links path alone.
+      // `watch?v=…&list=…` keeps its behaviour: it is a single video first
+      // and foremost, and YouTube appends `list` to its shares very often.
       if (_isPurePlaylistLink(urls.first)) {
         GoRouter.of(context).push('/batch', extra: urls.first);
         return;
       }
-      // «التحميل السريع» يجعل الجودة الافتراضية إعداداً فاعلاً: الرابط
-      // المشارَك ينزل فوراً بلا ورقة، والشريط يتيح التراجع. البوابة
-      // داخل `startQuickDownload` نفسها فلا تُكرَّر هنا.
+      // "Quick download" makes the default quality an effective setting: a
+      // shared link downloads immediately with no sheet, and the snack bar
+      // offers an undo. The gate lives inside `startQuickDownload` itself,
+      // so it is not repeated here.
       if (startQuickDownload(context, ref, urls.first)) return;
       openAddSheet(context, ref, initialUrl: urls.first);
       return;
@@ -176,11 +186,12 @@ class _ShellScreenState extends ConsumerState<ShellScreen>
     );
   }
 
-  /// قائمة **بذاتها** لا فيديو داخل قائمة.
+  /// A playlist **in its own right**, not a video inside a playlist.
   static bool _isPurePlaylistLink(String url) =>
       PlaylistDetector.isPlaylist(url) && UrlKit.youtubeVideoId(url) == null;
 
-  /// م-2: رابط جاهز بالحافظة ⇒ تنفيذ مباشر عند الضغط.
+  /// A link waiting in the clipboard is acted on directly when the button
+  /// is pressed.
   void _onFabPressed() {
     final clipboardUrl = ref.read(clipboardUrlProvider);
     if (clipboardUrl != null) {
@@ -194,7 +205,8 @@ class _ShellScreenState extends ConsumerState<ShellScreen>
     openAddSheet(context, ref);
   }
 
-  /// شريط الحافظة: **يُطوى ولا يعود** لنفس الرابط في هذه الجلسة.
+  /// The clipboard bar: **it folds away and does not return** for the same
+  /// link during this session.
   String? _dismissedClipboardUrl;
 
   void _dismissClipboard() =>
@@ -206,27 +218,35 @@ class _ShellScreenState extends ConsumerState<ShellScreen>
     final branch = widget.navigationShell.currentIndex;
     final clipboardUrl = ref.watch(clipboardUrlProvider);
 
-    // يبقى محقونًا حياً ليقود الإشعارات ووضع الخلفية (م-9/م-10).
+    // Kept alive so it drives the notifications and the background mode.
     ref.watch(downloadWatcherProvider);
-    // م-43: يستمع لعودة الشبكة فيعيد ما فشل بسببها — بعمر التطبيق كي
-    // لا تفوته عودة وقعت والمستخدم في شاشة أخرى.
+    // **The button is always mounted, never `null`** (field report
+    // 2026-09-05: "the appearing animation is strange"). Swapping the
+    // floating action button slot wakes `Scaffold`'s default animator,
+    // which
+    // rotates **on appearance only**, in the words of the Flutter source.
+    // `noAnimation` below silences it, and `visible` hides it with our own
+    // fade.
     ref.watch(autoRetryProvider);
     ref.watch(batchDropWatcherProvider);
-    // العودة للتطبيق تعيد سؤال السيرفر — البطاقة لا تصدق بلا هذا.
+    // Returning to the app asks the server again; the card is not truthful
+    // without this.
     ref.watch(statusRefreshProvider);
     _watchEnrichment();
 
     return Scaffold(
       body: widget.navigationShell,
-      // **الزر مركّب دائماً — لا `null`** (بلاغ المالك 2026-09-05:
-      // «حركة الظهور غريبة»). تبديل فتحة الزر العائم يوقظ محرّك
-      // `Scaffold` الافتراضي، وفيه دورانٌ **عند الظهور وحده** بنصّ
-      // مصدر Flutter. `noAnimation` أدناه يسكته، و`visible` يخفيه
-      // بتلاشينا نحن.
+      // **The button is always mounted, never `null`** (field report
+      // 2026-09-05: "the appearing animation is strange"). Swapping the
+      // floating action button slot wakes `Scaffold`'s default animator,
+      // which rotates **on appearance only**, in the words of the Flutter
+      // source. `noAnimation` below silences it, and `visible` hides it
+      // with our own fade.
       floatingActionButtonAnimator: FloatingActionButtonAnimator.noAnimation,
       floatingActionButton: MTHiddenUnderRoutes(
-        // يختفي تحت أي ورقة أو حوار: كان يحجب رابط «حول المقطع»
-        // ويزاحم أفعال القوائم السفلية (بلاغ المالك 2026-09-02).
+        // It hides under any sheet or dialog: it used to cover the "about
+        // this clip" link and crowd the bottom sheets' actions (field
+        // report 2026-09-02).
         visible: branch != 2,
         child: MTFab(
           label: clipboardUrl == null
@@ -236,14 +256,16 @@ class _ShellScreenState extends ConsumerState<ShellScreen>
           onPressed: _onFabPressed,
         ),
       ),
-      // م-22: المشغل المصغر شريط دائم **فوق** الشريط السفلي — داخل نفس
-      // الفتحة ليحسب Scaffold مساحته ويرفع زر الإضافة فوقه (سجل §4).
+      // The mini player is a permanent bar **above** the bottom bar, inside
+      // the same slot so Scaffold accounts for its height and lifts the add
+      // button over it (log §4).
       bottomNavigationBar: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // **شريط الحافظة**: تغيير عنوان الزر العائم وحده كان إشارة
-          // خافتة — الرابط نفسه لا يُرى، ولا سبيل لفتح الخيارات بدل
-          // التحميل الفوري. الشريط يعرض الرابط ويقدّم الفعلين معاً.
+          // **The clipboard bar**: changing the floating button's label
+          // alone was a faint signal, the link itself was never visible,
+          // and there was no way to open the options instead of downloading
+          // immediately. The bar shows the link and offers both actions.
           if (branch != 2 &&
               clipboardUrl != null &&
               clipboardUrl != _dismissedClipboardUrl)
@@ -253,8 +275,9 @@ class _ShellScreenState extends ConsumerState<ShellScreen>
               downloadLabel: l10n.downloadNow,
               optionsLabel: l10n.chooseOptions,
               onDownload: () {
-                // زر صريح مكتوب عليه «حمّل الآن» وبجانبه «اختر
-                // الخيارات» — لا يمرّ ببوابة الإعداد.
+                // An explicit button labelled "download now" with "choose
+                // options" beside it; it does not pass through the
+                // setting's gate.
                 if (startQuickDownload(
                   context,
                   ref,
@@ -306,7 +329,7 @@ class _ShellScreenState extends ConsumerState<ShellScreen>
       );
 }
 
-/// دالة فحص الحافظة قابلة للاستدعاء من الغلاف.
+/// The clipboard check, callable from the shell.
 final clipboardRefresherProvider = Provider<Future<void> Function()>(
   (ref) =>
       () => refreshClipboardUrl(ref),

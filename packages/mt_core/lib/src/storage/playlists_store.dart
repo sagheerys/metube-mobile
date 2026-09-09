@@ -25,8 +25,7 @@ class PlaylistsStore {
   /// happens when restoring a legacy backup, and restore writes without
   /// validating. The result was that **every** `readAll` threw, so the
   /// playlists screen and all its writes were dead with no self-healing.
-  /// Now
-  /// one corrupt playlist is dropped and the rest survive.
+  /// Now one corrupt playlist is dropped and the rest survive.
   Future<List<SavedPlaylist>> readAll() async {
     final raw = await store.getString(prefsKey);
     if (raw == null || raw.isEmpty) return [];
@@ -56,8 +55,10 @@ class PlaylistsStore {
     return null;
   }
 
-  Future<SavedPlaylist> create(String name,
-      {List<PlaylistEntry> items = const []}) async {
+  Future<SavedPlaylist> create(
+    String name, {
+    List<PlaylistEntry> items = const [],
+  }) async {
     final playlist = SavedPlaylist(name: name, items: List.of(items));
     await _mutateAll((all) => all.add(playlist));
     return playlist;
@@ -88,13 +89,13 @@ class PlaylistsStore {
         }
       });
 
-  Future<void> removeItem(String id, String canonicalUrl) =>
-      _mutateOne(id, (p) =>
-          p.items.removeWhere((e) => e.canonicalUrl == canonicalUrl));
+  Future<void> removeItem(String id, String canonicalUrl) => _mutateOne(
+    id,
+    (p) => p.items.removeWhere((e) => e.canonicalUrl == canonicalUrl),
+  );
 
   /// **Removes keys from every playlist**, called when a file is deleted
-  /// for
-  /// good.
+  /// for good.
   ///
   /// Field report 2026-09-04: "I deleted the playlist's files and they
   /// stayed in the playlist and do not play." Deletion pruned every index,
@@ -111,9 +112,11 @@ class PlaylistsStore {
     await _mutateAll((all) {
       for (final playlist in all) {
         final before = playlist.items.length;
-        playlist.items.removeWhere((e) =>
-            targets.contains(e.canonicalUrl) ||
-            (e.legacyPath != null && targets.contains(e.legacyPath)));
+        playlist.items.removeWhere(
+          (e) =>
+              targets.contains(e.canonicalUrl) ||
+              (e.legacyPath != null && targets.contains(e.legacyPath)),
+        );
         removed += before - playlist.items.length;
       }
     });

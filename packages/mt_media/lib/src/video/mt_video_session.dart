@@ -50,17 +50,15 @@ class MTVideoSession extends ChangeNotifier {
   String? _completedUrl;
 
   /// **The race guard (caught on a real device 2026-09-01).** `_load`
-  /// awaits
-  /// `initialize()`, seconds on a slow network. A second skip during that
-  /// wait starts a parallel load, the last to finish wins `_controller`,
-  /// and
-  /// **the first stays alive playing audio with no picture**: two clips at
-  /// once.
+  /// awaits `initialize()`, seconds on a slow network. A second skip during
+  /// that wait starts a parallel load, the last to finish wins
+  /// `_controller`, and **the first stays alive playing audio with no
+  /// picture**: two clips at once.
   int _generation = 0;
 
   /// Called before any playback starts: it stops the background audio
-  /// player
-  /// so two sources never run together (one audio output at any moment).
+  /// player so two sources never run together (one audio output at any
+  /// moment).
   Future<void> Function()? onTakeAudioFocus;
 
   VideoPlayerController? get controller => _controller;
@@ -115,25 +113,33 @@ class MTVideoSession extends ChangeNotifier {
 
     final controller = source.isLocal
         ? VideoPlayerController.file(File(source.uri.toFilePath()))
-        : VideoPlayerController.networkUrl(source.uri,
-            httpHeaders: source.headers);
+        : VideoPlayerController.networkUrl(
+            source.uri,
+            httpHeaders: source.headers,
+          );
     try {
       await controller.initialize();
     } on Object {
       await controller.dispose();
-      // A newer load overtook us, so this failure no longer concerns the
-      // screen.
+      // **Publish after initialisation completes, not before (defect
+      // ط-2/1).**
+      // `_controller` was published and then three awaits followed
+      // (position,
+      // seek, speed) with no guard between them: a second quick skip
+      // disposed
+      // that very controller mid-way, so `seekTo` threw "controller was
+      // used
+      // after being disposed".
       if (generation != _generation) return;
       return _failCurrent();
     }
     if (_disposed || generation != _generation) return controller.dispose();
 
     // **Publish after initialisation completes, not before (defect
-    // ط-2/1).**
-    // `_controller` was published and then three awaits followed (position,
-    // seek, speed) with no guard between them: a second quick skip disposed
-    // that very controller mid-way, so `seekTo` threw "controller was used
-    // after being disposed".
+    // ط-2/1).** `_controller` was published and then three awaits followed
+    // (position, seek, speed) with no guard between them: a second quick
+    // skip disposed that very controller mid-way, so `seekTo` threw
+    // "controller was used after being disposed".
     _consecutiveErrors = 0;
     _completedUrl = null;
     final resume = await positions.positionOf(item.canonicalUrl);
@@ -155,22 +161,17 @@ class MTVideoSession extends ChangeNotifier {
   }
 
   /// The duration and ratio become known after preparation and are stored
-  /// on
-  /// the item for the shorts path in the current session.
+  /// on the item for the shorts path in the current session.
   void _rememberShape(PlaylistItem item, VideoPlayerController controller) {
     final index = _queue.items.indexOf(item);
     if (index < 0) return;
     final value = controller.value;
-    onShapeKnown?.call(
-      item.canonicalUrl,
-      value.duration,
-      value.aspectRatio,
-    );
+    onShapeKnown?.call(item.canonicalUrl, value.duration, value.aspectRatio);
   }
 
   /// The real clip dimensions are reported upwards to be stored.
   void Function(String canonicalUrl, Duration duration, double aspectRatio)?
-      onShapeKnown;
+  onShapeKnown;
 
   Future<void> _failCurrent() async {
     _consecutiveErrors++;
@@ -226,8 +227,7 @@ class MTVideoSession extends ChangeNotifier {
   /// An explicit pause from above: "continue as audio" used to start the
   /// audio **while the video was still running**, so the clip was heard
   /// twice until the player closed, and on a slow network the overlap
-  /// lasted
-  /// several seconds.
+  /// lasted several seconds.
   Future<void> pause() async {
     final controller = _controller;
     if (controller == null || !controller.value.isPlaying) return;
@@ -258,10 +258,8 @@ class MTVideoSession extends ChangeNotifier {
     _saveTimer = null;
     // **Silence before saving (defect ط-2/2):** between closing the screen
     // and the save completing, the video stayed **audible over the
-    // library**;
-    // and a failed save prevented disposal entirely, so the controller
-    // stayed
-    // alive.
+    // library**; and a failed save prevented disposal entirely, so the
+    // controller stayed alive.
     try {
       await _controller?.pause();
     } on Object {

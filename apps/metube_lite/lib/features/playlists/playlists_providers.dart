@@ -7,7 +7,8 @@ import '../downloads_library/library_providers.dart';
 import '../downloads_library/local_item.dart';
 import '../player/playback_providers.dart';
 
-/// القوائم الذكية المثبتة (م-37/أ) — Lite بلا «دون اتصال» (كل شيء محلي).
+/// The pinned smart playlists. Lite has no "offline" one, since everything
+/// is local.
 enum SmartListKind { favorites, latest }
 
 class SmartList {
@@ -19,11 +20,11 @@ class SmartList {
   int get count => items.length;
 }
 
-/// آخر 30 إضافة — عدد ثابت معلن في مرجع «وهج».
+/// The last 30 additions; a fixed count stated in the Wahaj reference.
 const int latestSmartListSize = 30;
 
-/// ترتيب م-37/ب: المثبتة أولاً ثم **بآخر تشغيل** (لا بتاريخ الإنشاء) —
-/// منطق خالص قابل للاختبار (TRD §3.2).
+/// The order: pinned first, then **by last played** rather than by creation
+/// date. Pure, testable logic (TRD §3.2).
 List<SavedPlaylist> sortPlaylists(List<SavedPlaylist> input) {
   final all = [...input];
   all.sort((a, b) {
@@ -35,14 +36,16 @@ List<SavedPlaylist> sortPlaylists(List<SavedPlaylist> input) {
   return all;
 }
 
-/// القائمتان الذكيتان من عناصر المكتبة — منطق خالص.
+/// The two smart playlists derived from the library items: pure logic.
 List<SmartList> buildSmartLists(List<LocalItem> items) {
-  final byNewest = [...items]
-    ..sort((a, b) => b.modified.compareTo(a.modified));
+  final byNewest = [...items]..sort((a, b) => b.modified.compareTo(a.modified));
   return [
     SmartList(
       kind: SmartListKind.favorites,
-      items: [for (final item in byNewest) if (item.favorite) item],
+      items: [
+        for (final item in byNewest)
+          if (item.favorite) item,
+      ],
     ),
     SmartList(
       kind: SmartListKind.latest,
@@ -52,52 +55,61 @@ List<SmartList> buildSmartLists(List<LocalItem> items) {
 }
 
 final playlistsProvider = FutureProvider<List<SavedPlaylist>>((ref) async {
-  // كتابةٌ من خارج هذه الشاشة (تجميع الدفعة) تصل عبر العدّاد.
+  // A write from outside this screen, such as batch collection, arrives
+  // through the counter.
   ref.watch(playlistsRevisionProvider);
   return sortPlaylists(await ref.watch(playlistsStoreProvider).readAll());
 });
 
-final smartListsProvider = Provider<List<SmartList>>((ref) =>
-    buildSmartLists(ref.watch(localMediaProvider).valueOrNull ?? const []));
+final smartListsProvider = Provider<List<SmartList>>(
+  (ref) =>
+      buildSmartLists(ref.watch(localMediaProvider).valueOrNull ?? const []),
+);
 
-/// عناصر قائمة محفوظة بعد ربطها بالمكتبة.
+/// A saved playlist's items after they are matched to the library,
+/// **together with the keys of anything that no longer exists**.
 ///
-/// **هجرة Lite القديم:** مداخله مسارات ملفات ([PlaylistEntry.isLegacy])،
-/// فتُطابَق بالمسار مباشرة ثم بالاسم المجرد — هكذا تحيا قوائم المالك
-/// الـ18 مدخلاً بعد الاستيراد. ما لم يُطابق يُبنى من بياناته المخبأة
-/// فلا يختفي بصمت.
-/// عناصر القائمة بعد ربطها بالمكتبة، **ومعها مفاتيح ما لم يعد له
-/// وجود**.
+/// **Migration from the old Lite:** its entries are file paths
+/// ([PlaylistEntry.isLegacy]), so they are matched by path directly and
+/// then by bare filename. That is how an imported playlist of 18 entries
+/// comes back to life. What does not match is built from its cached data so
+/// it does not vanish silently.
 ///
-/// بلاغ المالك 2026-09-04: «عند إزالة فيديو من القائمة يظل موجوداً
-/// وغير قابل للتشغيل، أو يشغّل مقطعاً آخر». المدخل غير المطابَق كان
-/// يُعرض كأي عنصر ويدخل طابور التشغيل — فيفشل مصدره ويقفز المشغل
-/// للتالي، فيبدو أن النقرة شغّلت مقطعاً غيره.
+/// Field report 2026-09-04: "when I remove a video from the playlist it
+/// stays there and will not play, or it plays a different clip". An
+/// unmatched entry was shown like any other and entered the play queue, so
+/// its source failed and the player jumped to the next one, making the tap
+/// look as though it had played something else.
 ///
-/// **لا يُحذف شيء هنا:** غياب العنصر قد يكون مؤقتاً (مجلد لم يُمسح
-/// بعد، أو سيرفر متعذّر في Super). الغائب يُعلَّم فقط، وتتولى الشاشة
-/// إخراجه من التشغيل وعرض إزالته للمستخدم.
+/// **Nothing is deleted here:** an item's absence may be temporary, a
+/// folder not yet rescanned, or in Super an unreachable server. What is
+/// missing is only marked, and the screen takes care of keeping it out of
+/// playback and offering its removal to the user.
 class PlaylistView {
   const PlaylistView({required this.items, required this.missing});
 
   final List<PlaylistItem> items;
 
-  /// مفاتيح المداخل التي لا نسخة لها — بترتيب [items].
+  /// The keys of entries with no counterpart, in [items] order.
   final Set<String> missing;
 
   bool isMissing(PlaylistItem item) => missing.contains(item.canonicalUrl);
 
-  /// ما يصلح للتشغيل فعلاً — هو وحده ما يدخل الطابور.
-  List<PlaylistItem> get playable =>
-      [for (final item in items) if (!isMissing(item)) item];
+  /// What is genuinely playable; only this enters the queue.
+  List<PlaylistItem> get playable => [
+    for (final item in items)
+      if (!isMissing(item)) item,
+  ];
 }
 
-final playlistItemsProvider =
-    FutureProvider.family<List<PlaylistItem>, String>((ref, id) async =>
-        (await ref.watch(playlistViewProvider(id).future)).items);
+final playlistItemsProvider = FutureProvider.family<List<PlaylistItem>, String>(
+  (ref, id) async => (await ref.watch(playlistViewProvider(id).future)).items,
+);
 
-final playlistViewProvider =
-    FutureProvider.family<PlaylistView, String>((ref, id) async {
+final playlistViewProvider = FutureProvider.family<PlaylistView, String>((
+  ref,
+  id,
+) async {
   final playlist = await ref.watch(playlistsStoreProvider).byId(id);
   if (playlist == null) {
     return const PlaylistView(items: [], missing: {});
@@ -127,26 +139,32 @@ final playlistViewProvider =
         ? entry.canonicalUrl
         : (entry.legacyPath ?? '');
     missing.add(key);
-    items.add(PlaylistItem(
-      canonicalUrl: key,
-      title: entry.cachedTitle ??
-          LocalItem.titleFromFilename(
-              (entry.legacyPath ?? entry.canonicalUrl).split('/').last),
-      artworkUrl: entry.cachedThumb,
-    ));
+    items.add(
+      PlaylistItem(
+        canonicalUrl: key,
+        title:
+            entry.cachedTitle ??
+            LocalItem.titleFromFilename(
+              (entry.legacyPath ?? entry.canonicalUrl).split('/').last,
+            ),
+        artworkUrl: entry.cachedThumb,
+      ),
+    );
   }
   return PlaylistView(items: items, missing: missing);
 });
 
-/// مدخل قائمة من عنصر مكتبة — يخبئ العنوان والغلاف لبقاء البطاقة حية.
+/// A playlist entry from a library item; it caches the title and the cover
+/// so the card survives.
 PlaylistEntry toPlaylistEntry(LocalItem item) => PlaylistEntry(
-      canonicalUrl: item.key,
-      cachedTitle: item.title,
-      cachedThumb: item.thumbnail,
-    );
+  canonicalUrl: item.key,
+  cachedTitle: item.title,
+  cachedThumb: item.thumbnail,
+);
 
-/// تشغيل قائمة (ر-7): النقر «ذكي» — كلها صوت ⇒ خلفية، فيها فيديو ⇒
-/// المشغل المرئي. [audioOnly] هو زر السماعات (م-24) يفرض الخلفية.
+/// Playing a playlist (rule 7): the tap is "smart". All audio means
+/// background playback; anything with video opens the visual player.
+/// [audioOnly] is the headphones button, which forces the background.
 final playlistPlayerProvider = Provider((ref) => PlaylistPlayer(ref));
 
 class PlaylistPlayer {
@@ -154,7 +172,8 @@ class PlaylistPlayer {
 
   final Ref _ref;
 
-  /// يعيد true إن كان التشغيل مرئياً (على المنادي أن ينتقل لـ `/player`).
+  /// Returns true when playback is visual, and the caller then navigates to
+  /// `/player`.
   Future<bool> play(
     List<PlaylistItem> items, {
     String? playlistId,
@@ -173,11 +192,9 @@ class PlaylistPlayer {
     }
     final visual = !audioOnly && items.any((item) => !item.isAudio);
     if (!visual) {
-      await _ref.read(audioHandlerProvider).playItems(
-            items,
-            startIndex: startIndex,
-            playlistId: playlistId,
-          );
+      await _ref
+          .read(audioHandlerProvider)
+          .playItems(items, startIndex: startIndex, playlistId: playlistId);
       return false;
     }
     _ref.read(playbackRequestProvider.notifier).state = PlaybackRequest(

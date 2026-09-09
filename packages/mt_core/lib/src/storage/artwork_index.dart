@@ -7,7 +7,7 @@ import 'url_keyed_index.dart';
 /// never invented (trap §6.3). Prefs key: `artwork_index` (§5.1).
 final class ArtworkIndex extends UrlKeyedIndex<String> {
   ArtworkIndex({required super.store, required super.mutex})
-      : super(prefsKey: 'artwork_index');
+    : super(prefsKey: 'artwork_index');
 
   @override
   String? decodeValue(dynamic raw) {
@@ -30,11 +30,9 @@ final class ArtworkIndex extends UrlKeyedIndex<String> {
   /// unrecoverable short of clearing all app data.
   ///
   /// Two guards stop us deleting what is not ours:
-  /// * * a value starting with `http` is a remote URL (YouTube covers), not
-  ///   a
+  /// * a value starting with `http` is a remote URL (YouTube covers), not a
   /// file.
-  /// * * a path another key still points at is kept, so a surviving item
-  ///   does
+  /// * a path another key still points at is kept, so a surviving item does
   /// not lose its cover because its neighbour was deleted.
   Future<void> removeKeysAndFiles(Iterable<String> canonicalUrls) async {
     final doomed = canonicalUrls.toSet();
@@ -53,8 +51,7 @@ final class ArtworkIndex extends UrlKeyedIndex<String> {
         if (await file.exists()) await file.delete();
       } on FileSystemException {
         // A locked file, or one we lack permission for. The entry is
-        // removed
-        // either way.
+        // removed either way.
       }
     }
     await mutate((map) => map.removeWhere((k, _) => doomed.contains(k)));

@@ -42,7 +42,8 @@ class MTVideoTopBar extends StatelessWidget {
       if (playlistName != null) '«$playlistName»',
       if (session.items.length > 1)
         mtLtrRun(
-            l10n.playlistOf(session.currentIndex + 1, session.items.length)),
+          l10n.playlistOf(session.currentIndex + 1, session.items.length),
+        ),
       ?membershipLine,
     ];
 
@@ -117,9 +118,8 @@ class MTVideoCenterControls extends StatelessWidget {
     final p = MTThemeX.of(context).palette;
     final l10n = context.mtl;
     // The same rule as the audio bar: transport glyphs do not mirror with
-    // the
-    // language, and `replay_10`/`forward_10` carry the number "10", which
-    // mirroring would invert.
+    // the language, and `replay_10`/`forward_10` carry the number "10",
+    // which mirroring would invert.
     return Directionality(
       textDirection: TextDirection.ltr,
       child: Row(
@@ -218,9 +218,8 @@ class MTVideoBottomBar extends StatelessWidget {
                 '${mtFormatDuration(session.position)} / '
                 '${mtFormatDuration(session.duration ?? Duration.zero)}',
                 // A counter live on every frame. Without fixed-width digits
-                // the text
-                // stretches and shrinks and the whole line dances (review
-                // 2026-09-02).
+                // the text stretches and shrinks and the whole line dances
+                // (review 2026-09-02).
                 style: text.labelSmall!.copyWith(color: inkMuted).tabular,
               ),
               const Spacer(),

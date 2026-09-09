@@ -63,8 +63,7 @@ void main() {
       final screen = tester.getSize(find.byType(MaterialApp)).height;
       final button = tester.getRect(find.text('ابدأ التحميل'));
       // Above the keyboard by the design spacing alone, with no extra gap
-      // the
-      // size of a button bar the keyboard already covers.
+      // the size of a button bar the keyboard already covers.
       expect(button.bottom, lessThanOrEqualTo(screen - 300));
       expect(button.bottom, greaterThan(screen - 300 - navBar));
     });
@@ -81,12 +80,11 @@ void main() {
   });
 
   group('MTSystemBars', () {
-    SystemUiOverlayStyle styleOf(WidgetTester tester) =>
-        tester
-                .widget<AnnotatedRegion<SystemUiOverlayStyle>>(
-                  find.byType(AnnotatedRegion<SystemUiOverlayStyle>),
-                )
-                .value;
+    SystemUiOverlayStyle styleOf(WidgetTester tester) => tester
+        .widget<AnnotatedRegion<SystemUiOverlayStyle>>(
+          find.byType(AnnotatedRegion<SystemUiOverlayStyle>),
+        )
+        .value;
 
     testWidgets('نهاراً: أيقونات داكنة وشريط شفاف بلا حجاب تباين', (
       tester,
@@ -102,8 +100,7 @@ void main() {
       expect(style.systemNavigationBarColor, Colors.transparent);
       // The most important guard: without this, Android 15+ draws a scrim
       // behind the buttons, showing a band of a different colour from the
-      // app's
-      // own bar above it.
+      // app's own bar above it.
       expect(style.systemNavigationBarContrastEnforced, isFalse);
     });
 

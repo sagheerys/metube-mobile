@@ -53,9 +53,9 @@ class PlaybackPositionStore {
   /// Clears every position, called from "clear data" and from restoring a
   /// backup.
   Future<void> clearAll() => mutex.run(() async {
-        final keys = await store.keys();
-        for (final key in keys.where((k) => k.startsWith(prefix))) {
-          await store.remove(key);
-        }
-      });
+    final keys = await store.keys();
+    for (final key in keys.where((k) => k.startsWith(prefix))) {
+      await store.remove(key);
+    }
+  });
 }

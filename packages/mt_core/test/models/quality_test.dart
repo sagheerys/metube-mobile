@@ -25,8 +25,10 @@ void main() {
     });
 
     test('youtu.be القصير يُعامل كيوتيوب', () {
-      expect(Quality.q1080.applyRule('https://youtu.be/dQw4w9WgXcQ'),
-          Quality.q1080);
+      expect(
+        Quality.q1080.applyRule('https://youtu.be/dQw4w9WgXcQ'),
+        Quality.q1080,
+      );
     });
   });
 

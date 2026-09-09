@@ -5,7 +5,7 @@ import 'url_keyed_index.dart';
 /// migration).
 final class OfflineIndex extends UrlKeyedIndex<String> {
   OfflineIndex({required super.store, required super.mutex})
-      : super(prefsKey: 'offline_index');
+    : super(prefsKey: 'offline_index');
 
   @override
   String? decodeValue(dynamic raw) {

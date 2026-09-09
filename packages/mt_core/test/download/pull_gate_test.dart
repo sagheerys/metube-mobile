@@ -16,31 +16,34 @@ void main() {
   const canonical = 'https://www.youtube.com/watch?v=jNQXAC9IVRw';
   const inputUrl = 'https://youtu.be/jNQXAC9IVRw';
 
-  FakeApi apiWithDone() => FakeApi(historyScript: [
-        historyWith(), // لقطة ما قبل الإضافة (ح-3)
-        historyWith(done: [
+  FakeApi apiWithDone() => FakeApi(
+    historyScript: [
+      historyWith(), // لقطة ما قبل الإضافة (ح-3)
+      historyWith(
+        done: [
           {
             'id': 'jNQXAC9IVRw',
             'title': 'عنوان',
             'url': canonical,
             'status': 'finished',
             'filename': 'clip.mp4',
-          }
-        ]),
-      ]);
+          },
+        ],
+      ),
+    ],
+  );
 
   DownloadEngine build(FakeApi api, {bool Function()? gate}) => DownloadEngine(
-        api: api,
-        policy: DeletePolicy.keepOnServer,
-        maxPollAttempts: 5,
-        pollInterval: const Duration(milliseconds: 5),
-        savePathBuilder: (task, filename) =>
-            '${tempDir.path}${Platform.pathSeparator}$filename',
-        transfer:
-            Transfer(api: api, backoff: const [Duration.zero, Duration.zero]),
-        shortLinkResolver: ShortLinkResolver(redirectStep: (_) async => null),
-        pullGate: gate,
-      );
+    api: api,
+    policy: DeletePolicy.keepOnServer,
+    maxPollAttempts: 5,
+    pollInterval: const Duration(milliseconds: 5),
+    savePathBuilder: (task, filename) =>
+        '${tempDir.path}${Platform.pathSeparator}$filename',
+    transfer: Transfer(api: api, backoff: const [Duration.zero, Duration.zero]),
+    shortLinkResolver: ShortLinkResolver(redirectStep: (_) async => null),
+    pullGate: gate,
+  );
 
   group('بوابة السحب (م-42)', () {
     test('بلا بوابة: يسحب مباشرة ولا يمر بـ waitingForNetwork', () async {

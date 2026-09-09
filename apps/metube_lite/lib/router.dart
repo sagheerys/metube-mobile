@@ -15,50 +15,64 @@ import 'features/settings/logs_screen.dart';
 import 'features/settings/settings_screen.dart';
 import 'features/shell/shell_screen.dart';
 
-/// جدول المسارات الواحد (`03-APP-FLOW.md` §1) — لا Navigator.push مباشر.
-/// خريطة Lite = خريطة Super **بلا** `/settings/network` (م-28 لـ Super).
+/// The single route table (`03-APP-FLOW.md` §1). No direct Navigator.push.
+/// Lite's map is Super's map **without** `/settings/network`, which is a
+/// Super feature.
 final router = GoRouter(
-  // م-2: يُعلم الغلافَ بما فُتح فوقه ليخفي زر الإضافة العائم — كان
-  // يُرسم فوق كل ورقة سفلية وحوار فيحجب محتواها (بلاغ المالك).
+  // Tells the shell what has opened above it so it can hide the floating
+  // add button, which used to be drawn over every bottom sheet and dialog,
+  // covering their content (field report).
   observers: [MTRouteDepth.instance],
   routes: [
     StatefulShellRoute.indexedStack(
       builder: (context, state, navigationShell) =>
           ShellScreen(navigationShell: navigationShell),
       branches: [
-        StatefulShellBranch(routes: [
-          GoRoute(path: '/', builder: (_, _) => const LibraryScreen()),
-        ]),
-        StatefulShellBranch(routes: [
-          GoRoute(
-            path: '/playlists',
-            builder: (_, _) => const PlaylistsScreen(),
-            routes: [
-              GoRoute(
-                path: ':id',
-                builder: (_, state) => PlaylistDetailsScreen(
-                    playlistId: state.pathParameters['id']!),
-              ),
-            ],
-          ),
-        ]),
-        StatefulShellBranch(routes: [
-          GoRoute(
-            path: '/settings',
-            builder: (_, _) => const SettingsScreen(),
-            routes: [
-              GoRoute(
+        StatefulShellBranch(
+          routes: [
+            GoRoute(path: '/', builder: (_, _) => const LibraryScreen()),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: '/playlists',
+              builder: (_, _) => const PlaylistsScreen(),
+              routes: [
+                GoRoute(
+                  path: ':id',
+                  builder: (_, state) => PlaylistDetailsScreen(
+                    playlistId: state.pathParameters['id']!,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: '/settings',
+              builder: (_, _) => const SettingsScreen(),
+              routes: [
+                GoRoute(
                   path: 'language',
-                  builder: (_, _) => const LanguageScreen()),
-              GoRoute(path: 'logs', builder: (_, _) => const LogsScreen()),
-              GoRoute(path: 'backup', builder: (_, _) => const BackupScreen()),
-              GoRoute(path: 'about', builder: (_, _) => const AboutScreen()),
-            ],
-          ),
-        ]),
+                  builder: (_, _) => const LanguageScreen(),
+                ),
+                GoRoute(path: 'logs', builder: (_, _) => const LogsScreen()),
+                GoRoute(
+                  path: 'backup',
+                  builder: (_, _) => const BackupScreen(),
+                ),
+                GoRoute(path: 'about', builder: (_, _) => const AboutScreen()),
+              ],
+            ),
+          ],
+        ),
       ],
     ),
-    // الدفعي (م-11): الرابط يُمرَّر عبر `extra` من التوجيه التلقائي (م-5).
+    // The batch screen: the URL is passed through `extra` by automatic
+    // routing.
     GoRoute(
       path: '/batch',
       builder: (_, state) =>
@@ -66,17 +80,18 @@ final router = GoRouter(
     ),
     GoRoute(path: '/player', builder: (_, _) => const PlayerScreen()),
     GoRoute(path: '/reels', builder: (_, _) => const ReelsScreen()),
-    // **شاشة الصوت تصعد من المشغل المصغر كورقة** وتُسحب لأسفل لتعود
-    // إليه (طلب المالك 2026-09-04) — لا الانزلاق الأفقي المعتمد لبقية
-    // المسارات، لأن العلاقة هنا «توسّع» لا «دخول أعمق».
+    // **The audio screen rises out of the mini player like a sheet** and is
+    // dragged down to return to it (requested 2026-09-04), rather than the
+    // horizontal slide used for every other route, because the relationship
+    // here is "expanding" rather than "going deeper".
     GoRoute(
       path: '/audio',
       pageBuilder: (_, state) => CustomTransitionPage<void>(
         key: state.pageKey,
         child: const AudioScreen(),
-        // **غير معتمة**: ما تحتها يبقى مرسوماً، فعند سحبها لأسفل يظهر
-        // الغلاف والمشغل المصغر خلفها لا خلفيةٌ سوداء (بلاغ المالك
-        // 2026-09-04 بلقطة).
+        // **Non-opaque**: what is beneath stays drawn, so dragging it down
+        // shows the cover and the mini player behind it rather than a black
+        // background (reported with a screenshot 2026-09-04).
         opaque: false,
         transitionDuration: MTMotion.sheetPage,
         reverseTransitionDuration: MTMotion.page,

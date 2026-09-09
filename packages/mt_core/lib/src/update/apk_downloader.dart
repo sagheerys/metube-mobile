@@ -37,7 +37,7 @@ class DownloadCancelToken {
 /// message, and may linger in the cache suggesting an update is ready.
 class ApkDownloader {
   ApkDownloader({HttpClient Function()? clientFactory})
-      : _clientFactory = clientFactory ?? HttpClient.new;
+    : _clientFactory = clientFactory ?? HttpClient.new;
 
   final HttpClient Function() _clientFactory;
 
@@ -84,10 +84,8 @@ class ApkDownloader {
           throw const UpdateCancelledException();
         }
         // **Signature check on the first chunk**: an HTML error page or a
-        // login
-        // redirect arrives with status 200 and would be saved as `.apk`
-        // without
-        // objection.
+        // login redirect arrives with status 200 and would be saved as
+        // `.apk` without objection.
         if (!checkedMagic && chunk.length >= zipMagic.length) {
           checkedMagic = true;
           for (var i = 0; i < zipMagic.length; i++) {

@@ -10,7 +10,7 @@
 /// widget to wrap, and no effect at all in English.
 String mtLtrRun(String text) => '\u2066$text\u2069';
 
-/// The opening isolate character, for tests and for callers that build
-/// the string themselves.
+/// The opening isolate character, for tests and for callers that build the
+/// string themselves.
 const String mtLtrIsolate = '\u2066';
 const String mtPopIsolate = '\u2069';

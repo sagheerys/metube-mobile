@@ -5,25 +5,24 @@ import 'package:mt_ui/mt_ui.dart';
 import '../../di.dart';
 import '../playlists/playlists_providers.dart';
 
-/// **انتماء العنصر**: في أي قوائم تشغيل هو، وتحت أي وسوم (م-16).
+/// **Where an item belongs**: which playlists it is in and which tags it
+/// carries.
 ///
-/// بلاغ المالك 2026-09-04: «أريد في تفاصيل المقطع في أي قائمة بلاي لست
-/// إذا كان مضافاً، وإذا كان في وسم معين في أي وسم يتبع». المعلومة كانت
-/// موجودة في المخزن ولا تعرضها أي شاشة.
+/// Field report 2026-09-04: "in the clip details I want to see which
+/// playlist it was added to, and which tag it is under". The information
+/// was in the store and no screen displayed it.
 ///
-/// نظيره في Lite بلا وسوم — الوسوم ميزة Super حصراً (CLAUDE.md §4).
+/// Its Lite counterpart has no tags; tags are a Super feature only.
 class ItemMembership {
-  const ItemMembership({
-    this.playlists = const [],
-    this.tags = const [],
-  });
+  const ItemMembership({this.playlists = const [], this.tags = const []});
 
   final List<String> playlists;
   final List<String> tags;
 
   bool get isEmpty => playlists.isEmpty && tags.isEmpty;
 
-  /// سطر واحد جاهز للعرض تحت العنوان — `null` إن لا انتماء له.
+  /// One line ready to show under the title, or `null` when it belongs
+  /// nowhere.
   String? line(MTLocalizations l10n) {
     final parts = [
       if (playlists.isNotEmpty) '${l10n.inPlaylists}: ${playlists.join('، ')}',
@@ -33,13 +32,15 @@ class ItemMembership {
   }
 }
 
-/// **فهرس واحد للمكتبة كلها، لا مزوّد لكل عنصر.**
+/// **One index for the whole library, not a provider per item.**
 ///
-/// عائلة `family` كانت ستعني مزوّداً لكل مقطع في مسار الريلز (مئات)،
-/// وكلها تُشتق من القراءتين نفسيهما. المفتاح canonicalUrl — نفس مفتاح
-/// الوسوم ومداخل القوائم (القاعدة 3).
-final membershipIndexProvider =
-    FutureProvider<Map<String, ItemMembership>>((ref) async {
+/// A `family` would have meant a provider per clip along the reels path,
+/// hundreds of them, all derived from the same two reads. The key is the
+/// canonicalUrl, the same key as the tags and the playlist entries (rule
+/// 3).
+final membershipIndexProvider = FutureProvider<Map<String, ItemMembership>>((
+  ref,
+) async {
   final playlists = await ref.watch(playlistsProvider.future);
   final allTags = await ref.watch(tagsIndexProvider).readAll();
 
@@ -54,7 +55,8 @@ final membershipIndexProvider =
     }
   }
 
-  // وسم المفضلة نظامي ويُعرض بقلبه لا باسمه — لا يُحشر في سطر الوسوم.
+  // The favourites tag is a system tag shown by its heart rather than by
+  // its name, so it is not squeezed into the tag line.
   final tags = <String, List<String>>{
     for (final MapEntry(:key, :value) in allTags.entries)
       if (value.any((t) => t != MTConstants.favoritesSystemTag))

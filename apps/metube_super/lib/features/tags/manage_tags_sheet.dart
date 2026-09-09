@@ -6,8 +6,8 @@ import '../../di.dart';
 import '../library/library_providers.dart';
 import '../playlists/playlists_providers.dart';
 
-/// «إدارة الوسوم» (م-26 · ر-7 خطوة 3): إعادة تسمية وحذف وسم فقط —
-/// **حذف الوسم لا يحذف الوسائط أبداً**.
+/// "Manage tags": renaming and deleting a tag only. **Deleting a tag never
+/// deletes media.**
 void showManageTagsSheet(BuildContext context, WidgetRef ref) {
   showModalBottomSheet<void>(
     context: context,
@@ -50,19 +50,17 @@ class _ManageTagsSheet extends ConsumerWidget {
                   data: (map) => map.isEmpty
                       ? Padding(
                           padding: const EdgeInsets.all(MTSpace.xl),
-                          child: Text(l10n.noTagsYet,
-                              textAlign: TextAlign.center,
-                              style: Theme.of(context).textTheme.bodySmall),
+                          child: Text(
+                            l10n.noTagsYet,
+                            textAlign: TextAlign.center,
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
                         )
                       : ListView(
                           shrinkWrap: true,
                           children: [
                             for (final tag in map.keys.toList()..sort())
-                              _TagRow(
-                                tag: tag,
-                                count: map[tag]!,
-                                palette: p,
-                              ),
+                              _TagRow(tag: tag, count: map[tag]!, palette: p),
                           ],
                         ),
                 ),
@@ -104,8 +102,11 @@ class _TagRow extends ConsumerWidget {
           IconButton(
             tooltip: l10n.deleteTag,
             onPressed: () => _delete(context, ref),
-            icon: Icon(Icons.delete_outline_rounded,
-                size: 19, color: palette.err),
+            icon: Icon(
+              Icons.delete_outline_rounded,
+              size: 19,
+              color: palette.err,
+            ),
           ),
         ],
       ),
@@ -114,7 +115,8 @@ class _TagRow extends ConsumerWidget {
 
   Future<void> _rename(BuildContext context, WidgetRef ref) async {
     final l10n = context.mtl;
-    // المتحكم يملكه الحوار ويصرّفه — راجع `mt_text_prompt.dart`.
+    // The dialog owns the controller and disposes it; see
+    // `mt_text_prompt.dart`.
     final name = await promptMTText(
       context,
       title: l10n.renameTag,

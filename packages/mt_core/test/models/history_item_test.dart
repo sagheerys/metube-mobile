@@ -6,7 +6,11 @@ import '../fixtures/fixtures.dart';
 void main() {
   group('HistoryItem.fromJson — fixture: history_active', () {
     late HistoryResponse response;
-    setUp(() => response = HistoryResponse.fromJson(loadFixture('history_active.json')));
+    setUp(
+      () => response = HistoryResponse.fromJson(
+        loadFixture('history_active.json'),
+      ),
+    );
 
     test('percent > 1 يُقسم على 100', () {
       expect(response.queue.first.progress, closeTo(0.453, 0.0001));
@@ -39,8 +43,11 @@ void main() {
 
   group('HistoryItem.fromJson — fixture: history_done', () {
     late List<HistoryItem> done;
-    setUp(() =>
-        done = HistoryResponse.fromJson(loadFixture('history_done.json')).done);
+    setUp(
+      () =>
+          done = HistoryResponse.fromJson(loadFixture('history_done.json'))
+              .done,
+    );
 
     test('finished ⇒ completed مع filename حقيقي من السيرفر', () {
       expect(done[0].status, ItemStatus.completed);
@@ -48,8 +55,10 @@ void main() {
     });
 
     test('YouTube بلا حقل صورة ⇒ اشتقاق i.ytimg من المعرف', () {
-      expect(done[0].thumbnail,
-          'https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg');
+      expect(
+        done[0].thumbnail,
+        'https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg',
+      );
     });
 
     test('لاحقة [videoid] تُزال من الرافع', () {
@@ -83,8 +92,11 @@ void main() {
 
   group('HistoryItem.fromJson — fixture: history_error_cookies', () {
     late List<HistoryItem> done;
-    setUp(() => done = HistoryResponse.fromJson(
-        loadFixture('history_error_cookies.json')).done);
+    setUp(
+      () => done = HistoryResponse.fromJson(
+        loadFixture('history_error_cookies.json'),
+      ).done,
+    );
 
     test('خطأ كوكيز/تسجيل دخول ⇒ isPlatformBlocked', () {
       expect(done[0].status, ItemStatus.failed);

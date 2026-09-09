@@ -47,8 +47,7 @@ class DownloadPoller {
               : ServerErrorException(detail);
         }
         // A missing filename means we wait. It is never invented from the
-        // title
-        // (trap §6.3).
+        // title (trap §6.3).
         if (item.isCompleted && item.filename != null) return item;
         if (item.progress != null) onProgress(item.progress!);
       }

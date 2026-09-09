@@ -9,11 +9,13 @@ import 'package:path_provider/path_provider.dart';
 import '../../di.dart';
 import 'update_channel.dart';
 
-/// طور التحديث الحالي — مصدر واحد تقرؤه الورقة وصفّ الإعدادات معاً.
+/// The current update phase: one source read by both the sheet and the
+/// settings row.
 enum UpdatePhase { idle, checking, available, downloading, ready, failed }
 
-/// سبب الفشل **رمزاً لا نصاً**: الحالة لا تحمل نص واجهة (TRD §3.3)،
-/// والترجمة تحدث عند العرض وحده.
+/// The failure reason **as a code, not as text**: state carries no
+/// interface strings (TRD §3.3), and translation happens only at display
+/// time.
 enum UpdateFailure { check, download, install }
 
 class UpdateState {
@@ -31,13 +33,14 @@ class UpdateState {
   final UpdatePhase phase;
   final UpdateRelease? release;
 
-  /// مسار ملف التحديث بعد اكتمال التنزيل.
+  /// The update file's path once the download completes.
   final String? apkPath;
   final double progress;
   final UpdateFailure? failure;
   final DateTime? checkedAt;
 
-  /// نتيجة **فحص يدوي** لم يجد جديداً — لا تُعرض بعد فحص تلقائي صامت.
+  /// The result of a **manual check** that found nothing new. It is never
+  /// shown after a silent automatic check.
   final bool upToDate;
   final bool autoCheck;
 
@@ -55,40 +58,45 @@ class UpdateState {
     bool? autoCheck,
     bool clearFailure = false,
     bool clearRelease = false,
-  }) =>
-      UpdateState(
-        phase: phase ?? this.phase,
-        release: clearRelease ? null : (release ?? this.release),
-        apkPath: clearRelease ? null : (apkPath ?? this.apkPath),
-        progress: progress ?? this.progress,
-        failure: clearFailure ? null : (failure ?? this.failure),
-        checkedAt: checkedAt ?? this.checkedAt,
-        upToDate: upToDate ?? this.upToDate,
-        autoCheck: autoCheck ?? this.autoCheck,
-      );
+  }) => UpdateState(
+    phase: phase ?? this.phase,
+    release: clearRelease ? null : (release ?? this.release),
+    apkPath: clearRelease ? null : (apkPath ?? this.apkPath),
+    progress: progress ?? this.progress,
+    failure: clearFailure ? null : (failure ?? this.failure),
+    checkedAt: checkedAt ?? this.checkedAt,
+    upToDate: upToDate ?? this.upToDate,
+    autoCheck: autoCheck ?? this.autoCheck,
+  );
 }
 
-final updatePrefsProvider = Provider((ref) => UpdatePrefs(
-      store: ref.watch(keyValueStoreProvider),
-      mutex: ref.watch(prefsMutexProvider),
-    ));
+final updatePrefsProvider = Provider(
+  (ref) => UpdatePrefs(
+    store: ref.watch(keyValueStoreProvider),
+    mutex: ref.watch(prefsMutexProvider),
+  ),
+);
 
-/// **العلامة تميّز ملف هذا التطبيق** في إصدار يحمل APK التطبيقين معاً.
+/// **The marker identifies this app's file** in a release carrying both
+/// apps' APKs.
 final updateCheckerProvider = Provider(
-    (ref) => UpdateChecker(fetch: ioHttpGetString, assetMarker: 'lite'));
+  (ref) => UpdateChecker(fetch: ioHttpGetString, assetMarker: 'lite'),
+);
 
 final apkDownloaderProvider = Provider((ref) => ApkDownloader());
 
-/// مجلد الكاش الذي يحطّ فيه ملف التحديث — **مزوّد مستقل** كي تستبدله
-/// الاختبارات بمجلد مؤقّت: `path_provider` قناة أصلية لا تعمل في
-/// اختبارات الودجات.
+/// The cache folder the update file lands in. **A provider of its own** so
+/// tests can replace it with a temporary directory: `path_provider` is a
+/// native channel and does not work in widget tests.
 final updateCacheDirProvider = FutureProvider<String>(
-    (ref) async => (await getTemporaryDirectory()).path);
+  (ref) async => (await getTemporaryDirectory()).path,
+);
 
 final updateChannelProvider = Provider((ref) => const UpdateChannel());
 
-final updateControllerProvider =
-    NotifierProvider<UpdateNotifier, UpdateState>(UpdateNotifier.new);
+final updateControllerProvider = NotifierProvider<UpdateNotifier, UpdateState>(
+  UpdateNotifier.new,
+);
 
 class UpdateNotifier extends Notifier<UpdateState> {
   DownloadCancelToken? _cancel;
@@ -107,12 +115,14 @@ class UpdateNotifier extends Notifier<UpdateState> {
     unawaited(_sweepInstalledApk(prefs));
   }
 
-  /// **يمسح ملف التحديث بعد أن يؤدّي دوره.** بلا هذا يبقى ~40 م.ب في كاش
-  /// التطبيق إلى الأبد بعد أول تحديث ناجح — الإصدار الذي نُزّل صار هو
-  /// الإصدار العامل، فالملف لا يفيد أحداً.
+  /// **Deletes the update file once it has done its job.** Without this,
+  /// about 40MB stays in the app cache forever after the first successful
+  /// update: the version that was downloaded is now the running version, so
+  /// the file helps nobody.
   ///
-  /// المقارنة بالإصدار لا بالوجود: من نزّل التحديث ثم أجّل التثبيت وأغلق
-  /// التطبيق يجب أن يجد ملفه كما تركه.
+  /// Compared by version rather than by existence: someone who downloaded
+  /// the update, postponed installing and closed the app must find their
+  /// file as they left it.
   Future<void> _sweepInstalledApk(UpdatePrefs prefs) async {
     final downloaded = AppVersion.tryParse(await prefs.downloadedVersion());
     if (downloaded == null) return;
@@ -123,7 +133,8 @@ class UpdateNotifier extends Notifier<UpdateState> {
       final file = File('$dir/${MTConstants.updateApkFileName}');
       if (file.existsSync()) await file.delete();
     } catch (_) {
-      // كاش غير متاح: يمسحه النظام عند الضيق على أي حال.
+      // The cache is unavailable; the system sweeps it under pressure
+      // anyway.
     }
     await prefs.clearDownloaded();
   }
@@ -131,33 +142,45 @@ class UpdateNotifier extends Notifier<UpdateState> {
   Future<String> _currentVersion() async =>
       (await PackageInfo.fromPlatform()).version;
 
-  /// فحص صامت عند الإقلاع: لا مؤشر انتظار ولا رسالة خطأ مهما جرى.
+  /// **Stamped before the request, not after**: a request that hangs until
+  /// the timeout would otherwise allow a fresh check on every quick
+  /// consecutive launch.
   Future<void> checkSilently() async {
     if (state.busy || state.release != null) return;
     final prefs = ref.read(updatePrefsProvider);
     if (!await prefs.autoCheck()) return;
     final now = DateTime.now();
     if (!UpdateChecker.isDue(await prefs.lastCheck(), now)) return;
-    // **يُختم قبل الطلب لا بعده**: طلب يعلّق حتى المهلة كان سيسمح بفحص
-    // جديد عند كل إقلاع متتالٍ سريع.
+    // **Stamped before the request, not after**: a request that hangs until
+    // the timeout would otherwise allow a fresh check on every quick
+    // consecutive launch.
     await prefs.markChecked(now);
-    final release = await ref.read(updateCheckerProvider).check(
+    final release = await ref
+        .read(updateCheckerProvider)
+        .check(
           currentVersion: await _currentVersion(),
           skippedVersion: await prefs.skippedVersion(),
         );
     state = release == null
         ? state.copyWith(checkedAt: now)
         : state.copyWith(
-            phase: UpdatePhase.available, release: release, checkedAt: now);
+            phase: UpdatePhase.available,
+            release: release,
+            checkedAt: now,
+          );
   }
 
-  /// فحص يدوي: يعرض النتيجة دائماً، **بما فيها الفشل**.
+  /// A manual check: it always shows the result, **including a failure**.
   ///
-  /// لا يحترم «تخطّي هذا الإصدار»: من ضغط الزر بنفسه يريد أن يعرف.
+  /// It does not honour "skip this version": whoever pressed the button
+  /// wants to know.
   Future<void> checkNow() async {
     if (state.busy) return;
     state = state.copyWith(
-        phase: UpdatePhase.checking, upToDate: false, clearFailure: true);
+      phase: UpdatePhase.checking,
+      upToDate: false,
+      clearFailure: true,
+    );
     final prefs = ref.read(updatePrefsProvider);
     final now = DateTime.now();
     await prefs.markChecked(now);
@@ -174,9 +197,10 @@ class UpdateNotifier extends Notifier<UpdateState> {
       );
     } catch (_) {
       state = state.copyWith(
-          phase: UpdatePhase.failed,
-          failure: UpdateFailure.check,
-          checkedAt: now);
+        phase: UpdatePhase.failed,
+        failure: UpdateFailure.check,
+        checkedAt: now,
+      );
     }
   }
 
@@ -186,19 +210,25 @@ class UpdateNotifier extends Notifier<UpdateState> {
     final token = DownloadCancelToken();
     _cancel = token;
     state = state.copyWith(
-        phase: UpdatePhase.downloading, progress: 0, clearFailure: true);
+      phase: UpdatePhase.downloading,
+      progress: 0,
+      clearFailure: true,
+    );
     try {
       final dir = await ref.read(updateCacheDirProvider.future);
       final path = '$dir/${MTConstants.updateApkFileName}';
-      await ref.read(apkDownloaderProvider).download(
+      await ref
+          .read(apkDownloaderProvider)
+          .download(
             url: release.apkUrl,
             savePath: path,
             expectedSize: release.apkSize,
             cancel: token,
             onProgress: (p) {
               if (!identical(_cancel, token)) return;
-              // **خطوة 1% لا كل قطعة**: القطعة 64 كيلوبايت، فملف 40 م.ب
-              // يعطي ~640 نداءً — إعادة بناء لكل واحد بلا فرق تراه عين.
+              // **A 1% step rather than every chunk**: chunks are 64KB, so
+              // a 40MB file gives about 640 callbacks, one rebuild each,
+              // with no difference any eye could see.
               if (p < 1 && (p - state.progress).abs() < 0.01) return;
               state = state.copyWith(progress: p);
             },
@@ -206,14 +236,20 @@ class UpdateNotifier extends Notifier<UpdateState> {
       await ref
           .read(updatePrefsProvider)
           .setDownloadedVersion(release.version.toString());
-      state =
-          state.copyWith(phase: UpdatePhase.ready, progress: 1, apkPath: path);
+      state = state.copyWith(
+        phase: UpdatePhase.ready,
+        progress: 1,
+        apkPath: path,
+      );
     } on UpdateCancelledException {
-      // الإلغاء عودة إلى «متاح» لا فشل — الزر يعرض «تنزيل» من جديد.
+      // Cancelling returns to "available" rather than a failure; the button
+      // offers "download" again.
       state = state.copyWith(phase: UpdatePhase.available, progress: 0);
     } catch (_) {
       state = state.copyWith(
-          phase: UpdatePhase.failed, failure: UpdateFailure.download);
+        phase: UpdatePhase.failed,
+        failure: UpdateFailure.download,
+      );
     } finally {
       if (identical(_cancel, token)) _cancel = null;
     }
@@ -221,7 +257,8 @@ class UpdateNotifier extends Notifier<UpdateState> {
 
   void cancelDownload() => _cancel?.cancel();
 
-  /// `false` ⇒ إذن التثبيت ناقص، والواجهة تعرض حوار الإذن حينها.
+  /// `false` means the install permission is missing, and the interface
+  /// shows the permission dialog.
   Future<bool> install() async {
     final path = state.apkPath;
     if (path == null) return true;
@@ -229,7 +266,9 @@ class UpdateNotifier extends Notifier<UpdateState> {
     if (!await channel.canInstall()) return false;
     if (!await channel.install(path)) {
       state = state.copyWith(
-          phase: UpdatePhase.failed, failure: UpdateFailure.install);
+        phase: UpdatePhase.failed,
+        failure: UpdateFailure.install,
+      );
     }
     return true;
   }
@@ -242,16 +281,23 @@ class UpdateNotifier extends Notifier<UpdateState> {
     state = state.copyWith(autoCheck: value);
   }
 
-  /// يكتم هذا الإصدار وحده — الأحدث منه يظهر تلقائياً.
+  /// Mutes this release alone; anything newer appears automatically.
   Future<void> skipCurrent() async {
     final release = state.release;
     if (release == null) return;
     await ref.read(updatePrefsProvider).skipVersion(release.version.toString());
     state = state.copyWith(
-        phase: UpdatePhase.idle, clearRelease: true, clearFailure: true);
+      phase: UpdatePhase.idle,
+      clearRelease: true,
+      clearFailure: true,
+    );
   }
 
-  /// «لاحقاً»: يُخفي البطاقة لهذه الجلسة بلا كتم دائم.
+  /// "Later": hides the card for this session without muting it
+  /// permanently.
   void dismiss() => state = state.copyWith(
-      phase: UpdatePhase.idle, clearRelease: true, clearFailure: true);
+    phase: UpdatePhase.idle,
+    clearRelease: true,
+    clearFailure: true,
+  );
 }

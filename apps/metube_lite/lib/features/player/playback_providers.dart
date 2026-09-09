@@ -9,7 +9,8 @@ import '../downloads_library/artwork_view.dart';
 import '../downloads_library/library_providers.dart';
 import '../downloads_library/local_item.dart';
 
-/// طلب تشغيل معلّق: القائمة المعروضة وقت النقر بترتيبها وتصفيتها (ر-4).
+/// A pending play request: the list on screen at the moment of the tap, in
+/// its order and with its filtering (rule 4).
 class PlaybackRequest {
   const PlaybackRequest({
     required this.items,
@@ -24,11 +25,12 @@ class PlaybackRequest {
   final String? playlistName;
 }
 
-/// يوضع قبل الانتقال إلى `/player` ثم تقرؤه الشاشة مرة واحدة.
+/// Set before navigating to `/player`, then read once by the screen.
 final playbackRequestProvider = StateProvider<PlaybackRequest?>((ref) => null);
 
-/// جلسة الفيديو — تُبنى عند فتح المشغل وتُصرَّف عند مغادرته. تسجّل أبعاد
-/// كل مقطع تشغّله في `media_shape_index` فتتراكم معرفة «القِصار» (م-35).
+/// The video session, built when the player opens and disposed when it is
+/// left. It records the dimensions of every clip it plays into
+/// `media_shape_index`, so knowledge of what counts as a short accumulates.
 final videoSessionProvider = Provider.autoDispose<MTVideoSession>((ref) {
   final session = MTVideoSession(
     resolver: ref.watch(playbackResolverProvider),
@@ -40,15 +42,16 @@ final videoSessionProvider = Provider.autoDispose<MTVideoSession>((ref) {
     await shapes.remember(key, duration, aspectRatio);
     ref.invalidate(localMediaProvider);
   };
-  // **مخرج صوت واحد — بالاتجاهين.** فتح فيديو والصوت الخلفي يعمل كان
-  // يشغّل الاثنين معاً (خلل مصطاد على جهاز المالك)، وبقي الاتجاه
-  // المعاكس مفتوحاً حتى العطل ع-4: زر التشغيل في إشعار الوسائط — أو
-  // تشغيل صوتيات من شاشة القوائم المفتوحة فوق المشغل — كان يعزف فوق
-  // الفيديو العامل.
+  // **One audio output, in both directions.** Opening a video while
+  // background audio played used to play both at once (caught on a real
+  // device), and the opposite direction stayed open until defect ع-4: the
+  // play button in the media notification, or starting audio from the
+  // playlists screen opened over the player, played over the running video.
   final handler = ref.read(audioHandlerProvider);
   session.onTakeAudioFocus = handler.pause;
-  // **يُمسح تسجيلنا وحده** (2026-09-03): الريلز يسجّل موقِفه أيضاً، وشطب
-  // التسجيل بلا تمييز كان يترك الطرف الحي بلا حماية فيعزف مصدران معاً.
+  // **Only our own registration is cleared** (2026-09-03): reels registers
+  // its stopper too, and clearing the registration indiscriminately left
+  // the live side unprotected, so two sources played together.
   final pauseVideo = session.pause;
   handler.onTakeVideoFocus = pauseVideo;
   ref.onDispose(() {
@@ -60,27 +63,29 @@ final videoSessionProvider = Provider.autoDispose<MTVideoSession>((ref) {
   return session;
 });
 
-/// تحويل عنصر المكتبة المحلية إلى عنصر تشغيل موحد.
+/// Converts a local library item into a unified playback item.
 ///
-/// [PlaylistItem.canonicalUrl] هنا هو **مفتاح العنصر** (رابط أو مسار)
-/// لأنه مفتاح الاستئناف والمفضلة والقوائم في Lite. و[serverFilename]
-/// يبقى null دائماً: لا بث في Lite — الملف المحلي هو المصدر الوحيد.
+/// [PlaylistItem.canonicalUrl] here is **the item key**, a URL or a path,
+/// because that is the key for resuming, favourites and playlists in Lite.
+/// And [serverFilename] is always null: Lite never streams, and the local
+/// file is the only source.
 PlaylistItem toPlaylistItem(LocalItem item) => PlaylistItem(
-      canonicalUrl: item.key,
-      title: item.title,
-      artworkUrl: item.thumbnail,
-      localPath: item.path,
-      isAudio: item.isAudio,
-      duration: item.duration,
-      aspectRatio: item.aspectRatio,
-    );
+  canonicalUrl: item.key,
+  title: item.title,
+  artworkUrl: item.thumbnail,
+  localPath: item.path,
+  isAudio: item.isAudio,
+  duration: item.duration,
+  aspectRatio: item.aspectRatio,
+);
 
+/// The thumbnail builder for the players: platform covers saved in the
+/// artwork index, with no authentication headers, since none of them come
+/// from the family server.
+MTArtworkBuilder artworkBuilderFor(WidgetRef ref) =>
+    (context, item) => artworkFor(item.artworkUrl);
 
-/// باني المصغرات للمشغلات (م-18): أغلفة المنصات المحفوظة في فهرس
-/// الأغلفة — بلا ترويسات مصادقة (لا شيء منها من سيرفر العائلة).
-MTArtworkBuilder artworkBuilderFor(WidgetRef ref) => (context, item) =>
-    artworkFor(item.artworkUrl);
-
-/// المنصة المعروضة لعنصر تشغيل — مفتاحه قد يكون مساراً لا رابطاً.
+/// The platform shown for a playback item, whose key may be a path rather
+/// than a URL.
 MediaPlatform platformOfKey(String key) =>
     key.startsWith('http') ? MediaPlatform.detect(key) : MediaPlatform.other;

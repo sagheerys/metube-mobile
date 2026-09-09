@@ -18,10 +18,10 @@ import '../tokens/tokens.dart';
 /// `AnimationController` and no work at all during scrolling.
 ///
 /// The three remaining animations:
-/// 1. 1. [MTRevealOnce] for screen content entering once.
-/// 2. 2. [MTSlidePageTransition] for screen changes, following text
+/// 1. [MTRevealOnce] for screen content entering once.
+/// 2. [MTSlidePageTransition] for screen changes, following text
 /// direction.
-/// 3. 3. [MTAnimatedSwap] for content changing in place.
+/// 3. [MTAnimatedSwap] for content changing in place.
 
 /// A **once-only** appearance for a block of content: a fade and a very
 /// short offset.
@@ -35,8 +35,7 @@ class MTRevealOnce extends StatefulWidget {
   final Widget child;
 
   /// An optional delay for a light stagger between two blocks, never
-  /// between
-  /// dozens of items.
+  /// between dozens of items.
   final Duration? delay;
 
   @override
@@ -51,11 +50,12 @@ class _MTRevealOnceState extends State<MTRevealOnce>
   );
 
   /// **Built once rather than every frame** (fix م-2/b): a
-  /// `CurvedAnimation`
-  /// in `build` was created and abandoned sixty times a second without ever
-  /// being disposed.
-  late final CurvedAnimation _curved =
-      CurvedAnimation(parent: _controller, curve: MTMotion.entrance);
+  /// `CurvedAnimation` in `build` was created and abandoned sixty times a
+  /// second without ever being disposed.
+  late final CurvedAnimation _curved = CurvedAnimation(
+    parent: _controller,
+    curve: MTMotion.entrance,
+  );
 
   @override
   void initState() {
@@ -94,16 +94,16 @@ class _MTRevealOnceState extends State<MTRevealOnce>
   /// touched.
   @override
   Widget build(BuildContext context) => AnimatedBuilder(
-        animation: _curved,
-        builder: (context, child) => Opacity(
-          opacity: _curved.value,
-          child: Transform.translate(
-            offset: Offset(0, MTMotion.slideNudge * (1 - _curved.value)),
-            child: child,
-          ),
-        ),
-        child: widget.child,
-      );
+    animation: _curved,
+    builder: (context, child) => Opacity(
+      opacity: _curved.value,
+      child: Transform.translate(
+        offset: Offset(0, MTMotion.slideNudge * (1 - _curved.value)),
+        child: child,
+      ),
+    ),
+    child: widget.child,
+  );
 }
 
 /// Content changing in place with a cross-fade, never a slide: the element
@@ -115,20 +115,20 @@ class MTAnimatedSwap extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => AnimatedSwitcher(
-        duration: MTMotion.tap,
-        switchInCurve: MTMotion.entrance,
-        switchOutCurve: MTMotion.exit,
-        child: child,
-      );
+    duration: MTMotion.tap,
+    switchInCurve: MTMotion.entrance,
+    switchOutCurve: MTMotion.exit,
+    child: child,
+  );
 }
 
 /// Screen transitions: a fade plus a **short** offset following the text
 /// direction.
 ///
 /// The Android default is a vertical rise that says nothing about how the
-/// two screens relate; a horizontal offset says "I went deeper" and "I
-/// came back". The distance is deliberately small (`pageSlide`), because a
-/// long slide is what reads as a jump.
+/// two screens relate; a horizontal offset says "I went deeper" and "I came
+/// back". The distance is deliberately small (`pageSlide`), because a long
+/// slide is what reads as a jump.
 class MTSlidePageTransition extends PageTransitionsBuilder {
   const MTSlidePageTransition();
 
@@ -146,8 +146,7 @@ class MTSlidePageTransition extends PageTransitionsBuilder {
     final enter = Tween<Offset>(
       begin: Offset(MTMotion.pageSlide * sign, 0),
       end: Offset.zero,
-    ).animate(
-        CurvedAnimation(parent: animation, curve: MTMotion.entrance));
+    ).animate(CurvedAnimation(parent: animation, curve: MTMotion.entrance));
 
     return SlideTransition(
       position: enter,
@@ -162,7 +161,9 @@ class MTSlidePageTransition extends PageTransitionsBuilder {
 }
 
 /// Installed on `ThemeData.pageTransitionsTheme` in both apps.
-const mtPageTransitionsTheme = PageTransitionsTheme(builders: {
-  TargetPlatform.android: MTSlidePageTransition(),
-  TargetPlatform.iOS: MTSlidePageTransition(),
-});
+const mtPageTransitionsTheme = PageTransitionsTheme(
+  builders: {
+    TargetPlatform.android: MTSlidePageTransition(),
+    TargetPlatform.iOS: MTSlidePageTransition(),
+  },
+);

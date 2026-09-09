@@ -111,24 +111,26 @@ void main() {
     ) async {
       addTearDown(() => MTRouteDepth.depth.value = 0);
       MTRouteDepth.depth.value = 0;
-      await tester.pumpWidget(host(
-        const MTHiddenUnderRoutes(
-          child: SizedBox(width: 100, height: 40, child: Text('أضف رابطاً')),
+      await tester.pumpWidget(
+        host(
+          const MTHiddenUnderRoutes(
+            child: SizedBox(width: 100, height: 40, child: Text('أضف رابطاً')),
+          ),
         ),
-      ));
+      );
 
       Finder inside(Type type) => find.descendant(
-            of: find.byType(MTHiddenUnderRoutes),
-            matching: find.byType(type),
-          );
+        of: find.byType(MTHiddenUnderRoutes),
+        matching: find.byType(type),
+      );
       AnimatedOpacity fade() =>
           tester.widget<AnimatedOpacity>(inside(AnimatedOpacity));
       expect(fade().opacity, 1);
       final showCurve = fade().curve;
 
       // **The guard**: no `AnimatedScale` anywhere on this path. The size
-      // jump
-      // is what was described as "strange and uncomfortable" (2026-09-05).
+      // jump is what was described as "strange and uncomfortable"
+      // (2026-09-05).
       expect(inside(AnimatedScale), findsNothing);
 
       MTRouteDepth.depth.value = 1;
@@ -146,24 +148,27 @@ void main() {
     testWidgets('visible: false يخفيه ولا ينزعه من الشجرة', (tester) async {
       addTearDown(() => MTRouteDepth.depth.value = 0);
       MTRouteDepth.depth.value = 0;
-      await tester.pumpWidget(host(
-        const MTHiddenUnderRoutes(
-          visible: false,
-          child: SizedBox(width: 100, height: 40, child: Text('أضف رابطاً')),
+      await tester.pumpWidget(
+        host(
+          const MTHiddenUnderRoutes(
+            visible: false,
+            child: SizedBox(width: 100, height: 40, child: Text('أضف رابطاً')),
+          ),
         ),
-      ));
+      );
 
       // **The guard**: removing it from the `Scaffold` slot by passing
-      // `null`
-      // wakes the default animator, which rotates on appearance, and that
-      // rotation is what was reported.
+      // `null` wakes the default animator, which rotates on appearance, and
+      // that rotation is what was reported.
       expect(find.text('أضف رابطاً', skipOffstage: false), findsOneWidget);
       expect(
         tester
-            .widget<AnimatedOpacity>(find.descendant(
-              of: find.byType(MTHiddenUnderRoutes),
-              matching: find.byType(AnimatedOpacity),
-            ))
+            .widget<AnimatedOpacity>(
+              find.descendant(
+                of: find.byType(MTHiddenUnderRoutes),
+                matching: find.byType(AnimatedOpacity),
+              ),
+            )
             .opacity,
         0,
       );

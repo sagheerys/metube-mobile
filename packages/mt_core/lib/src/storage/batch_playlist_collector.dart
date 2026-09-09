@@ -91,8 +91,7 @@ class BatchPlaylistCollector {
   }
 
   /// Called when a batch member fails or is cancelled: nothing is added,
-  /// but
-  /// the count advances.
+  /// but the count advances.
   Future<void> onDropped(String taskId) async {
     final member = _members.remove(taskId);
     if (member == null) return;
@@ -107,8 +106,10 @@ class BatchPlaylistCollector {
     if (playlist == null) return;
     final current = playlist.items.indexWhere((e) => e.canonicalUrl == url);
     if (current < 0) return;
-    final target =
-        (order + (_base[playlistId] ?? 0)).clamp(0, playlist.items.length - 1);
+    final target = (order + (_base[playlistId] ?? 0)).clamp(
+      0,
+      playlist.items.length - 1,
+    );
     if (current != target) {
       await playlists.reorderItem(playlistId, current, target);
     }
@@ -122,10 +123,8 @@ class BatchPlaylistCollector {
     final base = _base.remove(playlistId) ?? 0;
     final added = _added.remove(playlistId) ?? 0;
     // **A playlist that existed before us is never deleted**: deletion
-    // cures
-    // a playlist we created ourselves whose members all failed, not a
-    // user's
-    // playlist we added to.
+    // cures a playlist we created ourselves whose members all failed, not a
+    // user's playlist we added to.
     if (added == 0 && base == 0) await playlists.delete(playlistId);
   }
 }

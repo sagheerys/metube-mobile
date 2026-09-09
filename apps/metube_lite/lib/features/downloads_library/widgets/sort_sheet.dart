@@ -5,7 +5,7 @@ import 'package:mt_ui/mt_ui.dart';
 import '../library_providers.dart';
 import '../local_item.dart';
 
-/// ورقة الفرز والعرض — زر واحد (النموذج أ)، والخياران محفوظان (م-14).
+/// The sort and view sheet: one button, with both choices saved.
 void showSortSheet(BuildContext context, WidgetRef ref) {
   showModalBottomSheet<void>(
     context: context,
@@ -33,10 +33,15 @@ class _SortSheet extends ConsumerWidget {
     };
 
     return Padding(
-      // آخر خيار كان يقع تحت أزرار التنقل الثلاثة (بلاغ المالك
-      // 2026-09-04) — الورقة تمتد لحافة الشاشة دائماً.
-      padding: EdgeInsets.fromLTRB(MTSpace.xl, MTSpace.lg, MTSpace.xl,
-          mtSheetBottomPad(context, MTSpace.xxl)),
+      // The last option used to fall under the three navigation buttons
+      // (field
+      // report 2026-09-04); a sheet always reaches the screen edge.
+      padding: EdgeInsets.fromLTRB(
+        MTSpace.xl,
+        MTSpace.lg,
+        MTSpace.xl,
+        mtSheetBottomPad(context, MTSpace.xxl),
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -52,21 +57,23 @@ class _SortSheet extends ConsumerWidget {
                   label: Text(value),
                   selected: options.sort == key,
                   showCheckmark: false,
-                  labelStyle: Theme.of(context)
-                      .textTheme
-                      .labelMedium!
-                      .copyWith(
-                          color: options.sort == key
-                              ? MTThemeX.of(context).palette.bg
-                              : MTThemeX.of(context).palette.ink2),
+                  labelStyle: Theme.of(context).textTheme.labelMedium!.copyWith(
+                    color: options.sort == key
+                        ? MTThemeX.of(context).palette.bg
+                        : MTThemeX.of(context).palette.ink2,
+                  ),
                   onSelected: (_) => controller.setSort(key),
                 ),
             ],
           ),
           const SizedBox(height: MTSpace.xl),
-          // **أربعة أوضاع بدل أعلام متداخلة**: «مضغوط» و«شبكي» كانا
-          // مفتاحين يمكن تشغيلهما معاً بلا معنى، والرابع كان سيضاعف
-          // الحالات المستحيلة. الاختيار الواحد يمنعها من أصلها.
+          // **Four modes instead of overlapping flags**: compact and grid
+          // were two
+          // switches that could be on together meaninglessly, and a fourth
+          // would
+          // have doubled the impossible states. One choice prevents them at
+          // the
+          // root.
           MTSectionHeader(title: l10n.viewMode),
           const SizedBox(height: MTSpace.md),
           Wrap(
@@ -84,9 +91,10 @@ class _SortSheet extends ConsumerWidget {
                   selected: options.mode == mode,
                   showCheckmark: false,
                   labelStyle: Theme.of(context).textTheme.labelMedium!.copyWith(
-                      color: options.mode == mode
-                          ? MTThemeX.of(context).palette.bg
-                          : MTThemeX.of(context).palette.ink2),
+                    color: options.mode == mode
+                        ? MTThemeX.of(context).palette.bg
+                        : MTThemeX.of(context).palette.ink2,
+                  ),
                   onSelected: (_) => controller.setMode(mode),
                 ),
             ],

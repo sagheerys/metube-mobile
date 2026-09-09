@@ -1,6 +1,7 @@
 import 'package:flutter/services.dart';
 
-/// طلب سبر واحد: مفتاح العنصر + مصدره (ملف محلي أو رابط بثّ).
+/// One probe request: the item key plus its source, a local file or a
+/// streaming URL.
 class ProbeRequest {
   const ProbeRequest({required this.key, this.path, this.url});
 
@@ -11,7 +12,8 @@ class ProbeRequest {
   Map<String, Object?> toMap() => {'key': key, 'path': path, 'url': url};
 }
 
-/// نتيجة سبر — أي حقل قد يغيب (ترميز غير مدعوم أو سيرفر غير متاح).
+/// A probe result. Any field may be missing, from an unsupported codec or
+/// an unreachable server.
 class ProbedMedia {
   const ProbedMedia({
     required this.key,
@@ -27,16 +29,16 @@ class ProbedMedia {
   final int? width;
   final int? height;
 
-  /// مسار المصغرة في كاش التطبيق (لا رابط شبكة).
+  /// The thumbnail's path in the app cache, not a network URL.
   final String? thumbPath;
 
-  /// سبب الإخفاق كما رفعته المنصة — للسجل التشخيصي لا للعرض (م-47).
+  /// The failure reason as the platform reported it, for the diagnostic log
+  /// rather than for display.
   final String? error;
 
-  double? get aspectRatio =>
-      (width == null || height == null || height! <= 0)
-          ? null
-          : width! / height!;
+  double? get aspectRatio => (width == null || height == null || height! <= 0)
+      ? null
+      : width! / height!;
 
   bool get isEmpty => duration == null && width == null && thumbPath == null;
 
@@ -58,12 +60,14 @@ class ProbedMedia {
   }
 }
 
-/// م-18 + م-35 لـ Super — راجع `MediaProbe.kt` لسبب وجود القناة الأصلية.
+/// Probing for Super; see `MediaProbe.kt` for why the native channel
+/// exists.
 class MediaProbe {
   const MediaProbe([this.channel = _defaultChannel]);
 
-  static const _defaultChannel =
-      MethodChannel('com.yasir.metubesuper/permissions');
+  static const _defaultChannel = MethodChannel(
+    'com.yasir.metubesuper/permissions',
+  );
   final MethodChannel channel;
 
   Future<List<ProbedMedia>> probe(
@@ -76,9 +80,7 @@ class MediaProbe {
         'items': [for (final request in requests) request.toMap()],
         'headers': headers,
       });
-      return [
-        for (final entry in raw ?? const []) ?ProbedMedia.fromMap(entry),
-      ];
+      return [for (final entry in raw ?? const []) ?ProbedMedia.fromMap(entry)];
     } on PlatformException {
       return const [];
     } on MissingPluginException {

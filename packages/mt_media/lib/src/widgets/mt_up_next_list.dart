@@ -11,7 +11,9 @@ import 'media_time.dart';
 /// an empty widget killed that fallback and left a blank square in the
 /// audio player and the mini player (device check 2026-09-05).
 typedef MTArtworkBuilder = Widget? Function(
-    BuildContext context, PlaylistItem item);
+  BuildContext context,
+  PlaylistItem item,
+);
 
 /// The "up next" rows, the same content in all three shapes: a section
 /// under portrait video, a side panel in landscape, a bottom sheet in
@@ -47,19 +49,19 @@ class MTUpNextList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => ListView.builder(
-        shrinkWrap: shrinkWrap,
-        physics: physics,
-        padding: EdgeInsets.zero,
-        itemCount: items.length,
-        itemBuilder: (context, index) => _UpNextRow(
-          item: items[index],
-          playing: index == currentIndex,
-          paused: paused,
-          artwork: artwork,
-          dark: dark,
-          onTap: () => onTap(index),
-        ),
-      );
+    shrinkWrap: shrinkWrap,
+    physics: physics,
+    padding: EdgeInsets.zero,
+    itemCount: items.length,
+    itemBuilder: (context, index) => _UpNextRow(
+      item: items[index],
+      playing: index == currentIndex,
+      paused: paused,
+      artwork: artwork,
+      dark: dark,
+      onTap: () => onTap(index),
+    ),
+  );
 }
 
 class _UpNextRow extends StatelessWidget {
@@ -105,7 +107,8 @@ class _UpNextRow extends StatelessWidget {
                 borderRadius: BorderRadius.circular(MTRadius.thumb - 2),
                 border: Border.all(color: line),
               ),
-              child: artwork?.call(context, item) ??
+              child:
+                  artwork?.call(context, item) ??
                   Icon(
                     item.isAudio
                         ? Icons.music_note_rounded

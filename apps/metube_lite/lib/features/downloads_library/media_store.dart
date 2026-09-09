@@ -1,18 +1,21 @@
 import 'package:flutter/services.dart';
 
-/// م-10: تسجيل الملف المكتمل في MediaStore ليظهر في معرض الهاتف.
+/// Registering a completed file in MediaStore so it appears in the phone's
+/// gallery.
 ///
-/// القناة منفَّذة في `MainActivity.kt` بنداء `MediaScannerConnection`
-/// من إطار أندرويد مباشرة (انحراف موثق عن حزمة `media_scanner` المهجورة).
-/// الفشل هنا **لا يُفشل التحميل** — الملف موجود على القرص والمكتبة تراه؛
-/// غياب المعرض إزعاج لا خسارة.
+/// The channel is implemented in `MainActivity.kt` by calling
+/// `MediaScannerConnection` from the Android framework directly (a
+/// documented deviation from the abandoned `media_scanner` package). A
+/// failure here **does not fail the download**: the file is on disk and the
+/// library sees it, and its absence from the gallery is an annoyance rather
+/// than a loss.
 class MediaStoreScanner {
   const MediaStoreScanner([this.channel = _defaultChannel]);
 
   static const _defaultChannel = MethodChannel('metube_lite/media');
   final MethodChannel channel;
 
-  /// يرجع URI المعرض عند النجاح، أو null إن تعذّر التسجيل.
+  /// Returns the gallery URI on success, or null when registration failed.
   Future<String?> scanFile(String path) async {
     try {
       return await channel.invokeMethod<String>('scanFile', {'path': path});

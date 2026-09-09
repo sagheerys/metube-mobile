@@ -13,11 +13,11 @@ final _endpoint = ServerStreamEndpoint(
 );
 
 PlaylistItem _item({String? localPath, String? filename}) => PlaylistItem(
-      canonicalUrl: 'https://youtube.com/watch?v=abc',
-      title: 'مقطع',
-      localPath: localPath,
-      serverFilename: filename,
-    );
+  canonicalUrl: 'https://youtube.com/watch?v=abc',
+  title: 'مقطع',
+  localPath: localPath,
+  serverFilename: filename,
+);
 
 void main() {
   group('القاعدة الذهبية (م-19)', () {
@@ -26,8 +26,9 @@ void main() {
         endpoint: _endpoint,
         fileExists: (_) => true,
       );
-      final source =
-          resolver.resolve(_item(localPath: '/sd/v.mp4', filename: 'v.mp4'))!;
+      final source = resolver.resolve(
+        _item(localPath: '/sd/v.mp4', filename: 'v.mp4'),
+      )!;
       expect(source.origin, PlaybackOrigin.local);
       expect(source.isLocal, isTrue);
       expect(source.headers, isEmpty);
@@ -38,22 +39,27 @@ void main() {
         endpoint: _endpoint,
         fileExists: (_) => false,
       );
-      final source =
-          resolver.resolve(_item(localPath: '/sd/gone.mp4', filename: 'v.mp4'))!;
+      final source = resolver.resolve(
+        _item(localPath: '/sd/gone.mp4', filename: 'v.mp4'),
+      )!;
       expect(source.origin, PlaybackOrigin.stream);
       expect(source.uri.toString(), 'https://srv/download/v.mp4');
     });
 
     test('البث يحمل ترويسة المصادقة', () {
-      final resolver =
-          PlaybackSourceResolver(endpoint: _endpoint, fileExists: (_) => false);
+      final resolver = PlaybackSourceResolver(
+        endpoint: _endpoint,
+        fileExists: (_) => false,
+      );
       final source = resolver.resolve(_item(filename: 'v.mp4'))!;
       expect(source.headers['Authorization'], 'Basic dGVzdA==');
     });
 
     test('اسم الملف يُرمَّز في الرابط (مسافات وعربية)', () {
-      final resolver =
-          PlaybackSourceResolver(endpoint: _endpoint, fileExists: (_) => false);
+      final resolver = PlaybackSourceResolver(
+        endpoint: _endpoint,
+        fileExists: (_) => false,
+      );
       final source = resolver.resolve(_item(filename: 'مقطع جديد.mp4'))!;
       expect(source.uri.toString(), contains('%20'));
       expect(source.uri.toString(), isNot(contains(' ')));
@@ -62,14 +68,18 @@ void main() {
 
   group('لا مصدر', () {
     test('بلا ملف محلي ولا اسم على السيرفر', () {
-      final resolver =
-          PlaybackSourceResolver(endpoint: _endpoint, fileExists: (_) => false);
+      final resolver = PlaybackSourceResolver(
+        endpoint: _endpoint,
+        fileExists: (_) => false,
+      );
       expect(resolver.resolve(_item()), isNull);
     });
 
     test('اسم ملف خبيث `../` لا يُبث أبداً (القاعدة 9)', () {
-      final resolver =
-          PlaybackSourceResolver(endpoint: _endpoint, fileExists: (_) => false);
+      final resolver = PlaybackSourceResolver(
+        endpoint: _endpoint,
+        fileExists: (_) => false,
+      );
       expect(resolver.resolve(_item(filename: '../../etc/passwd')), isNull);
     });
 

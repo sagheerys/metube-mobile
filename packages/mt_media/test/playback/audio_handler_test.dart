@@ -6,12 +6,12 @@ import 'package:mt_media/mt_media.dart';
 import 'fake_player_port.dart';
 
 PlaylistItem _item(String id, {String? localPath}) => PlaylistItem(
-      canonicalUrl: 'https://x/$id',
-      title: id,
-      serverFilename: '$id.mp3',
-      localPath: localPath,
-      isAudio: true,
-    );
+  canonicalUrl: 'https://x/$id',
+  title: id,
+  serverFilename: '$id.mp3',
+  localPath: localPath,
+  isAudio: true,
+);
 
 void main() {
   late FakePlayerPort player;
@@ -170,16 +170,20 @@ void main() {
       await handler.playItems([_item('a')]);
       player.position = const Duration(seconds: 40);
       await handler.pause();
-      expect(await positions.positionOf('https://x/a'),
-          const Duration(seconds: 40));
+      expect(
+        await positions.positionOf('https://x/a'),
+        const Duration(seconds: 40),
+      );
     });
 
     test('الانتقال للتالي يحفظ موضع السابق', () async {
       await handler.playItems([_item('a'), _item('b')]);
       player.position = const Duration(seconds: 33);
       await handler.skipToNext();
-      expect(await positions.positionOf('https://x/a'),
-          const Duration(seconds: 33));
+      expect(
+        await positions.positionOf('https://x/a'),
+        const Duration(seconds: 33),
+      );
     });
 
     test('انتهاء المقطع يمسح موضعه', () async {
@@ -220,10 +224,15 @@ void main() {
       expect(handler.queue.value, isEmpty);
       expect(handler.currentItem, isNull);
       expect(handler.playbackState.value.playing, isFalse);
-      expect(handler.playbackState.value.processingState,
-          AudioProcessingState.idle);
-      expect(await states.read(), isNull,
-          reason: 'وإلا عاد الشبح بعد إعادة التشغيل');
+      expect(
+        handler.playbackState.value.processingState,
+        AudioProcessingState.idle,
+      );
+      expect(
+        await states.read(),
+        isNull,
+        reason: 'وإلا عاد الشبح بعد إعادة التشغيل',
+      );
     });
 
     test('بعد stop لا تُحيي الاستعادة شيئاً', () async {
@@ -241,8 +250,10 @@ void main() {
       await handler.playItems([_item('a')]);
       player.position = const Duration(seconds: 88);
       await handler.stop();
-      expect(await positions.positionOf('https://x/a'),
-          const Duration(seconds: 88));
+      expect(
+        await positions.positionOf('https://x/a'),
+        const Duration(seconds: 88),
+      );
     });
   });
 

@@ -8,16 +8,19 @@ import '../../di.dart';
 import 'widgets/help_button.dart';
 import 'widgets/server_status_card.dart';
 
-/// حالة وصول كل رابط (نقاط حية) — فحص متوازٍ 4s.
-final endpointsStatusProvider =
-    FutureProvider<Map<String, MTEndpointStatus>>((ref) async {
+/// The reachability state of every endpoint (live), probed in parallel
+/// with a 4s timeout.
+final endpointsStatusProvider = FutureProvider<Map<String, MTEndpointStatus>>((
+  ref,
+) async {
   final settings = ref.watch(settingsProvider);
   final resolver = ref.watch(endpointResolverProvider);
   if (settings.candidateUrls.isEmpty) return {};
   return resolver.probeAll(settings.candidateUrls);
 });
 
-/// إدارة روابط السيرفر (م-28/ر-9): محلي + خارجية مرتبة + تبديل تلقائي.
+/// Managing server endpoints: a local one plus ordered external ones, with
+/// automatic switching.
 class NetworkScreen extends ConsumerWidget {
   const NetworkScreen({super.key});
 
@@ -31,8 +34,9 @@ class NetworkScreen extends ConsumerWidget {
 
     MTEndpointStatus? statusOf(String url) => statuses.valueOrNull?[url];
 
-    // **القفل ليس نقطة حمراء**: «لا يستجيب» يطارده المستخدم في راوتره،
-    // و«يرفض اعتمادك» يصلحه بحقلين. اللون وحده لا يفرّق بينهما.
+    // **A lock is not a red dot**: "does not respond" sends the user
+    // hunting through their router, while "rejects your credentials" is
+    // fixed with two fields. Colour alone cannot tell them apart.
     Widget statusDot(String url) {
       final status = statusOf(url);
       if (status == MTEndpointStatus.unauthorized) {
@@ -53,9 +57,10 @@ class NetworkScreen extends ConsumerWidget {
       );
     }
 
-    /// **سطر يقول ما العطل ويقود إلى علاجه.** كانت الحالتان (رفض
-    /// اعتماد · عنوان ليس MeTube) نقطةً حمراء واحدة لا تفرّق بينهما
-    /// ولا عن سيرفر متوقف — قياس على جهاز المالك 2026-09-06.
+    /// **A line that says what the fault is and leads to its cure.** The
+    /// two cases, a rejected credential and an address that is not MeTube,
+    /// were one red dot, indistinguishable from each other and from a
+    /// stopped server (measured on a real device 2026-09-06).
     Widget? statusHint(String url) {
       final status = statusOf(url);
       final message = switch (status) {
@@ -69,12 +74,13 @@ class NetworkScreen extends ConsumerWidget {
         padding: const EdgeInsets.only(top: MTSpace.xs),
         child: Text(
           message,
-          style:
-              Theme.of(context).textTheme.bodySmall?.copyWith(color: p.accent),
+          style: Theme.of(context).textTheme.bodySmall
+              ?.copyWith(color: p.accent),
         ),
       );
-      // الاعتماد يُصلَح في شاشة أخرى ⇒ ننقل إليها. أما العنوان الخطأ
-      // فيُصلَح هنا في هذه القائمة، فالنقل إلى الإعدادات تشتيت.
+      // Credentials are fixed on another screen, so we navigate there. A
+      // wrong address is fixed here in this very list, so sending the user
+      // to settings would only distract.
       return status == MTEndpointStatus.unauthorized
           ? InkWell(onTap: () => context.go('/settings'), child: text)
           : text;
@@ -93,20 +99,29 @@ class NetworkScreen extends ConsumerWidget {
       ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(
-            MTSpace.pagePad, 0, MTSpace.pagePad, MTSpace.xxl),
+          MTSpace.pagePad,
+          0,
+          MTSpace.pagePad,
+          MTSpace.xxl,
+        ),
         children: [
           SwitchListTile(
             contentPadding: EdgeInsets.zero,
-            title: Row(children: [
-              Expanded(child: Text(l10n.autoUrlSwitching)),
-              HelpButton(
+            title: Row(
+              children: [
+                Expanded(child: Text(l10n.autoUrlSwitching)),
+                HelpButton(
                   title: l10n.autoUrlSwitching,
-                  body: l10n.autoUrlSwitchingDesc),
-            ]),
+                  body: l10n.autoUrlSwitchingDesc,
+                ),
+              ],
+            ),
             subtitle: settings.autoSwitch
                 ? null
-                : Text(l10n.autoSwitchDisabledHint,
-                    style: Theme.of(context).textTheme.bodySmall),
+                : Text(
+                    l10n.autoSwitchDisabledHint,
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
             value: settings.autoSwitch,
             onChanged: notifier.setAutoSwitch,
           ),
@@ -114,46 +129,54 @@ class NetworkScreen extends ConsumerWidget {
 
           MTSectionHeader(title: l10n.localNetworkSection),
           const SizedBox(height: MTSpace.xs),
-          Text(l10n.localNetworkDesc,
-              style: Theme.of(context).textTheme.bodySmall),
+          Text(
+            l10n.localNetworkDesc,
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
           const SizedBox(height: MTSpace.md),
-          Row(children: [
-            if (settings.localUrl.isNotEmpty) ...[
-              statusDot(settings.localUrl),
-              const SizedBox(width: MTSpace.sm),
-            ],
-            Expanded(
-              child: TextFormField(
-                initialValue: settings.localUrl,
-                textDirection: TextDirection.ltr,
-                decoration:
-                    InputDecoration(labelText: l10n.localUrlLabel),
-                onFieldSubmitted: (value) async {
-                  await notifier.setLocalUrl(value);
-                  ref.invalidate(endpointsStatusProvider);
-                },
+          Row(
+            children: [
+              if (settings.localUrl.isNotEmpty) ...[
+                statusDot(settings.localUrl),
+                const SizedBox(width: MTSpace.sm),
+              ],
+              Expanded(
+                child: TextFormField(
+                  initialValue: settings.localUrl,
+                  textDirection: TextDirection.ltr,
+                  decoration: InputDecoration(labelText: l10n.localUrlLabel),
+                  onFieldSubmitted: (value) async {
+                    await notifier.setLocalUrl(value);
+                    ref.invalidate(endpointsStatusProvider);
+                  },
+                ),
               ),
-            ),
-          ]),
+            ],
+          ),
           if (statusHint(settings.localUrl) case final Widget hint) hint,
           const SizedBox(height: MTSpace.xl),
 
           MTSectionHeader(
-              title: l10n.externalNetworkSection,
-              trailing: '${settings.externalUrls.length}'),
+            title: l10n.externalNetworkSection,
+            trailing: '${settings.externalUrls.length}',
+          ),
           const SizedBox(height: MTSpace.xs),
-          Text(l10n.externalNetworkDesc,
-              style: Theme.of(context).textTheme.bodySmall),
+          Text(
+            l10n.externalNetworkDesc,
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
           const SizedBox(height: MTSpace.md),
           for (final (index, url) in settings.externalUrls.indexed)
             ListTile(
               contentPadding: EdgeInsets.zero,
               leading: statusDot(url),
-              title: Text(url,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  textDirection: TextDirection.ltr,
-                  style: Theme.of(context).textTheme.bodyMedium),
+              title: Text(
+                url,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textDirection: TextDirection.ltr,
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
               subtitle: statusHint(url),
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -169,8 +192,11 @@ class NetworkScreen extends ConsumerWidget {
                     ),
                   IconButton(
                     visualDensity: VisualDensity.compact,
-                    icon: Icon(Icons.delete_outline_rounded,
-                        size: 18, color: p.err),
+                    icon: Icon(
+                      Icons.delete_outline_rounded,
+                      size: 18,
+                      color: p.err,
+                    ),
                     onPressed: () async {
                       await notifier.removeExternalUrl(url);
                       ref.invalidate(endpointsStatusProvider);
@@ -197,7 +223,8 @@ class NetworkScreen extends ConsumerWidget {
 
   Future<void> _addExternalDialog(BuildContext context, WidgetRef ref) async {
     final l10n = context.mtl;
-    // المتحكم يملكه الحوار ويصرّفه — راجع `mt_text_prompt.dart`.
+    // The dialog owns the controller and disposes it; see
+    // `mt_text_prompt.dart`.
     final url = await promptMTText(
       context,
       title: l10n.addEndpoint,

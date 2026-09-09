@@ -5,8 +5,8 @@ import 'package:mt_ui/mt_ui.dart';
 import 'update_sheet.dart';
 import 'update_state.dart';
 
-/// قسم «التحديثات» في الإعدادات (م-66) — يُدرَج كودجت واحد كي تبقى شاشة
-/// الإعدادات تحت حدّ 400 سطر.
+/// The "updates" section in settings, added as one widget so the settings
+/// screen stays under the 400-line limit.
 class UpdateSection extends ConsumerWidget {
   const UpdateSection({super.key});
 
@@ -26,30 +26,36 @@ class UpdateSection extends ConsumerWidget {
         ListTile(
           contentPadding: EdgeInsets.zero,
           leading: Icon(
-            hasUpdate
-                ? Icons.system_update_rounded
-                : Icons.update_rounded,
-            // **لون الفعل عند وجود تحديث** — يُقرأ من اللوحة فلا يتسرّب
-            // وهج Super إلى خليج Lite.
+            hasUpdate ? Icons.system_update_rounded : Icons.update_rounded,
+            // **The accent colour when an update exists**, read from the
+            // palette so
+            // Super's ember never leaks into Lite's petrol bay.
             color: hasUpdate ? p.accent : p.ink2,
           ),
           title: Text(
             hasUpdate ? l10n.updateAvailable : l10n.checkForUpdates,
             style: hasUpdate
                 ? text.bodyLarge!.copyWith(
-                    color: p.accent, fontWeight: FontWeight.w700)
+                    color: p.accent,
+                    fontWeight: FontWeight.w700,
+                  )
                 : null,
           ),
-          subtitle: Text(_subtitle(context, state),
-              style: text.bodySmall!.copyWith(color: p.ink3)),
+          subtitle: Text(
+            _subtitle(context, state),
+            style: text.bodySmall!.copyWith(color: p.ink3),
+          ),
           trailing: state.phase == UpdatePhase.checking
               ? const SizedBox(
                   width: 18,
                   height: 18,
-                  child: CircularProgressIndicator(strokeWidth: 2))
-              : Icon(hasUpdate
-                  ? Icons.chevron_right_rounded
-                  : Icons.refresh_rounded),
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : Icon(
+                  hasUpdate
+                      ? Icons.chevron_right_rounded
+                      : Icons.refresh_rounded,
+                ),
           onTap: state.busy
               ? null
               : () async {
@@ -58,26 +64,32 @@ class UpdateSection extends ConsumerWidget {
                     return;
                   }
                   await controller.checkNow();
-                  // بعد الفحص اليدوي: التحديث يفتح الورقة فوراً، وعدمه
-                  // يقول ذلك صراحةً — الصمت يبدو عطلاً.
+                  // After a manual check: an update opens the sheet
+                  // immediately, and its
+                  // absence is said plainly. Silence looks like a fault.
                   if (!context.mounted) return;
                   final after = ref.read(updateControllerProvider);
                   if (after.release != null) {
                     showUpdateSheet(context);
                   } else if (after.failure == UpdateFailure.check) {
-                    showMTSnack(context, l10n.updateCheckFailed,
-                        type: MTSnackType.error);
+                    showMTSnack(
+                      context,
+                      l10n.updateCheckFailed,
+                      type: MTSnackType.error,
+                    );
                   } else if (after.upToDate) {
-                    showMTSnack(context, l10n.updateUpToDate,
-                        type: MTSnackType.success);
+                    showMTSnack(
+                      context,
+                      l10n.updateUpToDate,
+                      type: MTSnackType.success,
+                    );
                   }
                 },
         ),
         SwitchListTile(
           contentPadding: EdgeInsets.zero,
           title: Text(l10n.autoCheckUpdates, style: text.bodyMedium),
-          subtitle:
-              Text(l10n.autoCheckUpdatesHelp, style: text.bodySmall),
+          subtitle: Text(l10n.autoCheckUpdatesHelp, style: text.bodySmall),
           value: state.autoCheck,
           onChanged: controller.setAutoCheck,
         ),
@@ -92,6 +104,7 @@ class UpdateSection extends ConsumerWidget {
     if (state.phase == UpdatePhase.checking) return l10n.updateChecking;
     final at = state.checkedAt;
     return l10n.lastCheckedAt(
-        at == null ? l10n.updateNever : mtTimeAgo(context, at));
+      at == null ? l10n.updateNever : mtTimeAgo(context, at),
+    );
   }
 }

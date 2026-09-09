@@ -23,7 +23,9 @@ class HistoryResponse {
   /// The discovery check (§2.1): a map carrying both `done` and `queue`.
   /// Anything else is not a MeTube server, an HTML response for example.
   static bool looksLikeMeTube(dynamic decoded) =>
-      decoded is Map && decoded.containsKey('done') && decoded.containsKey('queue');
+      decoded is Map &&
+      decoded.containsKey('done') &&
+      decoded.containsKey('queue');
 
   factory HistoryResponse.fromJson(Map<String, dynamic> json) =>
       HistoryResponse(

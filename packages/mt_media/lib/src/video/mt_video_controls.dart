@@ -76,75 +76,72 @@ class _MTVideoControlsState extends State<MTVideoControls> {
 
   @override
   Widget build(BuildContext context) => LayoutBuilder(
-        builder: (context, constraints) => GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTap: _toggleVisible,
-          onDoubleTapDown: (d) => _onDoubleTap(d, constraints),
-          onDoubleTap: () {},
-          child: AnimatedOpacity(
-            opacity: _visible ? 1 : 0,
-            duration: MTMotion.fast,
-            curve: MTMotion.ease,
-            child: IgnorePointer(
-              ignoring: !_visible,
-              child: _locked ? _lockedLayer() : _controlsLayer(),
-            ),
-          ),
+    builder: (context, constraints) => GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: _toggleVisible,
+      onDoubleTapDown: (d) => _onDoubleTap(d, constraints),
+      onDoubleTap: () {},
+      child: AnimatedOpacity(
+        opacity: _visible ? 1 : 0,
+        duration: MTMotion.fast,
+        curve: MTMotion.ease,
+        child: IgnorePointer(
+          ignoring: !_visible,
+          child: _locked ? _lockedLayer() : _controlsLayer(),
         ),
-      );
+      ),
+    ),
+  );
 
   Widget _lockedLayer() => Center(
-        child: MTVideoIconButton(
-          icon: Icons.lock_open_rounded,
-          tooltip: context.mtl.unlockTouch,
-          onTap: () {
-            setState(() => _locked = false);
-            _restartTimer();
-          },
-        ),
-      );
+    child: MTVideoIconButton(
+      icon: Icons.lock_open_rounded,
+      tooltip: context.mtl.unlockTouch,
+      onTap: () {
+        setState(() => _locked = false);
+        _restartTimer();
+      },
+    ),
+  );
 
   Widget _controlsLayer() => Stack(
-        children: [
-          const Positioned.fill(child: _Scrim()),
-          PositionedDirectional(
-            top: MTSpace.sm,
-            start: MTSpace.md,
-            end: MTSpace.md,
-            child: MTVideoTopBar(
-              session: widget.session,
-              onBack: widget.onBack,
-              onToggleFullscreen: widget.onToggleFullscreen,
-              fullscreen: widget.fullscreen,
-              playlistName: widget.playlistName,
-              membershipLine: widget.membershipLine,
-              onLock: widget.fullscreen
-                  ? () {
-                      _hideTimer?.cancel();
-                      setState(() => _locked = true);
-                    }
-                  : null,
-            ),
-          ),
-          Positioned.fill(
-            child: Center(
-              child: MTVideoCenterControls(session: widget.session),
-            ),
-          ),
-          PositionedDirectional(
-            // Above the rounded edge of the cream sheet, which overlaps the
-            // video by
-            // 14px.
-            bottom: widget.fullscreen ? MTSpace.xs : MTSpace.xl,
-            start: MTSpace.md,
-            end: MTSpace.md,
-            child: MTVideoBottomBar(
-              session: widget.session,
-              onQueue: widget.onQueue,
-            ),
-          ),
-        ],
-      );
+    children: [
+      const Positioned.fill(child: _Scrim()),
+      PositionedDirectional(
+        top: MTSpace.sm,
+        start: MTSpace.md,
+        end: MTSpace.md,
+        child: MTVideoTopBar(
+          session: widget.session,
+          onBack: widget.onBack,
+          onToggleFullscreen: widget.onToggleFullscreen,
+          fullscreen: widget.fullscreen,
+          playlistName: widget.playlistName,
+          membershipLine: widget.membershipLine,
+          onLock: widget.fullscreen
+              ? () {
+                  _hideTimer?.cancel();
+                  setState(() => _locked = true);
+                }
+              : null,
+        ),
+      ),
+      Positioned.fill(
+        child: Center(child: MTVideoCenterControls(session: widget.session)),
+      ),
+      PositionedDirectional(
+        // Above the rounded edge of the cream sheet, which overlaps the
+        // video by 14px.
+        bottom: widget.fullscreen ? MTSpace.xs : MTSpace.xl,
+        start: MTSpace.md,
+        end: MTSpace.md,
+        child: MTVideoBottomBar(
+          session: widget.session,
+          onQueue: widget.onQueue,
+        ),
+      ),
+    ],
+  );
 }
 
 /// A top and bottom gradient separating the chrome from the picture, from
@@ -154,18 +151,18 @@ class _Scrim extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => DecoratedBox(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Colors.black.withValues(alpha: 0.5),
-              Colors.transparent,
-              Colors.transparent,
-              Colors.black.withValues(alpha: 0.6),
-            ],
-            stops: const [0, 0.28, 0.6, 1],
-          ),
-        ),
-      );
+    decoration: BoxDecoration(
+      gradient: LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [
+          Colors.black.withValues(alpha: 0.5),
+          Colors.transparent,
+          Colors.transparent,
+          Colors.black.withValues(alpha: 0.6),
+        ],
+        stops: const [0, 0.28, 0.6, 1],
+      ),
+    ),
+  );
 }

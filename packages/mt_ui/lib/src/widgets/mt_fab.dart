@@ -37,9 +37,8 @@ class MTFab extends StatelessWidget {
     );
     // **The swap between "add link" and "link ready" is animated** (polish
     // 2026-09-04): the colour dissolves, the icons trade places and the
-    // width
-    // stretches with the label. All three used to jump at once the moment
-    // something was copied.
+    // width stretches with the label. All three used to jump at once the
+    // moment something was copied.
     return MTPressable(
       child: AnimatedContainer(
         duration: duration,

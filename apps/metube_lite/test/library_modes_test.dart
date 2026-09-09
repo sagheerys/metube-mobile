@@ -15,10 +15,12 @@ void main() {
   setUp(() => store = MemoryKeyValueStore());
 
   Future<LibraryViewOptions> restored() async {
-    final c = ProviderContainer(overrides: [
-      keyValueStoreProvider.overrideWithValue(store),
-      prefsMutexProvider.overrideWithValue(PrefsMutex()),
-    ]);
+    final c = ProviderContainer(
+      overrides: [
+        keyValueStoreProvider.overrideWithValue(store),
+        prefsMutexProvider.overrideWithValue(PrefsMutex()),
+      ],
+    );
     addTearDown(c.dispose);
     c.read(libraryViewProvider);
     await pumpEventQueue();
@@ -45,13 +47,17 @@ void main() {
 
   testWidgets('عرض الفك يرتفع بالارتفاع حين يفرضه cover', (tester) async {
     late BuildContext ctx;
-    await tester.pumpWidget(MediaQuery(
-      data: const MediaQueryData(devicePixelRatio: 2),
-      child: Builder(builder: (c) {
-        ctx = c;
-        return const SizedBox();
-      }),
-    ));
+    await tester.pumpWidget(
+      MediaQuery(
+        data: const MediaQueryData(devicePixelRatio: 2),
+        child: Builder(
+          builder: (c) {
+            ctx = c;
+            return const SizedBox();
+          },
+        ),
+      ),
+    );
     expect(mtDecodeWidth(ctx, 98, 62), (62 * 16 / 9 * 2).ceil());
     expect(mtDecodeWidth(ctx, 210), 420);
   });

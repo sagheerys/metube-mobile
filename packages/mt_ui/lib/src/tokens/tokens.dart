@@ -76,12 +76,9 @@ abstract final class MTMotion {
   /// Page slide distance as a fraction of the page width.
   static const double pageSlide = 0.06;
 
-  // Polish pass 2026-09-04, on the request "light, consistent touch
-  // motion".
+  // How far an element shrinks while pressed. Glimpsed, not watched.
 
-  /// A screen that rises like a sheet from the bottom, such as the audio
-  /// screen opened from the mini player. Longer than [page] because it
-  /// travels the full distance, and still under the agreed 320ms ceiling.
+  /// How far the outgoing icon shrinks when two icons swap.
   static const Duration sheetPage = Duration(milliseconds: 300);
 
   /// How far an element shrinks while pressed. Glimpsed, not watched.
@@ -98,15 +95,23 @@ abstract final class MTMotion {
   static const double dismissFlingVelocity = 700;
 }
 
-/// The approved typography: Noto Kufi Arabic for headings (700/500) and
-/// Tajawal for body text.
+/// **Fixed-width digits** for live counters.
+///
+/// **A documented trap (review 2026-09-02):** adding
+/// `FontFeature.tabularFigures()` on its own does nothing here. Inspecting
+/// the font binaries proved that **Tajawal has no `tnum` table** while Noto
+/// Kufi Arabic does. A counter drawn in the body font keeps dancing with
+/// every passing second however loudly the feature is requested.
+///
+/// So counters are drawn in the **heading** font, which actually supports
+/// the feature, and only on changing numbers: time, size, speed. Never on
+/// prose.
 abstract final class MTType {
   static const String display = 'NotoKufiArabic';
   static const String body = 'Tajawal';
 
   /// The fonts live inside the mt_ui package, so every TextStyle has to
-  /// pass
-  /// `package`.
+  /// pass `package`.
   static const String package = 'mt_ui';
 }
 
@@ -123,43 +128,43 @@ abstract final class MTType {
 /// prose.
 extension MTTabularFigures on TextStyle {
   TextStyle get tabular => copyWith(
-        fontFamily: MTType.display,
-        package: MTType.package,
-        fontFeatures: const [FontFeature.tabularFigures()],
-      );
+    fontFamily: MTType.display,
+    package: MTType.package,
+    fontFeatures: const [FontFeature.tabularFigures()],
+  );
 }
 
-/// Warm shadows, copied from the reference values.
+/// FAB shadow: 0 16 32 -10 in accentDeep at 55%, built from the palette.
 abstract final class MTShadow {
   /// Daylight card shadow: 0 3 6 at 5% plus 0 30 60 -22 at 22%, in a warm
   /// brown.
   static const List<BoxShadow> card = [
+    BoxShadow(color: Color(0x0D50371E), blurRadius: 6, offset: Offset(0, 3)),
     BoxShadow(
-        color: Color(0x0D50371E), blurRadius: 6, offset: Offset(0, 3)),
-    BoxShadow(
-        color: Color(0x3850371E),
-        blurRadius: 60,
-        offset: Offset(0, 30),
-        spreadRadius: -22),
+      color: Color(0x3850371E),
+      blurRadius: 60,
+      offset: Offset(0, 30),
+      spreadRadius: -22,
+    ),
   ];
 
   /// FAB shadow: 0 16 32 -10 in accentDeep at 55%, built from the palette.
   static List<BoxShadow> fab(MTPalette p) => [
-        BoxShadow(
-          color: p.accentDeep.withValues(alpha: 0.55),
-          blurRadius: 32,
-          offset: const Offset(0, 16),
-          spreadRadius: -10,
-        ),
-      ];
+    BoxShadow(
+      color: p.accentDeep.withValues(alpha: 0.55),
+      blurRadius: 32,
+      offset: const Offset(0, 16),
+      spreadRadius: -10,
+    ),
+  ];
 
   /// Mini player shadow: 0 18 40 -12 in ink at 50%.
   static List<BoxShadow> mini(MTPalette p) => [
-        BoxShadow(
-          color: p.ink.withValues(alpha: 0.5),
-          blurRadius: 40,
-          offset: const Offset(0, 18),
-          spreadRadius: -12,
-        ),
-      ];
+    BoxShadow(
+      color: p.ink.withValues(alpha: 0.5),
+      blurRadius: 40,
+      offset: const Offset(0, 18),
+      spreadRadius: -12,
+    ),
+  ];
 }

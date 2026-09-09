@@ -36,16 +36,20 @@ class FakeVideoPlatform extends VideoPlayerPlatform {
     // الحدث يُبعث **عند أول اشتراك**: `initialize()` يشترك بعد `create`،
     // وبثّه قبلها يضيع في مجرى broadcast فيعلّق التحضير للأبد.
     late final StreamController<VideoEvent> controller;
-    controller = StreamController<VideoEvent>.broadcast(onListen: () {
-      scheduleMicrotask(() {
-        if (controller.isClosed) return;
-        controller.add(VideoEvent(
-          eventType: VideoEventType.initialized,
-          duration: const Duration(seconds: 30),
-          size: const Size(1080, 1920), // عمودي: يدخل مسار القِصار
-        ));
-      });
-    });
+    controller = StreamController<VideoEvent>.broadcast(
+      onListen: () {
+        scheduleMicrotask(() {
+          if (controller.isClosed) return;
+          controller.add(
+            VideoEvent(
+              eventType: VideoEventType.initialized,
+              duration: const Duration(seconds: 30),
+              size: const Size(1080, 1920), // عمودي: يدخل مسار القِصار
+            ),
+          );
+        });
+      },
+    );
     _events[id] = controller;
     return id;
   }

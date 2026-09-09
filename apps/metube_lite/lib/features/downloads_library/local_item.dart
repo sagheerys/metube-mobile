@@ -1,25 +1,27 @@
 import 'package:mt_core/mt_core.dart';
 
-/// مجلد وسائط Lite (§5.3) — يُسجَّل محتواه في MediaStore ليظهر في معرض
-/// الهاتف (م-10)، وهو نفس مسار Lite القديم فتبقى مساراته المحفوظة صالحة.
+/// Lite's media folder (§5.3). Its contents are registered in MediaStore so
+/// they appear in the phone's gallery, and it is the same path as the old
+/// Lite, so paths saved there remain valid.
 const liteMediaDir = '/storage/emulated/0/Download/MeTube_Lite';
 
 const _audioExtensions = {'mp3', 'm4a', 'aac', 'ogg', 'opus', 'wav', 'flac'};
 const _videoExtensions = {'mp4', 'webm', 'mkv', 'mov', 'avi', '3gp', 'm4v'};
 
-/// امتدادات الوسائط التي تُعرض في المكتبة المحلية (م-12).
+/// The media extensions shown in the local library.
 bool isMediaFile(String path) {
   final ext = extensionOf(path);
   return _audioExtensions.contains(ext) || _videoExtensions.contains(ext);
 }
 
-/// عنصر المكتبة المحلية (م-12): **الملف على القرص هو الحقيقة** — بقية
-/// الحقول إثراء من الفهارس.
+/// A local library item: **the file on disk is the truth**, and the other
+/// fields are enrichment from the indexes.
 ///
-/// **مفتاح العنصر [key]:** canonicalUrl إن عُرف (كل ما ينزّله Lite v2
-/// يعرف رابطه)، وإلا **المسار المطلق**. هذا ما يجعل بيانات Lite القديم
-/// تعمل كما هي: مواضع الاستئناف والقوائم والعناوين هناك كلها مفاتيحها
-/// مسارات ملفات (مُثبت على نسخة المالك: 32 موضعاً و18 مدخل قائمة).
+/// **The item key [key]:** the canonicalUrl when known (everything Lite v2
+/// downloads knows its URL), otherwise **the absolute path**. That is what
+/// makes the old Lite's data work as it is: its resume positions, playlists
+/// and titles are all keyed by file paths (confirmed against a real backup:
+/// 32 positions and 18 playlist entries).
 class LocalItem {
   const LocalItem({
     required this.key,
@@ -40,12 +42,13 @@ class LocalItem {
   final int sizeBytes;
   final DateTime modified;
 
-  /// null = ملف لا نعرف رابطه (مهاجر من Lite القديم أو نُسخ يدوياً).
+  /// null means a file whose URL we do not know: migrated from the old
+  /// Lite, or copied in by hand.
   final String? canonicalUrl;
   final String? thumbnail;
   final bool favorite;
 
-  /// أبعاد المقطع من `media_shape_index` — تُعرف بعد أول تشغيل (م-35).
+  /// Clip dimensions from `media_shape_index`, known after the first play.
   final Duration? duration;
   final double? aspectRatio;
 
@@ -53,10 +56,12 @@ class LocalItem {
 
   bool get isAudio => _audioExtensions.contains(extensionOf(path));
 
-  MediaPlatform get platform =>
-      canonicalUrl == null ? MediaPlatform.other : MediaPlatform.detect(canonicalUrl!);
+  MediaPlatform get platform => canonicalUrl == null
+      ? MediaPlatform.other
+      : MediaPlatform.detect(canonicalUrl!);
 
-  /// فيديو عمودي ≤٣ دقائق ⇒ «قِصار» (المجهول ليس قصيراً — لا تخمين).
+  /// A portrait video of three minutes or less is a "short". Unknown is not
+  /// short: no guessing.
   bool get isShortForm =>
       !isAudio &&
       duration != null &&
@@ -64,8 +69,9 @@ class LocalItem {
       aspectRatio != null &&
       aspectRatio! < 1;
 
-  /// العنوان الافتراضي حين لا يوجد في فهرس العناوين: اسم الملف بلا
-  /// الامتداد وبلا بصمة الوقت `_HHmmss` التي يضيفها بناء الاسم (§2.4).
+  /// The default title when the title index has none: the filename without
+  /// its extension and without the `_HHmmss` time stamp the name builder
+  /// adds (§2.4).
   static String titleFromFilename(String filename) {
     final dot = filename.lastIndexOf('.');
     final stem = dot > 0 ? filename.substring(0, dot) : filename;
@@ -73,35 +79,39 @@ class LocalItem {
   }
 }
 
-/// مرشح النطاق في Lite: لا «دون اتصال/سيرفر» — كل شيء محلي (م-14).
+/// The scope filter in Lite: there is no "offline / server", because
+/// everything is local.
 enum LocalScope { all, favorites }
 
 enum MediaTypeFilter { all, video, audio, shorts }
 
-/// **أوضاع العرض الأربعة — اختيار واحد حصري لا أعلام متداخلة.**
+/// **The four view modes: one exclusive choice, not overlapping flags.**
 ///
-/// كانا علمين (`compact` و`grid`) يمكن تشغيلهما معاً بلا معنى، والوضع
-/// الرابع (البطاقات) كان سيجعلها ثلاثة أعلام بثماني حالات نصفها
-/// مستحيل. القيمة الواحدة تُلغي الحالة المستحيلة من أصلها.
+/// They used to be two flags (`compact` and `grid`) that could be on
+/// together meaninglessly, and the fourth mode, cards, would have made them
+/// three flags with eight states, half of them impossible. One value
+/// eliminates the impossible state at the root.
 enum LibraryViewMode {
-  /// صفٌّ بمصغرة جانبية — الافتراضي، الأنسب للعناوين الطويلة والصوت.
+  /// A row with a thumbnail beside it. The default, and the best fit for
+  /// long titles and for audio.
   list,
 
-  /// نفس الصف بمصغرة أصغر وسطر عنوان واحد — أكثر عناصر في الشاشة.
+  /// Two columns with a 16:9 cover, for quick visual scanning.
   compact,
 
-  /// عمودان بغلاف 16:9 — مسح بصري سريع.
+  /// Two columns with a 16:9 cover, for quick visual scanning.
   grid,
 
-  /// **عمود واحد بغلاف عريض** (طلب المالك 2026-09-08، نمط يوتيوب):
-  /// أكبر غلاف ممكن لأقل عدد عناصر — للتصفح المتأني لا للبحث.
+  /// **One column with a wide cover** (requested 2026-09-08, the YouTube
+  /// pattern): the largest possible cover for the fewest items, for
+  /// unhurried browsing rather than searching.
   cards,
 }
 
-/// خيارات الفرز المحفوظة (`video_sort_option` §5.1).
+/// The saved sort options (`video_sort_option`, §5.1).
 enum LibrarySort { newest, oldest, nameAZ, nameZA, largest, smallest }
 
-/// بناء العرض — منطق خالص قابل للاختبار (TRD §3.2).
+/// Building the view: pure, testable logic (TRD §3.2).
 List<LocalItem> buildLocalLibraryView(
   List<LocalItem> items, {
   LocalScope scope = LocalScope.all,
@@ -117,7 +127,7 @@ List<LocalItem> buildLocalLibraryView(
       MediaTypeFilter.all => true,
       MediaTypeFilter.audio => item.isAudio,
       MediaTypeFilter.video => !item.isAudio,
-      // ⚡ قِصار (م-35): العمودية القصيرة المعروفة الأبعاد فقط.
+      // Shorts: portrait, short, and only where the dimensions are known.
       MediaTypeFilter.shorts => item.isShortForm,
     };
     if (!typeOk) return false;
@@ -129,8 +139,7 @@ List<LocalItem> buildLocalLibraryView(
   int byDate(LocalItem a, LocalItem b) => a.modified.compareTo(b.modified);
   int byName(LocalItem a, LocalItem b) =>
       a.title.toLowerCase().compareTo(b.title.toLowerCase());
-  int bySize(LocalItem a, LocalItem b) =>
-      a.sizeBytes.compareTo(b.sizeBytes);
+  int bySize(LocalItem a, LocalItem b) => a.sizeBytes.compareTo(b.sizeBytes);
 
   filtered.sort(switch (sort) {
     LibrarySort.newest => (a, b) => byDate(b, a),
@@ -143,8 +152,8 @@ List<LocalItem> buildLocalLibraryView(
   return filtered;
 }
 
-/// عدّادات المنصات الحية لرقائق المرشح (م-14 — Lite) بترتيب الأكثر أولاً.
-/// المنصة المجهولة (`other`) تُدرج أخيراً كي لا تتصدر القائمة.
+/// Live platform counters for the filter chips, most first. The unknown
+/// platform (`other`) is placed last so it never leads the list.
 List<MapEntry<MediaPlatform, int>> platformCounts(List<LocalItem> items) {
   final counts = <MediaPlatform, int>{};
   for (final item in items) {

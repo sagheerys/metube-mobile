@@ -8,9 +8,10 @@ import 'package:mt_ui/mt_ui.dart';
 import '../../../di.dart';
 import '../../shared/error_report.dart';
 
-/// حالة السيرفر النشط. null ⇔ غير مهيأ. وإلا حالة مصنفة: **«يرفض
-/// اعتمادك» ليس «تعذّر الوصول»** — الأول يُصلَح بالحقلين أسفل هذه
-/// البطاقة، والثاني لا.
+/// The active server's state. null means not configured. Otherwise a
+/// classified state: **"rejects your credentials" is not "could not
+/// reach"** — the first is fixed by the two fields beneath this card, and
+/// the second is not.
 final serverStatusProvider = FutureProvider<MTEndpointStatus?>((ref) async {
   final api = ref.watch(apiClientProvider);
   if (api == null) return null;
@@ -22,16 +23,16 @@ final serverStatusProvider = FutureProvider<MTEndpointStatus?>((ref) async {
     unawaited(logErrorOnce(ref.read(loggerProvider), 'server-status', e));
     return switch (e) {
       AuthFailureException() => MTEndpointStatus.unauthorized,
-      // العنوان حيّ لكنه ليس MeTube — خطأ عنوان لا خطأ شبكة.
+      // The address is alive but is not MeTube: an address mistake, not a
+      // network one.
       NotMeTubeServerException() ||
-      NoApiException() =>
-        MTEndpointStatus.notMeTube,
+      NoApiException() => MTEndpointStatus.notMeTube,
       _ => MTEndpointStatus.unreachable,
     };
   }
 });
 
-/// بطاقة حالة السيرفر (م-29) — إسبريسو داكنة دائماً (سجل §4).
+/// The server status card, always espresso-dark (log §4).
 class ServerStatusCard extends ConsumerWidget {
   const ServerStatusCard({super.key});
 
@@ -44,39 +45,41 @@ class ServerStatusCard extends ConsumerWidget {
 
     final (icon, tint, label) = switch (status) {
       AsyncData(value: MTEndpointStatus.ok) => (
-          Icons.cloud_done_rounded,
-          p.ok,
-          l10n.serverStatusConnected
-        ),
-      // البطاقة **داكنة دائماً** (سجل §4)، ولون الفعل البترولي في Lite
-      // لا يُقرأ عليها — فالتمييز بالأيقونة والنص لا باللون.
+        Icons.cloud_done_rounded,
+        p.ok,
+        l10n.serverStatusConnected,
+      ),
+      // The card is **always dark** (log §4), and Lite's petrol accent is
+      // not legible on it, so the distinction is made with the icon and the
+      // text rather than with colour.
       AsyncData(value: MTEndpointStatus.unauthorized) => (
-          Icons.lock_outline_rounded,
-          MTPalette.serverCardInk,
-          l10n.signInRequired
-        ),
-      // «ليس MeTube» ليس انقطاعاً: العنوان حيّ ويردّ — والعلاج تصحيح
-      // العنوان لا انتظار الشبكة.
+        Icons.lock_outline_rounded,
+        MTPalette.serverCardInk,
+        l10n.signInRequired,
+      ),
+      // "Not MeTube" is not an outage: the address is alive and answering,
+      // and the cure is correcting the address rather than waiting for the
+      // network.
       AsyncData(value: MTEndpointStatus.notMeTube) => (
-          Icons.link_off_rounded,
-          MTPalette.serverCardInk,
-          l10n.errNotMeTube
-        ),
+        Icons.link_off_rounded,
+        MTPalette.serverCardInk,
+        l10n.errNotMeTube,
+      ),
       AsyncData(value: MTEndpointStatus.unreachable) => (
-          Icons.cloud_off_rounded,
-          p.err,
-          l10n.serverStatusOffline
-        ),
+        Icons.cloud_off_rounded,
+        p.err,
+        l10n.serverStatusOffline,
+      ),
       AsyncData(value: null) => (
-          Icons.cloud_outlined,
-          MTPalette.serverCardInk,
-          l10n.serverStatusUnconfigured
-        ),
+        Icons.cloud_outlined,
+        MTPalette.serverCardInk,
+        l10n.serverStatusUnconfigured,
+      ),
       _ => (
-          Icons.cloud_sync_rounded,
-          MTPalette.serverCardInk,
-          l10n.serverStatusChecking
-        ),
+        Icons.cloud_sync_rounded,
+        MTPalette.serverCardInk,
+        l10n.serverStatusChecking,
+      ),
     };
 
     return Container(
@@ -96,9 +99,9 @@ class ServerStatusCard extends ConsumerWidget {
                 Text(
                   label,
                   style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                        color: MTPalette.serverCardInk,
-                        fontWeight: FontWeight.w700,
-                      ),
+                    color: MTPalette.serverCardInk,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
                 if (settings.isConfigured)
                   Text(
@@ -107,8 +110,8 @@ class ServerStatusCard extends ConsumerWidget {
                     overflow: TextOverflow.ellipsis,
                     textDirection: TextDirection.ltr,
                     style: Theme.of(context).textTheme.bodySmall!.copyWith(
-                        color:
-                            MTPalette.serverCardInk.withValues(alpha: 0.6)),
+                      color: MTPalette.serverCardInk.withValues(alpha: 0.6),
+                    ),
                   ),
               ],
             ),
@@ -116,8 +119,10 @@ class ServerStatusCard extends ConsumerWidget {
           IconButton(
             tooltip: l10n.refresh,
             onPressed: () => ref.invalidate(serverStatusProvider),
-            icon: Icon(Icons.refresh_rounded,
-                color: MTPalette.serverCardInk.withValues(alpha: 0.8)),
+            icon: Icon(
+              Icons.refresh_rounded,
+              color: MTPalette.serverCardInk.withValues(alpha: 0.8),
+            ),
           ),
         ],
       ),

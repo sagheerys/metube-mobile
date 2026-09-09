@@ -28,55 +28,66 @@ void main() {
     tester,
   ) async {
     const marker = Key('cover-0');
-    await tester.pumpWidget(host(
-      SizedBox(
-        width: 200,
-        height: 260,
-        child: PlaylistCard(
-          playlist: SavedPlaylist(
-            id: 'p1',
-            name: 'قائمة',
-            items: const [],
-            createdAt: DateTime(2026),
+    await tester.pumpWidget(
+      host(
+        SizedBox(
+          width: 200,
+          height: 260,
+          child: PlaylistCard(
+            playlist: SavedPlaylist(
+              id: 'p1',
+              name: 'قائمة',
+              items: const [],
+              createdAt: DateTime(2026),
+            ),
+            thumbnails: const [
+              ColoredBox(key: marker, color: Color(0xFF123456)),
+            ],
+            onTap: () {},
+            onPlay: () {},
+            onLongPress: () {},
           ),
-          thumbnails: const [ColoredBox(key: marker, color: Color(0xFF123456))],
-          onTap: () {},
-          onPlay: () {},
-          onLongPress: () {},
         ),
       ),
-    ));
+    );
 
     final cover = tester.getSize(find.byKey(marker)).height;
     // الجذر: `Row` افتراضه `center`، فكانت الصورة تأخذ ارتفاعها
     // الطبيعي وتتوسّط — شريط رفيع وسط بطاقة فارغة.
-    expect(cover, greaterThan(120),
-        reason: 'الغلاف يشغل ما تبقى من البطاقة بعد الاسم والعدّاد');
+    expect(
+      cover,
+      greaterThan(120),
+      reason: 'الغلاف يشغل ما تبقى من البطاقة بعد الاسم والعدّاد',
+    );
   });
 
   testWidgets('باني الغلاف يعيد null لعنصر بلا غلاف — لا ودجت فارغة', (
     tester,
   ) async {
     Widget? built = const SizedBox.shrink();
-    await tester.pumpWidget(host(
-      Consumer(builder: (context, ref, _) {
-        built = artworkBuilderFor(ref)(
-          context,
-          const PlaylistItem(
-            canonicalUrl: 'https://x/a',
-            title: 'بلا غلاف',
-            localPath: '/media/a.mp3',
-            isAudio: true,
-          ),
-        );
-        return const SizedBox.shrink();
-      }),
-      overrides: [
-        keyValueStoreProvider.overrideWithValue(MemoryKeyValueStore()),
-        secretStoreProvider.overrideWithValue(MemorySecretStore()),
-        initialSettingsProvider.overrideWithValue(const SuperSettings()),
-      ],
-    ));
+    await tester.pumpWidget(
+      host(
+        Consumer(
+          builder: (context, ref, _) {
+            built = artworkBuilderFor(ref)(
+              context,
+              const PlaylistItem(
+                canonicalUrl: 'https://x/a',
+                title: 'بلا غلاف',
+                localPath: '/media/a.mp3',
+                isAudio: true,
+              ),
+            );
+            return const SizedBox.shrink();
+          },
+        ),
+        overrides: [
+          keyValueStoreProvider.overrideWithValue(MemoryKeyValueStore()),
+          secretStoreProvider.overrideWithValue(MemorySecretStore()),
+          initialSettingsProvider.overrideWithValue(const SuperSettings()),
+        ],
+      ),
+    );
 
     // `?? const SizedBox.shrink()` هنا كان يقتل الأيقونة البديلة في
     // مشغل الصوت والمشغل المصغر — مربع أصمّ بلا شيء.

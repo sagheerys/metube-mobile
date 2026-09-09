@@ -50,7 +50,8 @@ class MTTiltedArtwork extends StatelessWidget {
                   ),
                 ],
               ),
-              child: artwork?.call(context, item) ??
+              child:
+                  artwork?.call(context, item) ??
                   Center(
                     child: Icon(
                       item.isAudio
@@ -101,7 +102,9 @@ class MTSourceChip extends StatelessWidget {
         : (p.onServerSoft, p.onServerInk);
     return Container(
       padding: const EdgeInsets.symmetric(
-          horizontal: MTSpace.md, vertical: MTSpace.xxs + 2),
+        horizontal: MTSpace.md,
+        vertical: MTSpace.xxs + 2,
+      ),
       decoration: BoxDecoration(
         color: bg,
         borderRadius: BorderRadius.circular(MTRadius.pill),
@@ -117,9 +120,7 @@ class MTSourceChip extends StatelessWidget {
           const SizedBox(width: MTSpace.xxs + 2),
           Text(
             local ? l10n.playingFromDevice : l10n.streamingFromServer,
-            style: Theme.of(context)
-                .textTheme
-                .labelSmall!
+            style: Theme.of(context).textTheme.labelSmall!
                 .copyWith(color: fg, fontWeight: FontWeight.w700),
           ),
         ],

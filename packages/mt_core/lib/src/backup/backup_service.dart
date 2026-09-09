@@ -47,9 +47,8 @@ class BackupService {
   };
 
   /// **Strip credentials embedded in a URL before backing it up (fix
-  /// خ-2).**
-  /// Excluding the password from the backup is correct, but someone who
-  /// pastes `https://user:pass@host` as the server URL puts it in an
+  /// خ-2).** Excluding the password from the backup is correct, but someone
+  /// who pastes `https://user:pass@host` as the server URL puts it in an
   /// ordinary string key, so it entered the backup despite the rule.
   static Object? _sanitize(String key, Object? value) {
     if (!_urlKeys.contains(key)) return value;
@@ -89,11 +88,9 @@ class BackupService {
   ///
   /// `MTF1` used to be encrypted with a key living in secure storage, which
   /// dies with "clear data" or a reinstall, leaving an **orphan** backup
-  /// that
-  /// opens only if the user exported the key, which nobody does. And the
-  /// content itself, links, titles, playlists and tags, is visible to
-  /// anyone
-  /// who opens the app anyway.
+  /// that opens only if the user exported the key, which nobody does. And
+  /// the content itself, links, titles, playlists and tags, is visible to
+  /// anyone who opens the app anyway.
   ///
   /// [SecretKeys.username] is **no longer backed up** either: the password
   /// never was, so the user re-enters it regardless, and a username without
@@ -101,22 +98,21 @@ class BackupService {
   ///
   /// A full snapshot under the lock, so a concurrent writer cannot tear it.
   /// Indented on purpose: an unencrypted file read by eye is a
-  /// human-readable
-  /// escape hatch that costs nothing.
+  /// human-readable escape hatch that costs nothing.
   Future<String> exportToString() => mutex.run(() async {
-        final prefsMap = <String, dynamic>{};
-        for (final key in await store.keys()) {
-          final cell = _encodeCell(_sanitize(key, await store.get(key)));
-          if (cell != null) prefsMap[key] = cell;
-        }
-        return const JsonEncoder.withIndent('  ').convert({
-          'app': 'MTF',
-          'variant': variant,
-          'version': 3,
-          'backupDate': DateTime.now().toIso8601String(),
-          'prefs': prefsMap,
-        });
-      });
+    final prefsMap = <String, dynamic>{};
+    for (final key in await store.keys()) {
+      final cell = _encodeCell(_sanitize(key, await store.get(key)));
+      if (cell != null) prefsMap[key] = cell;
+    }
+    return const JsonEncoder.withIndent('  ').convert({
+      'app': 'MTF',
+      'variant': variant,
+      'version': 3,
+      'backupDate': DateTime.now().toIso8601String(),
+      'prefs': prefsMap,
+    });
+  });
 
   /// Imports any format: the new plain text or the three legacy encrypted
   /// ones.
@@ -144,11 +140,11 @@ class BackupService {
       BackupCrypto.headerLegacyLite => _applyLegacyLite(payload),
       // v2 and MTSBACKUP1 share the same typed prefs structure.
       _ => _applyTypedPrefs(
-          payload,
-          header == BackupCrypto.headerV2
-              ? BackupFormat.v2
-              : BackupFormat.legacySuper,
-        ),
+        payload,
+        header == BackupCrypto.headerV2
+            ? BackupFormat.v2
+            : BackupFormat.legacySuper,
+      ),
     };
   }
 
@@ -163,19 +159,22 @@ class BackupService {
       throw const BackupFormatException('not an MTF backup');
     }
     return _applyTypedPrefs(
-        Map<String, dynamic>.from(decoded), BackupFormat.plain);
+      Map<String, dynamic>.from(decoded),
+      BackupFormat.plain,
+    );
   }
 
   Future<ImportResult> _applyTypedPrefs(
-      Map<String, dynamic> payload, BackupFormat format) async {
+    Map<String, dynamic> payload,
+    BackupFormat format,
+  ) async {
     final prefs = (payload['prefs'] as Map?) ?? const {};
     var restored = 0;
     await mutex.run(() async {
       // **All-or-nothing restore (fix خ-2).** A failure on key 40 of 200
-      // used
-      // to leave a **hybrid device**: an offline index from another phone
-      // pointing at missing titles, with no rollback and no message saying
-      // where it stopped.
+      // used to leave a **hybrid device**: an offline index from another
+      // phone pointing at missing titles, with no rollback and no message
+      // saying where it stopped.
       final rollback = <String, Object?>{};
       for (final key in prefs.keys) {
         rollback[key.toString()] = await store.get(key.toString());
@@ -198,8 +197,9 @@ class BackupService {
       }
     });
     await _restoreUsername(
-        ((payload['secure'] as Map?) ?? const {})['username']?.toString() ??
-            (payload['settings'] as Map?)?['username']?.toString());
+      ((payload['secure'] as Map?) ?? const {})['username']?.toString() ??
+          (payload['settings'] as Map?)?['username']?.toString(),
+    );
     return ImportResult(format: format, keysRestored: restored);
   }
 
@@ -213,13 +213,13 @@ class BackupService {
   }
 
   static dynamic _encodeCell(Object? value) => switch (value) {
-        String v => {'t': 's', 'v': v},
-        bool v => {'t': 'b', 'v': v},
-        int v => {'t': 'i', 'v': v},
-        double v => {'t': 'd', 'v': v},
-        List v => {'t': 'l', 'v': v.map((e) => e.toString()).toList()},
-        _ => null,
-      };
+    String v => {'t': 's', 'v': v},
+    bool v => {'t': 'b', 'v': v},
+    int v => {'t': 'i', 'v': v},
+    double v => {'t': 'd', 'v': v},
+    List v => {'t': 'l', 'v': v.map((e) => e.toString()).toList()},
+    _ => null,
+  };
 
   /// Puts a value back as it was, to roll back a restore that failed
   /// halfway.

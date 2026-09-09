@@ -29,20 +29,14 @@ class MTPlayerControlsRow extends StatelessWidget {
       builder: (context, snapshot) {
         final playing = snapshot.data?.playing ?? false;
         // **The control bar does not mirror with the language** (field
-        // report
-        // 2026-09-02: "the skip buttons on the right and left are
-        // reversed"). In
-        // RTL the row mirrored the *positions* while the arrows stayed as
-        // they
-        // were, so "previous" sat on the right with its arrow pointing
-        // left. And
-        // mirroring the icons is no answer: `replay_10` and `forward_10`
-        // carry
-        // the number "10", which flips with them. Every reference player,
-        // YouTube
-        // and Spotify among them, pins this bar: transport glyphs are
-        // universal,
-        // not text read in a direction.
+        // report 2026-09-02: "the skip buttons on the right and left are
+        // reversed"). In RTL the row mirrored the *positions* while the
+        // arrows stayed as they were, so "previous" sat on the right with
+        // its arrow pointing left. And mirroring the icons is no answer:
+        // `replay_10` and `forward_10` carry the number "10", which flips
+        // with them. Every reference player, YouTube and Spotify among
+        // them, pins this bar: transport glyphs are universal, not text
+        // read in a direction.
         return Directionality(
           textDirection: TextDirection.ltr,
           child: Row(

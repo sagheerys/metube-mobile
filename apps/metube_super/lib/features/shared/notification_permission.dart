@@ -1,12 +1,14 @@
 import 'package:flutter/services.dart';
 
-/// إذن الإشعارات لإشعار الوسائط (م-21) — أندرويد 13+ يشترط طلباً صريحاً،
-/// وبدونه يُكتم الإشعار **بصمت** والصوت يعمل بالخلفية بلا أي تحكم ظاهر.
-/// القناة الأصلية في `MainActivity.kt`؛ الرفض لا يُفشل التشغيل.
+/// The notification permission for the media notification: Android 13+
+/// requires an explicit request, and without it the notification is
+/// suppressed **silently** while audio plays in the background with no
+/// visible control at all. The native channel is in `MainActivity.kt`, and
+/// a refusal fails nothing.
 class NotificationPermission {
-  const NotificationPermission(
-      [this.channel =
-          const MethodChannel('com.yasir.metubesuper/permissions')]);
+  const NotificationPermission([
+    this.channel = const MethodChannel('com.yasir.metubesuper/permissions'),
+  ]);
 
   final MethodChannel channel;
 
@@ -14,9 +16,9 @@ class NotificationPermission {
     try {
       await channel.invokeMethod<bool>('requestNotifications');
     } on PlatformException {
-      // منصة بلا القناة (اختبارات/سطح مكتب) — لا شيء يُفعل.
+      // The same case.
     } on MissingPluginException {
-      // نفس الحالة.
+      // The same case.
     }
   }
 }

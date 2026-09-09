@@ -69,10 +69,9 @@ class MTAudioHandler extends BaseAudioHandler with SeekHandler {
   ///
   /// **The opposite direction of the golden rule (defect ع-4):** "one
   /// output" was implemented one way only, so opening a video stopped
-  /// audio.
-  /// The play button in the media notification during a video, or starting
-  /// audio from the playlists screen opened over the player, produced **two
-  /// sources at once**.
+  /// audio. The play button in the media notification during a video, or
+  /// starting audio from the playlists screen opened over the player,
+  /// produced **two sources at once**.
   Future<void> Function()? onTakeVideoFocus;
 
   PlayMode get playMode => _playMode;
@@ -86,16 +85,14 @@ class MTAudioHandler extends BaseAudioHandler with SeekHandler {
   /// `ref.watch` on a provider pinned by an override **never updates**, so
   /// the indicator stuck on the first clip however far the queue advanced
   /// (screenshot 2026-09-02, defect ط-8). Interfaces consume this stream
-  /// and
-  /// then need no knowledge of `audio_service` at all.
+  /// and then need no knowledge of `audio_service` at all.
   Stream<String?> get currentKey =>
       mediaItem.map((item) => item?.id).distinct();
 
   /// **Is it actually playing right now?** Different from "which item is
   /// current" ([currentKey]). The "now playing" indicator used to dance
-  /// over
-  /// a paused clip because the interface knew only the current item (field
-  /// report 2026-09-04).
+  /// over a paused clip because the interface knew only the current item
+  /// (field report 2026-09-04).
   Stream<bool> get playingStream =>
       playbackState.map((state) => state.playing).distinct();
 
@@ -104,8 +101,8 @@ class MTAudioHandler extends BaseAudioHandler with SeekHandler {
   /// too.
   final ValueNotifier<bool> playingNotifier = ValueNotifier(false);
 
-  /// The items in insertion order; those indexes are what
-  /// [skipToQueueItem] accepts.
+  /// The items in insertion order; those indexes are what [skipToQueueItem]
+  /// accepts.
   List<PlaylistItem> get items => _queue.items;
 
   /// The items in actual play order, for showing "up next".
@@ -131,19 +128,14 @@ class MTAudioHandler extends BaseAudioHandler with SeekHandler {
     // the ع-3 test): there are two preference reads between this line and
     // `_loadCurrent`. A stop landing in between, from dismissing the mini
     // player, completed and then **this path carried on, built the queue
-    // and
-    // played**, bringing back the bar the user had just closed.
+    // and played**, bringing back the bar the user had just closed.
     final generation = ++_generation;
     _playlistId = playlistId;
     _playMode = await prefs.playMode(playlistId: playlistId);
     final shuffle = await prefs.shuffle();
     if (_isStale(generation)) return;
     _consecutiveErrors = 0;
-    _queue = PlaybackQueue(
-      items: items,
-      index: startIndex,
-      shuffle: shuffle,
-    );
+    _queue = PlaybackQueue(items: items, index: startIndex, shuffle: shuffle);
     _publishQueue();
     await _loadCurrent(autoPlay: autoPlay);
   }
@@ -158,8 +150,13 @@ class MTAudioHandler extends BaseAudioHandler with SeekHandler {
     _playlistId = snapshot.playlistId;
     _playMode = await prefs.playMode(playlistId: _playlistId);
     final shuffle = await prefs.shuffle();
-    // A user tapping a song during restoration wins; an old snapshot never
-    // overwrites it.
+    // The commands, from the notification, the lock screen and the
+    // interface.
+    //
+    // **They stay in the class** and are not moved to a `part` file: an
+    // extension does not override the original method, so `audio_service`
+    // would have called `BaseAudioHandler`'s version instead. A correctness
+    // bug found in the full review 2026-09-02.
     if (_isStale(generation)) return false;
     _queue = PlaybackQueue(
       items: snapshot.items,
@@ -253,10 +250,9 @@ class MTAudioHandler extends BaseAudioHandler with SeekHandler {
     mediaItem.add(null);
     queue.add(const []);
     await stateStore.clear();
-    playbackState.add(PlaybackState(
-      processingState: AudioProcessingState.idle,
-      playing: false,
-    ));
+    playbackState.add(
+      PlaybackState(processingState: AudioProcessingState.idle, playing: false),
+    );
     await super.stop();
   }
 
@@ -304,18 +300,20 @@ class MTAudioHandler extends BaseAudioHandler with SeekHandler {
   void _broadcast() {
     final playing = player.playing;
     playingNotifier.value = playing;
-    playbackState.add(playbackState.value.copyWith(
-      controls: mtMediaControls(playing: playing),
-      systemActions: const {MediaAction.seek},
-      androidCompactActionIndices: const [0, 1, 2],
-      processingState: mtProcessingState(player.state),
-      playing: playing,
-      updatePosition: player.position,
-      bufferedPosition: player.bufferedPosition,
-      speed: player.speed,
-      queueIndex: _queue.index < 0 ? null : _queue.index,
-      repeatMode: mtRepeatMode(_playMode),
-      shuffleMode: mtShuffleMode(shuffle: _queue.shuffle),
-    ));
+    playbackState.add(
+      playbackState.value.copyWith(
+        controls: mtMediaControls(playing: playing),
+        systemActions: const {MediaAction.seek},
+        androidCompactActionIndices: const [0, 1, 2],
+        processingState: mtProcessingState(player.state),
+        playing: playing,
+        updatePosition: player.position,
+        bufferedPosition: player.bufferedPosition,
+        speed: player.speed,
+        queueIndex: _queue.index < 0 ? null : _queue.index,
+        repeatMode: mtRepeatMode(_playMode),
+        shuffleMode: mtShuffleMode(shuffle: _queue.shuffle),
+      ),
+    );
   }
 }

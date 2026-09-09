@@ -3,8 +3,8 @@ import 'package:mt_ui/mt_ui.dart' show MTMediaLocation;
 
 const _audioExtensions = {'mp3', 'm4a', 'aac', 'ogg', 'opus', 'wav', 'flac'};
 
-/// عنصر المكتبة الموحدة (م-13): دمج سجل السيرفر مع الفهرس المحلي
-/// بمفتاح canonicalUrl — لكل عنصر شارة مكانه.
+/// The unified library item: the server history merged with the local
+/// index on the canonicalUrl key, with a location badge on each one.
 class LibraryItem {
   const LibraryItem({
     required this.canonicalUrl,
@@ -36,16 +36,18 @@ class LibraryItem {
   final bool favorite;
   final List<String> tags;
 
-  /// أبعاد المقطع من `media_shape_index` — تُعرف بعد أول تشغيل (م-35).
+  /// Clip dimensions from `media_shape_index`, known after the first play.
   final Duration? duration;
   final double? aspectRatio;
 
   bool get isOffline => localPath != null;
 
-  /// المنصة من الرابط المعياري — كاشف واحد معتمد (م-4)، لا قائمة ثانية.
+  /// The platform from the canonical URL: one approved detector, never a
+  /// second list.
   MediaPlatform get platform => MediaPlatform.detect(canonicalUrl);
 
-  /// فيديو عمودي ≤٣ دقائق ⇒ «قِصار» (المجهول ليس قصيراً — لا تخمين).
+  /// A portrait video of three minutes or less is a "short". Unknown is not
+  /// short: no guessing.
   bool get isShortForm =>
       !isAudio &&
       duration != null &&
@@ -54,15 +56,16 @@ class LibraryItem {
       aspectRatio! < 1;
 
   MTMediaLocation get location => switch ((isOffline, onServer)) {
-        (true, true) => MTMediaLocation.both,
-        (true, false) => MTMediaLocation.offline,
-        (false, true) => MTMediaLocation.onServer,
-        _ => MTMediaLocation.none,
-      };
+    (true, true) => MTMediaLocation.both,
+    (true, false) => MTMediaLocation.offline,
+    (false, true) => MTMediaLocation.onServer,
+    _ => MTMediaLocation.none,
+  };
 
-  /// [cachedThumb] هو غلاف فهرس الأغلفة — **المصدر الوحيد فعلياً على
-  /// سيرفر المالك**: `/history` لا يرجع `thumbnail` لأي عنصر (صفر من
-  /// 252)، والغلاف يُولَّد محلياً بـ `MediaProbe` (بلاغ المالك).
+  /// [cachedThumb] is the cover from the artwork index, **in practice the
+  /// only source on a real server**: `/history` returns no `thumbnail` for
+  /// any item (zero out of 252), and the cover is generated locally by
+  /// `MediaProbe` (field report).
   factory LibraryItem.fromHistory(
     HistoryItem item, {
     String? localPath,
@@ -71,25 +74,25 @@ class LibraryItem {
     Duration? duration,
     double? aspectRatio,
     String? cachedThumb,
-  }) =>
-      LibraryItem(
-        duration: duration,
-        aspectRatio: aspectRatio,
-        canonicalUrl: item.canonicalUrl,
-        title: item.title ?? item.filename ?? item.canonicalUrl,
-        uploader: item.uploader,
-        thumbnail: item.thumbnail ?? cachedThumb,
-        serverFilename: item.filename,
-        localPath: localPath,
-        timestamp: item.timestamp,
-        sizeBytes: item.sizeBytes,
-        onServer: true,
-        isAudio: _looksAudio(item.quality, item.format, item.filename),
-        favorite: favorite,
-        tags: tags,
-      );
+  }) => LibraryItem(
+    duration: duration,
+    aspectRatio: aspectRatio,
+    canonicalUrl: item.canonicalUrl,
+    title: item.title ?? item.filename ?? item.canonicalUrl,
+    uploader: item.uploader,
+    thumbnail: item.thumbnail ?? cachedThumb,
+    serverFilename: item.filename,
+    localPath: localPath,
+    timestamp: item.timestamp,
+    sizeBytes: item.sizeBytes,
+    onServer: true,
+    isAudio: _looksAudio(item.quality, item.format, item.filename),
+    favorite: favorite,
+    tags: tags,
+  );
 
-  /// عنصر محلي لم يعد على السيرفر — بياناته من مساره.
+  /// A local item no longer on the server; its metadata comes from its
+  /// path.
   factory LibraryItem.fromOfflineOnly(
     String canonicalUrl,
     String localPath, {
@@ -124,35 +127,38 @@ class LibraryItem {
   }
 }
 
-/// مرشحات المكتبة (م-13/م-14): الكل / ♥ المفضلة / دون اتصال / سيرفر.
+/// Library filters: all, favourites, offline, server.
 enum LibraryScope { all, favorites, offline, onServer }
 
 enum MediaTypeFilter { all, video, audio, shorts }
 
-/// **أوضاع العرض الأربعة — اختيار واحد حصري لا أعلام متداخلة.**
+/// **The four view modes: one exclusive choice, not overlapping flags.**
 ///
-/// كانا علمين (`compact` و`grid`) يمكن تشغيلهما معاً بلا معنى، والوضع
-/// الرابع (البطاقات) كان سيجعلها ثلاثة أعلام بثماني حالات نصفها
-/// مستحيل. القيمة الواحدة تُلغي الحالة المستحيلة من أصلها.
+/// They used to be two flags (`compact` and `grid`) that could be on
+/// together meaninglessly, and the fourth mode, cards, would have made them
+/// three flags with eight states, half of them impossible. One value
+/// eliminates the impossible state at the root.
 enum LibraryViewMode {
-  /// صفٌّ بمصغرة جانبية — الافتراضي، الأنسب للعناوين الطويلة والصوت.
+  /// A row with a thumbnail beside it. The default, and the best fit for
+  /// long titles and for audio.
   list,
 
-  /// نفس الصف بمصغرة أصغر وسطر عنوان واحد — أكثر عناصر في الشاشة.
+  /// Two columns with a 16:9 cover, for quick visual scanning.
   compact,
 
-  /// عمودان بغلاف 16:9 — مسح بصري سريع.
+  /// Two columns with a 16:9 cover, for quick visual scanning.
   grid,
 
-  /// **عمود واحد بغلاف عريض** (طلب المالك 2026-09-08، نمط يوتيوب):
-  /// أكبر غلاف ممكن لأقل عدد عناصر — للتصفح المتأني لا للبحث.
+  /// **One column with a wide cover** (requested 2026-09-08, the YouTube
+  /// pattern): the largest possible cover for the fewest items, for
+  /// unhurried browsing rather than searching.
   cards,
 }
 
-/// خيارات الفرز المحفوظة (video_sort_option §5.1).
+/// The saved sort options (video_sort_option, §5.1).
 enum LibrarySort { newest, oldest, nameAZ, nameZA, largest, smallest }
 
-/// بناء العرض — منطق خالص قابل للاختبار (TRD §3.2).
+/// Building the view: pure, testable logic (TRD §3.2).
 List<LibraryItem> buildLibraryView(
   List<LibraryItem> items, {
   LibraryScope scope = LibraryScope.all,
@@ -176,14 +182,15 @@ List<LibraryItem> buildLibraryView(
       MediaTypeFilter.all => true,
       MediaTypeFilter.audio => item.isAudio,
       MediaTypeFilter.video => !item.isAudio,
-      // ⚡ قِصار (م-35): العمودية القصيرة المعروفة الأبعاد فقط.
+      // Shorts: portrait, short, and only where the dimensions are known.
       MediaTypeFilter.shorts => item.isShortForm,
     };
     if (!typeOk) return false;
     if (platform != null && item.platform != platform) return false;
-    // **تصفية وسوم مركبة**: المضمَّنة تُجمع بـ«أو» (توسيع: أرني tech
-    // أو science)، والمستثناة تُطرح دائماً وتغلب التضمين — الاستثناء
-    // نية صريحة لا يجوز أن يبطلها وسم آخر على نفس العنصر.
+    // **Compound tag filtering**: included tags are combined with OR
+    // (widening: show me tech or science), while excluded ones are always
+    // subtracted and beat inclusion. An exclusion is an explicit intention
+    // that another tag on the same item must not be able to override.
     if (tags.isNotEmpty && !item.tags.any(tags.contains)) return false;
     if (item.tags.any(excludedTags.contains)) return false;
     if (q.isNotEmpty && !item.title.toLowerCase().contains(q)) return false;
@@ -208,20 +215,20 @@ List<LibraryItem> buildLibraryView(
   return filtered;
 }
 
-/// عدّادات المنصات الحية (م-14) بترتيب الأكثر أولاً، والمجهولة أخيراً.
+/// Live platform counters, most first, with unknown last.
 ///
-/// **نظير `apps/metube_lite/.../local_item.dart`**: نفس الترتيب ونفس
-/// قاعدة «المجهولة لا تتصدر» — أي تعديل هنا يُنظر في نظيره.
+/// **The counterpart of `apps/metube_lite/.../local_item.dart`**: the same
+/// order and the same "unknown never leads" rule. Any change here is
+/// considered for its twin.
 List<MapEntry<MediaPlatform, int>> platformCounts(List<LibraryItem> items) {
   final counts = <MediaPlatform, int>{};
   for (final item in items) {
     counts[item.platform] = (counts[item.platform] ?? 0) + 1;
   }
-  return counts.entries.toList()
-    ..sort((a, b) {
-      if ((a.key == MediaPlatform.other) != (b.key == MediaPlatform.other)) {
-        return a.key == MediaPlatform.other ? 1 : -1;
-      }
-      return b.value.compareTo(a.value);
-    });
+  return counts.entries.toList()..sort((a, b) {
+    if ((a.key == MediaPlatform.other) != (b.key == MediaPlatform.other)) {
+      return a.key == MediaPlatform.other ? 1 : -1;
+    }
+    return b.value.compareTo(a.value);
+  });
 }

@@ -9,23 +9,24 @@ import 'package:mt_ui/mt_ui.dart';
 import '../../di.dart';
 import '../shared/error_text.dart';
 
-/// تحويل منصة النواة إلى نوعها البصري (mt_ui لا يعرف mt_core).
+/// Converts the core's platform into its presentation type, since mt_ui
+/// does not know mt_core.
 MTPlatformKind platformKindOf(MediaPlatform platform) => switch (platform) {
-      MediaPlatform.youtube => MTPlatformKind.youtube,
-      MediaPlatform.tiktok => MTPlatformKind.tiktok,
-      MediaPlatform.instagram => MTPlatformKind.instagram,
-      MediaPlatform.soundcloud => MTPlatformKind.soundcloud,
-      MediaPlatform.x => MTPlatformKind.x,
-      MediaPlatform.facebook => MTPlatformKind.facebook,
-      MediaPlatform.vimeo => MTPlatformKind.vimeo,
-      MediaPlatform.twitch => MTPlatformKind.twitch,
-      MediaPlatform.reddit => MTPlatformKind.reddit,
-      MediaPlatform.dailymotion => MTPlatformKind.dailymotion,
-      MediaPlatform.other => MTPlatformKind.other,
-    };
+  MediaPlatform.youtube => MTPlatformKind.youtube,
+  MediaPlatform.tiktok => MTPlatformKind.tiktok,
+  MediaPlatform.instagram => MTPlatformKind.instagram,
+  MediaPlatform.soundcloud => MTPlatformKind.soundcloud,
+  MediaPlatform.x => MTPlatformKind.x,
+  MediaPlatform.facebook => MTPlatformKind.facebook,
+  MediaPlatform.vimeo => MTPlatformKind.vimeo,
+  MediaPlatform.twitch => MTPlatformKind.twitch,
+  MediaPlatform.reddit => MTPlatformKind.reddit,
+  MediaPlatform.dailymotion => MTPlatformKind.dailymotion,
+  MediaPlatform.other => MTPlatformKind.other,
+};
 
-/// حوار الإضافة (م-1) + التوجيه التلقائي (م-5): قائمة ⇒ `/batch`،
-/// مفرد ⇒ إرسال للمحرك فوراً — ر-2.
+/// The add dialog plus automatic routing: a playlist goes to `/batch`, a
+/// single link goes straight to the engine (rule 2).
 Future<void> openAddSheet(
   BuildContext context,
   WidgetRef ref, {
@@ -36,8 +37,9 @@ Future<void> openAddSheet(
     context: context,
     useRootNavigator: true,
     isScrollControlled: true,
-    // الراوتر والمُراسِل يُلتقطان **قبل** فتح الورقة: استعمالهما بسياق
-    // الورقة بعد `Navigator.pop` يستعلم عن عنصر مُبطَّل.
+    // The router and the messenger are captured **before** the sheet opens:
+    // using them through the sheet's context after `Navigator.pop` queries
+    // a deactivated element.
     builder: (sheetContext) => _AddSheet(
       initialUrl: initialUrl,
       l10n: l10n,
@@ -58,7 +60,8 @@ class _AddSheet extends ConsumerStatefulWidget {
   final String? initialUrl;
   final MTLocalizations l10n;
 
-  /// ملتقطان من سياق الشاشة المستضيفة — يبقيان صالحين بعد إغلاق الورقة.
+  /// Captured from the hosting screen's context, so they stay valid after
+  /// the sheet closes.
   final GoRouter router;
   final ScaffoldMessengerState messenger;
 
@@ -67,13 +70,15 @@ class _AddSheet extends ConsumerStatefulWidget {
 }
 
 class _AddSheetState extends ConsumerState<_AddSheet> {
-  /// **الورقة تملك المتحكم وتصرّفه بنفسها.** تصريفه في `openAddSheet`
-  /// بعد `await showModalBottomSheet` كان يقع **أثناء حركة الإغلاق**،
-  /// والحقل ما زال يُعاد بناؤه ⇒ «TextEditingController used after being
-  /// disposed» ثم شاشة حمراء (`_dependents.isEmpty`). `dispose` هنا لا
-  /// يعمل إلا بعد زوال المسار فعلياً.
-  late final TextEditingController _controller =
-      TextEditingController(text: UrlKit.extractUrl(widget.initialUrl ?? ''));
+  /// **The sheet owns its controller and disposes it itself.** Disposing it
+  /// in `openAddSheet` after `await showModalBottomSheet` happened **during
+  /// the closing animation** while the field was still being rebuilt,
+  /// giving "TextEditingController used after being disposed" and then a
+  /// red screen (`_dependents.isEmpty`). `dispose` here only runs once the
+  /// route is genuinely gone.
+  late final TextEditingController _controller = TextEditingController(
+    text: UrlKit.extractUrl(widget.initialUrl ?? ''),
+  );
   late String _quality = ref.read(settingsProvider).quality.wire;
   late String _url = _controller.text;
 
@@ -87,7 +92,7 @@ class _AddSheetState extends ConsumerState<_AddSheet> {
   Widget build(BuildContext context) {
     final l10n = widget.l10n;
     final platform = MediaPlatform.detect(_url);
-    // قاعدة الجودة (م-1): الرقمية تُعرض ليوتيوب فقط.
+    // The quality rule: numeric qualities are offered for YouTube only.
     final qualities = [
       MTQualityOption(value: 'best', label: l10n.qualityBest),
       if (platform.isYouTube) ...[
@@ -123,31 +128,40 @@ class _AddSheetState extends ConsumerState<_AddSheet> {
     }
     Navigator.pop(context);
 
-    // **القرار على الرابط النهائي لا المُدخل** (بلاغ المالك 2026-09-08):
-    // `on.soundcloud.com/…` ألبومٌ بلا `/sets/`، فكان يُعدّ مقطعاً مفرداً
-    // ويفكّه السيرفر إلى عشرين بلا شاشة اختيار. للروابط غير القصيرة
-    // `needsResolution` تردّ false فوراً فلا تأخير إطلاقاً.
-    final url =
-        await ref.read(shortLinkResolverProvider).resolveForRouting(input);
+    // **The decision is made on the final URL, not the entered one** (field
+    // report 2026-09-08): `on.soundcloud.com/…` is an album with no
+    // `/sets/`, so it counted as a single clip and the server expanded it
+    // into twenty with no selection screen. For links that are not short,
+    // `needsResolution` returns false immediately, so there is no delay at
+    // all.
+    final url = await ref
+        .read(shortLinkResolverProvider)
+        .resolveForRouting(input);
     if (!mounted) return;
 
-    // م-5: رابط قائمة ⇒ شاشة الدفعي.
+    // A playlist URL opens the batch screen.
     if (PlaylistDetector.isPlaylist(url)) {
       widget.router.push('/batch', extra: url);
       return;
     }
     final engine = ref.read(downloadEngineProvider);
     if (engine == null) {
-      showMTSnackOn(widget.messenger, l10n.noServerTitle,
-          type: MTSnackType.error);
+      showMTSnackOn(
+        widget.messenger,
+        l10n.noServerTitle,
+        type: MTSnackType.error,
+      );
       return;
     }
     engine.submit(url, Quality.fromWire(_quality));
-    showMTSnackOn(widget.messenger, l10n.downloadStarted,
-        type: MTSnackType.success);
+    showMTSnackOn(
+      widget.messenger,
+      l10n.downloadStarted,
+      type: MTSnackType.success,
+    );
   }
 }
 
-/// نص خطأ مهمة فاشلة — للاستخدام في البطاقات والأوراق.
+/// The error text for a failed task, used by the cards and the sheets.
 String taskErrorText(MTLocalizations l10n, DownloadTask task) =>
     task.error == null ? l10n.failed : errorText(l10n, task.error!);

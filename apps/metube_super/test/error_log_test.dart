@@ -28,7 +28,8 @@ void main() {
 
   setUp(() async {
     logFile = File(
-        '${Directory.systemTemp.path}/mtf_err_${DateTime.now().microsecondsSinceEpoch}.log');
+      '${Directory.systemTemp.path}/mtf_err_${DateTime.now().microsecondsSinceEpoch}.log',
+    );
     logger = MTLogger(filePath: logFile.path);
     clearErrorSignature('history');
     clearErrorSignature('probe');
@@ -79,25 +80,32 @@ void main() {
   group('فشل المكتبة يصل السجل', () {
     ProviderContainer containerWith(int status) {
       final dio = Dio()..httpClientAdapter = _StatusAdapter(status);
-      return ProviderContainer(overrides: [
-        keyValueStoreProvider.overrideWithValue(MemoryKeyValueStore()),
-        secretStoreProvider.overrideWithValue(MemorySecretStore()),
-        prefsMutexProvider.overrideWithValue(PrefsMutex()),
-        initialSettingsProvider.overrideWithValue(
-            const SuperSettings(activeUrl: 'https://srv.example.com')),
-        loggerProvider.overrideWithValue(logger),
-        apiClientProvider.overrideWithValue(MeTubeApiClient(
-          config: ServerConfig(baseUrl: 'https://srv.example.com'),
-          dio: dio,
-        )),
-      ]);
+      return ProviderContainer(
+        overrides: [
+          keyValueStoreProvider.overrideWithValue(MemoryKeyValueStore()),
+          secretStoreProvider.overrideWithValue(MemorySecretStore()),
+          prefsMutexProvider.overrideWithValue(PrefsMutex()),
+          initialSettingsProvider.overrideWithValue(
+            const SuperSettings(activeUrl: 'https://srv.example.com'),
+          ),
+          loggerProvider.overrideWithValue(logger),
+          apiClientProvider.overrideWithValue(
+            MeTubeApiClient(
+              config: ServerConfig(baseUrl: 'https://srv.example.com'),
+              dio: dio,
+            ),
+          ),
+        ],
+      );
     }
 
     test('رفض الاعتماد (401) يُكتب في السجل بوسم الشبكة', () async {
       final container = containerWith(401);
       addTearDown(container.dispose);
-      await expectLater(container.read(historyProvider.future),
-          throwsA(isA<AuthFailureException>()));
+      await expectLater(
+        container.read(historyProvider.future),
+        throwsA(isA<AuthFailureException>()),
+      );
       // **الحارس**: هذا بالضبط ما جرى للمالك ولم يترك أثراً.
       expect(await waitForLog('history'), contains('AuthFailureException'));
     });
@@ -114,17 +122,19 @@ void main() {
   group('بطاقة الحالة لا تكذب بعد العودة', () {
     testWidgets('العودة إلى التطبيق تعيد سؤال السيرفر', (tester) async {
       var probes = 0;
-      final container = ProviderContainer(overrides: [
-        keyValueStoreProvider.overrideWithValue(MemoryKeyValueStore()),
-        secretStoreProvider.overrideWithValue(MemorySecretStore()),
-        prefsMutexProvider.overrideWithValue(PrefsMutex()),
-        initialSettingsProvider.overrideWithValue(const SuperSettings()),
-        loggerProvider.overrideWithValue(logger),
-        serverStatusProvider.overrideWith((ref) async {
-          probes++;
-          return MTEndpointStatus.ok;
-        }),
-      ]);
+      final container = ProviderContainer(
+        overrides: [
+          keyValueStoreProvider.overrideWithValue(MemoryKeyValueStore()),
+          secretStoreProvider.overrideWithValue(MemorySecretStore()),
+          prefsMutexProvider.overrideWithValue(PrefsMutex()),
+          initialSettingsProvider.overrideWithValue(const SuperSettings()),
+          loggerProvider.overrideWithValue(logger),
+          serverStatusProvider.overrideWith((ref) async {
+            probes++;
+            return MTEndpointStatus.ok;
+          }),
+        ],
+      );
       addTearDown(container.dispose);
       // مستمع يبقي المزوّد حياً — الإبطال لا يعيد حساب مزوّد لا يُراقَب.
       container.listen(serverStatusProvider, (_, _) {});
@@ -158,16 +168,19 @@ void main() {
       final fake = _FakeNotifications();
       final tasks = StreamController<List<DownloadTask>>();
       addTearDown(tasks.close);
-      final container = ProviderContainer(overrides: [
-        keyValueStoreProvider.overrideWithValue(MemoryKeyValueStore()),
-        secretStoreProvider.overrideWithValue(MemorySecretStore()),
-        prefsMutexProvider.overrideWithValue(PrefsMutex()),
-        initialSettingsProvider
-            .overrideWithValue(const SuperSettings(localeCode: 'ar')),
-        loggerProvider.overrideWithValue(logger),
-        notificationsProvider.overrideWithValue(fake),
-        engineTasksProvider.overrideWith((ref) => tasks.stream),
-      ]);
+      final container = ProviderContainer(
+        overrides: [
+          keyValueStoreProvider.overrideWithValue(MemoryKeyValueStore()),
+          secretStoreProvider.overrideWithValue(MemorySecretStore()),
+          prefsMutexProvider.overrideWithValue(PrefsMutex()),
+          initialSettingsProvider.overrideWithValue(
+            const SuperSettings(localeCode: 'ar'),
+          ),
+          loggerProvider.overrideWithValue(logger),
+          notificationsProvider.overrideWithValue(fake),
+          engineTasksProvider.overrideWith((ref) => tasks.stream),
+        ],
+      );
       addTearDown(container.dispose);
       container.read(downloadWatcherProvider);
 
@@ -193,16 +206,19 @@ void main() {
       final fake = _FakeNotifications();
       final tasks = StreamController<List<DownloadTask>>();
       addTearDown(tasks.close);
-      final container = ProviderContainer(overrides: [
-        keyValueStoreProvider.overrideWithValue(MemoryKeyValueStore()),
-        secretStoreProvider.overrideWithValue(MemorySecretStore()),
-        prefsMutexProvider.overrideWithValue(PrefsMutex()),
-        initialSettingsProvider
-            .overrideWithValue(const SuperSettings(localeCode: 'ar')),
-        loggerProvider.overrideWithValue(logger),
-        notificationsProvider.overrideWithValue(fake),
-        engineTasksProvider.overrideWith((ref) => tasks.stream),
-      ]);
+      final container = ProviderContainer(
+        overrides: [
+          keyValueStoreProvider.overrideWithValue(MemoryKeyValueStore()),
+          secretStoreProvider.overrideWithValue(MemorySecretStore()),
+          prefsMutexProvider.overrideWithValue(PrefsMutex()),
+          initialSettingsProvider.overrideWithValue(
+            const SuperSettings(localeCode: 'ar'),
+          ),
+          loggerProvider.overrideWithValue(logger),
+          notificationsProvider.overrideWithValue(fake),
+          engineTasksProvider.overrideWith((ref) => tasks.stream),
+        ],
+      );
       addTearDown(container.dispose);
       container.read(downloadWatcherProvider);
 
@@ -242,21 +258,25 @@ class _FakeNotifications extends DownloadNotifications {
   Future<void> requestPermission() async {}
 
   @override
-  Future<void> showProgress(int id,
-      {required String title,
-      required String channelName,
-      required int? percent,
-      String? body}) async {
+  Future<void> showProgress(
+    int id, {
+    required String title,
+    required String channelName,
+    required int? percent,
+    String? body,
+  }) async {
     progress.add('$title|$body|$percent');
   }
 
   @override
-  Future<void> showResult(int id,
-      {required String title,
-      required String body,
-      required String channelName,
-      String? payload,
-      bool isError = false}) async {
+  Future<void> showResult(
+    int id, {
+    required String title,
+    required String body,
+    required String channelName,
+    String? payload,
+    bool isError = false,
+  }) async {
     results.add(_Result(body, isError, payload));
   }
 
@@ -271,8 +291,11 @@ class _StatusAdapter implements HttpClientAdapter {
   final int status;
 
   @override
-  Future<ResponseBody> fetch(RequestOptions options,
-      Stream<Uint8List>? requestStream, Future<void>? cancelFuture) async {
+  Future<ResponseBody> fetch(
+    RequestOptions options,
+    Stream<Uint8List>? requestStream,
+    Future<void>? cancelFuture,
+  ) async {
     return ResponseBody.fromBytes(
       utf8.encode(status == 200 ? '{"done":[],"queue":[]}' : 'denied'),
       status,

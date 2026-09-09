@@ -17,13 +17,16 @@ void main() {
 
   ProviderContainer makeContainer({String? initialLocale}) {
     store = MemoryKeyValueStore();
-    return ProviderContainer(overrides: [
-      keyValueStoreProvider.overrideWithValue(store),
-      secretStoreProvider.overrideWithValue(MemorySecretStore()),
-      prefsMutexProvider.overrideWithValue(PrefsMutex()),
-      initialSettingsProvider
-          .overrideWithValue(SuperSettings(localeCode: initialLocale)),
-    ]);
+    return ProviderContainer(
+      overrides: [
+        keyValueStoreProvider.overrideWithValue(store),
+        secretStoreProvider.overrideWithValue(MemorySecretStore()),
+        prefsMutexProvider.overrideWithValue(PrefsMutex()),
+        initialSettingsProvider.overrideWithValue(
+          SuperSettings(localeCode: initialLocale),
+        ),
+      ],
+    );
   }
 
   test('اختيار لغة يثبّتها في الحالة والتخزين', () async {
@@ -46,15 +49,23 @@ void main() {
     // **الحارس**: `copyWith` القديم كان `localeCode ?? this.localeCode`
     // فيبتلع الـnull ويُبقي 'en' — أي أن الخيار الثالث يبدو أنه يعمل
     // ولا يعمل. و`clearLocale` هو ما يميّز «امسح» عن «لا تغيّر».
-    expect(container.read(settingsProvider).localeCode, isNull,
-        reason: 'فارغ ⇒ MaterialApp يمرّر locale: null فيتبع الهاتف');
-    expect(await store.getString('app_locale'), isNull,
-        reason: 'ولا يعود بعد إعادة التشغيل');
+    expect(
+      container.read(settingsProvider).localeCode,
+      isNull,
+      reason: 'فارغ ⇒ MaterialApp يمرّر locale: null فيتبع الهاتف',
+    );
+    expect(
+      await store.getString('app_locale'),
+      isNull,
+      reason: 'ولا يعود بعد إعادة التشغيل',
+    );
   });
 
   test('التحميل من تخزين بلا مفتاح لغة ⇒ اتباع النظام', () async {
-    final settings =
-        await SuperSettings.load(MemoryKeyValueStore(), MemorySecretStore());
+    final settings = await SuperSettings.load(
+      MemoryKeyValueStore(),
+      MemorySecretStore(),
+    );
     expect(settings.localeCode, isNull);
   });
 
@@ -70,28 +81,33 @@ void main() {
     addTearDown(container.dispose);
     final l10n = await MTLocalizations.delegate.load(const Locale('ar'));
 
-    await tester.pumpWidget(UncontrolledProviderScope(
-      container: container,
-      child: MaterialApp(
-        locale: const Locale('ar'),
-        localizationsDelegates: MTLocalizations.localizationsDelegates,
-        supportedLocales: MTLocalizations.supportedLocales,
-        theme: mtTheme(MTVariant.superApp, Brightness.light),
-        home: Scaffold(
-          body: Center(
-            child: SegmentedButton<String>(
-              segments: [
-                ButtonSegment(value: 'system', label: Text(l10n.languageSystem)),
-                ButtonSegment(value: 'ar', label: Text(l10n.languageArabic)),
-                ButtonSegment(value: 'en', label: Text(l10n.languageEnglish)),
-              ],
-              selected: const {'ar'},
-              onSelectionChanged: (_) {},
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: MaterialApp(
+          locale: const Locale('ar'),
+          localizationsDelegates: MTLocalizations.localizationsDelegates,
+          supportedLocales: MTLocalizations.supportedLocales,
+          theme: mtTheme(MTVariant.superApp, Brightness.light),
+          home: Scaffold(
+            body: Center(
+              child: SegmentedButton<String>(
+                segments: [
+                  ButtonSegment(
+                    value: 'system',
+                    label: Text(l10n.languageSystem),
+                  ),
+                  ButtonSegment(value: 'ar', label: Text(l10n.languageArabic)),
+                  ButtonSegment(value: 'en', label: Text(l10n.languageEnglish)),
+                ],
+                selected: const {'ar'},
+                onSelectionChanged: (_) {},
+              ),
             ),
           ),
         ),
       ),
-    ));
+    );
     await tester.pump();
 
     expect(tester.takeException(), isNull);

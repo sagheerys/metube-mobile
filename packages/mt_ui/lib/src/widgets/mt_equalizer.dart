@@ -33,10 +33,9 @@ class _MTEqualizerState extends State<MTEqualizer>
 
   /// **It actually stops when playback pauses** (field report 2026-09-04:
   /// the effect kept running after the clip stopped, suggesting it was
-  /// still
-  /// playing). The flag was only read in `initState`, so changing it later
-  /// did not stop the controller, which went on rebuilding sixty times a
-  /// second over a silent clip.
+  /// still playing). The flag was only read in `initState`, so changing it
+  /// later did not stop the controller, which went on rebuilding sixty
+  /// times a second over a silent clip.
   @override
   void didUpdateWidget(MTEqualizer oldWidget) {
     super.didUpdateWidget(oldWidget);
@@ -78,8 +77,7 @@ class _MTEqualizerState extends State<MTEqualizer>
 
   Widget _bar(int i, Color accent, double scale) {
     final t = widget.animate
-        ? MTMotion.ease
-            .transform(((_controller.value + _delays[i]) % 1.0))
+        ? MTMotion.ease.transform(((_controller.value + _delays[i]) % 1.0))
         : 1.0;
     final factor = 0.45 + 0.55 * t;
     return Container(

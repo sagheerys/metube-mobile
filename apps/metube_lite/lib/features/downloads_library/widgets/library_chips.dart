@@ -5,7 +5,7 @@ import 'package:mt_ui/mt_ui.dart';
 import '../library_providers.dart';
 import '../local_item.dart';
 
-/// رقاقة مرشح موحدة الشكل (مرجع «وهج»).
+/// A filter chip of uniform shape (the Wahaj reference).
 class _Chip extends StatelessWidget {
   const _Chip({
     required this.label,
@@ -27,16 +27,14 @@ class _Chip extends StatelessWidget {
       selected: selected,
       showCheckmark: false,
       selectedColor: selectedColor,
-      labelStyle: Theme.of(context)
-          .textTheme
-          .labelMedium!
+      labelStyle: Theme.of(context).textTheme.labelMedium!
           .copyWith(color: selected ? p.bg : p.ink2),
       onSelected: (_) => onTap(),
     );
   }
 }
 
-/// الصف الأول: الكل · ♥ المفضلة · فيديو · صوت · ⚡ قِصار (م-14/م-35/م-36).
+/// The first row: all, favourites, video, audio, shorts.
 class LibraryFilterChips extends ConsumerWidget {
   const LibraryFilterChips({super.key});
 
@@ -47,8 +45,8 @@ class LibraryFilterChips extends ConsumerWidget {
     final options = ref.watch(libraryViewProvider);
     final controller = ref.read(libraryViewProvider.notifier);
 
-    void toggleType(MediaTypeFilter type) => controller.setType(
-        options.type == type ? MediaTypeFilter.all : type);
+    void toggleType(MediaTypeFilter type) =>
+        controller.setType(options.type == type ? MediaTypeFilter.all : type);
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
@@ -60,7 +58,7 @@ class LibraryFilterChips extends ConsumerWidget {
             onTap: () => controller.setScope(LocalScope.all),
           ),
           const SizedBox(width: MTSpace.xs),
-          // م-36: رقاقة المفضلة أول المرشحات بعد «الكل».
+          // The favourites chip is the first filter after "all".
           _Chip(
             label: '♥ ${l10n.favorites}',
             selected: options.scope == LocalScope.favorites,
@@ -68,9 +66,10 @@ class LibraryFilterChips extends ConsumerWidget {
             onTap: () => controller.setScope(LocalScope.favorites),
           ),
           const SizedBox(width: MTSpace.md),
-          // **القِصار في المرأى لا خلف الحافة** (فحص جهاز المالك
-          // 2026-09-05): كان آخر الصف فلا يُرى إلا بتمرير أفقي لا
-          // شيء يدلّ عليه — ومسار كامل (م-35) خلفه.
+          // **Shorts in sight rather than past the edge** (device check
+          // 2026-09-05): it was last in the row, so it was invisible
+          // without a horizontal scroll that nothing hinted at, with a
+          // whole path behind it.
           _Chip(
             label: '⚡ ${l10n.shortsFilter}',
             selected: options.type == MediaTypeFilter.shorts,
@@ -94,8 +93,9 @@ class LibraryFilterChips extends ConsumerWidget {
   }
 }
 
-/// الصف الثاني: مرشح المنصة **بعدادات حية** (م-14 — خاص بـ Lite).
-/// يختفي كلياً حين لا تكون في المكتبة أكثر من منصة واحدة.
+/// The second row: the platform filter **with live counts** (Lite
+/// specific). It disappears entirely when the library holds only one
+/// platform.
 class PlatformFilterChips extends ConsumerWidget {
   const PlatformFilterChips({super.key});
 
@@ -106,7 +106,8 @@ class PlatformFilterChips extends ConsumerWidget {
     if (counts.length < 2) return const SizedBox.shrink();
 
     final selected = ref.watch(
-        libraryViewProvider.select((options) => options.platform));
+      libraryViewProvider.select((options) => options.platform),
+    );
     final controller = ref.read(libraryViewProvider.notifier);
 
     return SingleChildScrollView(
@@ -123,8 +124,7 @@ class PlatformFilterChips extends ConsumerWidget {
             _Chip(
               label: l10n.platformCount(key.label, value),
               selected: selected == key,
-              onTap: () =>
-                  controller.setPlatform(selected == key ? null : key),
+              onTap: () => controller.setPlatform(selected == key ? null : key),
             ),
           ],
         ],

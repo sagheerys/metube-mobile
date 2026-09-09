@@ -8,15 +8,15 @@ void main() {
   late BatchPlaylistCollector collector;
 
   DownloadTask done(String id, String url, {String? title}) => DownloadTask(
-        id: id,
-        inputUrl: url,
-        quality: Quality.best,
-        canonicalUrl: url,
-        serverFilename: '$id.mp4',
-        title: title ?? id,
-        phase: TaskPhase.completed,
-        isBatchMember: true,
-      );
+    id: id,
+    inputUrl: url,
+    quality: Quality.best,
+    canonicalUrl: url,
+    serverFilename: '$id.mp4',
+    title: title ?? id,
+    phase: TaskPhase.completed,
+    isBatchMember: true,
+  );
 
   setUp(() {
     playlists = PlaylistsStore(
@@ -36,8 +36,11 @@ void main() {
 
     final saved = (await playlists.readAll()).single;
     expect(saved.name, 'دورة Flutter');
-    expect(saved.items.map((e) => e.canonicalUrl),
-        ['https://y/1', 'https://y/2', 'https://y/3']);
+    expect(saved.items.map((e) => e.canonicalUrl), [
+      'https://y/1',
+      'https://y/2',
+      'https://y/3',
+    ]);
     expect(saved.items.first.cachedTitle, 'الدرس 1');
     expect(saved.items.first.serverFilename, 't1.mp4');
   });
@@ -50,8 +53,11 @@ void main() {
     await collector.onFinished(done('t2', 'https://y/2'));
 
     final saved = (await playlists.readAll()).single;
-    expect(saved.items.map((e) => e.canonicalUrl),
-        ['https://y/1', 'https://y/2', 'https://y/3']);
+    expect(saved.items.map((e) => e.canonicalUrl), [
+      'https://y/1',
+      'https://y/2',
+      'https://y/3',
+    ]);
   });
 
   test('عضو ساقط لا يعطّل القائمة ولا يترك مكاناً فارغاً', () async {
@@ -105,9 +111,10 @@ void main() {
 
       final all = await playlists.readAll();
       expect(all, hasLength(1), reason: 'قائمة واحدة لا قائمتان');
-      expect(all.single.items.map((e) => e.canonicalUrl),
-          ['https://y/1', 'https://y/2'],
-          reason: 'ولا مداخل مكررة داخلها');
+      expect(all.single.items.map((e) => e.canonicalUrl), [
+        'https://y/1',
+        'https://y/2',
+      ], reason: 'ولا مداخل مكررة داخلها');
     });
 
     test('الجديد يُلحق بآخر القائمة لا برأسها', () async {
@@ -119,9 +126,11 @@ void main() {
       await collector.onFinished(done('r1', 'https://y/2'));
 
       final saved = (await playlists.readAll()).single;
-      expect(saved.items.map((e) => e.canonicalUrl),
-          ['https://y/1', 'https://y/2', 'https://y/3'],
-          reason: 'الترتيب يُزاح بما كان في القائمة قبل الدفعة');
+      expect(saved.items.map((e) => e.canonicalUrl), [
+        'https://y/1',
+        'https://y/2',
+        'https://y/3',
+      ], reason: 'الترتيب يُزاح بما كان في القائمة قبل الدفعة');
     });
 
     test('قائمة كانت موجودة لا تُحذف لو سقط كل أعضاء الدفعة', () async {

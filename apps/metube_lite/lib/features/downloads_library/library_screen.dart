@@ -20,8 +20,9 @@ import 'widgets/library_cards.dart';
 import 'widgets/library_chips.dart';
 import 'widgets/sort_sheet.dart';
 
-/// «تحميلاتي» — المكتبة المحلية (م-12/م-14) بالنموذج أ: بطاقات حية أثناء
-/// النشاط فقط + شارة عداد في الرأس تفتح ورقة الإدارة؛ البحث ظاهر دائماً.
+/// "My downloads", the local library: live cards only while something is
+/// active, plus a counter badge in the header that opens the management
+/// sheet. Search is always visible.
 class LibraryScreen extends ConsumerStatefulWidget {
   const LibraryScreen({super.key});
 
@@ -30,8 +31,9 @@ class LibraryScreen extends ConsumerStatefulWidget {
 }
 
 class _LibraryScreenState extends ConsumerState<LibraryScreen> {
-  /// إبراز نقرة إشعار الاكتمال — **مؤقت**. كان يُضبط ولا يُطفأ أبداً
-  /// فيبقى العنصر بمظهر «محدد» إلى الأبد (بلاغ المالك 2026-09-02).
+  /// The highlight from a completion-notification tap is **temporary**. It
+  /// used to be set and never cleared, so the item kept a "selected" look
+  /// forever (field report 2026-09-02).
   static const highlightDuration = Duration(seconds: 6);
   Timer? _highlightTimer;
 
@@ -63,8 +65,8 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     final active = ref.watch(activeTasksProvider);
     final settings = ref.watch(settingsProvider);
 
-    // المكتبة محلية: تعمل بلا سيرفر — الحالة الفارغة تدعو للإعداد فقط
-    // حين لا يوجد سيرفر **ولا ملفات**.
+    // The library is local and works with no server, so the empty state
+    // invites configuration only when there is no server **and no files**.
     final items = ref.watch(localMediaProvider).valueOrNull ?? const [];
     final needsSetup = !settings.isConfigured && items.isEmpty;
 
@@ -82,17 +84,21 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
             )
           : RefreshIndicator(
               onRefresh: () async {
-                // فشل التحديث تعرضه المكتبة نفسها بحالتها الفارغة —
-                // ورميه من هنا يفلت خارج `RefreshIndicator` بلا مستقبِل.
+                // A failed refresh is shown by the library itself in its
+                // empty state, and
+                // rethrowing here escapes the `RefreshIndicator` with
+                // nobody to catch
+                // it.
                 ref.invalidate(localMediaProvider);
                 try {
                   await ref.read(localMediaProvider.future);
                 } on MTApiException {
-                  // معروضة في الحالة الفارغة
+                  // Shown in the empty state.
                 }
               },
-              // ظهور واحد هادئ للمحتوى عند أول بناء — لا حركة لكل
-              // بطاقة (كانت تُنطّ القائمة طوال التمرير).
+              // One calm appearance of the content on the first build,
+              // rather than motion per card, which made the list bounce
+              // throughout the scroll.
               child: MTRevealOnce(child: _body(l10n, options, active)),
             ),
     );
@@ -103,7 +109,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     return AppBar(
       title: Text(l10n.navMyDownloads),
       actions: [
-        // شارة التحميلات النشطة (النموذج أ) — تفتح ورقة الإدارة.
+        // The active downloads badge, which opens the management sheet.
         IconButton(
           tooltip: l10n.activeDownloadsSheet,
           onPressed: () => showDownloadsSheet(context),
@@ -150,22 +156,23 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
         ),
         IconButton(
           tooltip: l10n.shareSelected,
-          onPressed: () => ref
-              .read(libraryActionsProvider)
-              .share(_selectedItems(selection)),
+          onPressed: () =>
+              ref.read(libraryActionsProvider).share(_selectedItems(selection)),
           icon: const Icon(Icons.share_rounded),
         ),
         IconButton(
           tooltip: l10n.deleteSelected,
           onPressed: () => confirmBulkDelete(context, ref, selection),
-          icon: Icon(Icons.delete_outline_rounded,
-              color: MTThemeX.of(context).palette.err),
+          icon: Icon(
+            Icons.delete_outline_rounded,
+            color: MTThemeX.of(context).palette.err,
+          ),
         ),
       ],
     );
   }
 
-  /// عناصر المكتبة المقابلة للتحديد الحالي (ر-6).
+  /// The library items matching the current selection (rule 6).
   List<LocalItem> _selectedItems(Set<String> selection) {
     final visible = ref.read(visibleLibraryProvider).valueOrNull ?? const [];
     return [
@@ -174,10 +181,14 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     ];
   }
 
-  /// **بناء كسول إلزامي** (درس أداء المرحلة 6): الرأس شريحة والعناصر
-  /// `SliverList.builder` لا تبني إلا المرئي.
-  Widget _body(MTLocalizations l10n, LibraryViewOptions options,
-      List<DownloadTask> active) {
+  /// **Lazy building is mandatory** (a performance lesson from phase 6):
+  /// the header is a sliver and the items are a `SliverList.builder` that
+  /// builds only what is visible.
+  Widget _body(
+    MTLocalizations l10n,
+    LibraryViewOptions options,
+    List<DownloadTask> active,
+  ) {
     final itemsAsync = ref.watch(visibleLibraryProvider);
     return CustomScrollView(
       slivers: [
@@ -198,80 +209,82 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
             ],
           ),
         ),
-        // **ترتيب الحالات مقصود (بلاغ المالك 2026-09-02):** كل إبطال
-        // للمكتبة يمر بـ `AsyncLoading` **محتفظاً بالبيانات السابقة**؛
-        // مطابقتها أولاً كانت تستبدل القائمة بدوّارة لجزء من الثانية —
-        // «وميض» متواصل أثناء التحميل حيث تتجدد المكتبة مراراً.
-        // البيانات الموجودة تفوز دائماً، ولا دوّارة إلا في أول تحميل.
+        // **The order of the cases is deliberate** (field report
+        // 2026-09-02): every library invalidation passes through
+        // `AsyncLoading` **while keeping the previous data**, and matching
+        // that first replaced the list with a spinner for a fraction of a
+        // second, a continuous flicker during downloads, when the library
+        // refreshes repeatedly. Existing data always wins, and a spinner
+        // appears only on the very first load.
         ...switch (itemsAsync) {
           AsyncValue(valueOrNull: final value?) when value.isNotEmpty => [
-              SliverPadding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: MTSpace.pagePad),
-                // كل الأوضاع كسولة — `builder` لا يبني إلا المرئي.
-                // النسبة والمقاسات نفسها المقيسة في Super.
-                sliver: switch (options.mode) {
-                  LibraryViewMode.grid => SliverGrid.builder(
-                      gridDelegate:
-                          const SliverGridDelegateWithMaxCrossAxisExtent(
-                        maxCrossAxisExtent: 210,
-                        mainAxisSpacing: MTSpace.md,
-                        crossAxisSpacing: MTSpace.md,
-                        childAspectRatio: 1.02,
-                      ),
-                      itemCount: value.length,
-                      itemBuilder: (context, index) => _itemCard(value[index]),
-                    ),
-                  LibraryViewMode.cards => SliverList.builder(
-                      itemCount: value.length,
-                      itemBuilder: (context, index) => Padding(
-                        // البطاقات بلا خيط فاصل — الفراغ هو الفاصل.
-                        padding: const EdgeInsets.only(bottom: MTSpace.lg),
-                        child: _itemCard(value[index]),
-                      ),
-                    ),
-                  _ => SliverList.builder(
-                      itemCount: value.length,
-                      itemBuilder: (context, index) => _itemCard(value[index]),
-                    ),
-                },
-              ),
-            ],
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: MTSpace.pagePad),
+              // Every mode is lazy: `builder` builds only what is
+              // visible. The ratio and the sizes are the ones measured in
+              // Super.
+              sliver: switch (options.mode) {
+                LibraryViewMode.grid => SliverGrid.builder(
+                  gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                    maxCrossAxisExtent: 210,
+                    mainAxisSpacing: MTSpace.md,
+                    crossAxisSpacing: MTSpace.md,
+                    childAspectRatio: 1.02,
+                  ),
+                  itemCount: value.length,
+                  itemBuilder: (context, index) => _itemCard(value[index]),
+                ),
+                LibraryViewMode.cards => SliverList.builder(
+                  itemCount: value.length,
+                  itemBuilder: (context, index) => Padding(
+                    // Cards carry no divider; the space is the divider.
+                    padding: const EdgeInsets.only(bottom: MTSpace.lg),
+                    child: _itemCard(value[index]),
+                  ),
+                ),
+                _ => SliverList.builder(
+                  itemCount: value.length,
+                  itemBuilder: (context, index) => _itemCard(value[index]),
+                ),
+              },
+            ),
+          ],
           AsyncLoading() => [
-              const SliverToBoxAdapter(
-                child: Padding(
-                  padding: EdgeInsets.only(top: 80),
-                  child: Center(child: CircularProgressIndicator()),
-                ),
+            const SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.only(top: 80),
+                child: Center(child: CircularProgressIndicator()),
               ),
-            ],
-          // الرسالة من الخطأ نفسه لا من نصّ مثبت (نفس علاج Super).
+            ),
+          ],
+          // The message comes from the error itself rather than from a
+          // fixed string (the same cure as Super).
           AsyncError(:final error) => [
-              SliverToBoxAdapter(
-                child: MTEmptyState(
-                  icon: Icons.error_outline_rounded,
-                  title: l10n.tryAgain,
-                  message: errorText(l10n, error),
-                  actionLabel: l10n.retry,
-                  onAction: () => ref.invalidate(localMediaProvider),
-                ),
+            SliverToBoxAdapter(
+              child: MTEmptyState(
+                icon: Icons.error_outline_rounded,
+                title: l10n.tryAgain,
+                message: errorText(l10n, error),
+                actionLabel: l10n.retry,
+                onAction: () => ref.invalidate(localMediaProvider),
               ),
-            ],
+            ),
+          ],
           AsyncValue(valueOrNull: final value?) when value.isEmpty => [
-              SliverToBoxAdapter(
-                child: MTEmptyState(
-                  icon: options.query.isEmpty
-                      ? Icons.video_library_outlined
-                      : Icons.search_off_rounded,
-                  title: options.query.isEmpty
-                      ? l10n.noDownloads
-                      : l10n.noResults,
-                  message: options.query.isEmpty
-                      ? l10n.noDownloadsMessage
-                      : l10n.noResultsMessage,
-                ),
+            SliverToBoxAdapter(
+              child: MTEmptyState(
+                icon: options.query.isEmpty
+                    ? Icons.video_library_outlined
+                    : Icons.search_off_rounded,
+                title: options.query.isEmpty
+                    ? l10n.noDownloads
+                    : l10n.noResults,
+                message: options.query.isEmpty
+                    ? l10n.noDownloadsMessage
+                    : l10n.noResultsMessage,
               ),
-            ],
+            ),
+          ],
           _ => const <Widget>[],
         },
         const SliverToBoxAdapter(child: SizedBox(height: 140)),
@@ -279,11 +292,12 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     );
   }
 
-  /// **مهمة واحدة ⇒ بطاقتها كاملة · أكثر ⇒ سطر واحد يلخّصها.**
+  /// **One task shows its full card; more than one collapses into a single
+  /// summary line.**
   ///
-  /// بلاغ المالك 2026-09-03: «عدة تحميلات تظهر كلها في مكتبة التحميلات
-  /// وهي موجود لها زر فوق في الأعلى — أوجد طريقة بحيث ما تتزاحم».
-  /// البطاقة الحية ~78 نقطة، فثلاث مهام كانت تدفع أول ملف خارج الشاشة.
+  /// Field report 2026-09-03: "several downloads all appear in the
+  /// downloads library while a button for them already sits in the header.
+  /// Find a way to stop them crowding one place."
   List<Widget> _activeStrip(MTLocalizations l10n, List<DownloadTask> active) {
     if (active.isEmpty) return const [];
     return [
@@ -304,12 +318,14 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     final engine = ref.read(downloadEngineProvider);
     final statusText = switch (task.phase) {
       TaskPhase.queued => l10n.queuedSection,
-      // **بلا نسبة في النص**: العداد صار عنصراً مستقلاً في البطاقة، فبقاؤها
-      // هنا كان يطبعها مرتين («على السيرفر · ٠٪» بجوار «0%») — رُصد بلقطة.
+      // **No percentage in the text**: the counter became an independent
+      // element in the card, so keeping it here printed it twice ("on
+      // server · 0%" beside "0%"), spotted in a screenshot.
       TaskPhase.adding || TaskPhase.polling => l10n.onServerPhase,
       TaskPhase.waitingForNetwork => l10n.waitingForWifi,
       TaskPhase.pulling => l10n.pullingToDevice,
-      // Lite ينظف السيرفر بعد السحب — مرحلة قصيرة تستحق نصاً صريحاً.
+      // Lite cleans the server after pulling, a short phase that deserves
+      // to be named explicitly.
       TaskPhase.deleting => l10n.cleaningServer,
       TaskPhase.failed => taskErrorText(l10n, task),
       _ => l10n.completed,
@@ -323,9 +339,10 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     );
   }
 
-  /// ر-4: نقرة عنصر — صوتي ⇒ تشغيل خلفي فوراً؛ مرئي ⇒ `/player`
-  /// (والعمودي القصير ⇒ الريلز م-35). قائمة التشغيل الداخلية =
-  /// **المكتبة المعروضة** وقت النقر بنفس فرزها وتصفيتها.
+  /// Rule 4: tapping an item. Audio plays in the background immediately;
+  /// video opens `/player`, and a short portrait clip opens reels. The
+  /// internal play queue is **the library as displayed** at the moment of
+  /// the tap, with the same sorting and filtering.
   Future<void> _play(LocalItem tapped) async {
     final visible = ref.read(visibleLibraryProvider).valueOrNull ?? const [];
     final items = [for (final item in visible) toPlaylistItem(item)];
@@ -336,16 +353,19 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       await ref.read(audioHandlerProvider).playItems(items, startIndex: index);
       return;
     }
-    ref.read(playbackRequestProvider.notifier).state =
-        PlaybackRequest(items: items, startIndex: index);
+    ref.read(playbackRequestProvider.notifier).state = PlaybackRequest(
+      items: items,
+      startIndex: index,
+    );
     if (!mounted) return;
     context.push(tapped.isShortForm ? '/reels' : '/player');
   }
 
-  /// الوضع تقرؤه البطاقة نفسها من الخيارات — لا يُمرَّر مرتين.
+  /// The card reads the mode from the options itself; it is not passed
+  /// twice.
   Widget _itemCard(LocalItem item) => LibraryItemCard(
-        item: item,
-        onPlay: () => _play(item),
-        onClearHighlight: _clearHighlight,
-      );
+    item: item,
+    onPlay: () => _play(item),
+    onClearHighlight: _clearHighlight,
+  );
 }

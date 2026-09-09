@@ -25,11 +25,11 @@ void main() {
     locks = [];
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(SystemChannels.platform, (call) async {
-      if (call.method == 'SystemChrome.setPreferredOrientations') {
-        locks.add(List<String>.from(call.arguments as List));
-      }
-      return null;
-    });
+          if (call.method == 'SystemChrome.setPreferredOrientations') {
+            locks.add(List<String>.from(call.arguments as List));
+          }
+          return null;
+        });
   });
 
   tearDown(() {
@@ -45,15 +45,14 @@ void main() {
 
   /// مضيف يتحكم بالاتجاه عبر مقاس الشاشة — `Orientation` مشتق منه.
   Widget host({required Size size, required Widget child}) => MediaQuery(
-        data: MediaQueryData(size: size),
-        child: Directionality(
-          textDirection: TextDirection.rtl,
-          child: Navigator(
-            onGenerateRoute: (_) =>
-                MaterialPageRoute<void>(builder: (_) => child),
-          ),
-        ),
-      );
+    data: MediaQueryData(size: size),
+    child: Directionality(
+      textDirection: TextDirection.rtl,
+      child: Navigator(
+        onGenerateRoute: (_) => MaterialPageRoute<void>(builder: (_) => child),
+      ),
+    ),
+  );
 
   const portrait = Size(400, 800);
   const landscape = Size(800, 400);
@@ -62,15 +61,15 @@ void main() {
     testWidgets('إمالة الجهاز تفتح الملء التام مرة واحدة', (tester) async {
       var opened = 0;
       Widget scope(Size size) => host(
-            size: size,
-            child: MTRotationScope(
-              open: (byRotation) async {
-                opened++;
-                expect(byRotation, isTrue);
-              },
-              builder: (_, _) => const SizedBox.shrink(),
-            ),
-          );
+        size: size,
+        child: MTRotationScope(
+          open: (byRotation) async {
+            opened++;
+            expect(byRotation, isTrue);
+          },
+          builder: (_, _) => const SizedBox.shrink(),
+        ),
+      );
 
       await tester.pumpWidget(scope(portrait));
       expect(opened, 0);
@@ -90,13 +89,13 @@ void main() {
     ) async {
       var opened = 0;
       Widget scope(Size size) => host(
-            size: size,
-            child: MTRotationScope(
-              // الملء التام أُغلق فوراً — كأن المستخدم ضغط الخروج.
-              open: (_) async => opened++,
-              builder: (_, _) => const SizedBox.shrink(),
-            ),
-          );
+        size: size,
+        child: MTRotationScope(
+          // الملء التام أُغلق فوراً — كأن المستخدم ضغط الخروج.
+          open: (_) async => opened++,
+          builder: (_, _) => const SizedBox.shrink(),
+        ),
+      );
 
       await tester.pumpWidget(scope(landscape));
       await tester.pump();
@@ -123,16 +122,18 @@ void main() {
     ) async {
       bool? byRotation;
       late VoidCallback press;
-      await tester.pumpWidget(host(
-        size: portrait,
-        child: MTRotationScope(
-          open: (r) async => byRotation = r,
-          builder: (_, open) {
-            press = open;
-            return const SizedBox.shrink();
-          },
+      await tester.pumpWidget(
+        host(
+          size: portrait,
+          child: MTRotationScope(
+            open: (r) async => byRotation = r,
+            builder: (_, open) {
+              press = open;
+              return const SizedBox.shrink();
+            },
+          ),
         ),
-      ));
+      );
 
       press();
       await tester.pump();
@@ -140,15 +141,20 @@ void main() {
     });
 
     testWidgets('يفكّ القفل عند الدخول ويعيده عند المغادرة', (tester) async {
-      await tester.pumpWidget(host(
-        size: portrait,
-        child: MTRotationScope(
-          open: (_) async {},
-          builder: (_, _) => const SizedBox.shrink(),
+      await tester.pumpWidget(
+        host(
+          size: portrait,
+          child: MTRotationScope(
+            open: (_) async {},
+            builder: (_, _) => const SizedBox.shrink(),
+          ),
         ),
-      ));
-      expect(locks.where(isFree).length, 1,
-          reason: 'المشغل مفتوح ⇒ التدوير مسموح');
+      );
+      expect(
+        locks.where(isFree).length,
+        1,
+        reason: 'المشغل مفتوح ⇒ التدوير مسموح',
+      );
 
       // شجرة أخرى بالكامل — تبديل `child` داخل نفس `Navigator` لا
       // يعيد بناء مساره القائم، فلا يُصرَّف النطاق أصلاً.
@@ -162,8 +168,10 @@ void main() {
   group('MTOrientation', () {
     test('الطولي وحده لا يشمل المقلوب', () {
       expect(MTOrientation.portrait, [DeviceOrientation.portraitUp]);
-      expect(MTOrientation.free.contains(DeviceOrientation.portraitDown),
-          isFalse);
+      expect(
+        MTOrientation.free.contains(DeviceOrientation.portraitDown),
+        isFalse,
+      );
     });
 
     testWidgets('lockLandscape يرسل العرضيين وحدهما', (tester) async {
@@ -205,27 +213,38 @@ void main() {
       addTearDown(tester.view.reset);
 
       final session = newSession();
-      await tester.runAsync(() => session.open(const [
-            PlaylistItem(
-              canonicalUrl: 'https://x/a',
-              title: 'a',
-              localPath: '/media/a.mp4',
-            ),
-          ]));
+      await tester.runAsync(
+        () => session.open(const [
+          PlaylistItem(
+            canonicalUrl: 'https://x/a',
+            title: 'a',
+            localPath: '/media/a.mp4',
+          ),
+        ]),
+      );
       final navKey = GlobalKey<NavigatorState>();
-      await tester.pumpWidget(MaterialApp(
-        navigatorKey: navKey,
-        localizationsDelegates: MTLocalizations.localizationsDelegates,
-        supportedLocales: MTLocalizations.supportedLocales,
-        theme: mtTheme(MTVariant.superApp, Brightness.light),
-        home: const Scaffold(body: Center(child: Text('BASE'))),
-      ));
-      unawaited(navKey.currentState!.push(MaterialPageRoute<void>(
-        builder: (_) => MTVideoScreen(session: session),
-      )));
+      await tester.pumpWidget(
+        MaterialApp(
+          navigatorKey: navKey,
+          localizationsDelegates: MTLocalizations.localizationsDelegates,
+          supportedLocales: MTLocalizations.supportedLocales,
+          theme: mtTheme(MTVariant.superApp, Brightness.light),
+          home: const Scaffold(body: Center(child: Text('BASE'))),
+        ),
+      );
+      unawaited(
+        navKey.currentState!.push(
+          MaterialPageRoute<void>(
+            builder: (_) => MTVideoScreen(session: session),
+          ),
+        ),
+      );
       await settle(tester);
-      expect(locks.last, predicate<List<String>>(isFree),
-          reason: 'المشغل مفتوح ⇒ الدوران مسموح');
+      expect(
+        locks.last,
+        predicate<List<String>>(isFree),
+        reason: 'المشغل مفتوح ⇒ الدوران مسموح',
+      );
 
       // الدخول بالزر يفرض العرضي (قافل التدوير لا يستطيع الإمالة).
       // يُستدعى الفعل مباشرة لا بلمسة: الأدوات تختفي وحدها بمؤقت،
@@ -244,8 +263,11 @@ void main() {
 
       navKey.currentState!.pop();
       await settle(tester);
-      expect(locks.last, predicate<List<String>>(isPortraitLock),
-          reason: 'مغادرة المشغل ⇒ يعود قفل التطبيق الطولي');
+      expect(
+        locks.last,
+        predicate<List<String>>(isPortraitLock),
+        reason: 'مغادرة المشغل ⇒ يعود قفل التطبيق الطولي',
+      );
       await tester.runAsync(session.dispose);
     });
   });

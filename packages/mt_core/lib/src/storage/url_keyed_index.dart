@@ -68,7 +68,7 @@ abstract base class UrlKeyedIndex<V> {
       });
 
   Future<void> clear() => mutex.run(() async {
-        await store.remove(prefsKey);
-        onChanged?.call();
-      });
+    await store.remove(prefsKey);
+    onChanged?.call();
+  });
 }

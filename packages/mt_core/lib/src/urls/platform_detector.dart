@@ -17,8 +17,7 @@ enum MediaPlatform {
   const MediaPlatform(this.label);
 
   /// A neutral English display name; the Arabic translation lives in the
-  /// arb
-  /// files in the interface layer.
+  /// arb files in the interface layer.
   final String label;
 
   bool get isYouTube => this == MediaPlatform.youtube;

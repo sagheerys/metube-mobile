@@ -6,18 +6,18 @@ import 'di.dart';
 import 'features/settings/auto_switch.dart';
 import 'router.dart';
 
-/// جذر MeTube Super: ثيم «وهج» بهوية Super + الترجمة + الراوتر.
+/// The MeTube Super root: the Wahaj theme in Super's identity, plus
+/// localisation and the router.
 class SuperApp extends ConsumerWidget {
   const SuperApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final themeMode =
-        ref.watch(settingsProvider.select((s) => s.themeMode));
-    final localeCode =
-        ref.watch(settingsProvider.select((s) => s.localeCode));
-    // م-28: يعيش بعمر التطبيق لا بعمر شاشة — تغيّر الشبكة يجب أن
-    // يُلتقط والمستخدم في أي مكان (وحتى والتطبيق بالخلفية ثم يعود).
+    final themeMode = ref.watch(settingsProvider.select((s) => s.themeMode));
+    final localeCode = ref.watch(settingsProvider.select((s) => s.localeCode));
+    // It lives for the life of the app rather than of a screen: a network
+    // change must be caught wherever the user is, including when the app
+    // was in the background and comes back.
     ref.watch(autoSwitchProvider);
 
     return MaterialApp.router(
@@ -30,8 +30,10 @@ class SuperApp extends ConsumerWidget {
       localizationsDelegates: MTLocalizations.localizationsDelegates,
       supportedLocales: MTLocalizations.supportedLocales,
       routerConfig: router,
-      // **أشرطة النظام تتبع الثيم** — بلا حجاب التباين الذي يفرضه
-      // أندرويد خلف أزرار التنقل الثلاثة فيقطع لون الشريط السفلي.
+      // **The system bars follow the theme**, without the contrast scrim
+      // Android imposes behind the three navigation buttons, which cuts
+      // across
+      // the colour of the bottom bar.
       builder: (context, child) =>
           MTSystemBars(child: child ?? const SizedBox.shrink()),
     );

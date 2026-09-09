@@ -4,12 +4,14 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mt_media/mt_media.dart';
 
 PlaylistItem _item(String id) => PlaylistItem(
-      canonicalUrl: 'https://x/$id',
-      title: id,
-      serverFilename: '$id.mp4',
-    );
+  canonicalUrl: 'https://x/$id',
+  title: id,
+  serverFilename: '$id.mp4',
+);
 
-final _five = [for (final id in ['a', 'b', 'c', 'd', 'e']) _item(id)];
+final _five = [
+  for (final id in ['a', 'b', 'c', 'd', 'e']) _item(id),
+];
 
 void main() {
   group('الترتيب العادي', () {

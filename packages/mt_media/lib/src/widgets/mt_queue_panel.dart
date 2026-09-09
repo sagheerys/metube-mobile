@@ -107,7 +107,6 @@ class MTQueuePanel extends StatelessWidget {
   }
 }
 
-
 /// Opens the queue bottom sheet, for the audio screen and the portrait
 /// player.
 Future<void> showMTQueueSheet(
@@ -132,9 +131,9 @@ Future<void> showMTQueueSheet(
           maxHeight: MediaQuery.sizeOf(sheetContext).height * 0.72,
         ),
         // **The sheet is built once and does not know playback stopped**,
-        // so it
-        // is rebuilt on [liveness], the video session or the audio player's
-        // notifier, or the equaliser keeps dancing over a silent clip.
+        // so it is rebuilt on [liveness], the video session or the audio
+        // player's notifier, or the equaliser keeps dancing over a silent
+        // clip.
         child: _LiveQueue(
           liveness: liveness,
           builder: (context) => MTQueuePanel(

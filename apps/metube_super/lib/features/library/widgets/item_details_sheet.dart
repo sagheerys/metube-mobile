@@ -8,7 +8,8 @@ import '../../shared/external_player.dart';
 import '../../shared/membership.dart';
 import '../library_models.dart';
 
-/// تفاصيل عنصر — تُفتح من ورقة الإجراءات ومن مشغل الريلز معاً.
+/// Item details, opened from the actions sheet and from the reels player
+/// alike.
 void showItemDetailsSheet(BuildContext context, LibraryItem item) {
   showModalBottomSheet<void>(
     context: context,
@@ -29,19 +30,18 @@ class _DetailsSheet extends ConsumerWidget {
     final p = MTThemeX.of(context).palette;
 
     Widget row(String label, String value) => Padding(
-          padding: const EdgeInsets.symmetric(vertical: MTSpace.xs),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(
-                width: 110,
-                child: Text(label,
-                    style: text.bodySmall!.copyWith(color: p.ink3)),
-              ),
-              Expanded(child: Text(value, style: text.bodyMedium)),
-            ],
+      padding: const EdgeInsets.symmetric(vertical: MTSpace.xs),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 110,
+            child: Text(label, style: text.bodySmall!.copyWith(color: p.ink3)),
           ),
-        );
+          Expanded(child: Text(value, style: text.bodyMedium)),
+        ],
+      ),
+    );
 
     final sizeMb = item.sizeBytes == null
         ? null
@@ -50,52 +50,66 @@ class _DetailsSheet extends ConsumerWidget {
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(
-            MTSpace.xl, MTSpace.lg, MTSpace.xl, MTSpace.xl),
+          MTSpace.xl,
+          MTSpace.lg,
+          MTSpace.xl,
+          MTSpace.xl,
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             MTSectionHeader(title: l10n.details),
             const SizedBox(height: MTSpace.sm),
-            // **تسميات الصفوف** (فحص شامل 2026-09-02): كانت «التفاصيل»
-            // عنواناً لصف العنوان و«MB» عنواناً لصف الحجم — نصّ
-            // مثبت ومعنى خاطئ معاً (القاعدة 5).
+            // **Row labels** (full review 2026-09-02): "details" was the
+            // label of the title row and "MB" the label of the size row, a
+            // hard-coded string and a wrong meaning at once (rule 5).
             row(l10n.titleLabel, item.title),
             if (sizeMb != null) row(l10n.fileSize, '$sizeMb MB'),
             if (item.timestamp != null)
               row(l10n.downloadDate, mtTimeAgo(context, item.timestamp!)),
-            row(l10n.availability, [
-              if (item.isOffline) l10n.availabilityOffline,
-              if (item.onServer) l10n.availabilityServer,
-            ].join(' + ')),
-            // **الانتماء** (بلاغ المالك 2026-09-04): في أي قوائم وتحت
-            // أي وسوم. المعلومة كانت في المخزن ولا تعرضها أي شاشة.
+            row(
+              l10n.availability,
+              [
+                if (item.isOffline) l10n.availabilityOffline,
+                if (item.onServer) l10n.availabilityServer,
+              ].join(' + '),
+            ),
+            // **Where it belongs** (field report 2026-09-04): which
+            // playlists it is in and which tags it carries. The information
+            // was in the store and no screen displayed it.
             ...switch (ref
                 .watch(membershipIndexProvider)
                 .valueOrNull?[item.canonicalUrl]) {
               final ItemMembership m when !m.isEmpty => [
-                  if (m.playlists.isNotEmpty)
-                    row(l10n.inPlaylists, m.playlists.join('، ')),
-                  if (m.tags.isNotEmpty) row(l10n.tags, m.tags.join('، ')),
-                ],
+                if (m.playlists.isNotEmpty)
+                  row(l10n.inPlaylists, m.playlists.join('، ')),
+                if (m.tags.isNotEmpty) row(l10n.tags, m.tags.join('، ')),
+              ],
               _ => const <Widget>[],
             },
             const SizedBox(height: MTSpace.sm),
-            // **فعلان لا زر ثالث في الريلز** (قرار المالك 2026-09-05):
-            // الشريط فيه ثلاثة أزرار وزيادةُ رابعٍ تزاحمه، وهذه الورقة
-            // تُفتح منه بزر «التفاصيل» أصلاً.
+            // **Two actions, not a third button in reels** (decision
+            // 2026-09-05): the rail already holds three buttons and a
+            // fourth crowds them, and this sheet is opened from it by the
+            // "details" button anyway.
             //
-            // والمشغل الخارجي يظهر **بنسخة محلية وحدها**: لا يُسلَّم
-            // رابط السيرفر لتطبيق آخر.
+            // The external player appears **for a local copy only**: a
+            // server URL is never handed to another app.
             Row(
               children: [
                 Expanded(
                   child: OutlinedButton.icon(
-                    onPressed: () => launchUrl(Uri.parse(item.canonicalUrl),
-                        mode: LaunchMode.externalApplication),
+                    onPressed: () => launchUrl(
+                      Uri.parse(item.canonicalUrl),
+                      mode: LaunchMode.externalApplication,
+                    ),
                     icon: const Icon(Icons.open_in_new_rounded, size: 16),
-                    label: Text(l10n.openOriginalLink,
-                        maxLines: 1, overflow: TextOverflow.ellipsis),
+                    label: Text(
+                      l10n.openOriginalLink,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
                 ),
                 if (item.localPath case final String path) ...[
@@ -103,26 +117,33 @@ class _DetailsSheet extends ConsumerWidget {
                   Expanded(
                     child: OutlinedButton.icon(
                       onPressed: () async {
-                        final opened = await const ExternalPlayer()
-                            .open(path, audio: item.isAudio);
+                        final opened = await const ExternalPlayer().open(
+                          path,
+                          audio: item.isAudio,
+                        );
                         if (!opened && context.mounted) {
-                          showMTSnack(context, l10n.noExternalPlayer,
-                              type: MTSnackType.error);
+                          showMTSnack(
+                            context,
+                            l10n.noExternalPlayer,
+                            type: MTSnackType.error,
+                          );
                         }
                       },
                       icon: const Icon(Icons.open_with_rounded, size: 16),
-                      label: Text(l10n.externalPlayerShort,
-                          maxLines: 1, overflow: TextOverflow.ellipsis),
+                      label: Text(
+                        l10n.externalPlayerShort,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
                   ),
                 ],
               ],
             ),
-            // الرابط الأصلي — نسخ بلمسة (م-16).
+            // The original URL, copied with one tap.
             OutlinedButton.icon(
               onPressed: () async {
-                await Clipboard.setData(
-                    ClipboardData(text: item.canonicalUrl));
+                await Clipboard.setData(ClipboardData(text: item.canonicalUrl));
                 if (context.mounted) {
                   showMTSnack(context, l10n.settingsSaved);
                 }
@@ -141,4 +162,3 @@ class _DetailsSheet extends ConsumerWidget {
     );
   }
 }
-

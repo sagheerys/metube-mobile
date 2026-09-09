@@ -14,9 +14,9 @@ import 'mt_polish.dart';
 /// The library card **led by its cover**: a 16:9 thumbnail first, with two
 /// lines of title underneath. It serves two modes:
 ///
-/// - - **Grid**, the default: two columns, so a row shows twice what the
+/// - **Grid**, the default: two columns, so a row shows twice what the
 /// list shows and scanning video visually is far quicker.
-/// - - **Cards** ([feed], requested 2026-09-08, the YouTube pattern): one
+/// - **Cards** ([feed], requested 2026-09-08, the YouTube pattern): one
 /// column with a wide cover and larger text, for unhurried browsing.
 ///
 /// **The two modes share the cover on purpose**: duration, favourite and
@@ -149,14 +149,16 @@ class MTMediaGridCard extends StatelessWidget {
                         ),
                       ),
                     // The location badge appears in cards mode only: a grid
-                    // cell is half a
-                    // screen wide and already carries the chip and the meta
-                    // line.
+                    // cell is half a screen wide and already carries the
+                    // chip and the meta line.
                     if (feed &&
                         location != MTMediaLocation.none &&
                         locationLabel != null) ...[
                       const SizedBox(width: MTSpace.xs),
-                      MTLocationBadge(location: location, label: locationLabel!),
+                      MTLocationBadge(
+                        location: location,
+                        label: locationLabel!,
+                      ),
                     ],
                   ],
                 ),
@@ -259,10 +261,9 @@ class _Cover extends StatelessWidget {
                           ? l10n.removeFromFavorites
                           : l10n.addToFavorites,
                       // **A fixed white, not `p.bg`** (defect م-3): the
-                      // chip always sits over a
-                      // dark cover, so the theme background colour made it
-                      // dark on dark at
-                      // night, all but invisible.
+                      // chip always sits over a dark cover, so the theme
+                      // background colour made it dark on dark at night,
+                      // all but invisible.
                       color: favorite ? p.favorite : Colors.white,
                       onTap: () {
                         HapticFeedback.selectionClick();
@@ -314,8 +315,7 @@ class _CoverButton extends StatelessWidget {
           size: 17,
           color: color,
           // Icons over a thumbnail of unknown colour: a light shadow keeps
-          // them
-          // legible over both pale and dark covers.
+          // them legible over both pale and dark covers.
           shadows: const [Shadow(color: Color(0x99000000), blurRadius: 5)],
         ),
       ),

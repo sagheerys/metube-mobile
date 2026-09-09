@@ -17,8 +17,8 @@ String mtFormatDuration(Duration d) {
 /// The remaining time as `-12:30`, as in the audio screen reference.
 ///
 /// **Direction-isolated**: the minus sign is a neutral character, so in an
-/// Arabic paragraph it moved to the end of the string and read as
-/// "50:49-" (screenshot 2026-09-05).
+/// Arabic paragraph it moved to the end of the string and read as "50:49-"
+/// (screenshot 2026-09-05).
 String mtFormatRemaining(Duration position, Duration? total) {
   if (total == null || total <= Duration.zero) return '--:--';
   return mtLtrRun('-${mtFormatDuration(total - position)}');

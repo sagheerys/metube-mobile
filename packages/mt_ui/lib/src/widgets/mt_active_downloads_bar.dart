@@ -47,7 +47,9 @@ class MTActiveDownloadsBar extends StatelessWidget {
         borderRadius: BorderRadius.circular(MTRadius.card),
         child: Container(
           padding: const EdgeInsets.symmetric(
-              horizontal: MTSpace.md + 1, vertical: MTSpace.md),
+            horizontal: MTSpace.md + 1,
+            vertical: MTSpace.md,
+          ),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(MTRadius.card),
             border: Border.all(color: p.accent.withValues(alpha: 0.3)),
@@ -64,21 +66,26 @@ class MTActiveDownloadsBar extends StatelessWidget {
                       label,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: text.bodyMedium!
-                          .copyWith(fontWeight: FontWeight.w700),
+                      style: text.bodyMedium!.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
                   if (progress != null)
                     Text(
                       '${(progress!.clamp(0, 1) * 100).round()}%',
                       style: text.bodySmall!.copyWith(
-                          fontWeight: FontWeight.w700, color: p.accent),
+                        fontWeight: FontWeight.w700,
+                        color: p.accent,
+                      ),
                     ),
                   const SizedBox(width: MTSpace.sm),
                   Text(
                     actionLabel,
                     style: text.labelSmall!.copyWith(
-                        color: p.accent, fontWeight: FontWeight.w700),
+                      color: p.accent,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ],
               ),

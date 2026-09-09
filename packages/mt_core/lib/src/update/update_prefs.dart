@@ -16,14 +16,12 @@ class UpdatePrefs {
   static const String skippedVersionKey = 'update_skipped_version';
 
   /// The version of the downloaded file sitting in the cache. Wiped once
-  /// the
-  /// app is that version.
+  /// the app is that version.
   static const String downloadedVersionKey = 'update_downloaded_version';
 
   /// **On by default**: whoever never opens settings is exactly who needs
   /// updates most.
-  Future<bool> autoCheck() async =>
-      await store.getBool(autoCheckKey) ?? true;
+  Future<bool> autoCheck() async => await store.getBool(autoCheckKey) ?? true;
 
   Future<void> setAutoCheck(bool value) =>
       mutex.run(() => store.setBool(autoCheckKey, value));
