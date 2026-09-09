@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mt_core/mt_core.dart';
@@ -103,6 +104,28 @@ class UpdateNotifier extends Notifier<UpdateState> {
     final auto = await prefs.autoCheck();
     final last = await prefs.lastCheck();
     state = state.copyWith(autoCheck: auto, checkedAt: last);
+    unawaited(_sweepInstalledApk(prefs));
+  }
+
+  /// **يمسح ملف التحديث بعد أن يؤدّي دوره.** بلا هذا يبقى ~40 م.ب في كاش
+  /// التطبيق إلى الأبد بعد أول تحديث ناجح — الإصدار الذي نُزّل صار هو
+  /// الإصدار العامل، فالملف لا يفيد أحداً.
+  ///
+  /// المقارنة بالإصدار لا بالوجود: من نزّل التحديث ثم أجّل التثبيت وأغلق
+  /// التطبيق يجب أن يجد ملفه كما تركه.
+  Future<void> _sweepInstalledApk(UpdatePrefs prefs) async {
+    final downloaded = AppVersion.tryParse(await prefs.downloadedVersion());
+    if (downloaded == null) return;
+    final current = AppVersion.tryParse(await _currentVersion());
+    if (current == null || current < downloaded) return;
+    try {
+      final dir = await ref.read(updateCacheDirProvider.future);
+      final file = File('$dir/${MTConstants.updateApkFileName}');
+      if (file.existsSync()) await file.delete();
+    } catch (_) {
+      // كاش غير متاح: يمسحه النظام عند الضيق على أي حال.
+    }
+    await prefs.clearDownloaded();
   }
 
   Future<String> _currentVersion() async =>
@@ -173,11 +196,16 @@ class UpdateNotifier extends Notifier<UpdateState> {
             expectedSize: release.apkSize,
             cancel: token,
             onProgress: (p) {
-              if (identical(_cancel, token)) {
-                state = state.copyWith(progress: p);
-              }
+              if (!identical(_cancel, token)) return;
+              // **خطوة 1% لا كل قطعة**: القطعة 64 كيلوبايت، فملف 40 م.ب
+              // يعطي ~640 نداءً — إعادة بناء لكل واحد بلا فرق تراه عين.
+              if (p < 1 && (p - state.progress).abs() < 0.01) return;
+              state = state.copyWith(progress: p);
             },
           );
+      await ref
+          .read(updatePrefsProvider)
+          .setDownloadedVersion(release.version.toString());
       state =
           state.copyWith(phase: UpdatePhase.ready, progress: 1, apkPath: path);
     } on UpdateCancelledException {

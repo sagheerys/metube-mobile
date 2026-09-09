@@ -11,6 +11,8 @@ coverage/
 
 # ===== Android =====
 **/android/.gradle/
+# مخلَّفات مصرّف Kotlin (جلسات وأخطاء) — تظهر مع Built-in Kotlin في AGP الحديث.
+**/android/.kotlin/
 **/android/local.properties
 **/android/key.properties
 *.keystore

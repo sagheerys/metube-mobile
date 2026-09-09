@@ -14,6 +14,9 @@ class UpdatePrefs {
   static const String lastCheckKey = 'update_last_check';
   static const String skippedVersionKey = 'update_skipped_version';
 
+  /// إصدار الملف المنزَّل الجالس في الكاش — يُمسح متى صار التطبيق عنده.
+  static const String downloadedVersionKey = 'update_downloaded_version';
+
   /// **مفعّل افتراضياً**: من لا يفتح الإعدادات هو أحوج الناس للتحديث.
   Future<bool> autoCheck() async =>
       await store.getBool(autoCheckKey) ?? true;
@@ -39,4 +42,12 @@ class UpdatePrefs {
   /// يُنادى بعد تثبيت ناجح — وإلا ظلّ تخطٍّ قديم يكتم إصداراً لاحقاً
   /// لو تراجعت أرقام الإصدارات لأي سبب.
   Future<void> clearSkip() => mutex.run(() => store.remove(skippedVersionKey));
+
+  Future<String?> downloadedVersion() => store.getString(downloadedVersionKey);
+
+  Future<void> setDownloadedVersion(String version) =>
+      mutex.run(() => store.setString(downloadedVersionKey, version));
+
+  Future<void> clearDownloaded() =>
+      mutex.run(() => store.remove(downloadedVersionKey));
 }

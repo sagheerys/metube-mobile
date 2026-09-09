@@ -36,9 +36,14 @@ String releaseJson({String tag = 'v9.9.9'}) => json.encode({
 
 void main() {
   late MemoryKeyValueStore store;
+  late Directory cacheDir;
 
   setUp(() {
     store = MemoryKeyValueStore();
+    cacheDir = Directory.systemTemp.createTempSync('mt_update_test_');
+    addTearDown(() {
+      if (cacheDir.existsSync()) cacheDir.deleteSync(recursive: true);
+    });
     PackageInfo.setMockInitialValues(
       appName: 'MeTube',
       packageName: 'com.yasir.test',
@@ -57,7 +62,7 @@ void main() {
       keyValueStoreProvider.overrideWithValue(store),
       prefsMutexProvider.overrideWithValue(PrefsMutex()),
       // `path_provider` قناة أصلية لا تعمل في اختبار ودجات.
-      updateCacheDirProvider.overrideWith((ref) => Directory.systemTemp.path),
+      updateCacheDirProvider.overrideWith((ref) => cacheDir.path),
       if (downloader != null)
         apkDownloaderProvider.overrideWithValue(downloader),
       updateCheckerProvider.overrideWithValue(UpdateChecker(
@@ -169,6 +174,36 @@ void main() {
     expect(await store.getString(UpdatePrefs.skippedVersionKey), '9.9.9');
     expect(c.read(updateControllerProvider).release, isNull);
     expect(c.read(updateControllerProvider).phase, UpdatePhase.idle);
+  });
+
+
+  group('كنس ملف التحديث', () {
+    File apkFile() => File('${cacheDir.path}/${MTConstants.updateApkFileName}');
+
+    test('**الحارس**: يُمسح بعد أن يصير التطبيق هو الإصدار المنزَّل', () async {
+      // بلا هذا يبقى ~40 م.ب في الكاش إلى الأبد بعد أول تحديث ناجح.
+      apkFile().writeAsBytesSync(const [1, 2, 3]);
+      await store.setString(UpdatePrefs.downloadedVersionKey, '2.0.0');
+
+      final c = container();
+      c.read(updateControllerProvider);
+      await pumpEventQueue();
+
+      expect(apkFile().existsSync(), isFalse);
+      expect(await store.getString(UpdatePrefs.downloadedVersionKey), isNull);
+    });
+
+    test('تحديث نُزّل ولم يُثبَّت بعد يبقى كما تركه صاحبه', () async {
+      apkFile().writeAsBytesSync(const [1, 2, 3]);
+      await store.setString(UpdatePrefs.downloadedVersionKey, '9.9.9');
+
+      final c = container();
+      c.read(updateControllerProvider);
+      await pumpEventQueue();
+
+      expect(apkFile().existsSync(), isTrue);
+      expect(await store.getString(UpdatePrefs.downloadedVersionKey), '9.9.9');
+    });
   });
 
   group('صفّ الإعدادات', () {
