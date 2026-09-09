@@ -4,6 +4,8 @@ import 'package:metube_lite/features/settings/about_screen.dart';
 import 'package:mt_ui/mt_ui.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
+import 'device_matrix.dart';
+
 /// **شاشة «حول» بعد فتح المصدر (بلاغ المالك 2026-09-09).**
 ///
 /// كانت تقول «جميع الحقوق محفوظة» ولا تذكر الرخصة ولا تنفي الانتساب
@@ -71,5 +73,9 @@ void main() {
     final provider = image.image;
     final asset = provider is ResizeImage ? provider.imageProvider : provider;
     expect((asset as AssetImage).assetName, 'assets/icons/icon.png');
+  });
+
+  testWidgets('**مصفوفة الأجهزة**: «حول» بلا تجاوز إطار', (tester) async {
+    await expectNoOverflow(tester, host);
   });
 }

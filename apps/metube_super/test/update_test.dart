@@ -13,6 +13,8 @@ import 'package:mt_core/mt_core.dart';
 import 'package:mt_ui/mt_ui.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
+import 'device_matrix.dart';
+
 /// **التحديث الذاتي من GitHub (م-66)** — حرّاس طبقة التطبيق.
 ///
 /// النواة مُختبَرة في `mt_core/test/update`؛ هنا يُختبر ما يخصّ التطبيق:
@@ -210,6 +212,12 @@ void main() {
       final title = tester.widget<Text>(find.text(l10n.updateAvailable));
       expect(title.style!.color, MTThemeX.of(context).palette.accent);
     });
+
+    testWidgets('**مصفوفة الأجهزة**: الصفّ بلا تجاوز إطار', (tester) async {
+      final c = container();
+      await c.read(updateControllerProvider.notifier).checkSilently();
+      await expectNoOverflow(tester, () => host(c));
+    });
   });
 
   group('ورقة التحديث', () {
@@ -220,7 +228,8 @@ void main() {
             locale: const Locale('ar'),
             localizationsDelegates: MTLocalizations.localizationsDelegates,
             supportedLocales: MTLocalizations.supportedLocales,
-            home: const Scaffold(body: SingleChildScrollView(child: UpdateSheet())),
+            // كما في التطبيق: الورقة ليست داخل ممرّر خارجي.
+            home: const Scaffold(body: UpdateSheet()),
           ),
         );
 
@@ -272,6 +281,13 @@ void main() {
       expect(bar.valueColor!.value, MTThemeX.of(context).palette.accent);
       expect(find.text(l10n.cancel), findsOneWidget);
       expect(find.text(l10n.updateNow), findsNothing);
+    });
+
+    testWidgets('**مصفوفة الأجهزة**: لا تجاوز إطار على خمسة مقاسات × ثلاثة مقاييس خط',
+        (tester) async {
+      final c = container();
+      await c.read(updateControllerProvider.notifier).checkSilently();
+      await expectNoOverflow(tester, () => sheetHost(c));
     });
   });
 }

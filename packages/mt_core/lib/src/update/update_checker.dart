@@ -29,7 +29,7 @@ class UpdateChecker {
   final String repo;
 
   Uri get latestUri =>
-      Uri.parse('http://127.0.0.1:8099/repos/$repo/releases/latest');
+      Uri.parse('https://api.github.com/repos/$repo/releases/latest');
 
   /// فاشل-آمن: يبتلع كل خطأ ويعيد `null` — **للفحص التلقائي** الذي
   /// يجري بلا علم المستخدم فلا يجوز أن يقاطعه بخطأ.
