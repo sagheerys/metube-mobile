@@ -38,7 +38,7 @@ dev_dependencies:
   # The network tests inject a fake HTTP adapter into `MeTubeApiClient`. dio is
   # a transitive dependency through mt_core, and declaring it here makes the
   # import legitimate.
-  dio: ^5.7.0
+  dio: ^5.11.1
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
