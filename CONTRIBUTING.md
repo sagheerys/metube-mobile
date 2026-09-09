@@ -9,6 +9,9 @@ the repository and explains most of what follows.
 
 Issues and pull requests are welcome **in Arabic or English**.
 
+By taking part you agree to the [Code of Conduct](CODE_OF_CONDUCT.md). For a
+security problem, do not open an issue — see [SECURITY.md](SECURITY.md).
+
 ## The one rule above the others
 
 **What works must not break.** Both apps are in daily use. An addition — however

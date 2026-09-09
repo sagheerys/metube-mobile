@@ -1,0 +1,51 @@
+version: 2
+
+updates:
+  # One pub ecosystem per package: this is a workspace, and Dependabot
+  # resolves each pubspec on its own.
+  - package-ecosystem: pub
+    directory: /packages/mt_core
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 3
+
+  - package-ecosystem: pub
+    directory: /packages/mt_media
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 3
+
+  - package-ecosystem: pub
+    directory: /packages/mt_ui
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 3
+
+  - package-ecosystem: pub
+    directory: /apps/metube_lite
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 3
+
+  - package-ecosystem: pub
+    directory: /apps/metube_super
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 3
+
+  # The pinned actions in the CI workflow.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+
+  # Gradle plugins and the desugaring library.
+  - package-ecosystem: gradle
+    directory: /apps/metube_lite/android
+    schedule:
+      interval: monthly
+
+  - package-ecosystem: gradle
+    directory: /apps/metube_super/android
+    schedule:
+      interval: monthly

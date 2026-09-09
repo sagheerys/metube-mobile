@@ -1,5 +1,12 @@
 # MeTube Mobile
 
+**English** · [العربية](README.ar.md)
+
+[![CI](https://github.com/sagheerys/metube-mobile/actions/workflows/ci.yml/badge.svg)](https://github.com/sagheerys/metube-mobile/actions/workflows/ci.yml)
+[![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](LICENSE)
+[![Platform](https://img.shields.io/badge/platform-Android-3DDC84.svg)](#requirements)
+[![Flutter](https://img.shields.io/badge/Flutter-3.47.2-02569B.svg)](https://flutter.dev)
+
 Two Android clients for a self-hosted [MeTube](https://github.com/alexta69/metube)
 server, built as one Flutter monorepo.
 
@@ -30,9 +37,24 @@ The library shown is invented for these screenshots — the titles, the channels
 and the covers are all generated, and no real server or account appears in
 them.
 
+## Download
+
+Signed APKs are published on the
+[releases page](https://github.com/sagheerys/metube-mobile/releases), one per
+app. Android will ask you to allow installing from this source the first time;
+that permission is per application, and you can withdraw it afterwards.
+
+Both apps can update themselves: **Settings → About → check for updates**
+fetches the newest release and hands the APK to the system installer. Nothing
+is installed without you confirming it.
+
+Or build from source, below.
+
 ## Requirements
 
 - A reachable MeTube server (this is a client — it downloads nothing by itself).
+  Four of its settings change how the apps behave; see
+  **[docs/SERVER-SETUP.md](docs/SERVER-SETUP.md)**.
 - Android. `compileSdk 37`; the minimum SDK follows the Flutter toolchain default.
 - Flutter **3.47.2** (Dart SDK `^3.13.0`) to build from source.
 
@@ -67,7 +89,7 @@ packages/mt_ui       the "Wahaj" design system: tokens, themes, shared widgets,
                      localization (ar/en)
 apps/metube_lite     the family edition
 apps/metube_super    the server-owner edition
-docs/                the repository map and the server contract
+docs/                the repository map, the server contract and the server setup
 ```
 
 Dependency direction is one-way: `apps → mt_media → mt_core`. `mt_ui` knows
@@ -102,17 +124,16 @@ Translations are very welcome — see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Documentation
 
-Start with **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** — the map of the
-repository: what the packages are, the rules that hold them together, where a
-feature belongs, and how to run the tests. It is written in English first, with
-an Arabic version below it.
+| | |
+|---|---|
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | The map of the repository: the packages, the rules that hold them together, where a feature belongs, how to run the tests. English first, with an Arabic version below it. |
+| [docs/SERVER-API.md](docs/SERVER-API.md) | The contract with the MeTube server: every request and response, the local storage schema, and the traps that each cost a debugging session. Read it before touching networking or storage code. |
+| [docs/SERVER-SETUP.md](docs/SERVER-SETUP.md) | How to configure the server, and the four settings whose absence looks like an app defect. |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | What a change has to satisfy before it lands. |
+| [CHANGELOG.md](CHANGELOG.md) | What changed, release by release. |
+| [SECURITY.md](SECURITY.md) | Reporting a vulnerability. |
 
-[docs/SERVER-API.md](docs/SERVER-API.md) is the contract with the MeTube server
-— every request and response, the local storage schema, and a list of traps that
-each cost a debugging session to find. Read it before touching networking or
-storage code.
-
-The project's working language is Arabic; both documents are written in English,
+The project's working language is Arabic; the documents are written in English,
 and issues and pull requests are welcome in either language.
 
 ## Credits
@@ -133,24 +154,3 @@ the terms of the GNU General Public License as published by the Free Software
 Foundation, either version 3 of the License, or (at your option) any later
 version. It is distributed **without any warranty**; see the license for
 details.
-
----
-
-## بالعربية
-
-تطبيقا أندرويد لسيرفر [MeTube](https://github.com/alexta69/metube) ذاتي
-الاستضافة، في مستودع واحد (Flutter monorepo).
-
-> **غير رسمي**: المشروع لا يتبع MeTube ولا yt-dlp ولا يمثّلهما، وإنما هو عميل
-> مستقل يتحدث إلى سيرفر MeTube عبر واجهته البرمجية. الاسم يُذكر لبيان ما
-> يتصل به التطبيقان لا أكثر.
-
-- **MeTube Lite** — نسخة العائلة: يحمّل الملف للجهاز ثم **ينظّف السيرفر**.
-- **MeTube Super** — نسخة مالك السيرفر: بثّ، ومكتبة موحّدة من `/history` مع
-  الفهرس المحلي، ووسوم، وتحميل دفعي، وإتاحة دون اتصال، وتبديل بين عناوين
-  السيرفر.
-
-الواجهة **بالعربية والإنجليزية** وبتخطيط يبدأ من اليمين. خريطة المستودع في
-[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) وعقد السيرفر في
-[docs/SERVER-API.md](docs/SERVER-API.md) — كلاهما بالإنجليزية، والمساهمات
-مرحّب بها بالعربية أو الإنجليزية. راجع [CONTRIBUTING.md](CONTRIBUTING.md).
