@@ -1,6 +1,6 @@
 import 'dart:async';
-import 'dart:io';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -207,7 +207,11 @@ void main() {
       // `pumpEventQueue()` is a race rather than a wait: this test failed
       // once in a loaded full-suite run on 2026-09-09 and passed alone.
       // Waiting for the outcome keeps the guard and drops the flake.
-      await _until(() => !apkFile().existsSync());
+      await _until(
+        () async =>
+            !apkFile().existsSync() &&
+            await store.getString(UpdatePrefs.downloadedVersionKey) == null,
+      );
 
       expect(apkFile().existsSync(), isFalse);
       expect(await store.getString(UpdatePrefs.downloadedVersionKey), isNull);
@@ -388,8 +392,13 @@ class _StuckDownloader extends ApkDownloader {
 /// Pumps until [done] holds, or gives up and lets the assertion that
 /// follows report the failure. Used where the outcome is asynchronous and
 /// the machine may be busy.
-Future<void> _until(bool Function() done) async {
-  for (var i = 0; i < 50 && !done(); i++) {
+///
+/// [done] may be asynchronous, because the effects worth waiting for here
+/// include a preference read: the sweep deletes the file **and then**
+/// clears the key, so waiting on the file alone still raced and failed
+/// under a loaded parallel run (measured 2026-09-09).
+Future<void> _until(FutureOr<bool> Function() done) async {
+  for (var i = 0; i < 50 && !(await done()); i++) {
     await pumpEventQueue(times: 10);
   }
 }
