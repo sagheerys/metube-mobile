@@ -21,7 +21,7 @@ class ReelsProgressBar extends StatefulWidget {
 
   final VideoPlayerController? controller;
 
-  /// **The bar never plays or pauses by itself (defect ط-3):** only the
+  /// **The bar never plays or pauses by itself:** only the
   /// state owner knows about audio focus and the wake lock. [onScrubEnd] is
   /// called at the end of a drag **and on its cancellation**, so the clip
   /// is never left paused with no indicator.

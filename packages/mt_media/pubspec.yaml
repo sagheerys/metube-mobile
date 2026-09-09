@@ -1,5 +1,5 @@
 name: mt_media
-description: "تشغيل MTF المشترك: audio_service handler، مصادر التشغيل، مخازن الموضع والحالة، MiniPlayer."
+description: "Shared playback: the audio_service handler, playback sources, position and state stores, the mini player."
 version: 0.1.0
 publish_to: none
 resolution: workspace
@@ -24,8 +24,9 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
-  # منصة `video_player` مزيّفة في الاختبارات — انحدار سباق التحميل الذي
-  # كان يترك مشغلات يتيمة تعمل صوتاً بالخلفية (اختبار وحده، لا الإنتاج).
+  # The `video_player` platform is faked in the tests, guarding the load-race
+  # regression that used to leave orphaned players playing audio in the
+  # background. Tests only, never production.
   video_player_platform_interface: ^6.9.0
 
 flutter:

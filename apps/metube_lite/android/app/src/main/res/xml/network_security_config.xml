@@ -1,18 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  TRD §4: Lite يقيّد cleartext بالنطاقات الخاصة (Super يسمح به عاماً).
+  Lite restricts cleartext traffic to private hosts; Super allows it broadly.
 
-  فخ §6.2 الموثق: <domain> **لا يدعم CIDR** — يُتجاهل بصمت، فلا يمكن
-  كتابة «كل 192.168.0.0/16». لذلك تُسرد المضيفات صراحةً.
+  The documented trap (SERVER-API.md §6.2): `<domain>` **does not support
+  CIDR**. It is ignored silently, so "all of 192.168.0.0/16" cannot be
+  expressed and the hosts have to be listed one by one.
 
-  لماذا لا يؤذي هذا Lite: طبقة الشبكة الوحيدة هنا هي Dio (إضافة/استطلاع/
-  سحب/حذف) وهي تعمل فوق HttpClient الخاص بـ Dart فلا يمسّها هذا الإعداد
-  أصلاً — و**Lite لا يبث من السيرفر إطلاقاً** (المكتبة محلية بالكامل،
-  البث ميزة Super). الإعداد هنا حزام أمان لمكتبات جافا (ExoPlayer/OkHttp)
-  إن استُدعيت مستقبلاً على مضيف محلي.
+  Why this costs Lite nothing: its only network layer is Dio (add, poll,
+  pull, delete), which runs on Dart's own HttpClient and is not governed by
+  this setting at all — and **Lite never streams from the server** (its
+  library is entirely local; streaming is Super's feature). This config is a
+  seatbelt for Java-side libraries (ExoPlayer/OkHttp) should one ever be
+  pointed at a local host.
 
-  **أضف عنوان سيرفرك المحلي هنا** إن احتجته: السطر أدناه مثال
-  (`192.168.1.10`) لا عنوان حقيقي، ويُستبدل بعنوان جهازك.
+  **Add your own server's address here** if you need it: the line below is an
+  example (`192.168.1.10`), not a real address.
 -->
 <network-security-config>
     <base-config cleartextTrafficPermitted="false">

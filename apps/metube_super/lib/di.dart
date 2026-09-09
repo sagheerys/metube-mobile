@@ -126,7 +126,7 @@ final downloadEngineProvider = Provider<DownloadEngine?>((ref) {
     policy: DeletePolicy.keepOnServer,
     pullToDevice: false,
     savePathBuilder: (task, filename) =>
-        throw StateError('Super لا يسحب من خط الإضافة'),
+        throw StateError('Super does not pull from the add pipeline'),
     onCompleted: (task) {
       collector.onFinished(task);
       // When "save to device" was requested for this batch, applied to
@@ -148,7 +148,7 @@ final downloadEngineProvider = Provider<DownloadEngine?>((ref) {
 
 /// A live snapshot of the engine's tasks, refreshed on every state update.
 ///
-/// **The first `yield engine.tasks` is the fix for the ع-1 ghosts:** a
+/// **The first `yield engine.tasks` is the fix for the ghost tasks:** a
 /// StreamProvider keeps its previous value while rebuilding, and the new
 /// engine broadcast nothing until the first `submit`, so the dead engine's
 /// cards and its counter badge stayed on screen indefinitely after a server
@@ -163,8 +163,9 @@ final engineTasksProvider = StreamProvider<List<DownloadTask>>((ref) async* {
   yield* engine.updates.map((_) => engine.tasks);
 });
 
-/// The server history. null before the server is configured; refreshed by
-/// pull-to-refresh or by live polling.
+/// **Tells the collector which batch members dropped out** (failed or
+/// cancelled), so the collected playlist does not hang waiting for them,
+/// and is deleted if every one of its items drops.
 final batchDropWatcherProvider = Provider<void>((ref) {
   final collector = ref.watch(batchCollectorProvider);
   ref.listen<AsyncValue<List<DownloadTask>>>(engineTasksProvider, (_, next) {
@@ -178,8 +179,7 @@ final batchDropWatcherProvider = Provider<void>((ref) {
   });
 });
 
-/// The server history. null before the server is configured; refreshed by
-/// pull-to-refresh or by live polling.
+/// The unfinished tasks: the live library cards and the header badge.
 final activeTasksProvider = Provider<List<DownloadTask>>((ref) {
   final tasks = ref.watch(engineTasksProvider).valueOrNull ?? const [];
   return tasks.where((t) => !t.isFinished).toList();
@@ -211,7 +211,7 @@ final historyProvider = FutureProvider<HistoryResponse?>((ref) async {
   }
 });
 
-/// Clip dimensions, filled opportunistically on first play.
+/// Backups: writes the current format and reads the legacy ones.
 final backupServiceProvider = Provider(
   (ref) => BackupService(
     store: ref.watch(keyValueStoreProvider),
@@ -221,7 +221,7 @@ final backupServiceProvider = Provider(
   ),
 );
 
-/// Clip dimensions, filled opportunistically on first play.
+/// The diagnostic log; overridden in main with a path from path_provider.
 final loggerProvider = Provider<MTLogger>(
   (ref) => throw UnimplementedError('overridden in main'),
 );
@@ -282,7 +282,7 @@ final playbackWiringProvider = Provider<void>((ref) {
 
 /// The endpoint resolver: it probes with the account's own credentials.
 /// **It watches the credentials alone rather than the whole settings object
-/// (fix ط-6):** without `select`, changing the theme or the quality rebuilt
+///:** without `select`, changing the theme or the quality rebuilt
 /// the resolver, re-probing every endpoint while you were standing in the
 /// network screen.
 final endpointResolverProvider = Provider((ref) {

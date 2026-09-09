@@ -66,7 +66,7 @@ Layout is what breaks on other people's phones and it does not show on yours.
 import. `mt_ui` knows nothing about the server. All networking lives in
 `MeTubeApiClient` — no `Dio` anywhere else.
 
-**Server contract.** `docs/plan/05-DATA-SCHEMA.md` is the authority on every
+**Server contract.** [`docs/SERVER-API.md`](docs/SERVER-API.md) is the authority on every
 request and response, including the traps that are documented there because they
 cost real debugging time. Deletion is keyed by the canonical URL from
 `/history`, never by the URL the user typed.

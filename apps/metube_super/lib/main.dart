@@ -64,13 +64,13 @@ Future<void> main() async {
   );
   await handler.loadPreferences();
 
-  // **Sweeping orphaned partials (defect خ-3):** killing the app mid-way
+  // **Sweeping orphaned partials:** killing the app mid-way
   // through a large pull leaves a `.part` nobody cleans, and the library
   // scan ignores it on purpose, so the space is lost unseen. We do not
   // await it: startup never waits on a cleanup.
   unawaited(logger.log('app started (super)', tag: 'app'));
 
-  // **Sweeping orphaned partials (defect خ-3):** killing the app mid-way
+  // **Sweeping orphaned partials:** killing the app mid-way
   // through a large pull leaves a `.part` nobody cleans, and the library
   // scan ignores it on purpose, so the space is lost unseen. We do not
   // await it: startup never waits on a cleanup.

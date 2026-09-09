@@ -1,17 +1,19 @@
 # -*- coding: utf-8 -*-
-"""يبلّغ عن مفاتيح الترجمة التي لا يستعملها أي كود Dart.
+"""Report localization keys that no Dart code uses.
 
-**لماذا أداة لا اختبار**: حارس `arb_parity_test.dart` يعيش في `mt_ui`،
-وهي حزمة لا تعرف التطبيقين بقصد (القاعدة 6) — فلا تستطيع أن تقرر أن
-مفتاحاً ميت وهي لا ترى من يستعمله. هذا السكربت يقف فوق المستودع كله.
+**Why a tool rather than a test.** The `arb_parity_test.dart` guard lives in
+`mt_ui`, which deliberately knows nothing about the two apps, so it cannot
+decide that a key is dead when it cannot see who uses it. This script stands
+above the whole repository instead.
 
-**متى يُشغَّل**: قبل أي دفعة ترجمة لغة جديدة (م-50) وقبل فتح المصدر.
-مفتاح ميت واحد يعني جملة تُترجَم في **كل** لغة بلا أن يراها أحد.
+**When to run it:** before translating into a new language, and before any
+release. One dead key is a sentence translated into **every** language that
+nobody ever sees.
 
     python tool/dead-l10n.py
 
-يخرج بـ 0 دائماً — تقرير لا بوابة: الحذف قرار بشري، ومفتاح قد يكون
-مضافاً استباقاً لشاشة قيد البناء.
+Always exits 0 — a report, not a gate: deleting is a human decision, and a key
+may have been added ahead of a screen still being built.
 """
 
 import io
@@ -27,7 +29,8 @@ SKIP_DIRS = {'.git', '.dart_tool', 'build', '.design', 'node_modules'}
 
 
 def dart_sources():
-    """كل مصادر Dart عدا مجلد l10n نفسه (فيه المولَّد وتعريف المفاتيح)."""
+    """Every Dart source except the l10n folder itself, which holds the
+    generated code and the key definitions."""
     for base, dirs, files in os.walk(ROOT):
         dirs[:] = [d for d in dirs if d not in SKIP_DIRS]
         for name in files:
@@ -49,11 +52,11 @@ def main():
     dead = [k for k in keys if not re.search(r'\b' + re.escape(k) + r'\b', text)]
 
     out = sys.stdout
-    out.write('مفاتيح: %d — غير مستعملة: %d\n' % (len(keys), len(dead)))
+    out.write('keys: %d - unused: %d\n' % (len(keys), len(dead)))
     for key in dead:
         out.write('  %s = %s\n' % (key, str(doc[key])[:70]))
     if not dead:
-        out.write('نظيف: كل مفتاح له مستعمل.\n')
+        out.write('clean: every key has a user.\n')
     return 0
 
 

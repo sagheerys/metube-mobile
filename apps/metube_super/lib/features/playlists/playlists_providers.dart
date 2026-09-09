@@ -148,8 +148,8 @@ final playlistViewProvider = FutureProvider.family<PlaylistView, String>((
   return PlaylistView(items: items, missing: missing);
 });
 
-/// Returns true when playback is visual, and the caller then navigates to
-/// `/player`.
+/// A playlist entry from a library item; it caches the title and cover so
+/// the card stays alive.
 PlaylistEntry toPlaylistEntry(LibraryItem item) => PlaylistEntry(
   canonicalUrl: item.canonicalUrl,
   serverFilename: item.serverFilename,

@@ -8,36 +8,38 @@ import java.io.File
 import java.io.FileOutputStream
 
 /**
- * م-18 + م-35 لـ Super: سبر عنصر بلا تشغيله — **من ملف محلي أو من بثّ
- * السيرفر مباشرة**.
+ * Probing an item without playing it — **from a local file or straight from
+ * the server's stream**.
  *
- * **لماذا الشبكة أيضاً:** سيرفر المالك لا يرجع حقل `thumbnail` لأي عنصر
- * (فُحص: صفر من 252)، ومعظم مكتبته إنستقرام بلا نسخة محلية — فلا مصدر
- * للغلاف ولا للأبعاد إلا الملف نفسه على السيرفر.
- * `MediaMetadataRetriever` يقرأ الترويسة بطلبات نطاق (Range) ولا ينزّل
- * الملف كاملاً، فالكلفة على الشبكة المحلية أجزاء من الثانية.
+ * **Why the network too.** A real server returns no `thumbnail` field for any
+ * item (measured: zero out of 252), and most of a Super library has no local
+ * copy — so there is no source for a cover or for dimensions except the file
+ * itself, on the server. `MediaMetadataRetriever` reads the header with range
+ * requests rather than downloading the file, so on a local network the cost is
+ * a fraction of a second.
  *
- * هذا هو أيضاً ما يملأ «مسار القِصار»: الأبعاد كانت تُتعلَّم عند أول
- * تشغيل فقط، فمكتبة السيرفر كلها خارج المسار (بلاغ المالك: «الريلز لا
- * تعمل إلا إذا شغّلتها أول مرة»).
+ * This is also what fills the shorts lane: dimensions used to be learned only
+ * on first playback, which left the entire server library out of it ("the
+ * reels only work if I play them once first").
  */
 object MediaProbe {
 
     private const val MAX_EDGE = 480
 
     /**
-     * [items] لكل عنصر: `key` (مفتاح التخزين)، و`path` أو `url`،
-     * و`headers` اختيارية للمصادقة.
+     * Each entry of [items] carries a `key` (the storage key) and either a
+     * `path` or a `url`; [headers] is optional and used for authentication.
      */
     fun scan(
         context: Context,
         items: List<Map<String, Any?>>,
         headers: Map<String, String>,
     ): List<Map<String, Any?>> {
-        // **`filesDir` لا `cacheDir`** (عطل المالك 2026-09-07): أندرويد
-        // يمسح الكاش تحت ضغط التخزين، فتبقى مسارات المصغرات في الفهرس
-        // تشير إلى ملفات مُزالة — بطاقات فارغة **لا تُعاد** لأن الفهرس
-        // يقول «لها غلاف». المصغرة 480px ≈ 30KB، ومئتان منها ≈ 6MB.
+        // **`filesDir`, not `cacheDir`.** Android wipes the cache under
+        // storage pressure, which leaves the thumbnail paths in the index
+        // pointing at files that are gone — empty cards that are **never
+        // retried**, because the index says they have a cover. A 480px
+        // thumbnail is about 30KB, so two hundred of them are about 6MB.
         val dir = File(context.filesDir, "thumbs").apply { mkdirs() }
         return items.map { probe(dir, it, headers) }
     }
@@ -55,7 +57,8 @@ object MediaProbe {
 
         val retriever = MediaMetadataRetriever()
         try {
-            // اسم المخبأ يعتمد المصدر: الملف بزمن تعديله، والبثّ بمفتاحه.
+            // The cache name depends on the source: a file by its
+            // modification time, a stream by its key.
             val target: File
             if (path != null) {
                 val file = File(path)
@@ -78,9 +81,10 @@ object MediaProbe {
             readSize(retriever, out)
             out["thumb"] = thumbnail(retriever, target)?.absolutePath
         } catch (e: Throwable) {
-            // **لم يعد يُبتلع بصمت** (م-47): ترميز غير مدعوم أو ملف
-            // مفقود كان يمرّ بلا أثر في السجل ولا في الشاشة، فبقي عطل
-            // المصغرات شهراً بلا سبب معلن. الآن يصعد السبب إلى دارت.
+            // **No longer swallowed silently.** An unsupported codec or a
+            // missing file used to pass with no trace in the log and none on
+            // screen, which is how the thumbnail defect survived a month with
+            // no stated cause. The reason now travels up to Dart.
             out["error"] = e.javaClass.simpleName +
                 (e.message?.let { ": $it" } ?: "")
         } finally {
@@ -92,7 +96,8 @@ object MediaProbe {
         return out
     }
 
-    /** الأبعاد **بعد** تطبيق دوران التسجيل — بدونه يُصنّف العمودي أفقياً. */
+    /** The dimensions **after** the recorded rotation is applied; without
+     *  it, portrait clips are classified as landscape. */
     private fun readSize(r: MediaMetadataRetriever, out: HashMap<String, Any?>) {
         val w = r.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH)
             ?.toIntOrNull() ?: return
@@ -130,9 +135,10 @@ object MediaProbe {
 
 
     /**
-     * لقطة إطار بسلسلة بدائل: بعض المقاطع (HEVC خاصة، وكل مقطع تُقرأ
-     * ترويسته من الشبكة) تُرجع null لأول محاولة بينما تنجح الثانية.
-     * الترتيب من الأدق للأرخص.
+     * Capturing a frame through a chain of fallbacks: some clips (HEVC
+     * especially, and every clip whose header is read over the network) return
+     * null for the first attempt while the second succeeds. Ordered from the
+     * most accurate to the cheapest.
      */
     private fun firstFrame(r: MediaMetadataRetriever): Bitmap? {
         val attempts: List<() -> Bitmap?> = listOf(

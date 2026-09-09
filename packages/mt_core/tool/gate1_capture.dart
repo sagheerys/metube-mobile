@@ -28,7 +28,7 @@ Future<void> main(List<String> args) async {
     }
   }
   if (working == null) {
-    print('لا رابط يستجيب — توقف.');
+    print('no URL responded - stopping.');
     exit(1);
   }
 
@@ -45,12 +45,12 @@ Future<void> main(List<String> args) async {
   const dir = 'test/fixtures/real';
   Directory(dir).createSync(recursive: true);
   File('$dir/history_real_done.json').writeAsStringSync(raw);
-  print('حُفظت: $dir/history_real_done.json (${raw.length} بايت)');
+  print('saved: $dir/history_real_done.json (${raw.length} bytes)');
 
   // Checks tolerant parsing against the real sample.
   for (final item in history.done.take(3)) {
     print(
-      '  عينة: url=${item.canonicalUrl.substring(0, 40)}… '
+      '  sample: url=${item.canonicalUrl.substring(0, 40)}... '
       'status=${item.rawStatus} filename=${item.filename != null}',
     );
   }

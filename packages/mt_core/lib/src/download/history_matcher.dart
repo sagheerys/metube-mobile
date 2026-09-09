@@ -5,7 +5,7 @@ import '../urls/url_kit.dart';
 /// The history reconciler: it ties a task to **its own** operation on the
 /// server, and sweeps what cancelled tasks leave behind.
 ///
-/// **Why it exists (defect ح-3):** polling used to match any item in
+/// **Why it exists:** polling used to match any item in
 /// `/history` by URL alone, so it picked up **old** items. An item that had
 /// previously failed at a cookie wall made a retry fail instantly while the
 /// new download completed and was orphaned on the server; an item at an old
@@ -39,7 +39,7 @@ class HistoryMatcher {
     }
   }
 
-  /// Sweeps the server orphan left by a user cancellation (defect ع-7).
+  /// Sweeps the server orphan left by a user cancellation.
   ///
   /// Cancelling during the add or the poll used to stop the task **locally
   /// only**: the server carried on downloading and filed the result in

@@ -88,7 +88,7 @@ class _ReelsScreenState extends ConsumerState<ReelsScreen> {
       resolver: ref.watch(playbackResolverProvider),
       startIndex: laneIndex,
       onTakeAudioFocus: _audio.pause,
-      // Defect ع-4: while the reel is alive, starting audio from the
+      // While the reel is alive, starting audio from the
       // notification silences it first.
       onLive: _setLive,
       subtitleBuilder: (context, item) => [

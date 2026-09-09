@@ -56,7 +56,7 @@ class BackupRotation {
     required this.prefix,
     this.keep = defaultKeep,
     this.minSpacing = defaultSpacing,
-  }) : assert(keep > 0, 'الاحتفاظ بصفر نسخة يعني حذف كل شيء');
+  }) : assert(keep > 0, 'keeping zero backups would delete everything');
 
   /// The agreed count. The file is a few kilobytes, and a fixed number is
   /// clearer to a user than a time-based schedule.

@@ -10,13 +10,14 @@ import com.ryanheise.audioservice.AudioServiceActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 
-// audio_service يشترط هذه القاعدة بدل FlutterActivity ليصل إشعار
-// الوسائط وأزرار شاشة القفل إلى المشغل (م-21).
+// audio_service requires this base class instead of FlutterActivity, so that
+// the media notification and the lock-screen buttons reach the player.
 class MainActivity : AudioServiceActivity() {
 
-    // إذن الإشعارات (33+) لإشعار الوسائط. Super لا يستعمل
-    // `flutter_local_notifications` (لا إشعارات تحميل فيه)، فطلب الإذن
-    // بقناة أصلية أرخص من حزمة كاملة لنداء واحد.
+    // The notification permission (Android 33+) for the media notification.
+    // Super does not use `flutter_local_notifications` — it has no download
+    // notifications — so asking over a native channel is cheaper than a whole
+    // package for a single call.
     private val channel = "com.yasir.metubesuper/permissions"
     private val requestCode = 4301
 
@@ -27,9 +28,9 @@ class MainActivity : AudioServiceActivity() {
             .setMethodCallHandler { call, result ->
                 when (call.method) {
                     "requestNotifications" -> result.success(requestNotifications())
-                    // م-18/م-35: سبر عناصر المكتبة (مدة + أبعاد + غلاف)
-                    // على خيط جانبي — يقرأ ترويسة الملف من السيرفر
-                    // بطلبات نطاق، فلا ينزّل شيئاً كاملاً.
+                    // Probing library items (duration, dimensions, cover) on
+                    // a background thread. It reads the file header from the
+                    // server with range requests, downloading nothing whole.
                     "probeMedia" -> {
                         val items = call.argument<List<Map<String, Any?>>>("items")
                             ?: emptyList()
@@ -40,17 +41,17 @@ class MainActivity : AudioServiceActivity() {
                             runOnUiThread { result.success(data) }
                         }.start()
                     }
-                    // **فتح في مشغل خارجي (طلب المالك 2026-09-05)** — بـ
-                    // `content://` من `FileProvider` لا `file://`: أندرويد 7+
-                    // يرمي `FileUriExposedException` على الثاني، والأول يمنح
-                    // المشغل المختار **إذناً مؤقتاً لهذا الملف وحده** فلا يرى
-                    // شيئاً آخر ولا يعرف مساره.
+                    // **Open in an external player**, handed over as a `content://`
+                    // URI from `FileProvider` rather than `file://`: Android 7+
+                    // throws `FileUriExposedException` on the latter, while the
+                    // former grants the chosen player **a temporary permission for
+                    // this one file** — it sees nothing else and learns no path.
                     "openExternal" -> {
                         val path = call.argument<String>("path")
                         val mime = call.argument<String>("mime") ?: "video/*"
                         val file = if (path.isNullOrEmpty()) null else java.io.File(path)
                         if (file == null || !file.exists()) {
-                            result.error("missing", "الملف غير موجود", null)
+                            result.error("missing", "file not found", null)
                         } else {
                             val uri = androidx.core.content.FileProvider.getUriForFile(
                                 this,
@@ -73,8 +74,9 @@ class MainActivity : AudioServiceActivity() {
                             }
                         }
                     }
-                    // م-41: وجهة اختصار الأيقونة — **تُستهلك مرة واحدة**.
-                    // إبقاؤها يعيد تنفيذ الاختصار عند كل عودة للتطبيق.
+                    // The launcher shortcut's destination, **consumed once**.
+                    // Keeping it would re-run the shortcut on every return to the
+                    // app.
                     "consumeShortcut" -> {
                         result.success(pendingShortcut)
                         pendingShortcut = null
@@ -84,7 +86,7 @@ class MainActivity : AudioServiceActivity() {
             }
     }
 
-    /** اسم الاختصار المنتظر — من فعل النية `<pkg>.SHORTCUT_<NAME>`. */
+    /** The pending shortcut name, from the intent action `<pkg>.SHORTCUT_<NAME>`. */
     private var pendingShortcut: String? = null
 
     override fun onCreate(savedInstanceState: android.os.Bundle?) {
@@ -92,8 +94,9 @@ class MainActivity : AudioServiceActivity() {
         captureShortcut(intent)
     }
 
-    // `launchMode="singleTask"`: التطبيق العامل لا يُعاد إنشاؤه، فالنية
-    // الجديدة تصل هنا وحدها. بلا هذا يعمل الاختصار أول مرة فقط.
+    // With `launchMode="singleTask"` a running app is not recreated, so the
+    // new intent arrives here and nowhere else. Without this the shortcut
+    // works exactly once.
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
@@ -101,9 +104,9 @@ class MainActivity : AudioServiceActivity() {
     }
 
     /**
-     * الوجهة من **اسم الفعل** لا من `data` (خلل مصطاد على المحاكي
-     * 2026-09-02): أي `data` في النية يقرؤها Flutter كمسار إقلاع،
-     * فكان `metube://shortcut/shorts` ينتهي بـ «Page Not Found».
+     * The destination comes from **the action name**, not from `data`: any
+     * `data` in the intent is read by Flutter as an initial route, which is
+     * why `metube://shortcut/shorts` used to end on "Page Not Found".
      */
     private fun captureShortcut(intent: Intent?) {
         val action = intent?.action ?: return
@@ -113,7 +116,8 @@ class MainActivity : AudioServiceActivity() {
         pendingShortcut = action.substring(at + marker.length).lowercase()
     }
 
-    /** true ⇔ الإذن ممنوح أصلاً (أو النسخة أقدم من 33 فلا إذن مطلوب). */
+    /** true ⇔ the permission was already granted (or the platform is
+     *  older than 33, where none is needed). */
     private fun requestNotifications(): Boolean {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return true
         val granted = ContextCompat.checkSelfPermission(

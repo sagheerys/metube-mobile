@@ -7,14 +7,15 @@ import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 
 /**
- * audio_service يشترط هذه القاعدة بدل FlutterActivity ليصل إشعار الوسائط
- * وأزرار شاشة القفل إلى المشغل (م-21).
+ * audio_service requires this base class instead of FlutterActivity, so that
+ * the media notification and the lock-screen buttons reach the player.
  *
- * وتحمل قناة `metube_lite/media` تسجيلَ الملف المكتمل في MediaStore (م-10)
- * ليظهر في معرض الهاتف. **انحراف موثق عن جدول حزم `02-TRD.md`:** الحزمة
- * المقترحة `media_scanner` مهجورة (بلا `namespace` المطلوب في AGP 8)،
- * والمطلوب منها نداء واحد من إطار أندرويد نفسه — فنُفِّذ هنا مباشرة بلا
- * اعتماد خارجي ولا مخاطرة بناء.
+ * The `metube_lite/media` channel also registers a finished download in
+ * MediaStore, so it shows up in the phone's gallery. **A deliberate departure
+ * from the planned package list:** the obvious package, `media_scanner`, is
+ * abandoned (it lacks the `namespace` that AGP 8 requires), and all that is
+ * needed from it is a single call into the Android framework — so it is done
+ * here directly, with no external dependency and no build risk.
  */
 class MainActivity : AudioServiceActivity() {
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
@@ -28,9 +29,10 @@ class MainActivity : AudioServiceActivity() {
                 "scanFile" -> {
                     val path = call.argument<String>("path")
                     if (path.isNullOrEmpty()) {
-                        result.error("no_path", "path مطلوب", null)
+                        result.error("no_path", "path is required", null)
                     } else {
-                        // غير متزامن: يردّ بالـ URI بعد أن يفهرس النظام الملف.
+                        // Asynchronous: answers with the URI once the
+                        // system has indexed the file.
                         MediaScannerConnection.scanFile(
                             applicationContext,
                             arrayOf(path),
@@ -38,12 +40,14 @@ class MainActivity : AudioServiceActivity() {
                         ) { _, uri -> runOnUiThread { result.success(uri?.toString()) } }
                     }
                 }
-                // م-18/م-35: سبر ملفات محلية (مدة + أبعاد + غلاف) على
-                // خيط جانبي — 194 ملفاً على جهاز المالك تعني ثوانيَ من
-                // فكّ الترميز، وتجميدُ خيط الواجهة لها غير مقبول.
-                // **خيط واحد مشترك لا خيط لكل دفعة (إصلاح م-12):** كل
-                // نداء كان يفتح خيطاً جديداً، ودفعات متتابعة (تحديث
-                // المكتبة أثناء التمرير) تفتح خيوطاً بعدد النداءات.
+                // Probing local files (duration, dimensions, cover) on a
+                // background thread: a couple of hundred files means seconds
+                // of decoding, and freezing the UI thread for that is not
+                // acceptable.
+                // **One shared thread rather than one per batch:** every call
+                // used to open a new thread, and back-to-back batches (a
+                // library refresh during a scroll) opened as many threads as
+                // there were calls.
                 "probeMedia" -> {
                     val paths = call.argument<List<String>>("paths") ?: emptyList()
                     probeExecutor.execute {
@@ -51,17 +55,17 @@ class MainActivity : AudioServiceActivity() {
                         runOnUiThread { result.success(data) }
                     }
                 }
-                // **فتح في مشغل خارجي (طلب المالك 2026-09-05)** — بـ
-                // `content://` من `FileProvider` لا `file://`: أندرويد 7+
-                // يرمي `FileUriExposedException` على الثاني، والأول يمنح
-                // المشغل المختار **إذناً مؤقتاً لهذا الملف وحده** فلا يرى
-                // شيئاً آخر ولا يعرف مساره.
+                // **Open in an external player**, handed over as a `content://`
+                // URI from `FileProvider` rather than `file://`: Android 7+
+                // throws `FileUriExposedException` on the latter, while the
+                // former grants the chosen player **a temporary permission for
+                // this one file** — it sees nothing else and learns no path.
                 "openExternal" -> {
                     val path = call.argument<String>("path")
                     val mime = call.argument<String>("mime") ?: "video/*"
                     val file = if (path.isNullOrEmpty()) null else java.io.File(path)
                     if (file == null || !file.exists()) {
-                        result.error("missing", "الملف غير موجود", null)
+                        result.error("missing", "file not found", null)
                     } else {
                         val uri = androidx.core.content.FileProvider.getUriForFile(
                             this,
@@ -84,8 +88,9 @@ class MainActivity : AudioServiceActivity() {
                         }
                     }
                 }
-                // م-41: وجهة اختصار الأيقونة — **تُستهلك مرة واحدة**.
-                // إبقاؤها يعيد تنفيذ الاختصار عند كل عودة للتطبيق.
+                // The launcher shortcut's destination, **consumed once**.
+                // Keeping it would re-run the shortcut on every return to the
+                // app.
                 "consumeShortcut" -> {
                     result.success(pendingShortcut)
                     pendingShortcut = null
@@ -95,10 +100,10 @@ class MainActivity : AudioServiceActivity() {
         }
     }
 
-    /** اسم الاختصار المنتظر — من فعل النية `<pkg>.SHORTCUT_<NAME>`. */
+    /** The pending shortcut name, from the intent action `<pkg>.SHORTCUT_<NAME>`. */
     private var pendingShortcut: String? = null
 
-    /** منفّذ سبر الوسائط — خيط واحد يخدم كل الدفعات بالترتيب. */
+    /** The media probe executor: one thread serving every batch in order. */
     private val probeExecutor: java.util.concurrent.ExecutorService =
         java.util.concurrent.Executors.newSingleThreadExecutor()
 
@@ -112,8 +117,9 @@ class MainActivity : AudioServiceActivity() {
         captureShortcut(intent)
     }
 
-    // `launchMode="singleTask"`: التطبيق العامل لا يُعاد إنشاؤه، فالنية
-    // الجديدة تصل هنا وحدها. بلا هذا يعمل الاختصار أول مرة فقط.
+    // With `launchMode="singleTask"` a running app is not recreated, so the
+    // new intent arrives here and nowhere else. Without this the shortcut
+    // works exactly once.
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
@@ -121,9 +127,9 @@ class MainActivity : AudioServiceActivity() {
     }
 
     /**
-     * الوجهة من **اسم الفعل** لا من `data` (خلل مصطاد على المحاكي
-     * 2026-09-02): أي `data` في النية يقرؤها Flutter كمسار إقلاع،
-     * فكان `metube://shortcut/shorts` ينتهي بـ «Page Not Found».
+     * The destination comes from **the action name**, not from `data`: any
+     * `data` in the intent is read by Flutter as an initial route, which is
+     * why `metube://shortcut/shorts` used to end on "Page Not Found".
      */
     private fun captureShortcut(intent: Intent?) {
         val action = intent?.action ?: return

@@ -94,7 +94,8 @@ class MTPalette {
   // the screens, against rule 5: every colour comes from tokens, no
   // literals.
 
-  /// The immersive landscape player scrim: near-opaque espresso over video.
+  /// The far end of the espresso playlist-card gradient, lighter than
+  /// [serverCardBg].
   static const Color serverCardBgLift = Color(0xFF443327);
 
   /// The immersive landscape player scrim: near-opaque espresso over video.

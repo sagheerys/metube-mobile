@@ -44,7 +44,7 @@ final videoSessionProvider = Provider.autoDispose<MTVideoSession>((ref) {
   };
   // **One audio output, in both directions.** Opening a video while
   // background audio played used to play both at once (caught on a real
-  // device), and the opposite direction stayed open until defect ع-4: the
+  // device), and the opposite direction stayed open until later: the
   // play button in the media notification, or starting audio from the
   // playlists screen opened over the player, played over the running video.
   final handler = ref.read(audioHandlerProvider);

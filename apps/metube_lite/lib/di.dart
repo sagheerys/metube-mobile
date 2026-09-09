@@ -108,9 +108,10 @@ final batchCollectorProvider = Provider(
   ),
 );
 
-/// Lite's engine: the whole four-stage pipeline. It pulls to the device and
-/// then **deletes from the server automatically**, so the family's server
-/// stays clean.
+/// **A counter that invalidates the playlists cache** when they are
+/// written from outside their own screen. Without it, an automatically
+/// collected playlist stayed invisible until the app was restarted: the
+/// file on disk correct, the screen empty.
 final playlistsRevisionProvider = StateProvider<int>((ref) => 0);
 
 /// **Resolving short links before the routing decision** (field report
@@ -155,7 +156,7 @@ final downloadEngineProvider = Provider<DownloadEngine?>((ref) {
 
 /// A live snapshot of the engine's tasks, refreshed on every state update.
 ///
-/// **The first `yield engine.tasks` is the fix for the ع-1 ghosts:** a
+/// **The first `yield engine.tasks` is the fix for the ghost tasks:** a
 /// StreamProvider keeps its previous value while rebuilding, and the new
 /// engine does not broadcast until the first `submit`, so the dead engine's
 /// tasks stayed on display — and in Lite **the foreground service never
@@ -170,8 +171,9 @@ final engineTasksProvider = StreamProvider<List<DownloadTask>>((ref) async* {
   yield* engine.updates.map((_) => engine.tasks);
 });
 
-/// The server history. null before the server is configured; refreshed by
-/// pull-to-refresh or by live polling.
+/// **Tells the collector which batch members dropped out** (failed or
+/// cancelled), so the collected playlist does not hang waiting for them,
+/// and is deleted if every one of its items drops.
 final batchDropWatcherProvider = Provider<void>((ref) {
   final collector = ref.watch(batchCollectorProvider);
   ref.listen<AsyncValue<List<DownloadTask>>>(engineTasksProvider, (_, next) {
@@ -184,14 +186,13 @@ final batchDropWatcherProvider = Provider<void>((ref) {
   });
 });
 
-/// The server history. null before the server is configured; refreshed by
-/// pull-to-refresh or by live polling.
+/// The unfinished tasks: the live library cards and the header badge.
 final activeTasksProvider = Provider<List<DownloadTask>>((ref) {
   final tasks = ref.watch(engineTasksProvider).valueOrNull ?? const [];
   return tasks.where((t) => !t.isFinished).toList();
 });
 
-/// Clip dimensions, filled opportunistically on first play.
+/// Backups: writes the current format and reads the legacy ones.
 final backupServiceProvider = Provider(
   (ref) => BackupService(
     store: ref.watch(keyValueStoreProvider),
@@ -201,7 +202,7 @@ final backupServiceProvider = Provider(
   ),
 );
 
-/// Clip dimensions, filled opportunistically on first play.
+/// The diagnostic log; overridden in main with a path from path_provider.
 final loggerProvider = Provider<MTLogger>(
   (ref) => throw UnimplementedError('overridden in main'),
 );

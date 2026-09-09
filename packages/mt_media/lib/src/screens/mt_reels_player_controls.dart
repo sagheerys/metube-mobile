@@ -8,7 +8,7 @@ part of 'mt_reels_player.dart';
 /// members. The screen itself keeps its lifecycle and its build, which are
 /// its essence.
 extension _ReelsPlayback on _MTReelsPlayerState {
-  /// Silences the reel when the audio player asks for focus (defect ع-4),
+  /// Silences the reel when the audio player asks for focus,
   /// and releases the wake lock, since the clip is no longer being watched.
   Future<void> _pauseForAudioFocus() async {
     final controller = _controller;

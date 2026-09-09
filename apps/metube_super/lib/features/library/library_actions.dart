@@ -98,9 +98,9 @@ class LibraryActions {
     _setProgress(canonicalUrl, 0);
     final String finalPath;
     try {
-      // The final path comes from `pull`: a collision shifts it (defect
-      // خ-3), and indexing the requested path instead would have pointed at
-      // a different file.
+      // The final path comes from `pull`: a collision shifts it, and
+      // indexing the requested path instead would have pointed at a
+      // different file.
       finalPath = await Transfer(api: _api).pull(
         serverFilename: filename,
         savePath: savePath,
@@ -125,7 +125,7 @@ class LibraryActions {
     _refreshLibrary();
   }
 
-  /// **Pruning a removed item's data (fix خ-4).** Deletion used to prune
+  /// **Pruning a removed item's data.** Deletion used to prune
   /// the offline index alone, while tags, positions, dimensions, the title
   /// and the artwork stayed **forever** in the same XML file that is
   /// re-serialised on every write, and `exportToString` copies whole, so
@@ -154,7 +154,7 @@ class LibraryActions {
     _ref.read(playlistsRevisionProvider.notifier).state++;
   }
 
-  /// Deletes a local-only item for good.
+  /// Removes only the local copy; the item stays on the server.
   Future<void> removeLocalCopy(LibraryItem item) async {
     final path = item.localPath;
     if (path != null) {

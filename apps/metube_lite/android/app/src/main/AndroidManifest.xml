@@ -1,20 +1,24 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- الشبكة: إرسال الرابط للسيرفر وسحب الملف (يضيفها Flutter في debug فقط). -->
+    <!-- Networking: sending the URL to the server and pulling the file. Flutter
+         injects this in debug builds only, so release needs it declared here. -->
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
-    <!-- م-10: استمرار التحميل بالخلفية (خدمة أمامية للمزامنة) + م-21 الصوت. -->
+    <!-- Downloads that continue in the background (a foreground service), and
+         background audio. -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"/>
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
-    <!-- م-9: إشعارات التقدم والاكتمال والخطأ (33+ تتطلب طلباً صريحاً). -->
+    <!-- Progress, completion and error notifications. Android 33+ requires an
+         explicit runtime request. -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
-    <!-- التحديث الذاتي (م-66): تسليم ملف APK لمثبّت الحزم. الإذن
-         **لكل تطبيق** منذ أندرويد 8 ويمنحه المستخدم يدوياً من إعدادات
-         النظام — التصريح وحده لا يمنح شيئاً، وبدونه يُرفض التثبيت بصمت. -->
+    <!-- Self-update: handing an APK to the package installer. Since Android 8
+         this permission is **per application** and the user grants it by hand in
+         system settings, so declaring it alone grants nothing — but without the
+         declaration the install is refused silently. -->
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
     <uses-permission android:name="android.permission.VIBRATE"/>
-    <!-- الوسائط: قراءة ما نزّلناه لعرضه في المكتبة (م-12). -->
+    <!-- Media: reading what we downloaded, to show it in the library. -->
     <uses-permission android:name="android.permission.READ_MEDIA_VIDEO"/>
     <uses-permission android:name="android.permission.READ_MEDIA_AUDIO"/>
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
@@ -23,8 +27,8 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="28"/>
 
-    <!-- نسخ أندرويد التلقائي: مفعَّل، لكن **بلا ملف التخزين الآمن**
-         (انظر res/xml/backup_rules.xml — عطل كامن كُشف 2026-09-04). -->
+    <!-- Android's automatic backup is enabled, but **without the secure-storage
+         file** — see res/xml/backup_rules.xml for why. -->
     <application
         android:label="MeTube Lite"
         android:name="${applicationName}"
@@ -50,10 +54,10 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
-            <!-- م-3: استقبال المشاركة من أي تطبيق — رابط واحد أو عدة روابط.
-                 `receive_sharing_intent` لا يحقن هذه المرشحات (مانيفست
-                 الحزمة فارغ)، فبدونها لا تظهر أيقونة التطبيق في ورقة
-                 المشاركة إطلاقاً. -->
+            <!-- Receiving a share from any app, one link or several. The
+                 `receive_sharing_intent` package ships an empty manifest and
+                 injects nothing, so without these filters the app never appears
+                 in the share sheet. -->
             <intent-filter>
                 <action android:name="android.intent.action.SEND"/>
                 <category android:name="android.intent.category.DEFAULT"/>
@@ -64,24 +68,26 @@
                 <category android:name="android.intent.category.DEFAULT"/>
                 <data android:mimeType="text/plain"/>
             </intent-filter>
-            <!-- م-41: اختصارات ضغطة الأيقونة المطولة. **لا مرشح نوايا
-                 ولا `data`**: الاختصار الساكن يستدعي المكوّن صراحةً،
-                 وأي `data` في النية يختطفها Flutter كمسار إقلاع فينتهي
-                 المستخدم في «Page Not Found» (مصطاد على المحاكي). -->
+            <!-- Long-press launcher shortcuts. **No intent filter and no `data`**:
+                 a static shortcut names its component explicitly, and any `data`
+                 in the intent is read by Flutter as an initial route, landing
+                 the user on "Page Not Found". -->
             <meta-data
                 android:name="android.app.shortcuts"
                 android:resource="@xml/shortcuts"/>
         </activity>
-        <!-- م-10: خدمة `flutter_background` الأمامية التي تُبقي التحميل
-             حياً بالخلفية. **بدون هذا التصريح** يرفض النظام تشغيلها
-             (`Unable to start service … IsolateHolderService: not found`)
-             فيبقى وضع الخلفية معطلاً بصمت — خلل مصطاد في المرحلة 8. -->
+        <!-- The `flutter_background` foreground service that keeps downloads
+             alive in the background. **Without this declaration** the system
+             refuses to start it (`Unable to start service …
+             IsolateHolderService: not found`) and background mode stays
+             silently disabled. -->
         <service
             android:name="de.julianassmann.flutter_background.IsolateHolderService"
             android:foregroundServiceType="dataSync"
             android:enabled="true"
             android:exported="false"/>
-        <!-- خدمة الصوت الخلفي ومستقبل أزرار الوسائط (audio_service). -->
+        <!-- The background audio service and the media-button receiver
+             (audio_service). -->
         <service
             android:name="com.ryanheise.audioservice.AudioService"
             android:foregroundServiceType="mediaPlayback"
@@ -97,7 +103,8 @@
                 <action android:name="android.intent.action.MEDIA_BUTTON"/>
             </intent-filter>
         </receiver>
-        <!-- «فتح في مشغل خارجي»: يمنح المشغل إذناً مؤقتاً لملف واحد. -->
+        <!-- "Open in an external player": grants the chosen player a temporary
+             permission for one file, and nothing else. -->
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
@@ -114,7 +121,7 @@
             android:value="2" />
     </application>
     <queries>
-        <!-- رؤية المشغلات الخارجية (أندرويد 11+) -->
+        <!-- Seeing external players (Android 11+ package visibility) -->
         <intent>
             <action android:name="android.intent.action.VIEW"/>
             <data android:mimeType="video/*"/>
@@ -127,7 +134,7 @@
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
         </intent>
-        <!-- م-20 «فتح الرابط الأصلي» عبر url_launcher (رؤية الحزم — أندرويد 11). -->
+        <!-- "Open the original link" through url_launcher. -->
         <intent>
             <action android:name="android.intent.action.VIEW"/>
             <data android:scheme="https"/>
@@ -136,7 +143,7 @@
             <action android:name="android.intent.action.VIEW"/>
             <data android:scheme="http"/>
         </intent>
-        <!-- رؤية مثبّت الحزم (أندرويد 11+) — م-66. -->
+        <!-- Seeing the package installer, for self-update. -->
         <intent>
             <action android:name="android.intent.action.VIEW"/>
             <data android:mimeType="application/vnd.android.package-archive"/>

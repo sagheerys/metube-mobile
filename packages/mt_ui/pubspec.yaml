@@ -1,5 +1,5 @@
 name: mt_ui
-description: "نظام تصميم «وهج»: tokens، الثيمات، الودجات المشتركة، l10n (AR/EN) — لا يعرف السيرفر."
+description: "The Wahaj design system: tokens, themes, shared widgets, l10n (ar/en) — knows nothing about the server."
 version: 0.1.0
 publish_to: none
 resolution: workspace

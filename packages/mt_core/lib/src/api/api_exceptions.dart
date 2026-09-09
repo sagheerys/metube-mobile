@@ -56,7 +56,8 @@ final class PlatformBlockedException extends ServerErrorException {
   const PlatformBlockedException([super.detail]);
 }
 
-/// The task was cancelled by the user. Not an error to display.
+/// A filename from the server failed the path safety guard: a separator,
+/// a NUL, or a name that is exactly `.` or `..`.
 final class UnsafeFilenameException extends MTApiException {
   const UnsafeFilenameException([super.detail]);
 }
@@ -66,14 +67,7 @@ final class CancelledException extends MTApiException {
   const CancelledException([super.detail]);
 }
 
-/// An unexpected local failure while running the task: filesystem,
-/// permissions, space.
-///
-/// **Its cause was defect ع-2:** the download worker caught only
-/// `MTApiException`, so any `FileSystemException` from renaming the
-/// partial file escaped the pump. The task froze on "pulling" and **the
-/// whole queue stopped with no message**. Everything unclassified is now
-/// wrapped here, so a single task fails and the rest continue.
+/// The `/history` poll ran out (120 × 5s) without the item completing.
 final class PollTimeoutException extends MTApiException {
   const PollTimeoutException([super.detail]);
 }

@@ -22,7 +22,7 @@ extension DownloadEnginePull on DownloadEngine {
     _cancelTokens[taskId] = token;
     if (_cancelRequested.contains(taskId)) token.cancel();
     // The final path comes from `pull`, not from what was requested: it may
-    // shift on a collision (defect خ-3).
+    // shift on a collision.
     final finalPath = await _transfer.pull(
       serverFilename: done.filename!,
       savePath: savePath,
@@ -32,7 +32,7 @@ extension DownloadEnginePull on DownloadEngine {
     _emit(_tasks[taskId]!.copyWith(localPath: finalPath));
 
     // 4) Delete by policy, using the canonicalUrl from /history and nothing
-    // else. **Cleanup never undoes a completed transfer (defect ع-6):** a
+    // else. **Cleanup never undoes a completed transfer:** a
     // failed delete used to mark the task "failed" and skip `onCompleted`,
     // so the file stayed with no title index and no artwork.
     if (policy == DeletePolicy.autoDelete) {

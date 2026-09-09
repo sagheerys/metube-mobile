@@ -1,17 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  نسخ أندرويد التلقائي (أندرويد 11 وما دونه) — `fullBackupContent`.
+  Android's automatic backup, Android 11 and below: `fullBackupContent`.
 
-  **عطل كامن كُشف 2026-09-04:** الـmanifest لم يذكر `allowBackup`،
-  والافتراضي **مفعَّل**. فكانت جوجل تنسخ كل `SharedPreferences` إلى حساب
-  المستخدم — **ومنها ملف التخزين الآمن** `FlutterSecureStorage.xml`.
-  محتواه مشفَّر بمفتاح يعيش في Keystore **هذا الجهاز** ولا يُنسخ معه،
-  فيصل الملف إلى الهاتف الجديد بلا مفتاحه ⇒ قراءة الأسرار (كلمة مرور
-  السيرفر) ترمي عند أول إقلاع بدل أن تعود «لا شيء».
+  **A latent defect.** The manifest never mentioned `allowBackup`, and the
+  default is **on**. So Google was copying every `SharedPreferences` file to
+  the user's account — **including the secure-storage file**,
+  `FlutterSecureStorage.xml`. Its contents are encrypted with a key that
+  lives in **this device's** Keystore and does not travel with it, so the
+  file arrives on the new phone without its key and reading a secret (the
+  server password) throws on first launch instead of returning "nothing".
 
-  الاستثناء أدناه يحل هذا: البيانات العادية تُنسخ، والأسرار لا. وفقدها
-  مقصود — المستخدم يعيد إدخال كلمة المرور مرة واحدة، وهي لا تدخل نسخنا
-  الاحتياطية أصلاً (§5.4).
+  The exclusion below fixes that: ordinary data is backed up, secrets are
+  not. Losing them is intended — the user re-enters the password once, and
+  it never enters our own backups either (SERVER-API.md §5.4).
 -->
 <full-backup-content>
     <exclude domain="sharedpref" path="FlutterSecureStorage.xml"/>

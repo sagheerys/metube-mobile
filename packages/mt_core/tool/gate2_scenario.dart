@@ -35,7 +35,7 @@ Future<void> main(List<String> args) async {
 
   print('▸ testConnection...');
   await client.testConnection();
-  print('✓ سيرفر MeTube صالح');
+  print('✓ valid MeTube server');
 
   final outDir = Directory('build/gate2')..createSync(recursive: true);
   final engine = DownloadEngine(
@@ -59,11 +59,11 @@ Future<void> main(List<String> args) async {
       .timeout(const Duration(minutes: 12));
 
   if (result.phase != TaskPhase.completed) {
-    print('✗ فشل: ${result.phase.name} — ${result.error}');
+    print('✗ failed: ${result.phase.name} - ${result.error}');
     exit(1);
   }
   final file = File(result.localPath!);
-  print('✓ اكتمل: ${file.path} (${file.lengthSync()} بايت)');
+  print('✓ complete: ${file.path} (${file.lengthSync()} bytes)');
   print('✓ canonicalUrl: ${result.canonicalUrl}');
   await engine.dispose();
   client.close();

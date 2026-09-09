@@ -58,7 +58,7 @@ extension MTVideoSessionCommands on MTVideoSession {
     notifyFromCommands();
   }
 
-  /// **Shorts have no resume position (defect ط-4):** there was no
+  /// **Shorts have no resume position:** there was no
   /// `isShortForm` check here at all, so a mixed list advancing
   /// automatically
   /// into a short clip, or a list opened at `/player`, wrote
@@ -79,7 +79,7 @@ extension MTVideoSessionCommands on MTVideoSession {
     );
   }
 
-  /// **Silence first, then dispose (defect ط-2/3):** disposal is not
+  /// **Silence first, then dispose:** disposal is not
   /// immediate, so the audio of two clips overlapped on every skip. The
   /// same trap that was fixed in reels and never reached the session.
   Future<void> _disposePlayers() async {

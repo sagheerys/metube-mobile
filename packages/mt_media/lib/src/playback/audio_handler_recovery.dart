@@ -17,7 +17,7 @@ extension MTAudioHandlerRecovery on MTAudioHandler {
   /// Automatically skips a broken item, and stops if the fault repeats
   /// rather than looping forever.
   ///
-  /// **[autoPlay] is inherited from the path that called us (fix ع-5):** it
+  /// **[autoPlay] is inherited from the path that called us:** it
   /// used to be hard-coded to `true`, so if the first item of a restored
   /// session failed at startup, a deleted file or a server briefly
   /// unreachable, **the next item started playing out loud with no tap at

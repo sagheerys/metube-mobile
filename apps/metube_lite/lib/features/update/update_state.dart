@@ -142,10 +142,8 @@ class UpdateNotifier extends Notifier<UpdateState> {
   Future<String> _currentVersion() async =>
       (await PackageInfo.fromPlatform()).version;
 
-  /// A manual check: it always shows the result, **including a failure**.
-  ///
-  /// It does not honour "skip this version": whoever pressed the button
-  /// wants to know.
+  /// A silent check at launch: no spinner and no error message, whatever
+  /// happens.
   Future<void> checkSilently() async {
     if (state.busy || state.release != null) return;
     final prefs = ref.read(updatePrefsProvider);

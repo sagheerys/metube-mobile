@@ -68,7 +68,7 @@ class AutoBackup {
   /// the log.
   Future<BackupFile?> writeNow() async {
     // **A request during an in-flight write is repeated rather than dropped
-    // (fix م-5):** the newest change used to be lost until another change
+    //:** the newest change used to be lost until another change
     // happened, and one might never happen.
     if (_writing) {
       _pendingRewrite = true;

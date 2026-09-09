@@ -1,0 +1,40 @@
+name: Feature request
+description: Something the apps should do and do not.
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Write in English or Arabic — both are read.
+        اكتب بالعربية أو بالإنجليزية، كلتاهما مقروءة.
+
+        The two apps have deliberately different jobs: Lite pulls to the
+        device and cleans the server, Super keeps files on the server. A
+        request usually belongs to one of them, not both.
+
+  - type: dropdown
+    id: app
+    attributes:
+      label: Which app
+      options:
+        - MeTube Lite
+        - MeTube Super
+        - Both
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What are you trying to do
+      description: >
+        The situation, not the solution. What you do today, and where it
+        gets in your way.
+    validations:
+      required: true
+
+  - type: textarea
+    id: idea
+    attributes:
+      label: What you have in mind
+      description: Optional — the problem alone is a complete request.

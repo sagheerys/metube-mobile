@@ -46,8 +46,8 @@ class BackupService {
     'external_urls',
   };
 
-  /// **Strip credentials embedded in a URL before backing it up (fix
-  /// خ-2).** Excluding the password from the backup is correct, but someone
+  /// **Strip credentials embedded in a URL before backing it up.**
+  /// Excluding the password from the backup is correct, but someone
   /// who pastes `https://user:pass@host` as the server URL puts it in an
   /// ordinary string key, so it entered the backup despite the rule.
   static Object? _sanitize(String key, Object? value) {
@@ -171,7 +171,7 @@ class BackupService {
     final prefs = (payload['prefs'] as Map?) ?? const {};
     var restored = 0;
     await mutex.run(() async {
-      // **All-or-nothing restore (fix خ-2).** A failure on key 40 of 200
+      // **All-or-nothing restore.** A failure on key 40 of 200
       // used to leave a **hybrid device**: an offline index from another
       // phone pointing at missing titles, with no rollback and no message
       // saying where it stopped.

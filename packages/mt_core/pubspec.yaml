@@ -1,5 +1,5 @@
 name: mt_core
-description: "نواة MTF: عميل MeTube API، النماذج، محرك التحميل، التخزين، النسخ الاحتياطي، السجلات — Dart خالص بلا Flutter."
+description: "The core: MeTube API client, models, download engine, storage, backup, logging — pure Dart, no Flutter."
 version: 0.1.0
 publish_to: none
 resolution: workspace

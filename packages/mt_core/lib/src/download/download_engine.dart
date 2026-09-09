@@ -58,14 +58,10 @@ class DownloadEngine {
   /// not, where pulling happens only through "make available offline".
   final bool pullToDevice;
 
-  /// A diagnostic trace: mt_core does not know where the log file lives.
+  /// For indexing after completion (OfflineIndex, MediaStore).
   final void Function(DownloadTask task)? onCompleted;
 
-  /// **The pull gate** ("Wi-Fi only"), asked before fetching a file to the
-  /// device. `false` parks the task ([PullGateParking]) and the queue
-  /// continues. The gate sits before the pull rather than before the add on
-  /// purpose: the expensive part is the file. The app answers it, because
-  /// mt_core does not know `connectivity_plus` (rule 6).
+  /// A diagnostic trace: mt_core does not know where the log file lives.
   final void Function(String message)? onLog;
 
   /// **The pull gate** ("Wi-Fi only"), asked before fetching a file to the
@@ -90,8 +86,8 @@ class DownloadEngine {
   final Map<String, CancelToken> _cancelTokens = {};
   final Set<String> _cancelRequested = {};
 
-  /// The last **whole percentage** broadcast for each task, the filter used
-  /// by [_emitProgress].
+  /// A `/history` snapshot from before the add, which also identifies the
+  /// orphan left by a cancellation.
   final Map<String, Set<String>> _snapshots = {};
 
   /// The last **whole percentage** broadcast for each task, the filter used
@@ -108,7 +104,7 @@ class DownloadEngine {
       StreamController<DownloadTask>.broadcast();
   bool _working = false;
 
-  /// **The death flag (defect ع-1):** without it, the polling and gate
+  /// **The death flag:** without it, the polling and gate
   /// loops keep running after disposal, against a closed Dio client,
   /// emitting into a closed stream.
   bool _disposed = false;
@@ -118,7 +114,7 @@ class DownloadEngine {
   DownloadTask? taskById(String id) => _tasks[id];
 
   /// Is any task still alive? Stops a server switch from wiping them out
-  /// (defect ع-1).
+  ///.
   bool get hasActiveWork =>
       _tasks.values.any((t) => !t.isFinished) || _parked.isNotEmpty;
 
@@ -201,8 +197,8 @@ class DownloadEngine {
     }
   }
 
-  /// The unified handler. **The trailing `on Object` is the fix for defect
-  /// ع-2:** an unclassified error, such as a `FileSystemException` from the
+  /// The unified handler. **The trailing `on Object` is the fix:** an
+  /// unclassified error, such as a `FileSystemException` from the
   /// rename, escaped the pump, so the task froze and **the whole queue**
   /// stopped with no message.
   Future<void> _guard(String taskId, Future<void> Function() body) async {
@@ -243,7 +239,7 @@ class DownloadEngine {
     final resolved = await _resolver.resolve(task.inputUrl);
     task = _emit(task.copyWith(resolvedUrl: resolved));
     _throwIfCancelRequested(taskId);
-    // Defect ح-3: know what existed before us, so another operation is
+    // Know what existed before us, so another operation is
     // never attributed to this task.
     _snapshots[taskId] = await _matcher.snapshot(task.effectiveUrl);
     _throwIfCancelRequested(taskId);
@@ -298,7 +294,7 @@ class DownloadEngine {
         onProgress: (p) => _emitProgress(taskId, p),
       );
 
-  /// Defect ع-7: what a cancelled task added is not left on the server.
+  /// What a cancelled task added is not left on the server.
   Future<void> _cleanupOrphan(String taskId) async {
     final task = _tasks[taskId];
     final before = _snapshots.remove(taskId);

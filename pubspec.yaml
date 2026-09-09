@@ -1,4 +1,4 @@
-# جذر مساحة العمل — Monorepo لمشروع MTF (راجع docs/plan/02-TRD.md)
+# The workspace root of the monorepo. See docs/ARCHITECTURE.md.
 name: mtf_workspace
 publish_to: none
 environment:

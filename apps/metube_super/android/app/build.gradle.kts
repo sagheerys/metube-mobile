@@ -7,7 +7,8 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
-// توقيع release من key.properties (خارج git) — راجع docs/plan/02-TRD.md §4
+// Release signing is read from key.properties, which is not in this
+// repository. Create your own keystore, or build debug.
 val keystoreProperties = Properties()
 val keystorePropertiesFile = rootProject.file("key.properties")
 if (keystorePropertiesFile.exists()) {
@@ -16,14 +17,14 @@ if (keystorePropertiesFile.exists()) {
 
 android {
     namespace = "com.yasir.metubesuper"
-    // مثبت صراحة (TRD §4): receive_sharing_intent يتطلب 37.
+    // Pinned explicitly: receive_sharing_intent requires 37.
     compileSdk = 37
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
-        // إلزامي لـ flutter_local_notifications (م-49) — كما في Lite.
+        // Required by flutter_local_notifications, as in Lite.
         isCoreLibraryDesugaringEnabled = true
     }
 
@@ -50,8 +51,10 @@ android {
                 signingConfigs.getByName("release")
             else
                 signingConfigs.getByName("debug")
-            // انظر شرح Lite: تنقية الموارد تحذف `drawable/audio_service_*`
-            // التي تُطلب بالاسم وقت التشغيل ⇒ لا إشعار وسائط في release.
+            // See the explanation in Lite: resource shrinking removes the
+            // `drawable/audio_service_*` resources, which are looked up by
+            // name at runtime, and release builds then have no media
+            // notification at all.
             isShrinkResources = false
         }
     }

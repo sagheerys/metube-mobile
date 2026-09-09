@@ -142,7 +142,9 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
     await ref.read(libraryActionsProvider).share([match]);
   }
 
-  /// Continues the same item as background audio from the same second.
+  /// The question is only worth asking when there is something to carry
+  /// over: a current clip, and an audio player that was not already playing
+  /// it.
   bool _shouldOfferAudio() {
     final current = ref.read(videoSessionProvider).current;
     if (current == null) return false;

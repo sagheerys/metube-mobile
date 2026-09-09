@@ -133,7 +133,7 @@ class LibraryViewOptions {
   bool get grid => mode == LibraryViewMode.grid;
   bool get cards => mode == LibraryViewMode.cards;
 
-  /// How many filters are active above "all", for the sort button's badge.
+  /// The selected canonical URLs; a non-empty set means selection mode.
   final Set<String> selection;
 
   bool get selecting => selection.isNotEmpty;

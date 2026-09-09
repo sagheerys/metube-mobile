@@ -135,20 +135,11 @@ There are 80 test files. Four conventions matter:
 
 ## 7. Deeper references
 
-`docs/plan/` holds the binding specification, in Arabic:
-
-| File | Subject |
-|---|---|
-| `01-PRD.md` | Feature scope |
-| `02-TRD.md` | Packages, architecture, Android requirements |
-| `03-APP-FLOW.md` | Screens, journeys, what every control does |
-| `04-UIUX-DESIGN-BRIEF.md` | The visual identity and its change log |
-| `05-DATA-SCHEMA.md` | **Server contract and storage keys** |
-| `06-IMPLEMENTATION-PLAN.md` | Ordered work items and their acceptance gates |
-
-`05-DATA-SCHEMA.md` is the one to read before writing any networking or
-storage code. It documents the server's real behaviour, including the
-traps that cost a debugging session to find.
+[`SERVER-API.md`](SERVER-API.md) is the one document to read before
+writing any networking or storage code. It carries the full request and
+response contract, the local storage schema, and the traps — each of
+which cost a debugging session to find, and none of which can be
+inferred from the server's own documentation.
 
 ---
 
@@ -255,6 +246,6 @@ flutter build apk --debug            # داخل أحد التطبيقين
 
 ## ٧ · المراجع الأعمق
 
-`docs/plan/` هي المواصفة الملزمة بالعربية. وأهمها `05-DATA-SCHEMA.md`:
-يُقرأ قبل أي كود شبكة أو تخزين، ويوثّق سلوك الخادم الحقيقي بما فيه
-الفخاخ التي كلّف اكتشافُ كلٍّ منها جلسة تنقيح.
+[`SERVER-API.md`](SERVER-API.md) يُقرأ قبل أي كود شبكة أو تخزين. فيه عقد
+الطلب والاستجابة كاملاً، ومخطط التخزين المحلي، والفخاخ التي كلّف اكتشافُ
+كلٍّ منها جلسة تنقيح ولا يدلّ عليها توثيق الخادم نفسه.

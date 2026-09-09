@@ -1,37 +1,41 @@
 # -*- coding: utf-8 -*-
-"""توليد أيقونات المشغّل — «الشريط» (قرار المالك 2026-09-09).
+"""Generate the launcher icons: the "film strip".
 
-الفكرة: إطار فيلم بثقوبه، ولوحة كريمية في وسطه **الرمز مقتطع منها**
-فيظهر لون الفعل من خلفه — سوبر مثلث تشغيل، لايت سهم هابط.
+The idea is a film frame with its perforations, and a cream plate in the middle
+with **the symbol cut out of it**, so the accent colour shows through from
+behind — a play triangle for Super, a descending arrow for Lite.
 
-ثلاث طبقات لكل تطبيق في `assets/icons/`:
-  icon.png             — الأيقونة القديمة كاملةً (مقصوصة بشكل سوبر-إهليلج
-                         لأن أندرويد ما قبل 8 يعرضها كما هي بلا قناع).
-  icon_foreground.png  — الطبقة الأمامية: التصميم كله عند 92٪ من الملف
-                         (راجع [FIT] — الأداة تضيف inset 16٪ فوقها).
-  icon_monochrome.png  — أندرويد 13+ «الأيقونات المتناسقة»: صورة ظليّة
-                         بيضاء يلوّنها النظام. كانت غائبة تماماً فكانت
-                         الأيقونة تظهر شاذّة عند تفعيل الخيار.
-الخلفية لونٌ صلب في pubspec لا صورة — فالتصميم لا يحتاج تفصيلاً خلفها.
+Three layers per app, written into `assets/icons/`:
+  icon.png             — the complete legacy icon, clipped to a squircle,
+                         because Android before 8 shows it as-is with no mask.
+  icon_foreground.png  — the adaptive foreground: the whole design at 92% of
+                         the file (see [FIT]; the tool adds a 16% inset on top).
+  icon_monochrome.png  — Android 13+ themed icons: a white silhouette the
+                         system tints. It was missing entirely, which made the
+                         icon look out of place whenever the option was on.
+The background is a solid colour in pubspec rather than an image, because the
+design needs no detail behind it.
 
-**تدوير الزوايا بفتحٍ مورفولوجي** (طمس ثم عتبة): تقليص المضلّع نحو مركزه
-يشوّه المثلثات غير المتساوية الأضلاع — نُتوءٌ في زاوية وقصٌّ في أخرى.
+**Corners are rounded by a morphological opening** (blur, then threshold):
+shrinking the polygon toward its centre distorts scalene triangles, leaving a
+bulge at one corner and a cut at another.
 
-التشغيل: python tool/make_icons.py   ثم  dart run flutter_launcher_icons
+Run: python tool/make_icons.py   then  dart run flutter_launcher_icons
 """
 import numpy as np
 from PIL import Image, ImageDraw, ImageFilter
 
-DESIGN = 512          # وحدات التصميم
-OUT = 1024            # مقاس الإخراج
-SS = 3                # الإفراط في العيّنات
+DESIGN = 512          # design units
+OUT = 1024            # output size
+SS = 3                # supersampling factor
 N = OUT * SS
-# **حسابان لا واحد**: `flutter_launcher_icons` يلفّ الطبقة الأمامية بـ
-# `inset 16%` بنفسه، فتصير 68٪ من اللوحة (≈73dp من 108) — أي أنها تغطي
-# المنطقة المرئية (72dp) تماماً. لكن القناع **دائري** في بعض المشغّلات،
-# وأبعد نقطة في التصميم هي زاوية الثقب العلوي: نصف قطرها 0.5245 من عرض
-# الرسم، فلا تدخل الدائرة إلا إذا صغّرناه إلى 92٪ داخل الملف. بلا هذا
-# تُقصّ أطراف الثقوب فتبدو كأنها عطل.
+# **Two calculations, not one.** `flutter_launcher_icons` wraps the foreground
+# in a 16% inset of its own, which leaves it at 68% of the plate (about 73dp of
+# 108) — exactly covering the visible area of 72dp. But the mask is **circular**
+# in some launchers, and the farthest point of this design is the corner of the
+# top perforation, at a radius of 0.5245 of the drawing's width. It only fits
+# inside the circle once the design is scaled to 92% within the file. Without
+# that, the perforation edges are clipped and it reads as a defect.
 FIT = 0.92
 
 CREAM = (251, 246, 238, 255)
@@ -42,7 +46,7 @@ APPS = {
 
 PERF_X = (36, 434)
 PERF_Y = (102, 223, 344)
-PERF = (42, 66, 15)                      # عرض · ارتفاع · تدوير
+PERF = (42, 66, 15)                      # width, height, corner radius
 PANEL = (104, 88, 408, 424, 46)
 
 
@@ -72,8 +76,9 @@ def glyph_mask(kind):
     m = Image.new('L', (N, N), 0)
     d = ImageDraw.Draw(m)
     if kind == 'play':
-        # مربّع الإحاطة مركزه 264 لا 256: كتلة المثلث يسار رأسه، فالتوسيط
-        # الحسابي يجعله يبدو مزاحاً لليسار (توسيط بصري).
+        # The bounding box is centred at 264 rather than 256: a triangle's mass
+        # sits to the left of its apex, so arithmetic centring makes it look
+        # shifted left. This is optical centring.
         d.polygon([(u(184), u(150)), (u(184), u(362)), (u(344), u(256))],
                   fill=255)
     else:
@@ -84,7 +89,8 @@ def glyph_mask(kind):
 
 
 def artwork_mask(kind):
-    """الثقوب + اللوحة، ناقصاً الرمز — الصورة الظليّة للتصميم كله."""
+    """The perforations plus the plate, minus the symbol: the silhouette of
+    the whole design."""
     m = Image.new('L', (N, N), 0)
     d = ImageDraw.Draw(m)
     for x in PERF_X:
@@ -102,7 +108,7 @@ def tinted(mask, color):
 
 
 def into_safe_zone(layer):
-    """التصميم داخل الدائرة المضمونة (راجع [FIT])."""
+    """The design, scaled inside the guaranteed circle (see [FIT])."""
     side = int(round(OUT * FIT))
     out = Image.new('RGBA', (OUT, OUT), (0, 0, 0, 0))
     out.paste(layer.resize((side, side), Image.LANCZOS),

@@ -8,27 +8,30 @@ import java.io.File
 import java.io.FileOutputStream
 
 /**
- * م-18 + م-35: سبر ملف وسائط محلي بلا تشغيله.
+ * Probing a local media file without playing it.
  *
- * **لماذا أصلاً:** سيرفر المالك لا يرجع حقل `thumbnail` لأي عنصر (فُحص:
- * صفر من 252)، ومكتبة Lite المهاجَرة ملفاتٌ على القرص بلا أي بيانات —
- * فبلا هذا السبر تبقى المكتبة كلها بلا أغلفة، ويبقى «مسار القِصار»
- * فارغاً لأن الأبعاد كانت تُتعلَّم **عند أول تشغيل فقط** (خلل مصطاد على
- * جهاز المالك 2026-09-01: «الريلز لا تعمل إلا إذا شغّلتها أول مرة»).
+ * **Why this exists at all.** A real server returns no `thumbnail` field for
+ * any item (measured: zero out of 252), and Lite's migrated library is a set
+ * of files on disk with no metadata beside them — so without this probe the
+ * whole library has no covers, and the shorts lane stays empty because
+ * dimensions used to be learned **only on first playback** ("the reels only
+ * work if I play them once first").
  *
- * `MediaMetadataRetriever` من إطار أندرويد يعطي الثلاثة في فتحة واحدة:
- * المدة، والأبعاد، وغلافاً — المضمّن للصوت أو لقطة إطار للفيديو.
+ * `MediaMetadataRetriever`, from the Android framework, gives all three in a
+ * single open: the duration, the dimensions, and a cover — the embedded one
+ * for audio, or a captured frame for video.
  */
 object MediaProbe {
 
-    /** أقصى ضلع للمصغرة المحفوظة — بطاقة المكتبة 98×62 نقطة. */
+    /** The longest edge of a stored thumbnail; a library card is 98×62dp. */
     private const val MAX_EDGE = 480
 
     fun scan(context: Context, paths: List<String>): List<Map<String, Any?>> {
-        // **`filesDir` لا `cacheDir`** (عطل المالك 2026-09-07): أندرويد
-        // يمسح الكاش تحت ضغط التخزين، فتبقى مسارات المصغرات في الفهرس
-        // تشير إلى ملفات مُزالة — بطاقات فارغة **لا تُعاد** لأن الفهرس
-        // يقول «لها غلاف». المصغرة 480px ≈ 30KB، ومئتان منها ≈ 6MB.
+        // **`filesDir`, not `cacheDir`.** Android wipes the cache under
+        // storage pressure, which leaves the thumbnail paths in the index
+        // pointing at files that are gone — empty cards that are **never
+        // retried**, because the index says they have a cover. A 480px
+        // thumbnail is about 30KB, so two hundred of them are about 6MB.
         val dir = File(context.filesDir, "thumbs").apply { mkdirs() }
         return paths.map { probe(dir, it) }
     }
@@ -48,8 +51,9 @@ object MediaProbe {
             readSize(retriever, out)
             out["thumb"] = thumbnail(retriever, dir, file)?.absolutePath
         } catch (_: Throwable) {
-            // ملف تالف أو ترميز لا يفهمه الجهاز — يُتجاوز بصمت: المكتبة
-            // تعرض العنصر بلا غلاف بدل أن يسقط المسح كله.
+            // A corrupt file, or a codec this device does not understand.
+            // Skipped silently: the library shows the item without a cover
+            // rather than failing the whole scan.
         } finally {
             try {
                 retriever.release()
@@ -60,9 +64,10 @@ object MediaProbe {
     }
 
     /**
-     * الأبعاد **بعد** تطبيق دوران التسجيل: مقاطع الجوال العمودية تُخزَّن
-     * أفقياً مع `rotation=90`، وبدون القلب تُصنَّف عرضية فتسقط من مسار
-     * القِصار الذي يشترط `aspectRatio < 1`.
+     * The dimensions **after** the recorded rotation is applied. Portrait phone
+     * clips are stored landscape with `rotation=90`, and without the swap they
+     * are classified as landscape and drop out of the shorts lane, which
+     * requires `aspectRatio < 1`.
      */
     private fun readSize(r: MediaMetadataRetriever, out: HashMap<String, Any?>) {
         val w = r.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH)
@@ -78,13 +83,14 @@ object MediaProbe {
         out["height"] = if (swap) w else h
     }
 
-    /** الغلاف المضمّن أولاً (الصوت)، وإلا لقطة إطار (الفيديو). */
+    /** The embedded cover first (audio), otherwise a captured frame (video). */
     private fun thumbnail(
         r: MediaMetadataRetriever,
         dir: File,
         file: File,
     ): File? {
-        // الاسم يحمل زمن التعديل: ملف استُبدل بنفس المسار يولّد غلافاً جديداً.
+        // The name carries the modification time, so a file replaced at the
+        // same path produces a fresh cover.
         val target = File(dir, "${file.path.hashCode()}_${file.lastModified()}.jpg")
         if (target.exists() && target.length() > 0) return target
 
@@ -108,9 +114,10 @@ object MediaProbe {
     }
 
     /**
-     * لقطة إطار بسلسلة بدائل: بعض المقاطع (HEVC خاصة) تُرجع null لأول
-     * محاولة بينما تنجح الثانية. الترتيب من الأدق للأرخص، وثانية واحدة
-     * أولاً لأن الإطار صفر أسودُ في كثير من المقاطع.
+     * Capturing a frame through a chain of fallbacks: some clips (HEVC
+     * especially) return null for the first attempt while the second succeeds.
+     * Ordered from the most accurate to the cheapest, starting one second in
+     * because frame zero is black in a great many clips.
      */
     private fun firstFrame(r: MediaMetadataRetriever): Bitmap? {
         val attempts: List<() -> Bitmap?> = listOf(

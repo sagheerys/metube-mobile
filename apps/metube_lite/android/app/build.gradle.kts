@@ -7,7 +7,8 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
-// توقيع release من key.properties (خارج git) — راجع docs/plan/02-TRD.md §4
+// Release signing is read from key.properties, which is not in this
+// repository. Create your own keystore, or build debug.
 val keystoreProperties = Properties()
 val keystorePropertiesFile = rootProject.file("key.properties")
 if (keystorePropertiesFile.exists()) {
@@ -16,14 +17,14 @@ if (keystorePropertiesFile.exists()) {
 
 android {
     namespace = "com.yasir.metubelite"
-    // مثبت صراحة (TRD §4) — بموازاة Super.
+    // Pinned explicitly, in step with Super.
     compileSdk = 37
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
-        // إلزامي لـ flutter_local_notifications (م-9) — TRD §4.
+        // Required by flutter_local_notifications.
         isCoreLibraryDesugaringEnabled = true
     }
 
@@ -50,15 +51,16 @@ android {
                 signingConfigs.getByName("release")
             else
                 signingConfigs.getByName("debug")
-            // **فخ مصطاد على جهاز المالك (2026-09-01):** مُنقّي الموارد
-            // يحذف كل `drawable/audio_service_*` لأن لا شيء يشير إليها
-            // ستاتيكياً — و`audio_service` يبحث عنها **بالاسم وقت
-            // التشغيل** (`getIdentifier`). النتيجة في نسخة release فقط:
-            // `IllegalArgumentException: You must specify an icon resource
-            // id to build a CustomAction` عند كل تشغيل ⇒ **لا إشعار وسائط
-            // ولا أزرار شاشة قفل إطلاقاً**، بلا أي عطل ظاهر في الواجهة.
-            // أُثبت بـ `aapt2 dump resources`: صفر مورد audio_service.
-            // التنقية توفّر أقل من ميجابايت من 41 — لا تساوي عطلاً صامتاً.
+            // **A trap caught on a real device.** The resource shrinker
+            // removes every `drawable/audio_service_*`, because nothing
+            // references them statically — and `audio_service` looks them up
+            // **by name at runtime** (`getIdentifier`). In release builds only,
+            // the result is `IllegalArgumentException: You must specify an icon
+            // resource id to build a CustomAction` on every play, so there is
+            // **no media notification and no lock-screen controls at all**,
+            // with nothing visibly wrong in the UI. Proven with `aapt2 dump
+            // resources`: zero audio_service resources. Shrinking saves under a
+            // megabyte out of 41, which is not worth a silent defect.
             isShrinkResources = false
         }
     }

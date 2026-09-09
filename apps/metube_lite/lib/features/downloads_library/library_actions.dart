@@ -43,7 +43,7 @@ class LibraryActions {
       final url = item.canonicalUrl;
       if (url != null) await _ref.read(offlineIndexProvider).removeKey(url);
       await _ref.read(titleIndexProvider).removeKey(item.key);
-      // **Pruning the rest (fix خ-4):** tags, positions and dimensions used
+      // **Pruning the rest:** tags, positions and dimensions used
       // to stay forever in the same XML file that is re-serialised on every
       // write, and `exportToString` copies whole, so backups swelled with
       // corpses.

@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'transfer.dart';
 
-/// **Sweeping orphaned partial files (fix خ-3).**
+/// **Sweeping orphaned partial files.**
 ///
 /// Killing the app in the middle of a large pull leaves `<name>.part` on
 /// disk, and the new name after a retry differs because of the `HHmmss`

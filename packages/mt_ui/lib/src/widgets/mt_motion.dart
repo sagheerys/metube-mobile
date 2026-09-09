@@ -49,7 +49,7 @@ class _MTRevealOnceState extends State<MTRevealOnce>
     duration: MTMotion.reveal,
   );
 
-  /// **Built once rather than every frame** (fix م-2/b): a
+  /// **Built once rather than every frame**: a
   /// `CurvedAnimation` in `build` was created and abandoned sixty times a
   /// second without ever being disposed.
   late final CurvedAnimation _curved = CurvedAnimation(
@@ -85,8 +85,8 @@ class _MTRevealOnceState extends State<MTRevealOnce>
     super.dispose();
   }
 
-  /// **The tree keeps its shape from the first frame to the last** (fix
-  /// م-2/a). The widget used to replace the whole wrapper with
+  /// **The tree keeps its shape from the first frame to the last.** The
+  /// widget used to replace the whole wrapper with
   /// `widget.child` when the animation ended, which changed the depth of
   /// every element and rebuilt the subtree: a scroll or a keystroke that
   /// began during the first 220ms was lost. Now the controller simply

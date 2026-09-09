@@ -41,15 +41,9 @@ class ShareReceiver {
 
   bool _disposed = false;
 
-  /// **Subscribe first, then read the initial link** (field report
-  /// 2026-09-08).
-  ///
-  /// The order used to be reversed: `getInitialMedia`, `reset`, `listen`,
-  /// and between the two awaits there was a window **with no listener**. An
-  /// app resting in the background has its link delivered straight to the
-  /// stream, so it fell into that window without a trace, and then a retry
-  /// succeeded because the subscription was by then in place. Which is
-  /// exactly what was reported.
+  /// The last batch delivered. The initial link can arrive **twice** — from
+  /// `getInitialMedia` and from the stream together — now that the
+  /// subscription comes first.
   List<String>? _lastDelivered;
 
   /// **Subscribe first, then read the initial link** (field report
@@ -62,7 +56,7 @@ class ShareReceiver {
   /// succeeded because the subscription was by then in place. Which is
   /// exactly what was reported.
   Future<void> start() async {
-    // **Early teardown during the await (fix م-1):** a hot restart or a
+    // **Early teardown during the await:** a hot restart or a
     // quick close left a live listener holding a dead shell.
     if (_disposed) return;
     _subscription = ReceiveSharingIntent.instance.getMediaStream().listen(

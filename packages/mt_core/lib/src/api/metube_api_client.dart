@@ -240,7 +240,13 @@ class MeTubeApiClient implements MeTubeApi {
     return '${config.baseUrl}/download/${Uri.encodeComponent(serverFilename)}';
   }
 
-  /// A one-byte range: the server answers 206 without sending the file.
+  /// **A one-byte existence check**, the cheapest possible question, on a
+  /// timeout of our own.
+  ///
+  /// The reason is measured: handing a dead URL to `MediaMetadataRetriever`
+  /// makes the Android platform retry **ten times with an 8s timeout**,
+  /// over 80 seconds that freeze the entire probe queue. Refusing here
+  /// takes a fraction of a second.
   @override
   Future<bool> fileExists(String serverFilename, {Duration? timeout}) async {
     final String url;

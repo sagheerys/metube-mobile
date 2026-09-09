@@ -1,0 +1,64 @@
+name: Bug report
+description: Something behaves differently from what you expected.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Write in English or Arabic — both are read.
+        اكتب بالعربية أو بالإنجليزية، كلتاهما مقروءة.
+
+  - type: dropdown
+    id: app
+    attributes:
+      label: Which app
+      options:
+        - MeTube Lite
+        - MeTube Super
+        - Both
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: App version
+      description: Settings → About shows it.
+      placeholder: "2.0.0+1"
+    validations:
+      required: true
+
+  - type: input
+    id: device
+    attributes:
+      label: Device and Android version
+      placeholder: "Galaxy S22 Ultra, Android 15"
+    validations:
+      required: true
+
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: >
+        What you did, what you expected, and what you saw instead. A
+        screenshot or a screen recording says more than a paragraph.
+    validations:
+      required: true
+
+  - type: input
+    id: url
+    attributes:
+      label: The link involved, if any
+      description: >
+        Many defects are specific to one platform's URL shape. Leave it out
+        if the link is private.
+
+  - type: textarea
+    id: server
+    attributes:
+      label: Server
+      description: >
+        The MeTube version, and anything unusual in its configuration
+        (`YTDL_OPTIONS`, `DELETE_FILE_ON_TRASHCAN`, a reverse proxy).
+        Never paste credentials or a tunnel URL.

@@ -22,7 +22,7 @@ Future<void> main(List<String> args) async {
     }
     if (preview.tracks.length > 3) {
       final last = preview.tracks.last;
-      print('  … الأخير: ${last.title} | ${last.url}');
+      print('  ... last: ${last.title} | ${last.url}');
     }
   }
 }

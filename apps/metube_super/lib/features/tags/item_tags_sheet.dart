@@ -56,8 +56,7 @@ class _ItemTagsSheet extends ConsumerStatefulWidget {
 class _ItemTagsSheetState extends ConsumerState<_ItemTagsSheet> {
   final TextEditingController _newTag = TextEditingController();
 
-  /// Those applied to **all** of the selection; a bulk edit shows only what
-  /// is common.
+  /// Every tag on display, sorted, including those not on this selection.
   List<String> _all = const [];
 
   /// Those applied to **all** of the selection; a bulk edit shows only what
@@ -118,7 +117,7 @@ class _ItemTagsSheetState extends ConsumerState<_ItemTagsSheet> {
       // differs from what is wanted.
       if (has != adding) await _tags.toggleTag(url, tag);
     }
-    // **A missing guard (defect ط-7):** tagging 30 items and then closing
+    // **A missing guard:** tagging 30 items and then closing
     // the sheet before the loop finished called `ref.invalidate` on a dead
     // widget, an uncaught `StateError`. The neighbouring `_load` was
     // guarded; this one had been forgotten.

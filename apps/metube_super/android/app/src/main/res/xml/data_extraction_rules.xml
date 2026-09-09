@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  أندرويد 12+ — `dataExtractionRules`. نفس سبب `backup_rules.xml`
-  المجاور، بمجالين: النسخ السحابي ونقل الجهاز-إلى-جهاز.
+  Android 12+: `dataExtractionRules`. Same reason as the neighbouring
+  `backup_rules.xml`, across both of its scopes — cloud backup and
+  device-to-device transfer.
 -->
 <data-extraction-rules>
     <cloud-backup>

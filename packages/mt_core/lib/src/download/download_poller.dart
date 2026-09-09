@@ -9,7 +9,7 @@ import 'history_matcher.dart';
 /// Polls `/history` until **this** task's item completes (§2.3).
 ///
 /// Split out of `download_engine.dart` for the size limit (rule 4), and it
-/// is also where the decisive rule from defect ح-3 lives: **fingerprints
+/// is also where the decisive rule lives: **fingerprints
 /// from before the add are ignored**, so an old item is never attributed
 /// to this task, whether that is an earlier error poisoning a retry or a
 /// file at an old quality declaring a higher-quality request successful.

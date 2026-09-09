@@ -46,7 +46,7 @@ final class TagsIndex extends UrlKeyedIndex<List<String>> {
       if (entry.value.contains(tag)) entry.key,
   ];
 
-  /// Renames a tag across every item, **without duplicating (fix م-7):** an
+  /// Renames a tag across every item, **without duplicating:** an
   /// item carrying both the old and the new name ended up carrying the new
   /// one twice, which inflated the chip counter and showed the item twice
   /// in

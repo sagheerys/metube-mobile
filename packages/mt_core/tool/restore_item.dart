@@ -23,13 +23,13 @@ Future<void> main(List<String> args) async {
               item.canonicalUrl,
         ];
         if (targets.isEmpty) {
-          print('لا عناصر بالمعرف $value');
+          print('no items matching $value');
         } else {
           await client.delete(targets);
           print('OK delete ${targets.length}: $targets');
         }
       default:
-        print('أمر غير معروف');
+        print('unknown command');
         exit(64);
     }
   } finally {

@@ -59,15 +59,15 @@ class MTReelsPlayer extends StatefulWidget {
   final String Function(BuildContext context, PlaylistItem item)?
   subtitleBuilder;
 
-  /// Stops the background audio player before the first play, or the audio
-  /// and the reel run together.
+  /// "Continue with the rest of the list": opens the first non-short item in
+  /// its correct player.
   final VoidCallback? onContinueRest;
 
   /// Stops the background audio player before the first play, or the audio
   /// and the reel run together.
   final Future<void> Function()? onTakeAudioFocus;
 
-  /// **The opposite direction of the golden rule (defect ع-4).** It hands
+  /// **The opposite direction of the golden rule.** It hands
   /// upwards a "stopper for this player" while alive and `null` once dead,
   /// so the audio player can silence the reel before it plays. Without
   /// this, one play press in the media notification produced **two sources
@@ -87,12 +87,11 @@ class _MTReelsPlayerState extends State<MTReelsPlayer> {
   bool _endReached = false;
   bool _failed = false;
 
-  /// **The chrome hides after a moment** (requested 2026-09-02). One rule
-  /// with no hidden modes: any touch shows the chrome **and toggles
-  /// playback**, then it hides after [_chromeLinger] if the clip is still
-  /// running. Pausing pins it: someone who paused wants to read and act,
-  /// not
-  /// watch.
+  /// **The race guard (caught on a real device).** A swipe is faster than
+  /// `initialize()`: two swipes in a row start two parallel loads, the last
+  /// to finish wins `_controller`, and **the first stays alive playing audio
+  /// behind the new picture**. Every extra swipe adds a third and a fourth
+  /// voice.
   int _generation = 0;
 
   /// **The chrome hides after a moment** (requested 2026-09-02). One rule
@@ -204,7 +203,7 @@ class _MTReelsPlayerState extends State<MTReelsPlayer> {
     _load(page);
   }
 
-  /// **Scrubbing goes through the state owner (defect ط-3).** The scrubber
+  /// **Scrubbing goes through the state owner.** The scrubber
   /// used to call `controller.play()` directly, the only call in the
   /// package with no audio focus and no wake-lock accounting: resuming
   /// after a scrub let the screen sleep during playback, and the background

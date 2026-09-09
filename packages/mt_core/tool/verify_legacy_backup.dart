@@ -13,13 +13,13 @@ import 'package:mt_core/mt_core.dart';
 
 Future<void> main(List<String> args) async {
   if (args.length < 2) {
-    print('الاستعمال: dart tool/verify_legacy_backup.dart <backup> <key>');
+    print('usage: dart tool/verify_legacy_backup.dart <backup> <key>');
     exit(64);
   }
   final backup = File(args[0]);
   final keyFile = File(args[1]);
   if (!backup.existsSync() || !keyFile.existsSync()) {
-    print('ملف مفقود');
+    print('file not found');
     exit(66);
   }
 
@@ -33,7 +33,7 @@ Future<void> main(List<String> args) async {
   );
 
   final contents = backup.readAsStringSync();
-  print('الترويسة: ${BackupCrypto.headerOf(contents)}');
+  print('header: ${BackupCrypto.headerOf(contents)}');
 
   // The key first: a backup from another device cannot be decrypted with
   // this device's key. (`importKeyFile` was removed from the service along
@@ -42,7 +42,7 @@ Future<void> main(List<String> args) async {
   // store.)
   final keyBase64 = BackupCrypto.decodeKeyFile(keyFile.readAsStringSync());
   if (keyBase64 == null) {
-    print('ملف مفتاح غير صالح');
+    print('invalid key file');
     exit(65);
   }
   await secrets.write(SecretKeys.backupAesKey, keyBase64);
@@ -51,16 +51,16 @@ Future<void> main(List<String> args) async {
   try {
     result = await service.importFromString(contents);
   } on Object catch (e) {
-    print('فشل الاستيراد: ${e.runtimeType}');
+    print('import failed: ${e.runtimeType}');
     exit(70);
   }
 
   print(
-    'الصيغة: ${result.format.name} · مفاتيح مستعادة: '
+    'format: ${result.format.name} - keys restored: '
     '${result.keysRestored}',
   );
   print(
-    'اسم مستخدم مستعاد: '
+    'username restored: '
     '${await secrets.read(SecretKeys.username) != null}',
   );
 
@@ -73,23 +73,23 @@ Future<void> main(List<String> args) async {
   final tagCounts = await tags.allTagsWithCounts();
 
   print(
-    'قوائم محفوظة: ${playlists.length} '
-    '(عناصرها: ${playlists.fold<int>(0, (n, p) => n + p.items.length)})',
+    'saved playlists: ${playlists.length} '
+    '(items: ${playlists.fold<int>(0, (n, p) => n + p.items.length)})',
   );
   print(
-    'مداخل بصيغة المسارات القديمة: ${playlists.fold<int>(0, (n, p) => n + p.items.where((e) => e.isLegacy).length)}',
+    'entries in the legacy path format: ${playlists.fold<int>(0, (n, p) => n + p.items.where((e) => e.isLegacy).length)}',
   );
   print(
-    'وسوم: ${tagCounts.length} · عناصر موسومة: '
+    'tags: ${tagCounts.length} - tagged items: '
     '${(await tags.readAll()).length}',
   );
   print(
-    'فهرس دون اتصال: ${offline.length} · فهرس الأغلفة: '
+    'offline index: ${offline.length} - artwork index: '
     '${artwork.length}',
   );
 
   final keys = (await store.keys()).toList()..sort();
-  print('كل المفاتيح المستعادة (${keys.length}): ${keys.join(', ')}');
+  print('all restored keys (${keys.length}): ${keys.join(', ')}');
 
   // The settings keys that matter; sensitive values are masked.
   for (final key in const [
@@ -108,16 +108,16 @@ Future<void> main(List<String> args) async {
   }
 
   final externals = await store.getStringList('external_urls');
-  if (externals != null) print('  external_urls = ${externals.length} روابط');
+  if (externals != null) print('  external_urls = ${externals.length} urls');
 
   final positions = keys.where((k) => k.startsWith('playback_pos_')).length;
-  print('مواضع استئناف: $positions');
+  print('resume positions: $positions');
 
   // Checks the playlists' JSON integrity after the restore.
   final raw = await store.getString(PlaylistsStore.prefsKey);
   if (raw != null) {
     final decoded = json.decode(raw);
-    print('saved_playlists نوعه: ${decoded.runtimeType}');
+    print('saved_playlists is a ${decoded.runtimeType}');
   }
   exit(0);
 }

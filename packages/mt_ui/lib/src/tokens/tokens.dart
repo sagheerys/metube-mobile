@@ -78,7 +78,9 @@ abstract final class MTMotion {
 
   // How far an element shrinks while pressed. Glimpsed, not watched.
 
-  /// How far the outgoing icon shrinks when two icons swap.
+  /// A screen that rises like a sheet from the bottom, such as the audio
+  /// screen opened from the mini player. Longer than [page] because it
+  /// travels the full distance, and still under the agreed 320ms ceiling.
   static const Duration sheetPage = Duration(milliseconds: 300);
 
   /// How far an element shrinks while pressed. Glimpsed, not watched.
@@ -95,7 +97,8 @@ abstract final class MTMotion {
   static const double dismissFlingVelocity = 700;
 }
 
-/// Warm shadows, copied from the reference values.
+/// The approved typography: Noto Kufi Arabic for headings (700/500) and
+/// Tajawal for body text.
 abstract final class MTType {
   static const String display = 'NotoKufiArabic';
   static const String body = 'Tajawal';
@@ -105,7 +108,17 @@ abstract final class MTType {
   static const String package = 'mt_ui';
 }
 
-/// Warm shadows, copied from the reference values.
+/// **Fixed-width digits** for live counters.
+///
+/// **A documented trap:** adding `FontFeature.tabularFigures()` on its own
+/// does nothing here. Inspecting the font binaries proved that **Tajawal
+/// has no `tnum` table** while Noto Kufi Arabic does. A counter drawn in
+/// the body font keeps dancing with every passing second, however loudly
+/// the feature is requested.
+///
+/// So counters are drawn in the **heading** font, which actually supports
+/// the feature, and only on changing numbers: time, size, speed. Never on
+/// prose.
 extension MTTabularFigures on TextStyle {
   TextStyle get tabular => copyWith(
     fontFamily: MTType.display,
@@ -114,7 +127,7 @@ extension MTTabularFigures on TextStyle {
   );
 }
 
-/// FAB shadow: 0 16 32 -10 in accentDeep at 55%, built from the palette.
+/// Warm shadows, copied from the reference values.
 abstract final class MTShadow {
   /// Daylight card shadow: 0 3 6 at 5% plus 0 30 60 -22 at 22%, in a warm
   /// brown.

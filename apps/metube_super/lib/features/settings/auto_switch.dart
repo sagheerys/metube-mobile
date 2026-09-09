@@ -52,8 +52,8 @@ class AutoSwitchService {
     schedule(immediate: true);
   }
 
-  /// **Debouncing lives here rather than in the execution (fix for the ط-6
-  /// storm):** the library polls every two seconds and invalidates
+  /// **Debouncing lives here rather than in the execution:** the library
+  /// polls every two seconds and invalidates
   /// `historyProvider`, and the error listener used to schedule a probe on
   /// **every** failure. A 700ms debounce is shorter than two seconds and so
   /// gathers nothing: a broken server plus an open library screen meant
@@ -86,7 +86,7 @@ class AutoSwitchService {
   Future<void> resolveNow() async {
     final settings = _ref.read(settingsProvider);
     if (!settings.autoSwitch) return;
-    // **No switching while work is in flight (defect ع-1):** switching the
+    // **No switching while work is in flight:** switching the
     // endpoint rebuilds the engine and silently destroys all of its tasks.
     // Waiting until the queue is quiet is kinder than a download lost with
     // no message.

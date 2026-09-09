@@ -31,7 +31,8 @@ class PlaylistItem {
   final String? serverFilename;
   final bool isAudio;
 
-  /// The aspect ratio if known; below 1 means a portrait video.
+  /// The duration if known, from an earlier play or from the index.
+  /// Required for the shorts path.
   final Duration? duration;
 
   /// The aspect ratio if known; below 1 means a portrait video.

@@ -20,7 +20,7 @@ class NetworkGate {
   StreamSubscription<List<ConnectivityResult>>? _sub;
   final _restored = StreamController<void>.broadcast();
 
-  // **Pessimistic before the first reading (fix م-11):** starting
+  // **Pessimistic before the first reading:** starting
   // optimistically at "Wi-Fi" let a pull start on **mobile data** in the
   // first moments of startup, before the first snapshot arrived, which is
   // exactly what the "Wi-Fi only" setting exists to prevent.

@@ -12,14 +12,16 @@ import io.flutter.plugin.common.MethodChannel
 import java.io.File
 
 /**
- * تثبيت التحديث الذاتي (م-66) — قناة `mtf/update`.
+ * Installing a self-update, over the `mtf/update` channel.
  *
- * **اسم القناة موحّد بين التطبيقين عمداً**: طبقة Dart فوقها متطابقة
- * حرفياً في Lite وSuper، فلا يتفرّع سلوك التحديث بينهما.
+ * **The channel name is deliberately the same in both apps**: the Dart layer
+ * above it is literally identical in Lite and Super, so update behaviour
+ * cannot drift between them.
  *
- * التسليم بـ `content://` من `FileProvider` لا `file://`: أندرويد 7+
- * يرمي `FileUriExposedException` على الثاني، والأول يمنح مثبّت الحزم
- * إذناً مؤقتاً لهذا الملف وحده.
+ * The APK is handed over as a `content://` URI from `FileProvider`, never as
+ * `file://`: Android 7+ throws `FileUriExposedException` on the latter, while
+ * the former grants the package installer a temporary permission for this one
+ * file.
  */
 object UpdateInstaller {
     private const val CHANNEL = "mtf/update"
@@ -39,9 +41,10 @@ object UpdateInstaller {
     }
 
     /**
-     * أندرويد 8+ يجعل «تثبيت من مصادر غير معروفة» إذناً **لكل تطبيق**
-     * لا مفتاحاً عاماً للنظام. بلا فحصه مسبقاً ينتهي المستخدم أمام
-     * شاشة تثبيت مرفوضة بلا تفسير بعد تنزيل عشرات الميغابايت.
+     * Since Android 8, "install from unknown sources" is a **per-application**
+     * permission rather than one system-wide switch. Without checking it up
+     * front, the user reaches a refused install screen with no explanation,
+     * after downloading tens of megabytes.
      */
     private fun canInstall(activity: Activity): Boolean =
         Build.VERSION.SDK_INT < Build.VERSION_CODES.O ||
@@ -69,7 +72,7 @@ object UpdateInstaller {
     ) {
         val file = if (path.isNullOrEmpty()) null else File(path)
         if (file == null || !file.exists()) {
-            result.error("missing", "ملف التحديث غير موجود", null)
+            result.error("missing", "update file not found", null)
             return
         }
         val uri = FileProvider.getUriForFile(

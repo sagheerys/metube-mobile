@@ -168,8 +168,7 @@ class LibraryEnricher {
     return gone;
   }
 
-  /// Records the reason in the diagnostic log **and defers** the retry by a
-  /// day.
+  /// One byte with a short timeout, through the core's client alone.
   Future<bool> _serverHasFile(LibraryItem item) async {
     final api = _ref.read(apiClientProvider);
     final filename = item.serverFilename;

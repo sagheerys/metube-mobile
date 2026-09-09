@@ -38,7 +38,7 @@ final videoSessionProvider = Provider.autoDispose<MTVideoSession>((ref) {
     prefs: ref.watch(playbackPrefsProvider),
   );
   final shapes = ref.watch(mediaShapeIndexProvider);
-  // **The liveness flag before invalidating (fix م-6):** `remember` waits
+  // **The liveness flag before invalidating:** `remember` waits
   // on the disk, and the player may close during that wait so this provider
   // is disposed (autoDispose), giving a `StateError` in the log on every
   // quick close.
@@ -50,7 +50,7 @@ final videoSessionProvider = Provider.autoDispose<MTVideoSession>((ref) {
   };
   // **One audio output, in both directions.** Opening a video while
   // background audio played used to play both at once (caught on a real
-  // device), and the opposite direction stayed open until defect ع-4: the
+  // device), and the opposite direction stayed open until later: the
   // play button in the media notification, or starting audio from the
   // playlists screen opened over the player, played over the running video.
   final handler = ref.read(audioHandlerProvider);
@@ -85,8 +85,8 @@ PlaylistItem toPlaylistItem(LibraryItem item) => PlaylistItem(
 
 /// The thumbnail builder for the players; remote images carry the
 /// authentication headers.
-/// **The headers are read on every image build rather than once (fix
-/// م-9):** capturing them in the closure kept the old server's credentials
+/// **The headers are read on every image build rather than once:**
+/// capturing them in the closure kept the old server's credentials
 /// after an automatic switch, so covers failed with 401 until the screen
 /// was rebuilt.
 MTArtworkBuilder artworkBuilderFor(WidgetRef ref) =>

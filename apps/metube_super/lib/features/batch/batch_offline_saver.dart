@@ -29,7 +29,7 @@ class BatchOfflineSaver {
   /// The pull chain: every item waits for the one before it.
   final Set<String> _wanted = {};
 
-  /// For tests: waits until the queue is empty.
+  /// The pull chain: each item waits for the one before it.
   Future<void> _chain = Future<void>.value();
 
   /// For tests: waits until the queue is empty.
@@ -41,7 +41,8 @@ class BatchOfflineSaver {
   /// ids leak.
   void want(Iterable<String> taskIds) => _wanted.addAll(taskIds);
 
-  /// A member completed, so it takes its turn in the pull queue.
+  /// A member that dropped, having failed or been cancelled, is not waited
+  /// on — otherwise the ids leak.
   void forget(String taskId) => _wanted.remove(taskId);
 
   /// A member completed, so it takes its turn in the pull queue.

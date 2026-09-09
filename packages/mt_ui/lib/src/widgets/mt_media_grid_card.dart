@@ -260,7 +260,7 @@ class _Cover extends StatelessWidget {
                       tooltip: favorite
                           ? l10n.removeFromFavorites
                           : l10n.addToFavorites,
-                      // **A fixed white, not `p.bg`** (defect م-3): the
+                      // **A fixed white, not `p.bg`**: the
                       // chip always sits over a dark cover, so the theme
                       // background colour made it dark on dark at night,
                       // all but invisible.

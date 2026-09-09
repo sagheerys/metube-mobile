@@ -19,7 +19,7 @@ class PlaylistsStore {
   /// scattering that call through every screen.
   final void Function()? onChanged;
 
-  /// **Defensive reading, item by item (fix خ-1):** the catch used to cover
+  /// **Defensive reading, item by item:** the catch used to cover
   /// `FormatException` alone, while `SavedPlaylist.fromJson` throws a
   /// `TypeError` if `items` arrives as a map instead of a list, which
   /// happens when restoring a legacy backup, and restore writes without

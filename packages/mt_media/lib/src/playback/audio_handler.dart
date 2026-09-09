@@ -56,7 +56,7 @@ class MTAudioHandler extends BaseAudioHandler with SeekHandler {
   int _consecutiveErrors = 0;
   Timer? _saveTimer;
 
-  /// **The race guard (defect ع-3).** The video and reels sessions carry a
+  /// **The race guard.** The video and reels sessions carry a
   /// similar guard, and this player had none despite having the most entry
   /// points: two quick taps on two songs could leave A playing while the
   /// notification showed B, with `persist()` writing B's position under A's
@@ -67,7 +67,7 @@ class MTAudioHandler extends BaseAudioHandler with SeekHandler {
   /// Called before any audio playback starts: it stops the live video
   /// session.
   ///
-  /// **The opposite direction of the golden rule (defect ع-4):** "one
+  /// **The opposite direction of the golden rule:** "one
   /// output" was implemented one way only, so opening a video stopped
   /// audio. The play button in the media notification during a video, or
   /// starting audio from the playlists screen opened over the player,
@@ -84,7 +84,7 @@ class MTAudioHandler extends BaseAudioHandler with SeekHandler {
   /// [currentItem] is a point-in-time snapshot: watching it through
   /// `ref.watch` on a provider pinned by an override **never updates**, so
   /// the indicator stuck on the first clip however far the queue advanced
-  /// (screenshot 2026-09-02, defect ط-8). Interfaces consume this stream
+  /// (screenshot 2026-09-02). Interfaces consume this stream
   /// and then need no knowledge of `audio_service` at all.
   Stream<String?> get currentKey =>
       mediaItem.map((item) => item?.id).distinct();
@@ -125,7 +125,7 @@ class MTAudioHandler extends BaseAudioHandler with SeekHandler {
   }) async {
     if (items.isEmpty) return;
     // **The guard starts here rather than in `_loadCurrent`** (revealed by
-    // the ع-3 test): there are two preference reads between this line and
+    // the race test): there are two preference reads between this line and
     // `_loadCurrent`. A stop landing in between, from dismissing the mini
     // player, completed and then **this path carried on, built the queue
     // and played**, bringing back the bar the user had just closed.

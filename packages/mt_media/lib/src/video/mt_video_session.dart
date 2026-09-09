@@ -43,7 +43,7 @@ class MTVideoSession extends ChangeNotifier {
   int _consecutiveErrors = 0;
   Timer? _saveTimer;
 
-  /// **The completion latch (defect ط-2/4):** the end condition stays true
+  /// **The completion latch:** the end condition stays true
   /// in every later notification from the controller, so `onCompleted` was
   /// called twice: two items skipped at once, **and the resume position of
   /// an item nobody had watched was cleared**.
@@ -121,22 +121,18 @@ class MTVideoSession extends ChangeNotifier {
       await controller.initialize();
     } on Object {
       await controller.dispose();
-      // **Publish after initialisation completes, not before (defect
-      // ط-2/1).**
+      // **Publish after initialisation completes, not before.**
       // `_controller` was published and then three awaits followed
-      // (position,
-      // seek, speed) with no guard between them: a second quick skip
-      // disposed
-      // that very controller mid-way, so `seekTo` threw "controller was
-      // used
-      // after being disposed".
+      // (position, seek, speed) with no guard between them: a second quick
+      // skip disposed that very controller mid-way, so `seekTo` threw
+      // "controller was used after being disposed".
       if (generation != _generation) return;
       return _failCurrent();
     }
     if (_disposed || generation != _generation) return controller.dispose();
 
-    // **Publish after initialisation completes, not before (defect
-    // ط-2/1).** `_controller` was published and then three awaits followed
+    // **Publish after initialisation completes, not before.**
+    // `_controller` was published and then three awaits followed
     // (position, seek, speed) with no guard between them: a second quick
     // skip disposed that very controller mid-way, so `seekTo` threw
     // "controller was used after being disposed".
@@ -256,7 +252,7 @@ class MTVideoSession extends ChangeNotifier {
     _generation++; // invalidates any pending load so no controller is published after death
     _saveTimer?.cancel();
     _saveTimer = null;
-    // **Silence before saving (defect ط-2/2):** between closing the screen
+    // **Silence before saving:** between closing the screen
     // and the save completing, the video stayed **audible over the
     // library**; and a failed save prevented disposal entirely, so the
     // controller stayed alive.

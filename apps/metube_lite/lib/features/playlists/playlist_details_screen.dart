@@ -152,7 +152,7 @@ class _ReorderableItems extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // **The indicator used to stick on the first clip** (screenshot
-    // 2026-09-02, defect ط-8): `ref.watch(audioHandlerProvider)` watches a
+    // 2026-09-02): `ref.watch(audioHandlerProvider)` watches a
     // provider pinned by an override that **never emits**, and
     // `currentItem` is a getter over mutable state, a one-off read
     // disguised as a subscription. The correct source is in the package

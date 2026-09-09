@@ -19,6 +19,17 @@ server, built as one Flutter monorepo.
 Both apps share the same core, media and design packages, and both ship in
 **Arabic and English** with a right-to-left-first layout.
 
+## Screenshots
+
+| MeTube Lite | MeTube Super |
+|---|---|
+| ![Lite, day](docs/screenshots/lite-day.png) | ![Super, day](docs/screenshots/super-day.png) |
+| ![Lite, night](docs/screenshots/lite-night.png) | ![Super, night](docs/screenshots/super-night.png) |
+
+The library shown is invented for these screenshots — the titles, the channels
+and the covers are all generated, and no real server or account appears in
+them.
+
 ## Requirements
 
 - A reachable MeTube server (this is a client — it downloads nothing by itself).
@@ -56,7 +67,7 @@ packages/mt_ui       the "Wahaj" design system: tokens, themes, shared widgets,
                      localization (ar/en)
 apps/metube_lite     the family edition
 apps/metube_super    the server-owner edition
-docs/                the full plan, data schema and audit reports (Arabic)
+docs/                the repository map and the server contract
 ```
 
 Dependency direction is one-way: `apps → mt_media → mt_core`. `mt_ui` knows
@@ -65,14 +76,14 @@ nothing about the server, and `mt_core` contains no Flutter code.
 ## Tests
 
 ```bash
-cd packages/mt_core  && dart test              # 339
+cd packages/mt_core  && dart test              # 362
 cd packages/mt_media && flutter test           # 115
-cd packages/mt_ui    && flutter test           #  42
-cd apps/metube_lite  && flutter test           #  47
-cd apps/metube_super && flutter test           #  99
+cd packages/mt_ui    && flutter test           #  44
+cd apps/metube_lite  && flutter test           #  69
+cd apps/metube_super && flutter test           # 121
 ```
 
-**642 tests** at the time of writing, and `flutter analyze` is expected to be
+**711 tests** at the time of writing, and `flutter analyze` is expected to be
 clean. Fixtures come from real server JSON, and every fixed defect leaves behind
 a test that fails on the old code.
 
@@ -96,13 +107,13 @@ repository: what the packages are, the rules that hold them together, where a
 feature belongs, and how to run the tests. It is written in English first, with
 an Arabic version below it.
 
-`docs/plan/` holds the binding specification this project was built against:
-the product requirements, the technical design, the screen flows, the design
-brief, the **server data schema with its documented traps**, and the
-implementation log. **These documents are written in Arabic**, which is the
-working language of the project; the architecture map above covers what a
-contributor needs from them. Issues and pull requests are welcome in either
-Arabic or English.
+[docs/SERVER-API.md](docs/SERVER-API.md) is the contract with the MeTube server
+— every request and response, the local storage schema, and a list of traps that
+each cost a debugging session to find. Read it before touching networking or
+storage code.
+
+The project's working language is Arabic; both documents are written in English,
+and issues and pull requests are welcome in either language.
 
 ## Credits
 
@@ -139,6 +150,7 @@ details.
   الفهرس المحلي، ووسوم، وتحميل دفعي، وإتاحة دون اتصال، وتبديل بين عناوين
   السيرفر.
 
-الواجهة **بالعربية والإنجليزية** وبتخطيط يبدأ من اليمين. الوثائق الكاملة في
-`docs/plan/` بالعربية، والمساهمات مرحّب بها بالعربية أو الإنجليزية —
-راجع [CONTRIBUTING.md](CONTRIBUTING.md).
+الواجهة **بالعربية والإنجليزية** وبتخطيط يبدأ من اليمين. خريطة المستودع في
+[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) وعقد السيرفر في
+[docs/SERVER-API.md](docs/SERVER-API.md) — كلاهما بالإنجليزية، والمساهمات
+مرحّب بها بالعربية أو الإنجليزية. راجع [CONTRIBUTING.md](CONTRIBUTING.md).

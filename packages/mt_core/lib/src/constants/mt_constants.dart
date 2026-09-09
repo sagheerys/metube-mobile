@@ -85,8 +85,8 @@ abstract final class MTConstants {
   /// one line to an independent public releases repository is enough.
   static const String updateRepo = 'sagheerys/metube-mobile';
 
-  /// The update file's name in the app cache. Fixed, so the next download
-  /// overwrites it instead of piling old APKs on the device.
+  /// How often the automatic check runs. Checking at every launch floods
+  /// GitHub for nothing, and releases arrive in weeks rather than hours.
   static const Duration updateCheckInterval = Duration(hours: 12);
 
   /// The update file's name in the app cache. Fixed, so the next download

@@ -24,9 +24,7 @@ enum MTEndpointStatus {
   /// operation afterwards.
   notMeTube,
 
-  /// **Only `ok` may become the active endpoint**: one that answers 401
-  /// serves nothing, and adopting it leaves the app bleeding errors to no
-  /// purpose.
+  /// A drop, a timeout, DNS, or an address with no MeTube on it.
   unreachable;
 
   /// **Only `ok` may become the active endpoint**: one that answers 401

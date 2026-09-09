@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  نصوص اختصارات الأيقونة. **لا تُقرأ من arb**: أندرويد يرسم القائمة قبل
-  أن يقلع محرك Flutter، فالنص لا بد أن يكون مورداً أصيلاً. العربية في
-  `values-ar/strings.xml` وتتبع لغة النظام لا لغة التطبيق — قيد المنصة.
+  Launcher shortcut labels. **Not read from the arb files**: Android draws
+  this menu before the Flutter engine starts, so the text has to be a native
+  resource. The Arabic lives in `values-ar/strings.xml` and follows the
+  system language rather than the app's — a platform constraint.
 -->
 <resources>
     <string name="shortcut_paste_short">Paste link</string>

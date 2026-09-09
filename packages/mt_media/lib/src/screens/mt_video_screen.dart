@@ -57,7 +57,7 @@ class MTVideoScreen extends StatelessWidget {
   final VoidCallback? onShowPlaylist;
 
   /// Smart handover: continue the same item as audio from the same second.
-  /// **Awaited before closing the screen (defect ط-5):** it used to be
+  /// **Awaited before closing the screen:** it used to be
   /// called without awaiting and the player closed immediately, so the
   /// session provider was disposed (autoDispose) while the handover sat on
   /// an `await`. Either a `StateError` meant the audio never started, or

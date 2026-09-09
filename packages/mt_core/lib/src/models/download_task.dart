@@ -52,19 +52,13 @@ class DownloadTask {
 
   final String id;
 
-  /// After the short link is resolved. This is what is sent to `/add`.
+  /// As the user entered it, for display and for retrying.
   final String inputUrl;
 
-  /// The server's title and artwork at the moment of completion. Used for
-  /// the local filename (§2.4), the title and artwork indexes and the
-  /// completion notification. **Neither is invented** when missing (trap
-  /// §6.3).
+  /// After the short link is resolved. This is what is sent to `/add`.
   final String? resolvedUrl;
 
-  /// The server's title and artwork at the moment of completion. Used for
-  /// the local filename (§2.4), the title and artwork indexes and the
-  /// completion notification. **Neither is invented** when missing (trap
-  /// §6.3).
+  /// From `/history`. The **only** value valid for deletion and indexing.
   final String? canonicalUrl;
   final String? serverFilename;
 

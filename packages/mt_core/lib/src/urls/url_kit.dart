@@ -42,7 +42,7 @@ abstract final class UrlKit {
       .toList();
 
   /// Direction marks and zero-width spaces, which **WhatsApp and Telegram
-  /// wrap around links inside Arabic messages** (defect خ-5). Without
+  /// wrap around links inside Arabic messages**. Without
   /// removing them the URL reaches yt-dlp with an invisible tail and fails
   /// with an opaque server error, while the same link works when pasted by
   /// hand. This is an Arabic-first app.
@@ -106,7 +106,7 @@ abstract final class UrlKit {
   /// normalisation rank, which strips the query and flattens every
   /// `youtube.com/watch` into one. That nearly deleted an innocent item.
   ///
-  /// **And a second rule of equal weight (defect ح-2, 2026-09-02):** raw
+  /// **And a second rule of equal weight (2026-09-02):** raw
   /// containment matched **the wrong item** for everything except YouTube:
   /// `soundcloud.com/x/track` matched `soundcloud.com/x/track-remix`, and a
   /// numeric id matched a longer number starting with it. The result was
