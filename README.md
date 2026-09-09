@@ -8,8 +8,12 @@
 [![Platform](https://img.shields.io/badge/platform-Android-3DDC84.svg)](#requirements)
 [![Flutter](https://img.shields.io/badge/Flutter-3.47.2-02569B.svg)](https://flutter.dev)
 
-Two Android clients for a self-hosted [MeTube](https://github.com/alexta69/metube)
-server, built as one Flutter monorepo.
+**Two Android apps for a self-hosted [MeTube](https://github.com/alexta69/metube)
+server** — the yt-dlp web downloader you already run on your NAS or homelab.
+Queue a link from your phone, watch the download happen, then keep the file on
+the server and stream it, or pull it to the device and let the server clean
+itself up. Written in Flutter as one monorepo, in Arabic and English, and free
+software under the GPL.
 
 > **Unofficial.** This project is not affiliated with, endorsed by, or connected
 > to the MeTube project or its authors, nor to yt-dlp. It is an independent

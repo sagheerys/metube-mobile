@@ -8,8 +8,11 @@
 [![Platform](https://img.shields.io/badge/platform-Android-3DDC84.svg)](#المتطلبات)
 [![Flutter](https://img.shields.io/badge/Flutter-3.47.2-02569B.svg)](https://flutter.dev)
 
-تطبيقا أندرويد لسيرفر [MeTube](https://github.com/alexta69/metube) ذاتي
-الاستضافة، في مستودع واحد (Flutter monorepo).
+**تطبيقا أندرويد لسيرفر [MeTube](https://github.com/alexta69/metube) ذاتي
+الاستضافة** — أداة التنزيل المبنية على yt-dlp التي تشغّلها على NAS أو مختبرك
+المنزلي. أرسل الرابط من هاتفك، وتابع التنزيل وهو يجري، ثم أبقِ الملف على
+السيرفر وشغّله بثاً، أو اسحبه للجهاز ودع السيرفر ينظّف نفسه. مكتوبان بـFlutter
+في مستودع واحد، بالعربية والإنجليزية، وبرمجية حرة برخصة GPL.
 
 > **غير رسمي.** المشروع لا يتبع MeTube ولا yt-dlp ولا يمثّلهما ولا يحمل
 > تزكيةً منهما، وإنما هو عميل مستقل يتحدث إلى سيرفر MeTube عبر واجهته
