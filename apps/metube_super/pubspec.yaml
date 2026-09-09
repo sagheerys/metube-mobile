@@ -22,7 +22,7 @@ dependencies:
   # The system file picker (SAF). Android 11+ forbids reading a file the app
   # did not create, so importing a backup from another device cannot work
   # from a fixed path.
-  file_picker: ^10.0.0
+  file_picker: ^11.0.3
   flutter_local_notifications: ^22.3.0
   flutter_riverpod: ^2.6.1
   flutter_secure_storage: ^9.2.2
