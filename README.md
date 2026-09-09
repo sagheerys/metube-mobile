@@ -128,7 +128,7 @@ Translations are very welcome — see [CONTRIBUTING.md](CONTRIBUTING.md).
 |---|---|
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | The map of the repository: the packages, the rules that hold them together, where a feature belongs, how to run the tests. English first, with an Arabic version below it. |
 | [docs/SERVER-API.md](docs/SERVER-API.md) | The contract with the MeTube server: every request and response, the local storage schema, and the traps that each cost a debugging session. Read it before touching networking or storage code. |
-| [docs/SERVER-SETUP.md](docs/SERVER-SETUP.md) | How to configure the server, and the four settings whose absence looks like an app defect. |
+| [docs/SERVER-SETUP.md](docs/SERVER-SETUP.md) | How to configure the server, the four settings whose absence looks like an app defect, and how to reach it safely from outside. |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | What a change has to satisfy before it lands. |
 | [CHANGELOG.md](CHANGELOG.md) | What changed, release by release. |
 | [SECURITY.md](SECURITY.md) | Reporting a vulnerability. |

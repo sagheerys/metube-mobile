@@ -118,6 +118,106 @@ server.
 - **Never expose a MeTube server without authentication.** Anyone who finds it
   can queue downloads onto your disk and read everything already there.
 
+---
+
+## Closing the server off from the outside
+
+MeTube has no login of its own. Whatever you put in front of it *is* the
+authentication. This section is what the apps were built and measured
+against.
+
+### Cloudflare Tunnel
+
+A tunnel is the option that opens no port at all: `cloudflared` dials out
+from your network and Cloudflare hands traffic back down that connection,
+so the server keeps every inbound port closed and TLS is terminated for
+you.
+
+```yaml
+  # alongside the metube service above
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: cloudflared
+    restart: unless-stopped
+    command: tunnel run
+    environment:
+      TUNNEL_TOKEN: "paste the token from the Zero Trust dashboard"
+```
+
+Point the tunnel's public hostname at `http://metube:8081`, and put that
+hostname in the app as the server URL.
+
+**A tunnel is reach, not protection.** On its own it publishes MeTube to
+anyone who learns the hostname. Add one of the two below.
+
+### The way that works: basic auth at the origin
+
+Put a small reverse proxy between the tunnel and MeTube and let it ask for
+a username and password. With Caddy that is four lines:
+
+```
+metube.example.com {
+    basic_auth {
+        yasir $2a$14$...      # caddy hash-password
+    }
+    reverse_proxy metube:8081
+}
+```
+
+The apps carry those credentials on **every** request — the API calls, the
+file pulls, and the streaming requests the players make — so nothing in
+either app breaks. This is the combination the apps are tested against.
+
+### The way that does not work: Cloudflare Access
+
+Cloudflare Access (Zero Trust policies, the e-mail/OTP login page) cannot
+be used in front of MeTube while these apps are the client, and the failure
+is quiet rather than loud:
+
+- Access answers an unauthenticated request with a redirect to a browser
+  login page. The apps follow it, receive HTML with a 200, and report
+  **"not a MeTube server"** — the same message a wrong URL produces.
+- Access **service tokens** would be the headless answer, but they are sent
+  as `CF-Access-Client-Id` and `CF-Access-Client-Secret` headers. The apps
+  send `Authorization: Basic` and nothing else; there is no field for a
+  custom header anywhere in either app.
+
+If you already run Access over your domain, add a **Bypass** policy for the
+MeTube hostname and let basic auth do the work there instead.
+
+### Two URLs, because a tunnel is slow at home
+
+Measured on 2026-09-01 with the phone standing next to the server: 2MB
+took **2.3s** over the local address and **94.8s** through the tunnel —
+**41x**, for traffic that never needed to leave the house.
+
+So Super holds two addresses: the external one (your tunnel hostname) and
+`local_url` (the address on your own network). It probes and adopts
+whichever answers, on a network change, on returning to the foreground, and
+at startup. Fill both in **Settings → Network** and the switch stops being
+something you think about.
+
+Lite keeps a single URL by design: put the tunnel hostname there, and it
+works from anywhere at the tunnel's speed.
+
+### Two cautions about Cloudflare specifically
+
+- Cloudflare's terms restrict serving a large volume of video through the
+  proxy on the free plan. A family streaming its own library is not what
+  that rule is aimed at, but a public library on a free domain is a real
+  risk of being asked to stop.
+- The proxy caps a **request** body at 100MB on the free plan. It never
+  applies here — the apps send URLs, not files — and responses, which is
+  what a download is, are not capped.
+
+### If you would rather nothing were public at all
+
+A private mesh — Tailscale, WireGuard, or your router's own VPN — leaves
+MeTube reachable only by your own devices, with no hostname to find and no
+login page to protect. The apps do not care: give them the mesh address as
+the server URL, and Super can hold that as its external URL with the LAN
+address as `local_url`.
+
 ## Checking it before you blame the app
 
 ```bash
@@ -146,6 +246,8 @@ server at all:
 | Two clips with the same title become one file | `%(id)s` in `YTDL_OPTIONS` `outtmpl` |
 | One platform always fails with a sign-in message | `COOKIES_FILE` |
 | Streaming fails in Super while downloading works | HTTPS, or cleartext allowed for that host |
+| From outside: "not a MeTube server"; at home it connects | a login page in front of the API (Cloudflare Access) — use basic auth, or a Bypass policy for that hostname |
+| Works at home, works away, but is far slower away | fill in `local_url` too, in Super's **Settings → Network** |
 
 The full request-and-response contract, and the traps that were measured
 rather than assumed, are in [SERVER-API.md](SERVER-API.md).
