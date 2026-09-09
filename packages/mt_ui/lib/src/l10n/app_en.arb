@@ -7,13 +7,6 @@
       }
     }
   },
-  "@addNToServer": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "@addedNToServer": {
     "placeholders": {
       "count": {
@@ -94,13 +87,6 @@
       }
     }
   },
-  "@downloadTracks": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "@errServer": {
     "placeholders": {
       "message": {
@@ -111,41 +97,6 @@
   "@errorGeneric": {
     "placeholders": {
       "message": {
-        "type": "Object"
-      }
-    }
-  },
-  "@fileSizeBytes": {
-    "placeholders": {
-      "value": {
-        "type": "Object"
-      }
-    }
-  },
-  "@fileSizeGB": {
-    "placeholders": {
-      "value": {
-        "type": "Object"
-      }
-    }
-  },
-  "@fileSizeKB": {
-    "placeholders": {
-      "value": {
-        "type": "Object"
-      }
-    }
-  },
-  "@fileSizeMB": {
-    "placeholders": {
-      "value": {
-        "type": "Object"
-      }
-    }
-  },
-  "@keyExportedMessage": {
-    "placeholders": {
-      "path": {
         "type": "Object"
       }
     }
@@ -161,13 +112,6 @@
     "placeholders": {
       "when": {
         "type": "String"
-      }
-    }
-  },
-  "@localVideos": {
-    "placeholders": {
-      "count": {
-        "type": "int"
       }
     }
   },
@@ -198,20 +142,6 @@
       }
     }
   },
-  "@playlistsCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "@preparingToShare": {
-    "placeholders": {
-      "percent": {
-        "type": "String"
-      }
-    }
-  },
   "@pullingToDeviceProgress": {
     "placeholders": {
       "percent": {
@@ -222,13 +152,6 @@
   "@queueItemsCount": {
     "placeholders": {
       "count": {
-        "type": "int"
-      }
-    }
-  },
-  "@queuePosition": {
-    "placeholders": {
-      "position": {
         "type": "int"
       }
     }
@@ -247,26 +170,6 @@
       }
     }
   },
-  "@retryingAttempt": {
-    "placeholders": {
-      "attempt": {
-        "type": "int"
-      },
-      "max": {
-        "type": "int"
-      }
-    }
-  },
-  "@searchResults": {
-    "placeholders": {
-      "found": {
-        "type": "int"
-      },
-      "total": {
-        "type": "int"
-      }
-    }
-  },
   "@selected": {
     "placeholders": {
       "count": {
@@ -281,24 +184,10 @@
       }
     }
   },
-  "@shareFailed": {
-    "placeholders": {
-      "message": {
-        "type": "Object"
-      }
-    }
-  },
   "@totalDuration": {
     "placeholders": {
       "duration": {
         "type": "Object"
-      }
-    }
-  },
-  "@tracksCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
       }
     }
   },
@@ -323,13 +212,6 @@
       }
     }
   },
-  "@videosCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "about": "About",
   "aboutApp": "About App",
   "aboutDescriptionLite": "A light, fast app that downloads videos from many platforms through your MeTube server, pulls them to your device and cleans the server afterwards — with a built-in player and playlists.",
@@ -340,7 +222,6 @@
   "activeNow": "Active now",
   "addEndpoint": "Add endpoint",
   "addLinkFab": "Add link",
-  "addNToServer": "Add {count} to server",
   "addTo": "Add to…",
   "addToFavorites": "Add to favorites",
   "addToPlaylist": "Add to Playlist",
@@ -348,25 +229,17 @@
   "addedNToServer": "Added {count} to server",
   "addedToFavorites": "Added to favorites",
   "addedToPlaylistCount": "{count} added to the playlist",
-  "addedToQueue": "Added to download queue",
   "addingToServer": "Sending to the server…",
   "allDownloadsFinished": "All downloads finished!",
   "allPlatforms": "All platforms",
-  "allTagsFilter": "All",
   "alreadyInPlaylist": "Already added",
-  "appFeatures": "App Features",
   "appTitle": "MeTube Super",
-  "appearance": "Appearance",
   "audioOnly": "Audio Only",
   "authHelper": "Leave empty for open servers (no password)",
   "authentication": "Authentication (Optional)",
-  "autoBackgroundAudio": "Auto Background Audio",
-  "autoBackgroundAudioSubtitle": "Play audio in background when pressing back button",
   "autoBuilt": "Automatic",
   "autoCheckUpdates": "Check automatically",
   "autoCheckUpdatesHelp": "Looks for a new version in the background about twice a day.",
-  "autoPlayNext": "Auto-play next: ON",
-  "autoPlayOff": "Auto-play next: OFF",
   "autoRestoreSuccess": "Data restored from backup successfully!",
   "autoRetry": "Retry when the network returns",
   "autoRetryHelp": "Anything that failed because the network dropped is retried on its own when it returns. Server refusals are not retried — repeating them unchanged just fails again.",
@@ -378,18 +251,12 @@
   "availabilityServer": "Server (stream)",
   "availableOfflineNow": "Now available offline",
   "backgroundDownload": "Downloading files in background...",
-  "backgroundPlay": "Background play",
-  "backupFailed": "Backup failed",
-  "backupFileSaved": "Encrypted backup saved",
-  "backupKeyMismatch": "This backup is encrypted with a different key. Import the matching backup key first.",
   "backupNote": "Includes playlists, tags, the offline index, artwork links and settings. Passwords and usernames are never backed up, and media files are not included.",
-  "backupRestore": "Backup & Restore",
   "backupSettings": "Backup All Data",
   "backupSettingsSubtitle": "Seven dated copies that refresh themselves — restore any of them, or export one to share",
   "backupSuccess": "Backup saved to: {path}",
   "backupsKept": "{count} backups kept",
   "batchDownloadSelected": "Download selected",
-  "batchFromPlaylistNote": "This link came from inside a playlist",
   "batchLoading": "Reading the playlist…",
   "batchNothingSelected": "Select at least one item",
   "batchSaveToDevice": "Save a copy on the device",
@@ -398,30 +265,22 @@
   "batchTitle": "Batch download",
   "builtWith": "Built with",
   "cancel": "Cancel",
-  "cardView": "Card view",
   "changeQuality": "Change quality",
   "checkForUpdates": "Check for updates",
-  "chooseBackupFile": "Choose the backup file",
   "chooseOptions": "Options",
   "cleaningServer": "Cleaning up the server...",
   "clear": "Clear",
-  "clearAllConfirm": "This will remove all saved settings including credentials. Continue?",
-  "clearAllSettings": "Clear All Settings",
   "clearLogs": "Clear Logs",
   "clearLogsConfirm": "Delete all diagnostic logs?",
-  "clipboardEmpty": "Clipboard is empty",
   "clipboardFound": "A link is ready in your clipboard",
   "clipboardLinkReady": "Paste link",
   "closePlayer": "Close player",
-  "comingSoonPhase": "This screen is built in a later phase of the plan",
   "compactView": "Compact view",
   "compatiblePlayback": "Best playback compatibility",
   "compatiblePlaybackHelp": "Asks the server for H.264/AAC, which every phone decodes in hardware. Without it YouTube may deliver AV1, which many devices render as a garbled picture. Turning it off allows the highest resolution at the cost of compatibility.",
   "completed": "Completed",
-  "connecting": "Connecting...",
   "connectionFailed": "Connection failed",
   "connectionSuccessful": "Connected successfully — settings saved",
-  "contactDeveloper": "Contact Developer",
   "continueAsAudio": "Continue as audio",
   "continueAsAudioBody": "Keep playing this as audio from the same second?",
   "continueAsAudioNo": "No, stop",
@@ -432,9 +291,6 @@
   "create": "Create",
   "createPlaylist": "Create Playlist",
   "creator": "Creator",
-  "credentialsRequired": "Username and password are required to connect to the server.",
-  "currentServerAddress": "Current server address",
-  "date": "Date",
   "defaultQuality": "Default Video Quality",
   "delete": "Delete",
   "deleteFromServer": "Delete From Server",
@@ -450,45 +306,31 @@
   "deletedFromServer": "Deleted from the server",
   "deletedTitle": "Deleted: {title}",
   "deselectAll": "Deselect All",
-  "detailTitle": "Title",
   "details": "Details",
   "developer": "Developer",
   "developerName": "Yasir Sagheer",
   "diagnosticLogs": "Diagnostic Logs",
   "diagnosticLogsSubtitle": "View, search, and share app logs (redacted)",
-  "diagnostics": "Diagnostics",
   "disclaimer": "Disclaimer",
   "disclaimerText": "This app is a client for MeTube server. The developer is not responsible for how users utilize this tool. Please respect copyright laws and terms of service of content platforms.",
   "dismiss": "Dismiss",
   "done": "Done",
   "download": "Download",
-  "downloadAndShare": "Download & Share",
   "downloadComplete": "Download Complete",
   "downloadCompleteTitle": "Complete!",
   "downloadDate": "Download Date",
   "downloadFailed": "Download Failed",
-  "downloadFailedStatus": "Download failed",
   "downloadFailedTitle": "Download Failed",
   "downloadNow": "Download",
-  "downloadQuality": "Download Quality",
   "downloadStarted": "Download started...",
   "downloadStartedQuality": "Download started · {quality}",
-  "downloadTracks": "Download {count} Tracks",
-  "downloadUrlUnavailable": "Download URL not available",
   "downloading": "Downloading...",
   "downloadingTitle": "Downloading",
-  "downloadsTab": "Downloads",
-  "email": "Email",
   "emptyLibraryMessage": "Add a video link, or pull to refresh.",
   "emptyPlaylist": "Empty playlist",
   "emptyPlaylistMessage": "Add videos from the library",
-  "endpointReachable": "Reachable",
-  "endpointUnreachable": "Unreachable",
   "endpointUrl": "Endpoint URL",
   "enterFullscreen": "Fullscreen",
-  "enterUrl": "Enter URL",
-  "enterUrlHint": "Paste video URL here...",
-  "enterUrlPrompt": "Enter a video URL to download:",
   "errAuth": "Wrong username or password",
   "errNetwork": "Cannot reach the server",
   "errNoApi": "The address responds but has no MeTube API",
@@ -497,60 +339,29 @@
   "errPollTimeout": "The server took too long — try again",
   "errServer": "Server error: {message}",
   "errorGeneric": "Error: {message}",
-  "errorLogs": "Error Logs",
-  "errorLogsSubtitle": "View app logs for diagnostics",
   "exitFullscreen": "Exit fullscreen",
-  "exportKeySubtitle": "Required to restore on a new phone or after reinstall",
   "exportShare": "Export & share",
   "exportShareSubtitle": "A dated copy to send or keep elsewhere",
   "externalNetworkDesc": "When the local URL can't be reached, the app connects through the first reachable URL below, from top to bottom.",
   "externalNetworkSection": "External network",
-  "externalPlayerLocalOnly": "Local copy only — the server link is never handed to another app",
   "externalPlayerShort": "Another player",
   "failed": "Failed",
   "failedToLoadPlaylist": "Failed to load playlist",
-  "failedToLoadVideo": "Failed to load video",
-  "failedToQueue": "Failed to add to queue",
   "favorites": "Favorites",
-  "featureBackup": "Automatic backup and restore",
-  "featureBilingual": "Arabic and English language support",
-  "featureDownload": "Download videos from YouTube and other platforms",
-  "featurePlayer": "Direct download by sharing links from any app",
-  "featurePlaylists": "Create and manage playlists",
-  "featureThemes": "Dark and light themes",
-  "fieldHelp": "Help",
   "file": "File",
   "fileName": "File Name",
-  "fileNotFound": "File not found",
   "fileSize": "File Size",
-  "fileSizeBytes": "{value} B",
-  "fileSizeGB": "{value} GB",
-  "fileSizeKB": "{value} KB",
-  "fileSizeMB": "{value} MB",
   "filterAll": "All",
   "filterAudio": "Audio",
   "filterOffline": "Offline",
-  "filterPlaylists": "Playlists",
   "filterServer": "Server",
   "filterVideo": "Video",
   "format": "Format",
   "helpAboutField": "About this field",
-  "howItWorks": "How it works",
-  "importBackup": "Import a backup",
   "inPlaylists": "In playlists",
   "invalidUrl": "Enter a valid link",
   "itemOptions": "Item options",
   "itemUnavailable": "No longer available",
-  "keyExportFailed": "Failed to export backup key",
-  "keyExportedMessage": "Saved to:\n{path}\n\nUpload this file to Google Drive (or another safe place). You'll need it to restore your backup after Clear Data or on a new phone.",
-  "keyExportedTitle": "Backup key saved",
-  "keyImportConfirm": "Replace key",
-  "keyImportConfirmMessage": "This will replace the device's current encryption key.\n\nAny backup file already on disk that was encrypted with the previous key will become unreadable.\n\nContinue only if this key matches your backup file.",
-  "keyImportConfirmTitle": "Replace current key?",
-  "keyImportInvalid": "Invalid key file",
-  "keyImportNotFound": "Key file not found at Downloads/MeTube_Super/metube_super_backup_key.txt",
-  "keyImportedMessage": "Encryption key restored. You can now use Restore All Data to recover your backup.",
-  "keyImportedTitle": "Key imported",
   "language": "Language",
   "languageArabic": "العربية",
   "languageEnglish": "English",
@@ -562,27 +373,18 @@
   "licensedUnder": "Licensed under GPL-3.0",
   "licenses": "Open-source licenses",
   "listenInBackground": "Listen in the background",
-  "loadingVideo": "Loading video...",
   "localCopyRemoved": "Local copy removed",
   "localNetworkDesc": "The app connects to the server through this URL when it can be reached.",
   "localNetworkSection": "Local network",
-  "localOnlyYoutubeMessage": "Direct downloads support YouTube only.\nConfigure a MeTube server in Settings to download from other platforms.",
   "localUrlLabel": "Local server URL",
-  "localVideos": "Library ({count})",
   "lockTouch": "Lock touch",
   "logsEmpty": "The log is empty",
   "logsSanitizedNote": "Links, addresses and credentials are stripped before sharing",
-  "logsShareText": "MeTube Super logs (URLs/IPs/credentials redacted)",
   "madeOffline": "Saved for offline",
-  "madeWithLove": "Made with ❤️ By Yasir Sagheer",
-  "makeAvailableOffline": "Make available offline",
   "makeOffline": "Make available offline",
   "manageTags": "Manage tags",
   "metubeCredit": "The self-hosted server this app is a client for",
-  "modeAuto": "Auto",
   "modeAutoNext": "Auto",
-  "modeOff": "Off",
-  "modeRepeat": "Repeat",
   "modeRepeatAll": "Repeat all",
   "modeRepeatOne": "Repeat one",
   "modeStopAtEnd": "Stop at end",
@@ -591,7 +393,6 @@
   "navPlaylists": "Playlists",
   "navSettings": "Settings",
   "needsAttention": "Needs your attention",
-  "networkBackRetrying": "Network is back — retrying",
   "networkSettings": "Networks",
   "networkSettingsSubtitle": "Auto-switch between local and external server URLs",
   "newPlaylistAction": "New playlist",
@@ -602,20 +403,15 @@
   "noDownloadsMessage": "Downloaded videos will appear here.\nShare a video link or use the Add URL button.",
   "noExternalPlayer": "No external player on this device",
   "noLogsFound": "No logs found",
-  "noPasswordTip": "No password? Leave auth fields empty for open servers!",
   "noPlayableSource": "This item has no playable source",
-  "noPlaylists": "No playlists",
   "noPlaylistsMessage": "Create a playlist to organize your videos",
   "noResults": "No results",
   "noResultsMessage": "No items match your search.",
   "noServerMessage": "Enter your MeTube server address in Settings to start downloading",
   "noServerTitle": "No server yet",
   "noTagsYet": "No tags yet. Create one below.",
-  "noValidUrl": "No valid video URL found",
   "noVideosFound": "Your library is empty",
-  "noVideosHint": "Share a video URL from any app, or tap the + button to add one",
   "noWarranty": "Provided as is, without any warranty.",
-  "nonYoutubeQualityNote": "Non-YouTube platforms only support best quality or audio",
   "notAffiliated": "Unofficial client — not affiliated with the MeTube project or yt-dlp, and not endorsed by them.",
   "nothingHereYet": "Nothing here yet",
   "nowPlaying": "Now playing",
@@ -623,13 +419,9 @@
   "ok": "OK",
   "onServerPhase": "On the server",
   "onServerProgress": "On the server · {percent}%",
-  "openGithub": "Open MeTube on GitHub",
   "openInExternalPlayer": "Open in another player",
   "openOriginalLink": "Open Original Link",
-  "originalUrl": "Original URL",
   "password": "Password",
-  "passwordRequired": "Password is required",
-  "pasteFromClipboard": "Paste",
   "pasteUrlHint": "Paste the link here…",
   "pause": "Pause",
   "pickAnotherFile": "From another file…",
@@ -637,15 +429,11 @@
   "pinPlaylist": "Pin to top",
   "platform": "Platform",
   "platformCount": "{name} · {count}",
-  "platformFilter": "Platform",
   "play": "Play",
   "playAll": "Play all",
-  "playAllFavorites": "Play all favorites",
   "playModeLabel": "Mode",
-  "playbackError": "Playback Error",
   "playbackSpeed": "Playback speed",
   "playerError": "Couldn't play this file",
-  "playerLoading": "Loading video...",
   "playingFromDevice": "Playing from your device",
   "playlist": "Playlist",
   "playlistCreated": "Playlist created",
@@ -655,12 +443,7 @@
   "playlistNameHint": "My Playlist",
   "playlistOf": "{current} / {total}",
   "playlists": "Playlists",
-  "playlistsCount": "{count} playlists",
-  "pleaseEnterUrl": "Please enter a URL",
   "preferences": "Preferences",
-  "preparingDownload": "Preparing download...",
-  "preparingShare": "Preparing the file for sharing…",
-  "preparingToShare": "Preparing to share… {percent}%",
   "previous": "Previous",
   "pullingToDevice": "Saving to device…",
   "pullingToDeviceProgress": "Saving to device · {percent}%",
@@ -668,17 +451,14 @@
   "quality1080": "1080p",
   "quality480": "480p",
   "quality720": "720p",
-  "qualityAudio": "Audio only",
   "qualityBest": "Best",
   "qualityHelper": "Used by quick download, by whole-playlist downloads, and by \"Download now\" in the clipboard bar — and it is the preselected option in the add-link sheet. So it matters whether or not quick download is on.",
   "queueItemsCount": "{count, plural, =0{No items} =1{1 item} other{{count} items}}",
   "queueLabel": "Queue",
-  "queuePosition": "Queue position: {position}",
   "queued": "Queued",
   "queuedSection": "Waiting",
   "quickDownload": "Quick download",
   "quickDownloadHelp": "A shared or pasted link starts downloading immediately at the default quality, with no sheet. Numeric qualities are YouTube-only — anything else downloads at best quality, and an \"audio only\" default applies everywhere.",
-  "readyToShare": "Ready to share!",
   "reelsEndBack": "Back to library",
   "reelsEndContinue": "Continue the rest of the list",
   "reelsEndReplay": "Replay from the start",
@@ -687,41 +467,24 @@
   "refresh": "Refresh",
   "remove": "Remove",
   "removeFromFavorites": "Remove from favorites",
-  "removeFromPlaylist": "Remove from playlist",
   "removeLocalCopy": "Remove local copy",
-  "removeOfflineConfirm": "Delete the local copy from this device?\nThe video stays on the server and can be streamed again.",
-  "removeOfflineCopy": "Remove offline copy",
-  "removeOfflineTitle": "Remove Offline Copy",
   "removeUnavailable": "Remove {count} unavailable",
   "removedFromFavorites": "Removed from favorites",
   "removedFromPlaylist": "Removed from the playlist",
   "rename": "Rename",
   "renameTag": "Rename tag",
-  "reorderHint": "Drag to reorder",
   "reportBug": "Report a Bug",
-  "restoreCancelled": "Backup file not found in Downloads folder",
   "restoreConfirm": "Restore data from the backup file? This overwrites current playlists, tags and settings.",
   "restoreData": "Restore",
   "restoreFailed": "Restore failed — invalid backup file",
-  "restoreFromBackupSubtitle": "Pick one of the saved backups, or a file",
-  "restoreNotFound": "No backup file found in Downloads/MeTube_Super",
   "restoreSettings": "Restore All Data",
-  "restoreSettingsSubtitle": "Import from Downloads/metube_lite_backup.json",
   "restoreSuccess": "Data restored successfully",
   "resultsFound": "{count, plural, =1{1 result} other{{count} results}}",
   "retry": "Retry",
-  "retryingAttempt": "Retry {attempt}/{max}…",
   "saveSettings": "Save Settings",
   "saveToDevice": "Save to device",
   "savedOnDevice": "Saved on device",
-  "savedPartial": "Saved (Server delete failed)",
-  "savedSuccess": "Settings saved",
-  "savedTo": "Saved to Downloads/MeTube_Lite",
-  "savedToDownloads": "Saved to Downloads/MeTube_Super",
-  "scanningVideos": "Scanning videos...",
-  "searchHint": "Search…",
   "searchLogs": "Search logs…",
-  "searchResults": "Results: {found} of {total}",
   "searchVideos": "Search videos...",
   "seekBackward10": "Back 10 seconds",
   "seekForward10": "Forward 10 seconds",
@@ -729,8 +492,6 @@
   "selected": "{count} selected",
   "selectedCount": "{count} selected",
   "serverConfiguration": "Server Configuration",
-  "serverDownload": "Server Download",
-  "serverDownloadDesc": "Videos will be sent to your MeTube Super/TrueNAS server",
   "serverStatusChecking": "Checking connection…",
   "serverStatusConnected": "Connected to server",
   "serverStatusOffline": "Server unreachable",
@@ -739,19 +500,13 @@
   "serverUrlHelpBody": "The address of your MeTube server, e.g. http://192.168.1.10:8081. Use the LAN IP for plain HTTP at home, or an HTTPS address (e.g. a Cloudflare Tunnel) for access from outside.",
   "serverUrlHelpTitle": "About the Server URL",
   "serverUrlHint": "http://192.168.1.5:8086 or https://domain.com",
-  "serverUrlLabel": "Server URL (MeTube Super)",
   "serverUrlRequired": "Server URL is required",
   "settings": "Settings",
-  "settingsCleared": "Settings cleared",
   "settingsSaved": "Settings saved successfully",
   "setupServer": "Set up the server",
   "share": "Share",
-  "shareFailed": "Failed to share: {message}",
-  "shareKeyFile": "Share key file",
   "shareLogs": "Share Logs",
-  "shareRedacted": "Share (redacted)",
   "shareSelected": "Share Selected",
-  "shareVia": "Share",
   "shortsFilter": "Shorts",
   "shuffle": "Shuffle",
   "signInRequired": "Sign-in required",
@@ -768,39 +523,19 @@
   "sortedByLastPlayed": "By last played",
   "source": "Source",
   "sourceCode": "Source code",
-  "speedNormal": "Normal",
   "startDownload": "Start download",
-  "startingDownload": "Starting download via server...",
   "status": "Status",
-  "statusCompleted": "Completed",
-  "statusDownloading": "Downloading...",
-  "statusError": "Error",
-  "statusOffline": "Offline",
-  "statusQueued": "Queued",
-  "statusQueuing": "Adding to queue...",
-  "statusServerDownloading": "Server downloading...",
-  "statusStream": "Stream",
-  "statusWaiting": "Waiting...",
-  "streamUrlUnavailable": "Stream URL not available",
   "streamingFromServer": "Streaming from the server",
-  "supportedPlatforms": "Supported: YouTube, Twitter/X, Instagram, TikTok, Facebook, Vimeo & more",
   "tagActionsHint": "Long-press a tag to rename or delete it.",
-  "tagAudio": "Audio",
-  "tagVideo": "Video",
   "tags": "Tags",
   "tagsOpenFiltered": "Opens the library filtered",
-  "tapToCopy": "Tap to copy",
   "testingConnection": "Testing connection…",
   "theme": "Theme",
   "themeDark": "Dark",
-  "themeDarkMode": "Dark theme",
-  "themeFollowSystem": "Follow system settings",
   "themeLight": "Light",
-  "themeLightMode": "Light theme",
   "themeSystem": "System",
   "titleLabel": "Title",
   "totalDuration": "Total: {duration}",
-  "tracksCount": "{count} tracks",
   "tryAgain": "Try again",
   "undo": "Undo",
   "unlockTouch": "Unlock",
@@ -828,30 +563,20 @@
   "updateVersionAvailable": "Version {version} is available",
   "updateWhatsNew": "What's new",
   "updates": "Updates",
-  "urlMustStartWith": "URL must start with http:// or https://",
-  "urlRequiredField": "Enter a URL",
-  "useCurrentConnection": "Use current connection",
   "username": "Username",
-  "usernameRequired": "Username is required",
   "version": "Version",
   "videoAdded": "Added to playlist",
-  "videoDetails": "Video details",
-  "videoLabel": "Video",
   "videoPlayer": "Video Player",
-  "videoRemoved": "Removed from playlist",
-  "videosCount": "{count} videos",
   "viewAll": "View all",
   "viewAllInPlaylists": "View all",
   "viewCards": "Cards",
   "viewGrid": "Grid",
   "viewList": "List",
   "viewMode": "View",
-  "waiting": "Waiting for server...",
   "waitingForWifi": "Waiting for Wi-Fi",
   "wifiOnly": "Download over Wi-Fi only",
   "wifiOnlyHelp": "Stops pulling files to your device over mobile data. Tasks wait and resume automatically on Wi-Fi.",
   "yourPlaylists": "Your playlists",
   "yourTags": "Your tags",
-  "youtubeDownloadStarting": "Starting YouTube download...",
   "ytdlpCredit": "The downloader MeTube runs"
 }
