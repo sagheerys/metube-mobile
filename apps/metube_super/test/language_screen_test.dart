@@ -7,6 +7,8 @@ import 'package:metube_super/features/settings/settings_state.dart';
 import 'package:mt_core/mt_core.dart';
 import 'package:mt_ui/mt_ui.dart';
 
+import 'device_matrix.dart';
+
 /// **طلب المالك 2026-09-08**: الاختيار كان `SegmentedButton` بثلاث
 /// شرائح، وهو يقسم العرض على عددها — فثلاثةٌ تسع 360dp **وستةٌ تنكسر**،
 /// والخطة المعلنة دعم اللغات الشائعة.
@@ -85,5 +87,24 @@ void main() {
 
     await pump(tester, null);
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('**مصفوفة الأجهزة**: شاشة اللغة بلا تجاوز إطار', (tester) async {
+    final store = MemoryKeyValueStore();
+    final container = containerWith(null, store);
+    addTearDown(container.dispose);
+    await expectNoOverflow(
+      tester,
+      () => UncontrolledProviderScope(
+        container: container,
+        child: MaterialApp(
+          locale: const Locale('ar'),
+          localizationsDelegates: MTLocalizations.localizationsDelegates,
+          supportedLocales: MTLocalizations.supportedLocales,
+          theme: mtTheme(MTVariant.superApp, Brightness.light),
+          home: const LanguageScreen(),
+        ),
+      ),
+    );
   });
 }
