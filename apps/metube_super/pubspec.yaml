@@ -18,7 +18,7 @@ dependencies:
     path: ../../packages/mt_ui
   audio_service: ^0.18.15
   cached_network_image: ^3.4.1
-  connectivity_plus: ^6.1.0
+  connectivity_plus: ^7.3.1
   # The system file picker (SAF). Android 11+ forbids reading a file the app
   # did not create, so importing a backup from another device cannot work
   # from a fixed path.
