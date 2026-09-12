@@ -15,6 +15,11 @@ the server and stream it, or pull it to the device and let the server clean
 itself up. Written in Flutter as one monorepo, in Arabic and English, and free
 software under the GPL.
 
+<p align="center">
+  <img src="docs/screenshots/lite-share.gif" width="300" alt="MeTube Lite: a link is shared to the app, the server downloads it, the phone pulls the file and the server is cleaned up">
+</p>
+<p align="center"><sub>MeTube Lite, start to finish: share a link, the server downloads it, the phone pulls the file, the server cleans up. Invented demo data; the waiting is sped up 3×.</sub></p>
+
 > **Unofficial.** This project is not affiliated with, endorsed by, or connected
 > to the MeTube project or its authors, nor to yt-dlp. It is an independent
 > client that talks to a MeTube server over its HTTP API. The name "MeTube" is
