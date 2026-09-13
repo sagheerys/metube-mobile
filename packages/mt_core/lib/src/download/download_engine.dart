@@ -39,6 +39,7 @@ class DownloadEngine {
     Transfer? transfer,
     this.pollInterval = MTConstants.pollInterval,
     this.maxPollAttempts = MTConstants.maxPollAttempts,
+    this.pollNetworkTolerance = 0,
     this.pullToDevice = true,
     this.onCompleted,
     this.pullGate,
@@ -53,6 +54,9 @@ class DownloadEngine {
   final SavePathBuilder savePathBuilder;
   final Duration pollInterval;
   final int maxPollAttempts;
+
+  /// See [DownloadPoller.networkTolerance]; 0, Lite's rule, fails at once.
+  final int pollNetworkTolerance;
 
   /// Rule 2: Lite pulls to the device once an item completes; Super does
   /// not, where pulling happens only through "make available offline".
@@ -113,8 +117,7 @@ class DownloadEngine {
   List<DownloadTask> get tasks => List.unmodifiable(_tasks.values);
   DownloadTask? taskById(String id) => _tasks[id];
 
-  /// Is any task still alive? Stops a server switch from wiping them out
-  ///.
+  /// Is any task still alive? Stops a server switch from wiping them out.
   bool get hasActiveWork =>
       _tasks.values.any((t) => !t.isFinished) || _parked.isNotEmpty;
 
@@ -284,6 +287,7 @@ class DownloadEngine {
         api: api,
         pollInterval: pollInterval,
         maxAttempts: maxPollAttempts,
+        networkTolerance: pollNetworkTolerance,
       ).pollUntilDone(
         url: task.effectiveUrl,
         before: _snapshots[taskId] ?? const <String>{},

@@ -25,6 +25,12 @@ abstract final class MTConstants {
   /// 120 x 5s, a ten-minute ceiling for one download pipeline.
   static const int maxPollAttempts = 120;
 
+  /// Super's allowance for network failures in a row while polling; see
+  /// `DownloadPoller.networkTolerance` (field report 2026-09-13). Six is
+  /// about half a minute when connections are refused and a few minutes
+  /// when they time out. Lite, kept awake by its foreground service, keeps 0.
+  static const int superPollNetworkTolerance = 6;
+
   /// Super's live interface refresh, only while something is active.
   static const Duration livePollInterval = Duration(seconds: 2);
 

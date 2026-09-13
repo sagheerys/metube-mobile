@@ -125,6 +125,7 @@ final downloadEngineProvider = Provider<DownloadEngine?>((ref) {
     api: api,
     policy: DeletePolicy.keepOnServer,
     pullToDevice: false,
+    pollNetworkTolerance: MTConstants.superPollNetworkTolerance,
     savePathBuilder: (task, filename) =>
         throw StateError('Super does not pull from the add pipeline'),
     onCompleted: (task) {
