@@ -6,6 +6,9 @@
          awake during video. -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"/>
+    <!-- Downloads that keep going while the app is in the background: a
+         foreground service held only while a task is active (2026-09-13). -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC"/>
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
     <!-- **Defect caught on a real device.** This declaration was missing from
          Super entirely, and Android 13+ then blocks the media notification
@@ -74,6 +77,15 @@
                 android:name="android.app.shortcuts"
                 android:resource="@xml/shortcuts"/>
         </activity>
+        <!-- The `flutter_background` service that keeps a download going when
+             the user leaves the app (field report 2026-09-13). **Without this
+             declaration** the system refuses to start it and background mode
+             stays silently off, exactly as in Lite. -->
+        <service
+            android:name="de.julianassmann.flutter_background.IsolateHolderService"
+            android:foregroundServiceType="dataSync"
+            android:enabled="true"
+            android:exported="false"/>
         <!-- The background audio service and the media-button receiver
              (audio_service). -->
         <service

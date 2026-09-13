@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/widgets.dart' show Locale;
+import 'package:flutter_background/flutter_background.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mt_core/mt_core.dart';
 import 'package:mt_ui/mt_ui.dart';
@@ -20,15 +21,19 @@ final notificationsProvider = Provider((ref) => DownloadNotifications());
 /// worse off: a "needs your attention" card is seen only by someone who
 /// opens the management sheet.
 ///
-/// **And no foreground service here, unlike Lite:** Lite pulls every file
-/// to the device and so needs to survive in the background, while Super
-/// leaves files on the server (§4) and pulling is the exception ("available
-/// offline" and batches). A permanent service for the exception drains the
-/// battery for nothing.
+/// **A foreground service while, and only while, a download is active**
+/// (field report 2026-09-13). Super used to have none, on the reasoning that
+/// its files stay on the server so nothing has to survive in the background.
+/// Measured on the emulator: seconds after the user left the app Android
+/// froze it, not one `/history` request went out for 90 seconds, and the
+/// progress notification sat at 5% until the app was opened again. The
+/// service is Lite's own, started with the first active task and stopped
+/// with the last, so an idle Super holds nothing.
 final downloadWatcherProvider = Provider<void>((ref) {
   final notifications = ref.watch(notificationsProvider);
   final logger = ref.watch(loggerProvider);
   final notified = <String>{};
+  var backgroundOn = false;
 
   /// The last notification's fingerprint per task. Without this filter,
   /// seven tasks are posted on every broadcast, thousands of calls a
@@ -44,6 +49,39 @@ final downloadWatcherProvider = Provider<void>((ref) {
   );
 
   int idOf(DownloadTask task) => task.id.hashCode & 0x7fffffff;
+
+  Future<void> syncBackground(bool anyActive) async {
+    if (anyActive == backgroundOn) return;
+    backgroundOn = anyActive;
+    try {
+      if (anyActive) {
+        final texts = l10n();
+        final ready = await FlutterBackground.initialize(
+          androidConfig: FlutterBackgroundAndroidConfig(
+            notificationTitle: texts.downloadingTitle,
+            notificationText: texts.backgroundDownload,
+            notificationImportance: AndroidNotificationImportance.normal,
+            notificationIcon: const AndroidResource(
+              name: 'ic_launcher',
+              defType: 'mipmap',
+            ),
+            enableWifiLock: true,
+            // No battery-optimisation exemption: an intrusive system dialog,
+            // and the foreground service alone carries a download session.
+            shouldRequestBatteryOptimizationsOff: false,
+          ),
+        );
+        if (ready) await FlutterBackground.enableBackgroundExecution();
+      } else if (FlutterBackground.isBackgroundExecutionEnabled) {
+        await FlutterBackground.disableBackgroundExecution();
+      }
+    } catch (e) {
+      // A refused permission or an unsupported device: the download still
+      // runs while the app is open, as it did before.
+      backgroundOn = false;
+      await logger.error('background mode failed', cause: e, tag: 'download');
+    }
+  }
 
   Future<void> showProgressIfChanged(
     int id, {
@@ -159,6 +197,7 @@ final downloadWatcherProvider = Provider<void>((ref) {
           await notifications.cancel(id);
       }
     }
+    await syncBackground(tasks.any((t) => !t.isFinished));
   }
 
   ref.listen<AsyncValue<List<DownloadTask>>>(engineTasksProvider, (_, next) {
