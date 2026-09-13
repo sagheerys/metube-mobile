@@ -8,9 +8,27 @@ import 'library_models.dart';
 
 /// The unified library items: the server's done list plus the local index,
 /// merged on canonicalUrl with fuzzy matching.
+///
+/// **The phone's own files are read first, and an unreachable server no
+/// longer hides them** (field report 2026-09-13): `/history` was awaited
+/// before the index, so with no internet the library became a full-screen
+/// error although every offline copy could still play. Now the last good
+/// `/history` stands in, or none at all, and [libraryServerErrorProvider]
+/// tells the screen why the server part is missing. The full-screen error
+/// stays for the two cases with nothing honest to show: a rejected
+/// credential, and no server list with nothing on the phone either.
 final libraryItemsProvider = FutureProvider<List<LibraryItem>>((ref) async {
-  final history = await ref.watch(historyProvider.future);
   final offline = await ref.watch(offlineIndexProvider).readAll();
+  HistoryResponse? history;
+  try {
+    history = await ref.watch(historyProvider.future);
+  } on AuthFailureException {
+    rethrow;
+  } on MTApiException {
+    final lastGood = ref.read(historyProvider).valueOrNull;
+    if (lastGood == null && offline.isEmpty) rethrow;
+    history = lastGood;
+  }
   final tags = await ref.watch(tagsIndexProvider).readAll();
   final artwork = await ref.watch(artworkIndexProvider).readAll();
   final Map<String, MediaShape> shapes = await ref
@@ -93,6 +111,14 @@ final libraryItemsProvider = FutureProvider<List<LibraryItem>>((ref) async {
     );
   }
   return items;
+});
+
+/// Why the server part of the library is missing while the library itself
+/// is still shown; null when the server answers. It stays set during a
+/// retry, so the banner does not vanish and come back.
+final libraryServerErrorProvider = Provider<Object?>((ref) {
+  final history = ref.watch(historyProvider);
+  return history.hasError ? history.error : null;
 });
 
 /// View options plus multi-select. Sorting and the view mode are saved.

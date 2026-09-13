@@ -973,6 +973,10 @@ class MTLocalizationsAr extends MTLocalizations {
   String get serverStatusUnconfigured => 'لم يُضبط الخادم';
 
   @override
+  String get serverUnreachableLocalHint =>
+      'المقاطع المحفوظة على هاتفك ما زالت تعمل.';
+
+  @override
   String get serverUrl => 'رابط السيرفر (MeTube)';
 
   @override

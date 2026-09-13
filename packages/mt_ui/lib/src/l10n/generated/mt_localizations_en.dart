@@ -966,6 +966,10 @@ class MTLocalizationsEn extends MTLocalizations {
   String get serverStatusUnconfigured => 'No server configured';
 
   @override
+  String get serverUnreachableLocalHint =>
+      'Videos saved on this phone still play.';
+
+  @override
   String get serverUrl => 'Server URL (MeTube)';
 
   @override

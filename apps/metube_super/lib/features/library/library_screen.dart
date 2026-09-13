@@ -18,6 +18,7 @@ import 'widgets/downloads_sheet.dart';
 import 'widgets/item_actions_sheet.dart' show confirmBulkDelete;
 import 'widgets/library_cards.dart';
 import 'widgets/library_chips.dart';
+import 'widgets/server_banner.dart';
 import 'widgets/sort_sheet.dart';
 
 /// The unified library: live cards only while something is active, plus a
@@ -92,11 +93,9 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
             )
           : RefreshIndicator(
               onRefresh: () async {
-                // A failed refresh is shown by the library itself in its
-                // empty state, and
-                // rethrowing here escapes the `RefreshIndicator` with
-                // nobody to catch
-                // it.
+                // A failed refresh is shown by the library itself, and
+                // rethrowing here escapes the `RefreshIndicator` with nobody
+                // to catch it.
                 ref.invalidate(historyProvider);
                 try {
                   await ref.read(libraryItemsProvider.future);
@@ -224,26 +223,16 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                   ),
                 ),
               const SizedBox(height: MTSpace.md),
-              // Every mode is lazy: `builder` builds only what is visible,
-              // which is the
-              // condition for 251 items without freezing. The fourth mode,
-              // cards, is
-              // the heaviest because every cover is the width of the
-              // screen, and
-              // laziness is what makes it possible at all: only three cards
-              // are ever
-              // visible.
+              // Why the server part is missing, when it is (2026-09-13).
+              const LibraryServerBanner(),
               ..._activeStrip(l10n, active),
             ],
           ),
         ),
         // **The ratio is measured, not estimated** (verified with an
-        // emulator
-        // screenshot): 0.82 left about 50 points of dead space under every
-        // card
-        // and the grid looked disjointed. The real content is a 16:9 cover
-        // plus
-        // two title lines plus a meta line.
+        // emulator screenshot): 0.82 left about 50 points of dead space under
+        // every card and the grid looked disjointed. The real content is a
+        // 16:9 cover plus two title lines plus a meta line.
         ...switch (itemsAsync) {
           AsyncValue(valueOrNull: final value?) when value.isNotEmpty => [
             SliverPadding(
@@ -358,13 +347,6 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     final engine = ref.read(downloadEngineProvider);
     final statusText = switch (task.phase) {
       TaskPhase.queued => l10n.queuedSection,
-      // Rule 4: tapping an item. Audio plays in the background immediately
-      // and
-      // the mini player appears; video opens `/player`. The internal play
-      // queue
-      // is **the library as displayed** at the moment of the tap, with the
-      // same
-      // sorting and filtering.
       TaskPhase.adding || TaskPhase.polling => l10n.onServerPhase,
       TaskPhase.waitingForNetwork => l10n.waitingForWifi,
       TaskPhase.pulling => l10n.pullingToDevice,

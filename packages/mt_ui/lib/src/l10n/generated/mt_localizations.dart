@@ -1814,6 +1814,12 @@ abstract class MTLocalizations {
   /// **'No server configured'**
   String get serverStatusUnconfigured;
 
+  /// No description provided for @serverUnreachableLocalHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Videos saved on this phone still play.'**
+  String get serverUnreachableLocalHint;
+
   /// No description provided for @serverUrl.
   ///
   /// In en, this message translates to:

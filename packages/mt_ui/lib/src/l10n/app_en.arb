@@ -505,6 +505,7 @@
   "serverStatusConnected": "Connected to server",
   "serverStatusOffline": "Server unreachable",
   "serverStatusUnconfigured": "No server configured",
+  "serverUnreachableLocalHint": "Videos saved on this phone still play.",
   "serverUrl": "Server URL (MeTube)",
   "serverUrlHelpBody": "The address of your MeTube server, e.g. http://192.168.1.10:8081. Use the LAN IP for plain HTTP at home, or an HTTPS address (e.g. a Cloudflare Tunnel) for access from outside.",
   "serverUrlHelpTitle": "About the Server URL",

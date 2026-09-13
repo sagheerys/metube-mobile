@@ -39,6 +39,7 @@ class LibraryEnricher {
   Future<void> enrich(List<LibraryItem> items) async {
     if (_running) return;
     final endpoint = _ref.read(playbackResolverProvider).endpoint;
+    final serverDown = _ref.read(libraryServerErrorProvider) != null;
     final headers = _ref.read(apiClientProvider)?.streamingHeaders ?? const {};
 
     // **A cover in the index does not mean a file on disk**: thumbnails
@@ -80,6 +81,10 @@ class LibraryEnricher {
       if (failures.isCoolingDown(cooling, item.canonicalUrl)) continue;
       final request = _requestFor(item, endpoint);
       if (request == null) continue;
+      // **No server, no network probe** (2026-09-13): with the server
+      // unreachable, every server item failed its one-byte check and was
+      // marked missing for a day. They are probed once it answers again.
+      if (request.url != null && serverDown) continue;
       // **A URL whose liveness we have not confirmed is never handed to the
       // platform**: `MediaMetadataRetriever` retries a dead URL ten times
       // on an 8s timeout and freezes the queue, while one byte from us

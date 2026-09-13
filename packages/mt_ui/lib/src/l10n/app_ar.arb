@@ -324,6 +324,7 @@
   "serverStatusConnected": "متصل بالخادم",
   "serverStatusOffline": "تعذّر الوصول للخادم",
   "serverStatusUnconfigured": "لم يُضبط الخادم",
+  "serverUnreachableLocalHint": "المقاطع المحفوظة على هاتفك ما زالت تعمل.",
   "serverUrl": "رابط السيرفر (MeTube)",
   "serverUrlHelpBody": "عنوان خادم MeTube، مثل http://192.168.1.10:8081. استخدم عنوان IP المحلي لـ HTTP العادي في المنزل، أو عنوان HTTPS (مثل Cloudflare Tunnel) للوصول من الخارج.",
   "serverUrlHelpTitle": "حول رابط السيرفر",
