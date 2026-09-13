@@ -145,8 +145,8 @@ class ReelsOverlayLayer extends StatelessWidget {
             // **Above the progress bar, not on it** (emulator screenshot
             // 2026-09-02): once the bar became permanently visible, the
             // orange line ran straight through the middle of the clip
-            // title. 64 is the bar height (24) plus the bottom safe inset
-            // plus breathing room.
+            // title. 64 clears the bar's 48-point touch strip, both above
+            // the bottom safe inset, plus breathing room.
             PositionedDirectional(
               start: 74,
               end: MTSpace.lg,

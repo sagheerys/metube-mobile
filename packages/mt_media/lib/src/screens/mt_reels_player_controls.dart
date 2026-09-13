@@ -107,9 +107,9 @@ extension _ReelsPlayback on _MTReelsPlayerState {
 
   Future<void> _onScrubEnd() async {
     final controller = _controller;
-    // Cancellation, when the vertical `PageView` wins the gesture, passes
-    // through here too, or the clip stays paused with no visible pause
-    // indicator.
+    // A cancelled drag passes through here too (a plain tap on the bar
+    // cancels a drag that never started), or the clip stays paused with no
+    // visible pause indicator; [_resumeAfterScrub] makes the extra call safe.
     if (_disposed || controller == null || !_resumeAfterScrub) return;
     _resumeAfterScrub = false;
     await widget.onTakeAudioFocus?.call();

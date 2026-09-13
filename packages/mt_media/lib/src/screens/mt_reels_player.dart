@@ -294,17 +294,22 @@ class _MTReelsPlayerState extends State<MTReelsPlayer> {
               // the only reference for where you are in the clip, and hiding
               // it with the chrome makes seeking impossible without two
               // touches. So it lives **outside** the fading chrome layer.
+              // Edge to edge on purpose (field report 2026-09-13): the side
+              // margins and the system inset are the bar's own padding,
+              // inside its touch area, not gaps that fell to tap-to-pause.
               PositionedDirectional(
-                start: MTSpace.lg,
-                end: MTSpace.lg,
-                bottom: MTSpace.sm,
-                child: SafeArea(
-                  top: false,
-                  child: ReelsProgressBar(
-                    controller: _controller,
-                    onScrubStart: _onScrubStart,
-                    onScrubEnd: () => unawaited(_onScrubEnd()),
+                start: 0,
+                end: 0,
+                bottom: 0,
+                child: ReelsProgressBar(
+                  controller: _controller,
+                  padding: EdgeInsets.only(
+                    left: MTSpace.lg,
+                    right: MTSpace.lg,
+                    bottom: MediaQuery.paddingOf(context).bottom,
                   ),
+                  onScrubStart: _onScrubStart,
+                  onScrubEnd: () => unawaited(_onScrubEnd()),
                 ),
               ),
             ],

@@ -9,14 +9,21 @@ import '../widgets/media_time.dart';
 ///
 /// While dragging we show the finger's position rather than the player's,
 /// or the marker jumped back with every player update and the bar seemed
-/// to "resist" the finger. And the touch area is **24 points** around a
-/// 3-point line: a thin bar is pretty and impossible to grab.
+/// to "resist" the finger.
+///
+/// **The touch area is 48 points plus [padding]** around a 3-point line. It
+/// was 24 points, and everything around it belongs to tap-to-pause, so a
+/// finger that slightly missed the strip paused the clip a moment later and
+/// the bar took the blame (field report 2026-09-13: "seeking pauses the
+/// video"). The padding sits inside the detector for the same reason: the
+/// side margins and the system inset around the line scrub too.
 class ReelsProgressBar extends StatefulWidget {
   const ReelsProgressBar({
     super.key,
     this.controller,
     this.onScrubStart,
     this.onScrubEnd,
+    this.padding = EdgeInsets.zero,
   });
 
   final VideoPlayerController? controller;
@@ -27,6 +34,10 @@ class ReelsProgressBar extends StatefulWidget {
   /// is never left paused with no indicator.
   final VoidCallback? onScrubStart;
   final VoidCallback? onScrubEnd;
+
+  /// Space around the track that still belongs to the bar's touch area.
+  /// Keep left and right equal: the fraction is measured from the left.
+  final EdgeInsets padding;
 
   @override
   State<ReelsProgressBar> createState() => _ReelsProgressBarState();
@@ -68,13 +79,20 @@ class _ReelsProgressBarState extends State<ReelsProgressBar> {
     final p = MTThemeX.of(context).palette;
     final controller = widget.controller;
     if (controller == null || !controller.value.isInitialized) {
-      return const SizedBox(height: 24);
+      return Padding(
+        padding: widget.padding,
+        child: const SizedBox(height: kMinInteractiveDimension),
+      );
     }
     return LayoutBuilder(
       builder: (context, constraints) {
-        final width = constraints.maxWidth;
+        final width = constraints.maxWidth - widget.padding.horizontal;
+        double fractionAt(Offset local) => _fractionFrom(
+          Offset(local.dx - widget.padding.left, local.dy),
+          width,
+        );
         void update(Offset local) =>
-            setState(() => _dragFraction = _fractionFrom(local, width));
+            setState(() => _dragFraction = fractionAt(local));
 
         return GestureDetector(
           behavior: HitTestBehavior.opaque,
@@ -94,53 +112,55 @@ class _ReelsProgressBarState extends State<ReelsProgressBar> {
             widget.onScrubEnd?.call();
           },
           // A tap on the bar is a direct jump, with no drag.
-          onTapDown: (d) {
-            final fraction = _fractionFrom(d.localPosition, width);
-            _seekToFraction(fraction);
-          },
-          child: SizedBox(
-            height: 24,
-            child: Center(
-              child: ValueListenableBuilder<VideoPlayerValue>(
-                valueListenable: controller,
-                builder: (context, state, _) {
-                  final total = state.duration.inMilliseconds;
-                  final playedFraction = total <= 0
-                      ? 0.0
-                      : (state.position.inMilliseconds / total).clamp(0.0, 1.0);
-                  final dragging = _dragFraction != null;
-                  final shown = _dragFraction ?? playedFraction;
-                  return Row(
-                    children: [
-                      Expanded(
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(3),
-                          child: LinearProgressIndicator(
-                            value: shown,
-                            // It thickens under the finger: confirmation
-                            // that the drag was caught.
-                            minHeight: dragging ? 6 : 3,
-                            backgroundColor: MTPalette.serverCardInk.withValues(
-                              alpha: 0.25,
+          onTapDown: (d) => _seekToFraction(fractionAt(d.localPosition)),
+          child: Padding(
+            padding: widget.padding,
+            child: SizedBox(
+              height: kMinInteractiveDimension,
+              child: Center(
+                child: ValueListenableBuilder<VideoPlayerValue>(
+                  valueListenable: controller,
+                  builder: (context, state, _) {
+                    final total = state.duration.inMilliseconds;
+                    final playedFraction = total <= 0
+                        ? 0.0
+                        : (state.position.inMilliseconds / total).clamp(
+                            0.0,
+                            1.0,
+                          );
+                    final dragging = _dragFraction != null;
+                    final shown = _dragFraction ?? playedFraction;
+                    return Row(
+                      children: [
+                        Expanded(
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(3),
+                            child: LinearProgressIndicator(
+                              value: shown,
+                              // It thickens under the finger: confirmation
+                              // that the drag was caught.
+                              minHeight: dragging ? 6 : 3,
+                              backgroundColor: MTPalette.serverCardInk
+                                  .withValues(alpha: 0.25),
+                              valueColor: AlwaysStoppedAnimation(p.accent),
                             ),
-                            valueColor: AlwaysStoppedAnimation(p.accent),
                           ),
                         ),
-                      ),
-                      if (dragging) ...[
-                        const SizedBox(width: MTSpace.sm),
-                        Text(
-                          mtFormatDuration(state.duration * shown),
-                          style: const TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            color: MTPalette.serverCardInk,
-                          ).tabular,
-                        ),
+                        if (dragging) ...[
+                          const SizedBox(width: MTSpace.sm),
+                          Text(
+                            mtFormatDuration(state.duration * shown),
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              color: MTPalette.serverCardInk,
+                            ).tabular,
+                          ),
+                        ],
                       ],
-                    ],
-                  );
-                },
+                    );
+                  },
+                ),
               ),
             ),
           ),
