@@ -9,7 +9,35 @@ only one.
 
 ## [Unreleased]
 
-Nothing yet.
+## [2.0.1]
+
+### Fixed
+
+- **Reels: a finger that slightly misses the progress bar no longer pauses
+  the clip.** The bar's touch strip was 24 points, and a touch just beside it
+  landed on tap-to-pause. It is now 48 points, and the side margins and the
+  system inset below it belong to the bar. Both apps.
+- **MeTube Super: a download keeps going after you leave the app.** Super had
+  no background service, so seconds after leaving the app Android froze it:
+  the progress notification stopped where it was, and the result appeared
+  only when the app was opened again (measured: no request to the server for
+  90 seconds). Super now holds the same foreground service as MeTube Lite,
+  started with the first active download and stopped with the last, so it
+  shows a "downloading in the background" notification only while a download
+  runs. Polling also tolerates six network failures in a row instead of
+  failing a download the server was still finishing. MeTube Lite is
+  unchanged.
+- **The first percent of a download no longer shows as 100%.** MeTube's
+  `percent` is always 0 to 100, and values of 1 or less were read as
+  fractions. Both apps.
+
+### Changed
+
+- **MeTube Super: the library stays usable without the server.** When the
+  server cannot be reached, the videos saved on the phone, and the last server
+  list if one had loaded, stay on screen under a banner that names the cause
+  and offers a retry. The full-screen error remains when nothing is saved, and
+  for a rejected password.
 
 ## [2.0.0]
 
@@ -65,5 +93,6 @@ each one left behind a test that fails on the old code.
 - An album pasted as one link expanding into twenty downloads on the server,
   with only one of them pulled.
 
-[Unreleased]: https://github.com/sagheerys/metube-mobile/compare/v2.0.0...HEAD
+[Unreleased]: https://github.com/sagheerys/metube-mobile/compare/v2.0.1...HEAD
+[2.0.1]: https://github.com/sagheerys/metube-mobile/compare/v2.0.0...v2.0.1
 [2.0.0]: https://github.com/sagheerys/metube-mobile/releases/tag/v2.0.0
