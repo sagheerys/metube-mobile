@@ -139,8 +139,17 @@ class HistoryItem {
     return null; // not YouTube: nothing is invented; ArtworkIndex fills it later.
   }
 
+  /// MeTube's `percent` is **always 0 to 100**, so it is always divided.
+  ///
+  /// The two keys used to share one guess, "above 1 means a percentage",
+  /// and a download at its first percent (`percent: 1.0`, or `0.5`) read as
+  /// a fraction: the card showed **100%** and then fell back to the real
+  /// figure on the next poll (seen while recording the demo, 2026-09-12).
+  /// The guess survives only for `progress`, which may already be 0 to 1.
   static double? _parseProgress(Map<String, dynamic> json) {
-    final raw = json['percent'] ?? json['progress'];
+    final percent = json['percent'];
+    if (percent is num) return percent.toDouble() / 100;
+    final raw = json['progress'];
     if (raw is! num) return null;
     final value = raw.toDouble();
     return value > 1 ? value / 100 : value;

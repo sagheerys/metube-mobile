@@ -136,6 +136,16 @@ void main() {
       expect(item.progress, 0.7);
     });
 
+    test('percent is 0..100 even at its first percent, never a fraction', () {
+      // Guard: `percent: 1.0` used to read as 1.0, and the card showed 100%.
+      final one = HistoryItem.fromJson({'url': 'u', 'percent': 1.0});
+      final half = HistoryItem.fromJson({'url': 'u', 'percent': 0.5});
+      final zero = HistoryItem.fromJson({'url': 'u', 'percent': 0});
+      expect(one.progress, closeTo(0.01, 1e-9));
+      expect(half.progress, closeTo(0.005, 1e-9));
+      expect(zero.progress, 0);
+    });
+
     test('no status and no error means unknown', () {
       final item = HistoryItem.fromJson({'url': 'u'});
       expect(item.status, ItemStatus.unknown);
