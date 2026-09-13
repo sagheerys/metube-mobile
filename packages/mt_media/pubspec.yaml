@@ -16,7 +16,7 @@ dependencies:
   mt_ui:
     path: ../mt_ui
   audio_service: ^0.18.15
-  just_audio: ^0.9.42
+  just_audio: ^0.10.6
   video_player: ^2.9.2
   wakelock_plus: ^1.2.8
 
