@@ -51,9 +51,9 @@ void main() {
   Future<void> saveOnPhone(ProviderContainer c) =>
       c.read(offlineIndexProvider).put(localUrl, '/media/saved.mp4');
 
-  List<String?> titles(List<LibraryItem> items) => [
-    for (final item in items) item.title,
-  ]..sort((a, b) => (a ?? '').compareTo(b ?? ''));
+  List<String?> titles(List<LibraryItem> items) =>
+      [for (final item in items) item.title]
+        ..sort((a, b) => (a ?? '').compareTo(b ?? ''));
 
   group('the library when the server cannot be reached', () {
     test('files on the phone are still the library', () async {

@@ -48,33 +48,41 @@ void main() {
     if (calls.contains(call)) throw const NetworkException('app frozen');
   };
 
-  test('a network failure mid-poll is survived and the task completes', () async {
-    final api = FakeApi(historyScript: [running, running, done]);
-    failOn(api, {1});
-    final engine = superEngine(api, tolerance: 2);
-    addTearDown(engine.dispose);
+  test(
+    'a network failure mid-poll is survived and the task completes',
+    () async {
+      final api = FakeApi(historyScript: [running, running, done]);
+      failOn(api, {1});
+      final engine = superEngine(api, tolerance: 2);
+      addTearDown(engine.dispose);
 
-    final task = engine.submit(inputUrl, Quality.best);
-    final result = await finished(engine, task.id);
+      final task = engine.submit(inputUrl, Quality.best);
+      final result = await finished(engine, task.id);
 
-    expect(result.phase, TaskPhase.completed);
-  });
+      expect(result.phase, TaskPhase.completed);
+    },
+  );
 
-  test("tolerance 0, Lite's rule, still fails on the first network error", () async {
-    final api = FakeApi(historyScript: [running, running, done]);
-    failOn(api, {1});
-    final engine = superEngine(api);
-    addTearDown(engine.dispose);
+  test(
+    "tolerance 0, Lite's rule, still fails on the first network error",
+    () async {
+      final api = FakeApi(historyScript: [running, running, done]);
+      failOn(api, {1});
+      final engine = superEngine(api);
+      addTearDown(engine.dispose);
 
-    final task = engine.submit(inputUrl, Quality.best);
-    final result = await finished(engine, task.id);
+      final task = engine.submit(inputUrl, Quality.best);
+      final result = await finished(engine, task.id);
 
-    expect(result.phase, TaskPhase.failed);
-    expect(result.error, isA<NetworkException>());
-  });
+      expect(result.phase, TaskPhase.failed);
+      expect(result.error, isA<NetworkException>());
+    },
+  );
 
   test('more failures in a row than tolerated fail the task', () async {
-    final api = FakeApi(historyScript: [running, running, running, running, done]);
+    final api = FakeApi(
+      historyScript: [running, running, running, running, done],
+    );
     failOn(api, {1, 2, 3});
     final engine = superEngine(api, tolerance: 2);
     addTearDown(engine.dispose);
@@ -88,7 +96,15 @@ void main() {
 
   test('a successful request resets the count of failures in a row', () async {
     final api = FakeApi(
-      historyScript: [running, running, running, running, running, running, done],
+      historyScript: [
+        running,
+        running,
+        running,
+        running,
+        running,
+        running,
+        done,
+      ],
     );
     failOn(api, {1, 2, 4, 5});
     final engine = superEngine(api, tolerance: 2);

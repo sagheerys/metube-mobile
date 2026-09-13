@@ -15,9 +15,8 @@ import 'package:flutter_test/flutter_test.dart';
 /// off** (the trap Lite documents). No widget test can see that, so this
 /// guard reads the files the build reads.
 void main() {
-  final manifest = File(
-    'android/app/src/main/AndroidManifest.xml',
-  ).readAsStringSync();
+  final manifest = File('android/app/src/main/AndroidManifest.xml')
+      .readAsStringSync();
 
   test('the flutter_background service is declared as a dataSync service', () {
     final service = RegExp(
@@ -37,6 +36,9 @@ void main() {
 
   test('flutter_background is a direct dependency of Super', () {
     final pubspec = File('pubspec.yaml').readAsStringSync();
-    expect(pubspec, matches(RegExp(r'^\s+flutter_background:', multiLine: true)));
+    expect(
+      pubspec,
+      matches(RegExp(r'^\s+flutter_background:', multiLine: true)),
+    );
   });
 }
