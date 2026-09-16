@@ -9,6 +9,29 @@ only one.
 
 ## [Unreleased]
 
+## [2.0.2]
+
+### Fixed
+
+- **MeTube Lite: the library on a fresh install.** The app asked for the
+  notification permission and never for the media one, though its downloads
+  live in the phone's `Download` folder: the first scan came back
+  `PathAccessException ... Permission denied, errno = 13` and the only way
+  out was the system settings, which most people never find. Lite now asks
+  for it when the first screen appears, the way the notification permission
+  is asked, and the library offers the permission itself — with the settings
+  screen as the second step when Android has stopped asking. The startup
+  sweep of leftover partial files no longer throws on that same folder, in
+  both apps.
+- **MeTube Lite: a library hidden by that permission no longer looks empty.**
+  Measured on a phone with the permission revoked: the folder still opened
+  and still listed, and listed nothing, so twenty-eight downloads were
+  reported as "no downloads yet" — no error, no dialog, nothing to act on.
+  Whether the app may read the folder is now decided by the permission
+  itself rather than by opening the folder, and an empty result with no
+  permission is shown as what it is. Files that do list are shown whatever
+  the permission API reports.
+
 ## [2.0.1]
 
 ### Fixed
@@ -93,6 +116,7 @@ each one left behind a test that fails on the old code.
 - An album pasted as one link expanding into twenty downloads on the server,
   with only one of them pulled.
 
-[Unreleased]: https://github.com/sagheerys/metube-mobile/compare/v2.0.1...HEAD
+[Unreleased]: https://github.com/sagheerys/metube-mobile/compare/v2.0.2...HEAD
+[2.0.2]: https://github.com/sagheerys/metube-mobile/compare/v2.0.1...v2.0.2
 [2.0.1]: https://github.com/sagheerys/metube-mobile/compare/v2.0.0...v2.0.1
 [2.0.0]: https://github.com/sagheerys/metube-mobile/releases/tag/v2.0.0
