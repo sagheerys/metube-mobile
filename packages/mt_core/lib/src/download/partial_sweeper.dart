@@ -17,10 +17,15 @@ Future<int> sweepPartialFiles(
   Duration olderThan = const Duration(hours: 6),
 }) async {
   final dir = Directory(directoryPath);
-  if (!await dir.exists()) return 0;
   final cutoff = DateTime.now().subtract(olderThan);
   var removed = 0;
   try {
+    // **`exists()` throws rather than answering false** when Android has not
+    // granted access to the folder, and this call used to sit outside the
+    // guard below — so on a phone that had never been asked for the media
+    // permission, the startup sweep threw before the app had drawn anything
+    // (field report 2026-09-16).
+    if (!await dir.exists()) return 0;
     await for (final entity in dir.list(followLinks: false)) {
       if (entity is! File) continue;
       if (!entity.path.endsWith(Transfer.partSuffix)) continue;
