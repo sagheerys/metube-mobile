@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MeTube Mobile — Android clients for a self-hosted MeTube server</title>
+<meta name="description" content="Two open-source Android apps for a self-hosted MeTube (yt-dlp) server. MeTube Lite pulls each download to your phone and clears the server; MeTube Super keeps files on the server and streams them. Arabic and English, GPL-3.0.">
+<link rel="canonical" href="https://sagheerys.github.io/metube-mobile/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="MeTube Mobile — Android clients for MeTube">
+<meta property="og:description" content="Queue a link from your phone, then keep the file on your server and stream it, or pull it to the device and let the server clean itself up.">
+<meta property="og:url" content="https://sagheerys.github.io/metube-mobile/">
+<meta property="og:image" content="https://sagheerys.github.io/metube-mobile/screenshots/lite-day.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Kufi+Arabic:wght@500;700&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FBF6EE; --ink:#2B211B; --muted:#6B5B4E; --line:#E3D8C9;
+  --card:#FFFDF8; --super:#C25E2E; --superDeep:#9E4517; --lite:#2F6D74;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bg:#1A130F; --ink:#F4EBDF; --muted:#C3B2A2; --line:#3A2C23;
+         --card:#241B15; --super:#E0784A; --superDeep:#C25E2E; --lite:#6FB3BA; }
+}
+*{box-sizing:border-box}
+img{max-width:100%;height:auto}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:'Tajawal',system-ui,-apple-system,'Segoe UI',sans-serif;
+  font-size:17px;line-height:1.7}
+h1,h2,h3{font-family:'Noto Kufi Arabic','Tajawal',system-ui,sans-serif;line-height:1.3;margin:0 0 .5em}
+h1{font-size:2.3rem;font-weight:700}
+h2{font-size:1.5rem;font-weight:700;margin-top:2.5rem}
+a{color:var(--superDeep)}
+@media (prefers-color-scheme: dark){a{color:var(--super)}}
+.wrap{max-width:860px;margin:0 auto;padding:48px 20px 80px}
+.tag{display:inline-block;font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:4px 12px;margin-bottom:18px}
+.lead{font-size:1.15rem;color:var(--muted);max-width:62ch}
+.cta{display:flex;flex-wrap:wrap;gap:12px;margin:28px 0 8px}
+.btn{display:inline-block;padding:12px 22px;border-radius:12px;text-decoration:none;font-weight:700}
+.btn-main{background:var(--super);color:#FFF8F2}
+@media (prefers-color-scheme: dark){.btn-main{color:#2B1207}}
+.btn-ghost{border:1px solid var(--line);color:var(--ink)}
+.note{font-size:.92rem;color:var(--muted)}
+.hero-media{margin:32px 0;text-align:center}
+.hero-media img{max-width:300px;width:100%;border-radius:18px;border:1px solid var(--line)}
+.hero-media figcaption{font-size:.9rem;color:var(--muted);margin-top:10px}
+/* The table keeps a readable width and scrolls inside its own box, so the
+   page itself never grows wider than the phone. */
+.scroller{overflow-x:auto;margin:18px 0}
+table{width:100%;min-width:460px;border-collapse:collapse;font-size:.98rem}
+th,td{text-align:left;padding:12px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-weight:700}
+.lite{color:var(--lite);font-weight:700}
+.super{color:var(--super);font-weight:700}
+.shots{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;margin:20px 0}
+.shots img{width:240px;max-width:45%;border-radius:14px;border:1px solid var(--line)}
+pre{max-width:100%;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;overflow-x:auto;font-size:.88rem}
+code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
+ul{padding-inline-start:1.2em}
+li{margin:.4em 0}
+.ar{direction:rtl;text-align:right;border-top:1px solid var(--line);margin-top:56px;padding-top:32px}
+.ar ul{padding-inline-start:0;padding-inline-end:1.2em}
+.ar th,.ar td{text-align:right}
+footer{margin-top:56px;border-top:1px solid var(--line);padding-top:22px;font-size:.9rem;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <span class="tag">Unofficial · GPL-3.0 · Android</span>
+  <h1>MeTube Mobile</h1>
+  <p class="lead">Two Android apps for a self-hosted
+    <a href="https://github.com/alexta69/metube">MeTube</a> server — the yt-dlp
+    web downloader you already run on your NAS or homelab. Share a link from
+    your phone, and either keep the file on the server and stream it, or pull it
+    to the device and let the server clean itself up.</p>
+
+  <div class="cta">
+    <a class="btn btn-main" href="https://github.com/sagheerys/metube-mobile/releases/latest">Download the APKs</a>
+    <a class="btn btn-ghost" href="https://github.com/sagheerys/metube-mobile">Source on GitHub</a>
+  </div>
+  <p class="note">Listed in MeTube's own README, under
+    <a href="https://github.com/alexta69/metube#-sending-links-to-metube">Sending links to MeTube</a>.
+    There is no Play Store build, because Play does not allow this category.</p>
+
+  <figure class="hero-media">
+    <img src="screenshots/lite-share.gif" alt="A link is shared to MeTube Lite, the server downloads it, the phone pulls the file, and the server is cleaned up">
+    <figcaption>MeTube Lite: share a link, the server downloads it, the phone pulls the file, the server is cleared. Twenty seconds, invented demo data.</figcaption>
+  </figure>
+
+  <h2>Which app is for you</h2>
+  <div class="scroller">
+  <table>
+    <tr><th></th><th class="lite">MeTube Lite</th><th class="super">MeTube Super</th></tr>
+    <tr><td><strong>After a download</strong></td>
+        <td>Pulls the file to the phone, then removes it from the server</td>
+        <td>Keeps everything on the server</td></tr>
+    <tr><td><strong>Library</strong></td>
+        <td>What is on the phone</td>
+        <td>The server's history and the phone's files, merged into one</td></tr>
+    <tr><td><strong>Playback</strong></td>
+        <td>Local files</td>
+        <td>Streams from the server, and plays local files</td></tr>
+    <tr><td><strong>Also has</strong></td>
+        <td>A Wi-Fi-only rule, for limited data</td>
+        <td>Tags, batch downloads, make available offline, and two server addresses it switches between</td></tr>
+  </table>
+  </div>
+  <p class="note">They are separate apps and install side by side.</p>
+
+  <h2>Shared by both</h2>
+  <ul>
+    <li>Links from Android's share sheet, even from a cold start, and several at once.</li>
+    <li>A four-stage pipeline — add, follow, pull, clean — with live progress and a cancel that leaves nothing behind.</li>
+    <li>Background audio with a media notification and lock-screen controls, a mini player, and a lane for portrait clips.</li>
+    <li>Playlists, favourites, search, and plain-JSON backups that hold no secret.</li>
+    <li>In-app updates, straight from the GitHub releases page.</li>
+    <li>Arabic and English, right-to-left first.</li>
+  </ul>
+
+  <div class="shots">
+    <picture>
+      <source srcset="screenshots/lite-night.png" media="(prefers-color-scheme: dark)">
+      <img src="screenshots/lite-day.png" alt="The MeTube Lite library">
+    </picture>
+    <picture>
+      <source srcset="screenshots/super-night.png" media="(prefers-color-scheme: dark)">
+      <img src="screenshots/super-day.png" alt="The MeTube Super library">
+    </picture>
+  </div>
+
+  <h2>No server yet?</h2>
+  <p>These are clients: they download nothing by themselves. Every file is
+     fetched by your own MeTube server, and that server runs anywhere Docker
+     runs — a PC, a NAS, a Raspberry Pi:</p>
+<pre><code>docker run -d -p 8081:8081 \
+  -v /path/on/your/disk/downloads:/downloads \
+  -e DELETE_FILE_ON_TRASHCAN=true \
+  ghcr.io/alexta69/metube</code></pre>
+  <p>Then point the app at that address. Four server settings change how the
+     apps behave, and the absence of each looks like a defect in the app; they
+     are listed, with the symptom each one causes, in
+     <a href="https://github.com/sagheerys/metube-mobile/blob/main/docs/SERVER-SETUP.md">the server setup guide</a>.</p>
+
+  <h2>Links</h2>
+  <ul>
+    <li><a href="https://github.com/sagheerys/metube-mobile/releases/latest">Latest release</a> — one signed APK per app</li>
+    <li><a href="https://github.com/sagheerys/metube-mobile">Repository</a> — a Flutter monorepo, GPL-3.0</li>
+    <li><a href="https://github.com/sagheerys/metube-mobile/blob/main/CHANGELOG.md">Changelog</a></li>
+    <li><a href="https://github.com/sagheerys/metube-mobile/issues">Issues</a> — in Arabic or English</li>
+  </ul>
+
+  <section class="ar" lang="ar" dir="rtl">
+    <h2>بالعربية</h2>
+    <p class="lead">تطبيقان لأندرويد لسيرفر
+      <a href="https://github.com/alexta69/metube">MeTube</a> الذي تستضيفه بنفسك.
+      شارك الرابط من جوالك، ثم إما أن يبقى الملف على السيرفر فتشغّله بثّاً، أو
+      يُسحب إلى جهازك ويُنظَّف السيرفر تلقائياً.</p>
+
+    <div class="scroller">
+    <table>
+      <tr><th></th><th class="lite">MeTube Lite</th><th class="super">MeTube Super</th></tr>
+      <tr><td><strong>بعد التنزيل</strong></td>
+          <td>يسحب الملف إلى الجوال ثم يحذفه من السيرفر</td>
+          <td>يُبقي كل شيء على السيرفر</td></tr>
+      <tr><td><strong>المكتبة</strong></td>
+          <td>ما هو على الجوال</td>
+          <td>سجلّ السيرفر وملفات الجوال في مكتبة واحدة</td></tr>
+      <tr><td><strong>التشغيل</strong></td>
+          <td>الملفات المحلية</td>
+          <td>بثّ من السيرفر، وتشغيل محلي</td></tr>
+      <tr><td><strong>وفيه أيضاً</strong></td>
+          <td>قصر التنزيل على Wi-Fi</td>
+          <td>وسوم، وتنزيل دفعات، و«إتاحة دون اتصال»، وعنوانان للسيرفر بتبديل تلقائي</td></tr>
+    </table>
+    </div>
+
+    <ul>
+      <li>استقبال الروابط من قائمة المشاركة، ولو كان التطبيق مغلقاً، وعدة روابط معاً.</li>
+      <li>تشغيل الصوت في الخلفية مع إشعار وسائط وأزرار في شاشة القفل.</li>
+      <li>قوائم تشغيل ومفضلة وبحث، ونسخ احتياطية بصيغة JSON لا تحمل أي سرّ.</li>
+      <li>تحديث ذاتي من صفحة الإصدارات.</li>
+      <li>واجهة عربية كاملة من اليمين إلى اليسار.</li>
+    </ul>
+
+    <p><strong>لا تملك سيرفراً؟</strong> التطبيقان لا ينزّلان شيئاً بنفسيهما: سيرفر
+      MeTube هو من ينزّل، وهو يعمل بأمر Docker واحد على أي كمبيوتر أو راسبيري
+      باي — والأمر مكتوب في الأعلى. ثم وجّه التطبيق إلى عنوانه.</p>
+
+    <p><a href="https://github.com/sagheerys/metube-mobile/releases/latest">تنزيل الملفات</a>
+       · <a href="https://github.com/sagheerys/metube-mobile">المصدر على GitHub</a>
+       · <a href="https://github.com/sagheerys/metube-mobile/blob/main/docs/SERVER-SETUP.md">دليل إعداد السيرفر</a></p>
+
+    <p class="note">طوّره <strong>Yasir Sagheer</strong>، والأسئلة والبلاغات في
+      <a href="https://github.com/sagheerys/metube-mobile/issues">صفحة Issues</a>
+      بالعربية أو الإنجليزية.</p>
+  </section>
+
+  <footer>
+    <p>Built by <strong>Yasir Sagheer</strong>
+      (<a href="https://github.com/sagheerys">sagheerys</a>) — questions, bug
+      reports and feature requests go to
+      <a href="https://github.com/sagheerys/metube-mobile/issues">the issues page</a>,
+      in Arabic or English.</p>
+    <p><strong>Unofficial.</strong> Not affiliated with, endorsed by, or connected
+      to the MeTube project or its authors, nor to yt-dlp. Free software under the
+      GPL-3.0.</p>
+  </footer>
+
+</div>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "MeTube Mobile",
+  "author": { "@type": "Person", "name": "Yasir Sagheer", "url": "https://github.com/sagheerys" },
+  "applicationCategory": "MultimediaApplication",
+  "operatingSystem": "Android",
+  "license": "https://www.gnu.org/licenses/gpl-3.0.html",
+  "url": "https://sagheerys.github.io/metube-mobile/",
+  "downloadUrl": "https://github.com/sagheerys/metube-mobile/releases/latest",
+  "codeRepository": "https://github.com/sagheerys/metube-mobile",
+  "inLanguage": ["en", "ar"],
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "description": "Two Android clients for a self-hosted MeTube (yt-dlp) server: Lite pulls each download to the phone and clears the server, Super keeps files on the server and streams them."
+}
+</script>
+</body>
+</html>
