@@ -75,6 +75,7 @@ restore.cmd
 # anybody noticed, so the rule is the extension now. Add `!tool/<name>.ps1`
 # below if one is ever meant to be published.
 tool/*.ps1
+tool/*.cmd
 tool/build-lite.log
 tool/cmdtools-url.txt
 tool/flutter-url.txt
