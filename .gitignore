@@ -69,11 +69,12 @@ RELEASE_NOTES.md
 backup.cmd
 checkpoint.cmd
 restore.cmd
-tool/auto-checkpoint.ps1
-tool/backup.ps1
-tool/build-apk.ps1
-tool/checkpoint.ps1
-tool/restore.ps1
+# Every PowerShell script under tool/ is the maintainer's own: they carry
+# local drive paths and are useless to anyone cloning. Listing them one by one
+# let a new one (tool/downloads.ps1, 2026-09-16) reach the public repo before
+# anybody noticed, so the rule is the extension now. Add `!tool/<name>.ps1`
+# below if one is ever meant to be published.
+tool/*.ps1
 tool/build-lite.log
 tool/cmdtools-url.txt
 tool/flutter-url.txt
