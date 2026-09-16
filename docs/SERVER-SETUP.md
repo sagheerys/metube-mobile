@@ -49,6 +49,59 @@ if the server sits behind basic auth.
 
 ---
 
+## One server, or two?
+
+**Recommended: one server for Lite, another for Super.**
+
+The two apps treat the same server in opposite ways. Lite deletes each file
+from the server once the phone has it; Super keeps everything. Sharing one
+instance puts those two habits in the same place, and they collide in three:
+
+- **A link you both want.** MeTube's history holds one entry per URL. Lite
+  deletes only the link it pulled — but if that link is one you were keeping
+  for Super, the entry it removes is yours.
+- **`DELETE_FILE_ON_TRASHCAN` is server-wide.** One instance cannot erase the
+  family's files and at the same time leave yours removable but on disk.
+- **The history is shared.** MeTube has no accounts: whoever opens the web UI
+  sees what everyone else downloaded.
+
+Two containers from the same image cost almost nothing — a second port and a
+second download folder:
+
+```yaml
+services:
+  metube-family:              # MeTube Lite points here
+    image: ghcr.io/alexta69/metube
+    container_name: metube-family
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+    volumes:
+      - /path/on/your/disk/family:/downloads
+    environment:
+      DELETE_FILE_ON_TRASHCAN: "true"
+      # …the rest of the environment above, unchanged.
+
+  metube-archive:             # MeTube Super points here
+    image: ghcr.io/alexta69/metube
+    container_name: metube-archive
+    restart: unless-stopped
+    ports:
+      - "8082:8081"
+    volumes:
+      - /path/on/your/disk/archive:/downloads
+    environment:
+      DELETE_FILE_ON_TRASHCAN: "true"
+      # …the rest of the environment above, unchanged.
+```
+
+**One server is fine** if you are its only user, or if nobody with Lite ever
+asks for a link you keep. This is a recommendation, not a requirement: start
+with one if that is simpler, and split them the day the two habits get in each
+other's way.
+
+---
+
 ## The four settings, and what happens without each
 
 ### `DELETE_FILE_ON_TRASHCAN=true`

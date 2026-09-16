@@ -158,6 +158,9 @@ Or build from source, below.
 - A reachable MeTube server (this is a client — it downloads nothing by itself).
   Four of its settings change how the apps behave; see
   **[docs/SERVER-SETUP.md](docs/SERVER-SETUP.md)**.
+- Using both apps? A server each is recommended — Lite clears the server and
+  Super keeps it, and one instance cannot do both. The guide says why, and one
+  server is still fine if you are its only user.
 - Android. `compileSdk 37`; the minimum SDK follows the Flutter toolchain default.
 - Flutter **3.47.2** (Dart SDK `^3.13.0`) to build from source.
 
