@@ -14,6 +14,8 @@ import '../playlists/add_to_playlist_sheet.dart';
 import 'library_actions.dart';
 import 'library_providers.dart';
 import 'local_item.dart';
+import 'media_access.dart';
+import 'widgets/media_access_view.dart';
 import 'widgets/downloads_sheet.dart';
 import 'widgets/item_actions_sheet.dart';
 import 'widgets/library_cards.dart';
@@ -43,6 +45,16 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     if (ref.read(highlightedItemProvider) != null) {
       ref.read(highlightedItemProvider.notifier).state = null;
     }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // The first screen is where the media permission is asked; the reason
+    // is with [ensureMediaAccessOnStart].
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => unawaited(ensureMediaAccessOnStart(ref)),
+    );
   }
 
   @override
@@ -264,6 +276,11 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
           ],
           // The message comes from the error itself rather than from a
           // fixed string (the same cure as Super).
+          // A folder Android refuses to read is not an error to report but
+          // a permission to ask for, and it has its own screen.
+          AsyncError(error: MediaAccessDeniedException()) => [
+            const SliverToBoxAdapter(child: MediaAccessView()),
+          ],
           AsyncError(:final error) => [
             SliverToBoxAdapter(
               child: MTEmptyState(

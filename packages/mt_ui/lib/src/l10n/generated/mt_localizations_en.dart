@@ -583,6 +583,23 @@ class MTLocalizationsEn extends MTLocalizations {
   String get manageTags => 'Manage tags';
 
   @override
+  String get mediaAccessBlockedMessage =>
+      'Android will not ask again. Turn on photos and videos for this app in the system settings, then come back.';
+
+  @override
+  String get mediaAccessGrant => 'Allow';
+
+  @override
+  String get mediaAccessMessage =>
+      'Your downloads are kept in the phone\'s Download folder, and Android needs your permission before the app can list them.';
+
+  @override
+  String get mediaAccessOpenSettings => 'Open settings';
+
+  @override
+  String get mediaAccessTitle => 'Allow access to your media';
+
+  @override
   String get metubeCredit => 'The self-hosted server this app is a client for';
 
   @override

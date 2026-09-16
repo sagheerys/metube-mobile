@@ -7,6 +7,23 @@ import 'package:mt_media/mt_media.dart' show MediaShape;
 import '../../di.dart';
 import '../shared/async_view.dart';
 import 'local_item.dart';
+import 'media_access.dart';
+
+/// Asking for the media permission, and the settings screen when Android
+/// stops asking. A provider so tests can hand the screen a gate that
+/// answers without a device.
+final mediaAccessGateProvider = Provider<MediaAccessGate>(
+  (ref) => MediaAccessGate(),
+);
+
+/// The listing, with the same permission failure turned into the same
+/// exception: a folder can become unreadable between the check and the walk.
+Stream<FileSystemEntity> _list(Directory dir) => dir
+    .list(followLinks: false)
+    .handleError(
+      (_) => throw const MediaAccessDeniedException(),
+      test: (error) => error is FileSystemException,
+    );
 
 /// The local library: **scanning the folder** is the source. A file that
 /// actually exists is shown, and the indexes only enrich it. That is how
@@ -27,11 +44,22 @@ final localMediaProvider = FutureProvider<List<LocalItem>>((ref) async {
     for (final MapEntry(:key, :value) in offline.entries) value: key,
   };
 
+  final gate = ref.watch(mediaAccessGateProvider);
   final dir = Directory(liteMediaDir);
-  if (!await dir.exists()) return const [];
+  // **Permission, not absence.** `exists()` on a folder Android will not let
+  // us read throws rather than answering false, and the raw errno used to
+  // land on the library screen. The screen offers the permission instead.
+  try {
+    if (!await dir.exists()) {
+      assertLibraryVisible(isEmpty: true, hasAccess: await gate.hasAccess());
+      return const [];
+    }
+  } on FileSystemException {
+    throw const MediaAccessDeniedException();
+  }
 
   final items = <LocalItem>[];
-  await for (final entity in dir.list(followLinks: false)) {
+  await for (final entity in _list(dir)) {
     if (entity is! File || !isMediaFile(entity.path)) continue;
     final path = entity.path.replaceAll(r'\', '/');
     final url = urlOfPath[path];
@@ -58,6 +86,13 @@ final localMediaProvider = FutureProvider<List<LocalItem>>((ref) async {
       ),
     );
   }
+  // Files listed means the folder really is readable, whatever the
+  // permission API reports; nothing listed with no permission is the
+  // library being hidden, not a library that is empty.
+  assertLibraryVisible(
+    isEmpty: items.isEmpty,
+    hasAccess: await gate.hasAccess(),
+  );
   return items;
 });
 

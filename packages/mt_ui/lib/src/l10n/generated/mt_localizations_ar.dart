@@ -586,6 +586,23 @@ class MTLocalizationsAr extends MTLocalizations {
   String get manageTags => 'إدارة الوسوم';
 
   @override
+  String get mediaAccessBlockedMessage =>
+      'لن يسأل أندرويد مرة أخرى. فعّل «الصور ومقاطع الفيديو» لهذا التطبيق من إعدادات النظام ثم ارجع.';
+
+  @override
+  String get mediaAccessGrant => 'السماح';
+
+  @override
+  String get mediaAccessMessage =>
+      'تنزيلاتك محفوظة في مجلد Download في هاتفك، وأندرويد يطلب إذنك قبل أن يعرضها التطبيق.';
+
+  @override
+  String get mediaAccessOpenSettings => 'فتح الإعدادات';
+
+  @override
+  String get mediaAccessTitle => 'اسمح بالوصول إلى الوسائط';
+
+  @override
   String get metubeCredit => 'الخادم ذاتي الاستضافة الذي يتصل به التطبيق';
 
   @override

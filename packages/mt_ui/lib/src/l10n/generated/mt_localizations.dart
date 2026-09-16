@@ -1130,6 +1130,36 @@ abstract class MTLocalizations {
   /// **'Manage tags'**
   String get manageTags;
 
+  /// No description provided for @mediaAccessBlockedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Android will not ask again. Turn on photos and videos for this app in the system settings, then come back.'**
+  String get mediaAccessBlockedMessage;
+
+  /// No description provided for @mediaAccessGrant.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow'**
+  String get mediaAccessGrant;
+
+  /// No description provided for @mediaAccessMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Your downloads are kept in the phone\'s Download folder, and Android needs your permission before the app can list them.'**
+  String get mediaAccessMessage;
+
+  /// No description provided for @mediaAccessOpenSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Open settings'**
+  String get mediaAccessOpenSettings;
+
+  /// No description provided for @mediaAccessTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow access to your media'**
+  String get mediaAccessTitle;
+
   /// No description provided for @metubeCredit.
   ///
   /// In en, this message translates to:
