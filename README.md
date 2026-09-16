@@ -142,10 +142,12 @@ Signed APKs are published on the
 app. Android will ask you to allow installing from this source the first time;
 that permission is per application, and you can withdraw it afterwards.
 
-The current release is **[v2.0.0](https://github.com/sagheerys/metube-mobile/releases/latest)**:
-`MeTube-Lite-2.0.0.apk` for family and friends, `MeTube-Super-2.0.0.apk` for the
-server owner's. They are separate apps and install side by side. From this
-release on, each app checks for its own successor and can install it for you.
+Every release carries one file per app —
+[the newest is here](https://github.com/sagheerys/metube-mobile/releases/latest),
+and the badge above names its version. `MeTube-Lite-<version>.apk` is for
+family and friends, `MeTube-Super-<version>.apk` for the server owner's. They
+are separate apps and install side by side, and since 2.0.0 each one checks
+for its own successor and can install it for you.
 
 Both apps can update themselves: **Settings → About → check for updates**
 fetches the newest release and hands the APK to the system installer. Nothing
