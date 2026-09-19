@@ -1820,6 +1820,30 @@ abstract class MTLocalizations {
   /// **'Server Configuration'**
   String get serverConfiguration;
 
+  /// No description provided for @serverFilesCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No files on the server} =1{1 file on the server} other{{count} files on the server}}'**
+  String serverFilesCount(int count);
+
+  /// No description provided for @serverKeepsFilesBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The history entry is removed but the file stays on disk, so the server fills up. Set DELETE_FILE_ON_TRASHCAN=true on the MeTube container.'**
+  String get serverKeepsFilesBody;
+
+  /// No description provided for @serverKeepsFilesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your server is not deleting the files'**
+  String get serverKeepsFilesTitle;
+
+  /// No description provided for @serverQueueCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{} =1{1 in the queue} other{{count} in the queue}}'**
+  String serverQueueCount(int count);
+
   /// No description provided for @serverStatusChecking.
   ///
   /// In en, this message translates to:
@@ -1879,6 +1903,24 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'Server URL is required'**
   String get serverUrlRequired;
+
+  /// No description provided for @serverVersionLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'MeTube {version}'**
+  String serverVersionLabel(String version);
+
+  /// No description provided for @serverVersionOutdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Update available: {latest}'**
+  String serverVersionOutdated(String latest);
+
+  /// No description provided for @serverVersionUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Version unknown'**
+  String get serverVersionUnknown;
 
   /// No description provided for @settings.
   ///

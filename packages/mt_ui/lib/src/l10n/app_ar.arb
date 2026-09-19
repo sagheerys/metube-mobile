@@ -31,6 +31,20 @@
       }
     }
   },
+  "@serverFilesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@serverQueueCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "@upNextIn": {
     "placeholders": {
       "name": {
@@ -325,6 +339,10 @@
   "selected": "{count} محدد",
   "selectedCount": "{count} محدد",
   "serverConfiguration": "إعداد الخادم",
+  "serverFilesCount": "{count, plural, =0{لا ملفات على الخادم} =1{ملف واحد على الخادم} =2{ملفان على الخادم} few{{count} ملفات على الخادم} other{{count} ملفاً على الخادم}}",
+  "serverKeepsFilesBody": "يُحذف سجل العنصر ويبقى الملف على القرص، فيمتلئ الخادم. اضبط DELETE_FILE_ON_TRASHCAN=true على حاوية MeTube.",
+  "serverKeepsFilesTitle": "خادمك لا يحذف الملفات",
+  "serverQueueCount": "{count, plural, =0{} =1{واحد في الطابور} =2{اثنان في الطابور} few{{count} في الطابور} other{{count} في الطابور}}",
   "serverStatusChecking": "جارٍ فحص الاتصال…",
   "serverStatusConnected": "متصل بالخادم",
   "serverStatusOffline": "تعذّر الوصول للخادم",
@@ -335,6 +353,9 @@
   "serverUrlHelpTitle": "حول رابط السيرفر",
   "serverUrlHint": "http://192.168.1.5:8086 أو https://domain.com",
   "serverUrlRequired": "رابط الخادم مطلوب",
+  "serverVersionLabel": "MeTube {version}",
+  "serverVersionOutdated": "يتوفر تحديث: {latest}",
+  "serverVersionUnknown": "النسخة غير معروفة",
   "settings": "الإعدادات",
   "settingsSaved": "تم حفظ الإعدادات بنجاح",
   "setupServer": "إعداد السيرفر",

@@ -978,6 +978,41 @@ class MTLocalizationsAr extends MTLocalizations {
   String get serverConfiguration => 'إعداد الخادم';
 
   @override
+  String serverFilesCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count ملفاً على الخادم',
+      few: '$count ملفات على الخادم',
+      two: 'ملفان على الخادم',
+      one: 'ملف واحد على الخادم',
+      zero: 'لا ملفات على الخادم',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get serverKeepsFilesBody =>
+      'يُحذف سجل العنصر ويبقى الملف على القرص، فيمتلئ الخادم. اضبط DELETE_FILE_ON_TRASHCAN=true على حاوية MeTube.';
+
+  @override
+  String get serverKeepsFilesTitle => 'خادمك لا يحذف الملفات';
+
+  @override
+  String serverQueueCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count في الطابور',
+      few: '$count في الطابور',
+      two: 'اثنان في الطابور',
+      one: 'واحد في الطابور',
+      zero: '',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get serverStatusChecking => 'جارٍ فحص الاتصال…';
 
   @override
@@ -1008,6 +1043,19 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get serverUrlRequired => 'رابط الخادم مطلوب';
+
+  @override
+  String serverVersionLabel(String version) {
+    return 'MeTube $version';
+  }
+
+  @override
+  String serverVersionOutdated(String latest) {
+    return 'يتوفر تحديث: $latest';
+  }
+
+  @override
+  String get serverVersionUnknown => 'النسخة غير معروفة';
 
   @override
   String get settings => 'الإعدادات';

@@ -971,6 +971,37 @@ class MTLocalizationsEn extends MTLocalizations {
   String get serverConfiguration => 'Server Configuration';
 
   @override
+  String serverFilesCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count files on the server',
+      one: '1 file on the server',
+      zero: 'No files on the server',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get serverKeepsFilesBody =>
+      'The history entry is removed but the file stays on disk, so the server fills up. Set DELETE_FILE_ON_TRASHCAN=true on the MeTube container.';
+
+  @override
+  String get serverKeepsFilesTitle => 'Your server is not deleting the files';
+
+  @override
+  String serverQueueCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count in the queue',
+      one: '1 in the queue',
+      zero: '',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get serverStatusChecking => 'Checking connection…';
 
   @override
@@ -1001,6 +1032,19 @@ class MTLocalizationsEn extends MTLocalizations {
 
   @override
   String get serverUrlRequired => 'Server URL is required';
+
+  @override
+  String serverVersionLabel(String version) {
+    return 'MeTube $version';
+  }
+
+  @override
+  String serverVersionOutdated(String latest) {
+    return 'Update available: $latest';
+  }
+
+  @override
+  String get serverVersionUnknown => 'Version unknown';
 
   @override
   String get settings => 'Settings';

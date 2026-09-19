@@ -191,6 +191,34 @@
       }
     }
   },
+  "@serverFilesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@serverQueueCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@serverVersionLabel": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "@serverVersionOutdated": {
+    "placeholders": {
+      "latest": {
+        "type": "String"
+      }
+    }
+  },
   "@totalDuration": {
     "placeholders": {
       "duration": {
@@ -506,6 +534,10 @@
   "selected": "{count} selected",
   "selectedCount": "{count} selected",
   "serverConfiguration": "Server Configuration",
+  "serverFilesCount": "{count, plural, =0{No files on the server} =1{1 file on the server} other{{count} files on the server}}",
+  "serverKeepsFilesBody": "The history entry is removed but the file stays on disk, so the server fills up. Set DELETE_FILE_ON_TRASHCAN=true on the MeTube container.",
+  "serverKeepsFilesTitle": "Your server is not deleting the files",
+  "serverQueueCount": "{count, plural, =0{} =1{1 in the queue} other{{count} in the queue}}",
   "serverStatusChecking": "Checking connection…",
   "serverStatusConnected": "Connected to server",
   "serverStatusOffline": "Server unreachable",
@@ -516,6 +548,9 @@
   "serverUrlHelpTitle": "About the Server URL",
   "serverUrlHint": "http://192.168.1.5:8086 or https://domain.com",
   "serverUrlRequired": "Server URL is required",
+  "serverVersionLabel": "MeTube {version}",
+  "serverVersionOutdated": "Update available: {latest}",
+  "serverVersionUnknown": "Version unknown",
   "settings": "Settings",
   "settingsSaved": "Settings saved successfully",
   "setupServer": "Set up the server",
