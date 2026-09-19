@@ -71,9 +71,19 @@ final playlistsProvider = FutureProvider<List<SavedPlaylist>>((ref) async {
 });
 
 /// Your tags, with counts.
-final tagCountsProvider = FutureProvider<Map<String, int>>(
-  (ref) => ref.watch(tagsIndexProvider).allTagsWithCounts(),
-);
+///
+/// **The user's tags only.** Favourites are stored as a system tag in the
+/// same index, and everything fed from here is something the user reads —
+/// the library's filter chips, "your tags", the manage-tags sheet. Found
+/// 2026-09-19 while staging screenshots: with one real tag in place, the
+/// library offered `# __favorites__ 2` as a filter beside it.
+final tagCountsProvider = FutureProvider<Map<String, int>>((ref) async {
+  final counts = await ref.watch(tagsIndexProvider).allTagsWithCounts();
+  return {
+    for (final entry in counts.entries)
+      if (entry.key != MTConstants.favoritesSystemTag) entry.key: entry.value,
+  };
+});
 
 /// The three smart playlists from the current library.
 final smartListsProvider = Provider<List<SmartList>>(

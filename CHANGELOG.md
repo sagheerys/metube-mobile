@@ -7,6 +7,15 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 Both apps share this file: an entry says which one it affects when it affects
 only one.
 
+## [Unreleased]
+
+### Fixed
+
+- **The favourites tag no longer shows up as one of yours.** Favourites are
+  stored as a system tag, and once any real tag existed the library offered
+  `# __favorites__` as a filter beside it, as did "your tags" and the
+  manage-tags sheet. MeTube Super.
+
 ## [2.1.0] - 2026-09-19
 
 ### Added
@@ -211,6 +220,7 @@ each one left behind a test that fails on the old code.
 - An album pasted as one link expanding into twenty downloads on the server,
   with only one of them pulled.
 
+[Unreleased]: https://github.com/sagheerys/metube-mobile/compare/v2.1.0...HEAD
 [2.1.0]: https://github.com/sagheerys/metube-mobile/compare/v2.0.2...v2.1.0
 [2.0.2]: https://github.com/sagheerys/metube-mobile/compare/v2.0.1...v2.0.2
 [2.0.1]: https://github.com/sagheerys/metube-mobile/compare/v2.0.0...v2.0.1
