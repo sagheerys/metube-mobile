@@ -46,6 +46,7 @@ class DownloadTask {
     this.progress = 0,
     this.error,
     this.isBatchMember = false,
+    this.serverCleanupFailed = false,
     DateTime? createdAt,
   }) : id = id ?? _uuid.v4(),
        createdAt = createdAt ?? DateTime.now();
@@ -82,6 +83,13 @@ class DownloadTask {
 
   /// A single item outranks members of a batch in the queue.
   final bool isBatchMember;
+
+  /// **The delete after the pull was asked for and refused.** The task
+  /// still completes — the file is on the phone — but whoever asks the
+  /// server "is the file still there?" afterwards must know that it was
+  /// never told to remove it, or a dropped `/delete` reads as a
+  /// misconfigured server.
+  final bool serverCleanupFailed;
   final DateTime createdAt;
 
   /// **Does this phase have known progress?** A waiting task and one held
@@ -107,6 +115,7 @@ class DownloadTask {
     TaskPhase? phase,
     double? progress,
     MTApiException? error,
+    bool? serverCleanupFailed,
   }) => DownloadTask(
     id: id,
     inputUrl: inputUrl,
@@ -121,6 +130,7 @@ class DownloadTask {
     progress: progress ?? this.progress,
     error: error ?? this.error,
     isBatchMember: isBatchMember,
+    serverCleanupFailed: serverCleanupFailed ?? this.serverCleanupFailed,
     createdAt: createdAt,
   );
 }

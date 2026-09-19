@@ -1,6 +1,8 @@
 import 'dart:convert';
 
 import '../constants/mt_constants.dart';
+import '../download/pending_downloads.dart';
+import '../download/trashcan_probe.dart';
 import '../storage/key_value_store.dart';
 import '../storage/secret_store.dart';
 import 'backup_crypto.dart';
@@ -44,6 +46,17 @@ class BackupService {
     'local_url',
     'active_url',
     'external_urls',
+  };
+
+  /// **Keys that describe this phone's dealings with the server, not the
+  /// user's data.** A pending download is a promise *this* process made;
+  /// restored on another phone it would have that phone pull the file and
+  /// delete it from the server while the first is still pulling it. The
+  /// trashcan flag is a fact about one container, and travels with the
+  /// backup to a server it was never measured on.
+  static const _deviceOnlyKeys = {
+    PendingDownloadsStore.prefsKey,
+    TrashcanProbe.prefsKey,
   };
 
   /// **Strip credentials embedded in a URL before backing it up.**
@@ -102,6 +115,7 @@ class BackupService {
   Future<String> exportToString() => mutex.run(() async {
     final prefsMap = <String, dynamic>{};
     for (final key in await store.keys()) {
+      if (_deviceOnlyKeys.contains(key)) continue;
       final cell = _encodeCell(_sanitize(key, await store.get(key)));
       if (cell != null) prefsMap[key] = cell;
     }
@@ -181,6 +195,9 @@ class BackupService {
       }
       try {
         for (final entry in prefs.entries) {
+          // A file written by this version carries none; one edited by
+          // hand, or by a build between two releases, might.
+          if (_deviceOnlyKeys.contains(entry.key.toString())) continue;
           if (await _applyCell(entry.key.toString(), entry.value)) restored++;
         }
         if (format == BackupFormat.legacyLite ||

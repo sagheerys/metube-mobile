@@ -13,6 +13,7 @@ import '../urls/url_kit.dart';
 import 'delete_policy.dart';
 import 'download_queue.dart';
 import 'download_poller.dart';
+import 'pending_downloads.dart';
 import 'history_matcher.dart';
 import 'pull_gate_parking.dart';
 import 'transfer.dart';
@@ -45,6 +46,7 @@ class DownloadEngine {
     this.pullGate,
     this.compatibleVideo,
     this.onLog,
+    this.pending,
   }) : _resolver = shortLinkResolver ?? ShortLinkResolver(),
        _transfer = transfer ?? Transfer(api: api),
        _matcher = HistoryMatcher(api);
@@ -55,7 +57,8 @@ class DownloadEngine {
   final Duration pollInterval;
   final int maxPollAttempts;
 
-  /// See [DownloadPoller.networkTolerance]; 0, Lite's rule, fails at once.
+  /// See [DownloadPoller.networkTolerance]; the default 0 fails at once,
+  /// and both apps pass [MTConstants.pollNetworkTolerance].
   final int pollNetworkTolerance;
 
   /// Rule 2: Lite pulls to the device once an item completes; Super does
@@ -67,6 +70,21 @@ class DownloadEngine {
 
   /// A diagnostic trace: mt_core does not know where the log file lives.
   final void Function(String message)? onLog;
+
+  /// **Where a task is written down so it survives this process** — null
+  /// for an app that does not need it.
+  ///
+  /// Only Lite does. Its promise is that the server cleans itself, and the
+  /// four stages keep that promise **only while the process lives**: killed
+  /// from the recents list or stopped by the battery manager, the server
+  /// still finishes the file and nobody is left to pull it or delete it.
+  /// [PendingSweeper] finishes those at the next launch, from these
+  /// records. Super has nothing to reconcile: it leaves files on the server
+  /// on purpose.
+  ///
+  /// Writing is **best effort and never awaited into the pipeline**: a
+  /// failed record must not fail a download that is working.
+  final PendingDownloadsStore? pending;
 
   /// **The pull gate** ("Wi-Fi only"), asked before fetching a file to the
   /// device. `false` parks the task ([PullGateParking]) and the queue
@@ -136,6 +154,10 @@ class DownloadEngine {
     _queue.enqueue(task.id, isBatchMember: isBatchMember);
     _emit(task);
     onLog?.call('submit ${task.quality.wire} ${task.inputUrl}');
+    // **No record yet.** The server has not been asked, so there is
+    // nothing to finish; and a record without fingerprints would let the
+    // sweep adopt an older row for the same link — on a shared server,
+    // somebody else's copy — and pull it and delete it.
     unawaited(_pump());
     return task;
   }
@@ -150,6 +172,7 @@ class DownloadEngine {
     // Running
     // tasks are untouched.
     if (_queue.remove(taskId) || _parked.remove(taskId)) {
+      _forget(taskId);
       if (task != null) _emit(task.copyWith(phase: TaskPhase.cancelled));
       _cancelRequested.remove(taskId); // or it leaks forever
       unawaited(_cleanupOrphan(taskId));
@@ -208,14 +231,25 @@ class DownloadEngine {
     try {
       await body();
     } on CancelledException {
+      // **Disposal is not a cancellation by the user.** The engine goes
+      // when the server settings change, and the orphan cleanup below
+      // refuses to run on a disposed engine; the record is then the only
+      // thing left that knows the server is still working.
+      if (!_disposed) _forget(taskId);
       _emitPhase(taskId, TaskPhase.cancelled);
       await _cleanupOrphan(taskId);
     } on MTApiException catch (e) {
       onLog?.call('task failed: $e');
+      // **A broken road keeps the record; a refusal drops it.** A network
+      // failure or the polling ceiling is exactly the case the record was
+      // written for: the server carries on and finishes the file, and the
+      // next launch pulls it and cleans up. A server error is final.
+      if (!e.isRetryable) _forget(taskId);
       final task = _tasks[taskId];
       if (task != null) _emit(task.copyWith(phase: TaskPhase.failed, error: e));
     } on Object catch (e) {
       onLog?.call('task failed (local): $e');
+      _forget(taskId);
       final task = _tasks[taskId];
       if (task != null) {
         _emit(
@@ -245,6 +279,10 @@ class DownloadEngine {
     // Know what existed before us, so another operation is
     // never attributed to this task.
     _snapshots[taskId] = await _matcher.snapshot(task.effectiveUrl);
+    // **Before the add, not after**: the point of the record is to survive
+    // a death, and the most likely moment to die is while the server is
+    // working — which begins on the next line.
+    _remember(task, before: _snapshots[taskId]);
     _throwIfCancelRequested(taskId);
     await api.add(
       resolved,
@@ -263,6 +301,9 @@ class DownloadEngine {
         thumbnail: done.thumbnail,
       ),
     );
+    // The record learns what the server called it, so a sweep after a
+    // death from here on matches by the canonical URL it will delete by.
+    _remember(task, before: _snapshots[taskId]);
 
     // Super: leaving the item on the server is the whole job. No pull, no
     // delete.
@@ -312,5 +353,48 @@ class DownloadEngine {
     if (_cancelRequested.contains(taskId)) {
       throw const CancelledException();
     }
+  }
+
+  /// Writes the record, or updates it as the task learns more: the
+  /// fingerprints before the add, the server's names after the poll, the
+  /// local path after the pull.
+  ///
+  /// **Fire-and-forget on purpose.** A download must not wait on
+  /// SharedPreferences, and must not fail because a write did. The worst
+  /// case of a lost record is the behaviour we had before it existed.
+  void _remember(DownloadTask task, {Set<String>? before}) {
+    final store = pending;
+    if (store == null || task.isBatchMember) return;
+    unawaited(
+      store
+          .put(
+            PendingDownload(
+              id: task.id,
+              url: task.effectiveUrl,
+              quality: task.quality,
+              createdAt: task.createdAt,
+              before: before ?? const {},
+              canonicalUrl: task.canonicalUrl,
+              serverFilename: task.serverFilename,
+              localPath: task.localPath,
+            ),
+          )
+          .catchError((Object e) => onLog?.call('pending record failed: $e')),
+    );
+  }
+
+  /// Drops the record: the task reached an end that nothing needs to
+  /// finish — completed and cleaned, refused by the server, or given up
+  /// by the user (whose cancellation sweeps its own orphan). A record kept
+  /// after any of those would have the next launch pull something nobody
+  /// is waiting for.
+  void _forget(String taskId) {
+    unawaited(
+      pending
+          ?.remove(taskId)
+          .catchError(
+            (Object e) => onLog?.call('pending record removal failed: $e'),
+          ),
+    );
   }
 }

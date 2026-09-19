@@ -22,14 +22,36 @@ abstract final class MTConstants {
   // Polling rhythm (§2.3).
   static const Duration pollInterval = Duration(seconds: 5);
 
-  /// 120 x 5s, a ten-minute ceiling for one download pipeline.
-  static const int maxPollAttempts = 120;
+  /// 360 x 5s, a **thirty-minute** ceiling for one download pipeline.
+  ///
+  /// It was ten minutes, which a long clip on a busy server passes without
+  /// anything being wrong: the app gave up, the server finished, and the
+  /// file stayed there — one of the ten ways the audit of 2026-09-19 found
+  /// for Lite to break its own promise. The ceiling exists to stop a task
+  /// polling forever, not to judge how long a download should take, so it
+  /// belongs well beyond any real one. Nothing polls faster because of
+  /// this, and a task that finishes early still finishes early.
+  ///
+  /// The record ([PendingDownload]) is the real backstop for whatever
+  /// passes even this.
+  static const int maxPollAttempts = 360;
 
-  /// Super's allowance for network failures in a row while polling; see
+  /// The allowance for network failures in a row while polling; see
   /// `DownloadPoller.networkTolerance` (field report 2026-09-13). Six is
   /// about half a minute when connections are refused and a few minutes
-  /// when they time out. Lite, kept awake by its foreground service, keeps 0.
-  static const int superPollNetworkTolerance = 6;
+  /// when they time out.
+  ///
+  /// **Lite uses it too since 2026-09-19.** It kept 0 on the reasoning that
+  /// its foreground service keeps it awake — but the service does not keep
+  /// the *network* up, and a phone moving between Wi-Fi and mobile drops a
+  /// request as readily as a sleeping one does. The cost of failing at the
+  /// first blip is not a red card: the server carries on, finishes the file
+  /// and **nobody comes back for it**. Waiting half a minute for a
+  /// connection that is about to return is the cheaper mistake.
+  static const int pollNetworkTolerance = 6;
+
+  /// The old name, kept so nothing outside has to change at once.
+  static const int superPollNetworkTolerance = pollNetworkTolerance;
 
   /// Super's live interface refresh, only while something is active.
   static const Duration livePollInterval = Duration(seconds: 2);

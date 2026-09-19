@@ -74,6 +74,13 @@ class FakeApi implements MeTubeApi {
   Future<bool> fileExists(String serverFilename, {Duration? timeout}) async =>
       !missingFiles.contains(serverFilename);
 
+  /// What `/version` answers; null is the ordinary case of a server that
+  /// will not say (§2.6).
+  ServerVersion? version;
+
+  @override
+  Future<ServerVersion?> fetchVersion({Duration? timeout}) async => version;
+
   @override
   String downloadUrl(String serverFilename) {
     if (!UrlKit.isSafeServerFilename(serverFilename)) {

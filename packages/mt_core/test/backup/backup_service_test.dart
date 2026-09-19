@@ -67,6 +67,37 @@ void main() {
       ]);
     });
 
+    test('what this phone owes the server stays on this phone', () async {
+      // A pending download restored on another phone would have **that**
+      // phone pull the file and delete it from the server while this one
+      // is still pulling it; the trashcan flag is a fact about one
+      // container, not about the user.
+      await store.setString(PendingDownloadsStore.prefsKey, '[{"id":"t1"}]');
+      await store.setBool(TrashcanProbe.prefsKey, true);
+      await store.setBool('library_compact_view', true);
+
+      final exported = await service.exportToString();
+      expect(exported, isNot(contains(PendingDownloadsStore.prefsKey)));
+      expect(exported, isNot(contains(TrashcanProbe.prefsKey)));
+
+      // And a file that carries them anyway — edited by hand, or from a
+      // build between two releases — does not plant them here.
+      final planted = json.decode(exported) as Map<String, dynamic>;
+      (planted['prefs'] as Map<String, dynamic>)[TrashcanProbe.prefsKey] = {
+        't': 'b',
+        'v': true,
+      };
+      final fresh = MemoryKeyValueStore();
+      await BackupService(
+        store: fresh,
+        secrets: MemorySecretStore(),
+        mutex: PrefsMutex(),
+        variant: 'lite',
+      ).importFromString(json.encode(planted));
+      expect(await fresh.getBool(TrashcanProbe.prefsKey), isNull);
+      expect(await fresh.getBool('library_compact_view'), isTrue);
+    });
+
     test('credentials embedded in the URL are stripped', () async {
       await store.setString('server_url', 'https://u:pw@host/path');
       final exported = await service.exportToString();

@@ -125,6 +125,33 @@ final shortLinkResolverProvider = Provider((ref) => ShortLinkResolver());
 /// Lite's engine: the whole four-stage pipeline. It pulls to the device and
 /// then **deletes from the server automatically**, so the family's server
 /// stays clean.
+/// **Where a task is written down so it survives this process** (audit
+/// 2026-09-19). Lite alone needs it: Super leaves files on the server by
+/// design and has nothing to reconcile.
+final pendingDownloadsProvider = Provider(
+  (ref) => PendingDownloadsStore(
+    store: ref.watch(keyValueStoreProvider),
+    mutex: ref.watch(prefsMutexProvider),
+  ),
+);
+
+/// See [TrashcanProbe]: whether the server is really deleting the files.
+final trashcanProbeProvider = Provider<TrashcanProbe?>((ref) {
+  final api = ref.watch(apiClientProvider);
+  if (api == null) return null;
+  return TrashcanProbe(
+    api: api,
+    store: ref.watch(keyValueStoreProvider),
+    mutex: ref.watch(prefsMutexProvider),
+  );
+});
+
+/// Whether the last cleanup found the server keeping its files.
+final serverKeepsFilesProvider = FutureProvider<bool>((ref) async {
+  final probe = ref.watch(trashcanProbeProvider);
+  return await probe?.serverKeepsFiles ?? false;
+});
+
 final downloadEngineProvider = Provider<DownloadEngine?>((ref) {
   final api = ref.watch(apiClientProvider);
   if (api == null) return null;
@@ -133,6 +160,11 @@ final downloadEngineProvider = Provider<DownloadEngine?>((ref) {
   final engine = DownloadEngine(
     api: api,
     policy: DeletePolicy.autoDelete,
+    pending: ref.watch(pendingDownloadsProvider),
+    // **Not zero any more** (audit 2026-09-19): a foreground service keeps
+    // the process awake, not the network, and one dropped request used to
+    // fail a task while the server carried on and finished the file.
+    pollNetworkTolerance: MTConstants.pollNetworkTolerance,
     savePathBuilder: (task, filename) =>
         '$liteMediaDir/${buildLocalFilename(task.title, serverFilename: filename)}',
     onCompleted: (task) {

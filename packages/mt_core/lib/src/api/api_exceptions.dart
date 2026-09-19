@@ -67,7 +67,8 @@ final class CancelledException extends MTApiException {
   const CancelledException([super.detail]);
 }
 
-/// The `/history` poll ran out (120 × 5s) without the item completing.
+/// The `/history` poll ran out (`MTConstants.maxPollAttempts` × 5s) without
+/// the item completing.
 final class PollTimeoutException extends MTApiException {
   const PollTimeoutException([super.detail]);
 }

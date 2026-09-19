@@ -10,6 +10,7 @@ import 'package:mt_ui/mt_ui.dart';
 import '../../di.dart';
 import '../downloads_library/library_enricher.dart';
 import '../downloads_library/library_providers.dart';
+import '../downloads_library/pending_recovery.dart';
 import '../downloads_library/local_item.dart' show MediaTypeFilter;
 import '../home/add_flow.dart';
 import '../home/app_shortcuts.dart';
@@ -80,6 +81,10 @@ class _ShellScreenState extends ConsumerState<ShellScreen>
       // Revives the saved audio session, without autoplaying.
       ref.read(audioHandlerProvider).restoreSession();
       await initDownloadNotifications(ref);
+      // **What the last run promised and could not finish** (2026-09-19):
+      // the server keeps working after the app is killed, and without this
+      // the finished file is never pulled and never cleaned off the server.
+      if (mounted) unawaited(ref.read(pendingRecoveryProvider)());
       if (mounted) await maybeOfferAutoRestore(context, ref);
       if (mounted) await _handleShortcut();
       if (mounted) unawaited(_maybeShowUpdate());

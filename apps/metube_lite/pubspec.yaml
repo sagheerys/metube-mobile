@@ -2,7 +2,7 @@ name: metube_lite
 description: "MeTube Lite — the family edition: download and keep, and the server cleans itself up."
 publish_to: none
 resolution: workspace
-version: 2.0.2+5
+version: 2.1.0+6
 
 environment:
   sdk: ^3.13.0

@@ -27,12 +27,17 @@ class NetworkGate {
   bool _online = true;
   bool _onWifi = false;
   bool _known = false;
+  final _firstSnapshot = Completer<void>();
 
   bool get online => _online;
   bool get onWifi => _onWifi;
 
   /// Has a real snapshot arrived from the system yet?
   bool get isKnown => _known;
+
+  /// Completes with the first real snapshot, for whoever runs at startup
+  /// and would rather wait a moment than read the pessimistic default.
+  Future<void> get ready => _firstSnapshot.future;
 
   /// Broadcast on the **transition** from disconnected to connected, not on
   /// every network event.
@@ -46,6 +51,7 @@ class NetworkGate {
   void _apply(List<ConnectivityResult> results) {
     final wasOnline = _online;
     _known = true;
+    if (!_firstSnapshot.isCompleted) _firstSnapshot.complete();
     _onWifi =
         results.contains(ConnectivityResult.wifi) ||
         results.contains(ConnectivityResult.ethernet);

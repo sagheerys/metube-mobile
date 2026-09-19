@@ -30,23 +30,38 @@ extension DownloadEnginePull on DownloadEngine {
       onProgress: (p) => _emitProgress(taskId, p),
     );
     _emit(_tasks[taskId]!.copyWith(localPath: finalPath));
+    // The record now says where the file is: a death during the delete
+    // that follows, or a delete the server refuses, leaves the sweep with
+    // only the server to clean — never a second copy to pull.
+    _remember(_tasks[taskId]!, before: _snapshots[taskId]);
 
     // 4) Delete by policy, using the canonicalUrl from /history and nothing
     // else. **Cleanup never undoes a completed transfer:** a
     // failed delete used to mark the task "failed" and skip `onCompleted`,
     // so the file stayed with no title index and no artwork.
+    var cleaned = true;
     if (policy == DeletePolicy.autoDelete) {
       _emitPhase(taskId, TaskPhase.deleting);
       try {
         await api.delete([done.canonicalUrl]);
       } on MTApiException catch (e) {
         onLog?.call('server cleanup failed (file is safe): $e');
+        cleaned = false;
       }
     }
-    _complete(taskId);
+    _complete(taskId, serverCleaned: cleaned);
   }
 
-  void _complete(String taskId) {
+  void _complete(String taskId, {bool serverCleaned = true}) {
+    // **The record dies with the task** — unless the server still holds
+    // the row it was told to drop, in which case the record is what gets
+    // it dropped at the next launch. Left behind otherwise, the next launch
+    // would pull and delete something nobody is waiting for.
+    if (serverCleaned) {
+      _forget(taskId);
+    } else {
+      _emit(_tasks[taskId]!.copyWith(serverCleanupFailed: true));
+    }
     final task = _emit(
       _tasks[taskId]!.copyWith(phase: TaskPhase.completed, progress: 1),
     );

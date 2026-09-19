@@ -118,6 +118,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ),
         children: [
           const ServerStatusCard(),
+          const _ServerKeepsFilesNotice(),
           const SizedBox(height: MTSpace.xl),
 
           MTSectionHeader(title: l10n.serverConfiguration),
@@ -151,7 +152,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 child: TextField(
                   controller: _userController,
                   textDirection: TextDirection.ltr,
-                  decoration: InputDecoration(labelText: l10n.username),
+                  decoration: InputDecoration(
+                    labelText: l10n.username,
+                    // **Said in the open, not behind the help button**
+                    // (field report 2026-09-19): the two fields look
+                    // mandatory, so whoever runs an open server invents a
+                    // username to fill them. The text already existed; it
+                    // was only ever shown to someone who thought to press
+                    // "?" — which is exactly the person who did not need
+                    // it.
+                    helperText: l10n.authHelper,
+                    helperMaxLines: 2,
+                  ),
                 ),
               ),
               const HelpButtonGap(),
@@ -328,6 +340,66 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             '/settings/about',
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// **The one failure where nothing is wrong with the app** (audit
+/// 2026-09-19): `DELETE_FILE_ON_TRASHCAN` is off by default in MeTube, so
+/// the cleanup removes the history row and leaves the file on disk. Lite
+/// reports success, the library is right, and the server fills up for
+/// months before anyone looks.
+///
+/// [TrashcanProbe] notices it after a real cleanup — one range request for
+/// a file that should be gone — and this is where it is said. It appears
+/// only while the condition holds: fixing the container clears it.
+class _ServerKeepsFilesNotice extends ConsumerWidget {
+  const _ServerKeepsFilesNotice();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final keeps = ref.watch(serverKeepsFilesProvider).valueOrNull ?? false;
+    if (!keeps) return const SizedBox.shrink();
+    final l10n = context.mtl;
+    final p = MTThemeX.of(context).palette;
+    final text = Theme.of(context).textTheme;
+
+    return Padding(
+      padding: const EdgeInsets.only(top: MTSpace.md),
+      child: Container(
+        padding: const EdgeInsets.all(MTSpace.md),
+        decoration: BoxDecoration(
+          color: p.cardAlt,
+          borderRadius: BorderRadius.circular(MTRadius.card),
+          border: Border.all(color: p.line),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(Icons.folder_off_outlined, color: p.err),
+            const SizedBox(width: MTSpace.md),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    l10n.serverKeepsFilesTitle,
+                    style: text.bodyMedium!.copyWith(
+                      color: p.ink,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: MTSpace.xs),
+                  Text(
+                    l10n.serverKeepsFilesBody,
+                    style: text.bodySmall!.copyWith(color: p.ink2),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
