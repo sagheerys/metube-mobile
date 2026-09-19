@@ -10,8 +10,12 @@
 <meta property="og:title" content="MeTube Mobile — Android clients for MeTube">
 <meta property="og:description" content="Queue a link from your phone, then keep the file on your server and stream it, or pull it to the device and let the server clean itself up.">
 <meta property="og:url" content="https://sagheerys.github.io/metube-mobile/">
-<meta property="og:image" content="https://sagheerys.github.io/metube-mobile/screenshots/lite-day.png">
+<meta property="og:image" content="https://sagheerys.github.io/metube-mobile/screenshots/hero.jpg">
+<meta property="og:image:width" content="2000">
+<meta property="og:image:height" content="1137">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#FBF6EE" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1A130F" media="(prefers-color-scheme: dark)">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Kufi+Arabic:wght@500;700&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
@@ -19,118 +23,209 @@
 :root{
   --bg:#FBF6EE; --ink:#2B211B; --muted:#6B5B4E; --line:#E3D8C9;
   --card:#FFFDF8; --super:#C25E2E; --superDeep:#9E4517; --lite:#2F6D74;
+  --onAccent:#FFF8F2; --frame:#2B211B; --gutter:16px;
 }
 @media (prefers-color-scheme: dark){
   :root{ --bg:#1A130F; --ink:#F4EBDF; --muted:#C3B2A2; --line:#3A2C23;
-         --card:#241B15; --super:#E0784A; --superDeep:#C25E2E; --lite:#6FB3BA; }
+         --card:#241B15; --super:#E0784A; --superDeep:#E0784A; --lite:#6FB3BA;
+         --onAccent:#2B1207; --frame:#4A3A2F; }
 }
 *{box-sizing:border-box}
-img{max-width:100%;height:auto}
+html{-webkit-text-size-adjust:100%}
+img{max-width:100%;height:auto;display:block}
 body{margin:0;background:var(--bg);color:var(--ink);
   font-family:'Tajawal',system-ui,-apple-system,'Segoe UI',sans-serif;
-  font-size:17px;line-height:1.7}
+  font-size:17px;line-height:1.7;overflow-x:hidden}
 h1,h2,h3{font-family:'Noto Kufi Arabic','Tajawal',system-ui,sans-serif;line-height:1.3;margin:0 0 .5em}
-h1{font-size:2.3rem;font-weight:700}
-h2{font-size:1.5rem;font-weight:700;margin-top:2.5rem}
+h1{font-size:clamp(2rem,6vw,3rem);font-weight:700}
+h2{font-size:clamp(1.3rem,3.6vw,1.7rem);font-weight:700;margin-top:clamp(2.4rem,7vw,4rem)}
+h3{font-size:1.1rem;font-weight:700}
+p{margin:0 0 1em}
 a{color:var(--superDeep)}
-@media (prefers-color-scheme: dark){a{color:var(--super)}}
-.wrap{max-width:860px;margin:0 auto;padding:48px 20px 80px}
-.tag{display:inline-block;font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;
+.wrap{max-width:1040px;margin:0 auto;padding:clamp(28px,6vw,64px) var(--gutter) 72px}
+.tag{display:inline-block;font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;
   color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:4px 12px;margin-bottom:18px}
-.lead{font-size:1.15rem;color:var(--muted);max-width:62ch}
-.cta{display:flex;flex-wrap:wrap;gap:12px;margin:28px 0 8px}
-.btn{display:inline-block;padding:12px 22px;border-radius:12px;text-decoration:none;font-weight:700}
-.btn-main{background:var(--super);color:#FFF8F2}
-@media (prefers-color-scheme: dark){.btn-main{color:#2B1207}}
-.btn-ghost{border:1px solid var(--line);color:var(--ink)}
+.lead{font-size:clamp(1.02rem,2.6vw,1.18rem);color:var(--muted);max-width:60ch}
 .note{font-size:.92rem;color:var(--muted)}
-.hero-media{margin:32px 0;text-align:center}
-.hero-media img{max-width:300px;width:100%;border-radius:18px;border:1px solid var(--line)}
-.hero-media figcaption{font-size:.9rem;color:var(--muted);margin-top:10px}
-/* The table keeps a readable width and scrolls inside its own box, so the
-   page itself never grows wider than the phone. */
-.scroller{overflow-x:auto;margin:18px 0}
-table{width:100%;min-width:460px;border-collapse:collapse;font-size:.98rem}
-th,td{text-align:left;padding:12px 10px;border-bottom:1px solid var(--line);vertical-align:top}
-th{font-weight:700}
-.lite{color:var(--lite);font-weight:700}
-.super{color:var(--super);font-weight:700}
-.shots{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;margin:20px 0}
-.shots img{width:240px;max-width:45%;border-radius:14px;border:1px solid var(--line)}
-pre{max-width:100%;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;overflow-x:auto;font-size:.88rem}
+
+/* ── Hero: copy beside a phone on a wide screen, above it on a narrow one ── */
+.hero{display:grid;gap:clamp(24px,5vw,56px);align-items:center}
+@media (min-width:820px){.hero{grid-template-columns:1.15fr .85fr}}
+.cta{display:flex;flex-wrap:wrap;gap:12px;margin:26px 0 10px}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:48px;
+  padding:12px 22px;border-radius:14px;text-decoration:none;font-weight:700}
+.btn-main{background:var(--super);color:var(--onAccent)}
+.btn-ghost{border:1px solid var(--line);color:var(--ink)}
+@media (max-width:480px){.btn{flex:1 1 100%}}
+.hero-phone{justify-self:center;width:min(74vw,300px)}
+
+/* ── A phone: the frame every screenshot sits in ── */
+.phone{margin:0}
+.phone img{width:100%;border-radius:26px;border:3px solid var(--frame);
+  box-shadow:0 18px 40px -18px rgba(43,33,27,.55);background:var(--card)}
+.phone figcaption{font-size:.9rem;color:var(--muted);margin-top:12px;text-align:center;line-height:1.5}
+.phone figcaption strong{display:block;color:var(--ink);font-weight:700}
+
+/* ── A rail of phones. It scrolls sideways inside its own box, bleeding to
+      the screen edge on a phone, so the page itself never grows wider. ── */
+.rail{display:grid;grid-auto-flow:column;grid-auto-columns:min(64vw,230px);gap:18px;
+  overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;
+  margin:22px calc(var(--gutter) * -1) 0;padding:6px var(--gutter) 22px;scrollbar-width:thin}
+.rail > *{scroll-snap-align:center}
+@media (min-width:820px){.rail{grid-auto-columns:230px;margin-inline:0;padding-inline:2px}}
+.hint{font-size:.85rem;color:var(--muted);margin:0}
+@media (min-width:1040px){.hint{display:none}}
+
+/* ── The two apps, as cards rather than a table: a table of four columns
+      is the first thing to break on a phone. ── */
+.apps{display:grid;gap:16px;margin-top:20px}
+@media (min-width:720px){.apps{grid-template-columns:1fr 1fr}}
+.app{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:22px 22px 12px}
+.app h3{font-size:1.25rem;margin-bottom:2px}
+.app .for{color:var(--muted);font-size:.95rem;margin-bottom:12px}
+.app dl{margin:0}
+.app dt{font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:12px}
+.app dd{margin:2px 0 0}
+.lite h3{color:var(--lite)} .super h3{color:var(--super)}
+.lite{border-top:4px solid var(--lite)} .super{border-top:4px solid var(--super)}
+
+.split{display:grid;gap:clamp(20px,5vw,48px);align-items:center;margin-top:12px}
+@media (min-width:760px){.split{grid-template-columns:1fr minmax(220px,280px)}}
+.split .phone{justify-self:center;width:min(70vw,280px)}
+
+ul{padding-inline-start:1.2em;margin:0 0 1em}
+li{margin:.45em 0}
+pre{max-width:100%;background:var(--card);border:1px solid var(--line);border-radius:14px;
+  padding:14px;overflow-x:auto;font-size:.86rem;line-height:1.55}
 code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
-ul{padding-inline-start:1.2em}
-li{margin:.4em 0}
-.ar{direction:rtl;text-align:right;border-top:1px solid var(--line);margin-top:56px;padding-top:32px}
-.ar ul{padding-inline-start:0;padding-inline-end:1.2em}
-.ar th,.ar td{text-align:right}
+.ar{direction:rtl;text-align:right;border-top:1px solid var(--line);margin-top:64px;padding-top:36px}
+.ar ul{padding-inline-start:1.2em}
+.ar .app dt{letter-spacing:0}
 footer{margin-top:56px;border-top:1px solid var(--line);padding-top:22px;font-size:.9rem;color:var(--muted)}
 </style>
 </head>
 <body>
 <div class="wrap">
 
-  <span class="tag">Unofficial · GPL-3.0 · Android</span>
-  <h1>MeTube Mobile</h1>
-  <p class="lead">Two Android apps for a self-hosted
-    <a href="https://github.com/alexta69/metube">MeTube</a> server — the yt-dlp
-    web downloader you already run on your NAS or homelab. Share a link from
-    your phone, and either keep the file on the server and stream it, or pull it
-    to the device and let the server clean itself up.</p>
+  <header class="hero">
+    <div>
+      <span class="tag">Unofficial · GPL-3.0 · Android</span>
+      <h1>MeTube Mobile</h1>
+      <p class="lead">Two Android apps for a self-hosted
+        <a href="https://github.com/alexta69/metube">MeTube</a> server — the yt-dlp
+        web downloader you already run on your NAS or homelab. Share a link from
+        your phone, and either keep the file on the server and stream it, or pull it
+        to the device and let the server clean itself up.</p>
+      <div class="cta">
+        <a class="btn btn-main" href="https://github.com/sagheerys/metube-mobile/releases/latest">Download the APKs</a>
+        <a class="btn btn-ghost" href="https://github.com/sagheerys/metube-mobile">Source on GitHub</a>
+      </div>
+      <p class="note">Listed in MeTube's own README, under
+        <a href="https://github.com/alexta69/metube#-sending-links-to-metube">Sending links to MeTube</a>.
+        There is no Play Store build, because Play does not allow this category.</p>
+    </div>
+    <figure class="phone hero-phone">
+      <picture>
+        <source srcset="screenshots/super-night.png" media="(prefers-color-scheme: dark)">
+        <img src="screenshots/super-day.png" width="540" height="1200" alt="The MeTube Super library: server items with covers, favourites, a tag filter and the mini player">
+      </picture>
+    </figure>
+  </header>
 
-  <div class="cta">
-    <a class="btn btn-main" href="https://github.com/sagheerys/metube-mobile/releases/latest">Download the APKs</a>
-    <a class="btn btn-ghost" href="https://github.com/sagheerys/metube-mobile">Source on GitHub</a>
+  <h2>A look inside</h2>
+  <p class="note">Every title, channel and cover below is invented for these screenshots; no real server or account appears in them.</p>
+  <div class="rail" aria-label="Screenshots of MeTube Super">
+    <figure class="phone">
+      <img loading="lazy" src="screenshots/super-player.png" width="540" height="1200" alt="Streaming a video from the server, with actions and the up-next queue beneath it">
+      <figcaption><strong>Stream from your server</strong>Save to the phone, continue as audio, share, with the queue beneath.</figcaption>
+    </figure>
+    <figure class="phone">
+      <picture>
+        <source srcset="screenshots/super-audio-night.png" media="(prefers-color-scheme: dark)">
+        <img loading="lazy" src="screenshots/super-audio-day.png" width="540" height="1200" alt="The audio player: cover art, a seek bar, shuffle, speed and the queue">
+      </picture>
+      <figcaption><strong>A real audio player</strong>Background playback, lock-screen controls, speed and shuffle.</figcaption>
+    </figure>
+    <figure class="phone">
+      <picture>
+        <source srcset="screenshots/super-playlists-night.png" media="(prefers-color-scheme: dark)">
+        <img loading="lazy" src="screenshots/super-playlists-day.png" width="540" height="1200" alt="Playlists: three automatic lists above the user's own, each with a cover mosaic">
+      </picture>
+      <figcaption><strong>Playlists</strong>Favourites, latest and offline build themselves; yours sit beneath.</figcaption>
+    </figure>
+    <figure class="phone">
+      <img loading="lazy" src="screenshots/super-queue-night.png" width="540" height="1200" alt="The up-next queue at night, with durations and the item now playing">
+      <figcaption><strong>Up next, at night</strong>A full night palette, not a half-dark screen.</figcaption>
+    </figure>
+    <figure class="phone">
+      <img loading="lazy" src="screenshots/super-select.png" width="540" height="1200" alt="Four library items selected, with actions for playlist, tag and delete">
+      <figcaption><strong>Batch actions</strong>Select many: add to a playlist, tag, or delete from the server.</figcaption>
+    </figure>
+    <figure class="phone">
+      <img loading="lazy" src="screenshots/super-playlist.png" width="540" height="1200" alt="One playlist with play all, shuffle and audio-only buttons">
+      <figcaption><strong>Play all, or just listen</strong>Any playlist plays as video or as audio only.</figcaption>
+    </figure>
+    <figure class="phone">
+      <img loading="lazy" src="screenshots/lite-shorts.png" width="540" height="1200" alt="The shorts player showing a portrait clip with details, add-to and share">
+      <figcaption><strong>A lane for portrait clips</strong>Swipe through short vertical videos, full screen.</figcaption>
+    </figure>
   </div>
-  <p class="note">Listed in MeTube's own README, under
-    <a href="https://github.com/alexta69/metube#-sending-links-to-metube">Sending links to MeTube</a>.
-    There is no Play Store build, because Play does not allow this category.</p>
-
-  <figure class="hero-media">
-    <img src="screenshots/lite-share.gif" alt="A link is shared to MeTube Lite, the server downloads it, the phone pulls the file, and the server is cleaned up">
-    <figcaption>MeTube Lite: share a link, the server downloads it, the phone pulls the file, the server is cleared. Twenty seconds, invented demo data.</figcaption>
-  </figure>
+  <p class="hint">Swipe sideways for more →</p>
 
   <h2>Which app is for you</h2>
-  <div class="scroller">
-  <table>
-    <tr><th></th><th class="lite">MeTube Lite</th><th class="super">MeTube Super</th></tr>
-    <tr><td><strong>After a download</strong></td>
-        <td>Pulls the file to the phone, then removes it from the server</td>
-        <td>Keeps everything on the server</td></tr>
-    <tr><td><strong>Library</strong></td>
-        <td>What is on the phone</td>
-        <td>The server's history and the phone's files, merged into one</td></tr>
-    <tr><td><strong>Playback</strong></td>
-        <td>Local files</td>
-        <td>Streams from the server, and plays local files</td></tr>
-    <tr><td><strong>Also has</strong></td>
-        <td>A Wi-Fi-only rule, for limited data</td>
-        <td>Tags, batch downloads, make available offline, and two server addresses it switches between</td></tr>
-  </table>
+  <div class="apps">
+    <section class="app lite">
+      <h3>MeTube Lite</h3>
+      <p class="for">For family and friends who just want the file.</p>
+      <dl>
+        <dt>After a download</dt><dd>Pulls the file to the phone, then removes it from the server.</dd>
+        <dt>Library</dt><dd>What is on the phone.</dd>
+        <dt>Playback</dt><dd>Local files.</dd>
+        <dt>Also has</dt><dd>A Wi-Fi-only rule for limited data, and it finishes at the next launch what a killed app could not.</dd>
+      </dl>
+    </section>
+    <section class="app super">
+      <h3>MeTube Super</h3>
+      <p class="for">For the person who runs the server.</p>
+      <dl>
+        <dt>After a download</dt><dd>Keeps everything on the server.</dd>
+        <dt>Library</dt><dd>The server's history and the phone's files, merged into one.</dd>
+        <dt>Playback</dt><dd>Streams from the server, and plays local files.</dd>
+        <dt>Also has</dt><dd>Tags, batch downloads, make available offline, a server card that says what the server holds and runs, and two addresses it switches between.</dd>
+      </dl>
+    </section>
   </div>
-  <p class="note">They are separate apps and install side by side.</p>
+  <p class="note" style="margin-top:14px">They are separate apps and install side by side.</p>
+
+  <h2>MeTube Lite, start to finish</h2>
+  <div class="split">
+    <div>
+      <p>Share a link from any app. The server downloads it, the phone pulls the
+         file, and the server is cleared — so a shared family server does not fill up.</p>
+      <ul>
+        <li>Links from Android's share sheet, even from a cold start, and several at once.</li>
+        <li>A four-stage pipeline — add, follow, pull, clean — with live progress and a cancel that leaves nothing behind.</li>
+        <li>Reaches the server at home or through a tunnel, and can hold downloads to Wi-Fi.</li>
+      </ul>
+      <div class="rail" aria-label="Screenshots of MeTube Lite" style="grid-auto-columns:min(46vw,190px)">
+        <figure class="phone"><img loading="lazy" src="screenshots/lite-day.png" width="540" height="1200" alt="The MeTube Lite library by day"><figcaption>By day</figcaption></figure>
+        <figure class="phone"><img loading="lazy" src="screenshots/lite-night.png" width="540" height="1200" alt="The MeTube Lite library at night"><figcaption>At night</figcaption></figure>
+      </div>
+    </div>
+    <figure class="phone">
+      <img loading="lazy" src="screenshots/lite-share.gif" width="360" height="800" alt="A link is shared to MeTube Lite, the server downloads it, the phone pulls the file, and the server is cleaned up">
+      <figcaption>Twenty seconds, invented demo data.</figcaption>
+    </figure>
+  </div>
 
   <h2>Shared by both</h2>
   <ul>
-    <li>Links from Android's share sheet, even from a cold start, and several at once.</li>
-    <li>A four-stage pipeline — add, follow, pull, clean — with live progress and a cancel that leaves nothing behind.</li>
     <li>Background audio with a media notification and lock-screen controls, a mini player, and a lane for portrait clips.</li>
     <li>Playlists, favourites, search, and plain-JSON backups that hold no secret.</li>
     <li>In-app updates, straight from the GitHub releases page.</li>
+    <li>A day palette and a night palette, each drawn on purpose.</li>
     <li>Arabic and English, right-to-left first.</li>
   </ul>
-
-  <div class="shots">
-    <picture>
-      <source srcset="screenshots/lite-night.png" media="(prefers-color-scheme: dark)">
-      <img src="screenshots/lite-day.png" alt="The MeTube Lite library">
-    </picture>
-    <picture>
-      <source srcset="screenshots/super-night.png" media="(prefers-color-scheme: dark)">
-      <img src="screenshots/super-day.png" alt="The MeTube Super library">
-    </picture>
-  </div>
 
   <h2>No server yet?</h2>
   <p>These are clients: they download nothing by themselves. Every file is
@@ -154,36 +249,41 @@ footer{margin-top:56px;border-top:1px solid var(--line);padding-top:22px;font-si
   </ul>
 
   <section class="ar" lang="ar" dir="rtl">
-    <h2>بالعربية</h2>
+    <h2 style="margin-top:0">بالعربية</h2>
     <p class="lead">تطبيقان لأندرويد لسيرفر
       <a href="https://github.com/alexta69/metube">MeTube</a> الذي تستضيفه بنفسك.
       شارك الرابط من جوالك، ثم إما أن يبقى الملف على السيرفر فتشغّله بثّاً، أو
       يُسحب إلى جهازك ويُنظَّف السيرفر تلقائياً.</p>
 
-    <div class="scroller">
-    <table>
-      <tr><th></th><th class="lite">MeTube Lite</th><th class="super">MeTube Super</th></tr>
-      <tr><td><strong>بعد التنزيل</strong></td>
-          <td>يسحب الملف إلى الجوال ثم يحذفه من السيرفر</td>
-          <td>يُبقي كل شيء على السيرفر</td></tr>
-      <tr><td><strong>المكتبة</strong></td>
-          <td>ما هو على الجوال</td>
-          <td>سجلّ السيرفر وملفات الجوال في مكتبة واحدة</td></tr>
-      <tr><td><strong>التشغيل</strong></td>
-          <td>الملفات المحلية</td>
-          <td>بثّ من السيرفر، وتشغيل محلي</td></tr>
-      <tr><td><strong>وفيه أيضاً</strong></td>
-          <td>قصر التنزيل على Wi-Fi</td>
-          <td>وسوم، وتنزيل دفعات، و«إتاحة دون اتصال»، وعنوانان للسيرفر بتبديل تلقائي</td></tr>
-    </table>
+    <div class="apps">
+      <section class="app lite">
+        <h3>MeTube Lite</h3>
+        <p class="for">للعائلة والأصدقاء: يريدون الملف فقط.</p>
+        <dl>
+          <dt>بعد التنزيل</dt><dd>يسحب الملف إلى الجوال ثم يحذفه من السيرفر.</dd>
+          <dt>المكتبة</dt><dd>ما هو على الجوال.</dd>
+          <dt>التشغيل</dt><dd>الملفات المحلية.</dd>
+          <dt>وفيه أيضاً</dt><dd>قصر التنزيل على Wi-Fi، وإكمال ما لم يكتمل عند الفتح التالي.</dd>
+        </dl>
+      </section>
+      <section class="app super">
+        <h3>MeTube Super</h3>
+        <p class="for">لمالك السيرفر.</p>
+        <dl>
+          <dt>بعد التنزيل</dt><dd>يُبقي كل شيء على السيرفر.</dd>
+          <dt>المكتبة</dt><dd>سجلّ السيرفر وملفات الجوال في مكتبة واحدة.</dd>
+          <dt>التشغيل</dt><dd>بثّ من السيرفر، وتشغيل محلي.</dd>
+          <dt>وفيه أيضاً</dt><dd>وسوم، وتنزيل دفعات، و«إتاحة دون اتصال»، وبطاقة تعرض ما على السيرفر ونسخته، وعنوانان بتبديل تلقائي.</dd>
+        </dl>
+      </section>
     </div>
 
-    <ul>
+    <ul style="margin-top:22px">
       <li>استقبال الروابط من قائمة المشاركة، ولو كان التطبيق مغلقاً، وعدة روابط معاً.</li>
-      <li>تشغيل الصوت في الخلفية مع إشعار وسائط وأزرار في شاشة القفل.</li>
+      <li>تشغيل الصوت في الخلفية مع إشعار وسائط وأزرار في شاشة القفل، ومشغل مصغّر، ومسار للمقاطع الطولية.</li>
       <li>قوائم تشغيل ومفضلة وبحث، ونسخ احتياطية بصيغة JSON لا تحمل أي سرّ.</li>
       <li>تحديث ذاتي من صفحة الإصدارات.</li>
-      <li>واجهة عربية كاملة من اليمين إلى اليسار.</li>
+      <li>واجهة عربية كاملة من اليمين إلى اليسار، بوضعين نهاري وليلي.</li>
     </ul>
 
     <p><strong>لا تملك سيرفراً؟</strong> التطبيقان لا ينزّلان شيئاً بنفسيهما: سيرفر
@@ -223,6 +323,7 @@ footer{margin-top:56px;border-top:1px solid var(--line);padding-top:22px;font-si
   "url": "https://sagheerys.github.io/metube-mobile/",
   "downloadUrl": "https://github.com/sagheerys/metube-mobile/releases/latest",
   "codeRepository": "https://github.com/sagheerys/metube-mobile",
+  "screenshot": "https://sagheerys.github.io/metube-mobile/screenshots/hero.jpg",
   "inLanguage": ["en", "ar"],
   "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
   "description": "Two Android clients for a self-hosted MeTube (yt-dlp) server: Lite pulls each download to the phone and clears the server, Super keeps files on the server and streams them."
