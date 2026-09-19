@@ -7,7 +7,102 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 Both apps share this file: an entry says which one it affects when it affects
 only one.
 
-## [Unreleased]
+## [2.1.0] - 2026-09-19
+
+### Added
+
+- **The server card says what the server holds and what it runs.** Under
+  the address: how many files are on it, how many are queued, and which
+  MeTube version it reports — with a line when a newer MeTube release is
+  out. The version comes from MeTube's own `/version` endpoint; a server
+  that reports `dev`, or is too old to answer, is shown as "unknown" and is
+  never told it is out of date. MeTube Super.
+- **Lite finishes, at the next launch, the downloads it could not.** Every
+  download is written down before it is sent, so when the app is killed
+  from the recents list, stopped by the battery manager, or loses the
+  network for a moment while the server keeps working, the next launch
+  finds the finished file, pulls it to the phone and cleans it off the
+  server — honouring "Wi-Fi only". Records older than a week are dropped.
+  MeTube Lite.
+- **Lite tells you when your server keeps the files it was told to
+  delete.** MeTube removes a file only when `DELETE_FILE_ON_TRASHCAN=true`,
+  and without it everything looks right while the disk fills up. After a
+  cleanup, Lite checks with one small request whether the file is really
+  gone, and says so in the settings until the container is fixed. MeTube
+  Lite.
+
+### Fixed
+
+- **Deleting from the server no longer hides your copy on the phone.** The
+  cleanup that follows a server delete removed the offline entry with
+  everything else, so a downloaded copy vanished from the library while its
+  file stayed on disk, invisible and unreclaimable. An item with a copy on
+  the phone now stays in the library as a local item, with its tags,
+  position and cover. MeTube Super.
+- **One dropped connection no longer loses a Lite download.** Lite gave up
+  on the first network error while waiting for the server, and the server
+  then finished the file with nobody coming back for it. It now tolerates
+  a short outage, as Super already did, and waits up to thirty minutes for
+  a long download instead of ten. **Super waits thirty minutes too**: the
+  ceiling is shared. MeTube Lite.
+- **Deleting a local-only clip for good takes its data with it.** With
+  server deletes now leaving the phone's copy in place, "delete local copy"
+  on such a clip removed the file and left its tags, position, cover and
+  playlist entries behind — the dead-playlist-entry defect of 2.0.0
+  returning by another door. MeTube Super.
+- **Backups no longer carry what belongs to one phone.** The record of a
+  download in progress, restored on another phone, would have that phone
+  pull the file and delete it from the server while the first was still
+  pulling; and the "server keeps files" flag is a fact about one container.
+  Neither is exported, and neither is accepted on import. Both apps.
+- **Audio no longer dies a minute after a phone call.** Playing a playlist
+  with the screen off, taking a call and hanging up left the current clip
+  running and then silence: no next item, no notification, nothing to press.
+  Measured on a Galaxy S22 Ultra (Android 16) by capturing the system log
+  through the whole sequence. The call pauses playback, and the app used to
+  leave its foreground service on every pause — which drops it to a cached
+  process and releases the wake lock. When the call ended and playback
+  resumed, Android refused to start that service again, because starting a
+  foreground service **from the background** is forbidden since Android 12
+  (`ForegroundServiceStartNotAllowedException`). Playback carried on
+  unprotected: the process was frozen, the next item's request timed out,
+  and the session stopped itself. The service now stays through a pause, so
+  nothing has to be started again — verified by a second capture of the same
+  sequence, in which the refusal, the freeze and the timeout are all absent.
+  Both apps.
+- **A dropped network is waited for instead of skipped.** Any playback error
+  was treated as a broken item and skipped past, and five skips stopped the
+  session — so one hiccup could end a playlist. A **stream** is now retried
+  after 2, 5 and 10 seconds before it is given up on, while a local file
+  that will not open is still skipped at once, since waiting for it would be
+  waiting forever. Both apps.
+- **A cover stored as a file shows on the lock screen.** Some audio clips
+  had artwork inside the app and the app icon in the notification: a video's
+  cover arrives from the server as a URL and passed, while an audio clip's
+  cover is the one extracted from the file itself and written to disk, and
+  a path without a scheme was discarded. Both apps.
+- **"View all" leaves full screen before opening the playlist.** It used to
+  open the playlist **over** the full-screen player, which stayed alive
+  underneath: the picture vanished, the clip played on, and the phone stayed
+  locked sideways over a screen that wanted neither. MeTube Super.
+
+### Changed
+
+- **A paused session now stops itself after fifteen minutes**, releasing the
+  wake lock and clearing the notification. It is the other half of the
+  foreground-service fix above: the service surviving a pause is what lets
+  playback come back after a call, and the price is a wake lock held while
+  paused. Fifteen minutes gives it back to whoever paused and walked away.
+  A session restored at launch and never played is left alone; a call
+  longer than fifteen minutes ends with the session stopped rather than
+  resumed. Both apps.
+- **Audio buffers two minutes ahead instead of fifty seconds.** Two minutes
+  of audio is under 2 MB, and it rides out a lift, a tunnel or a Wi-Fi
+  handover. Video is unchanged. Both apps.
+- **The server's username and password say they are optional**, under the
+  field rather than behind the help button. The sentence existed; it was
+  shown only to someone who thought to press "?" — which is exactly the
+  person who did not need it. Both apps.
 
 ## [2.0.2]
 
@@ -116,7 +211,7 @@ each one left behind a test that fails on the old code.
 - An album pasted as one link expanding into twenty downloads on the server,
   with only one of them pulled.
 
-[Unreleased]: https://github.com/sagheerys/metube-mobile/compare/v2.0.2...HEAD
+[2.1.0]: https://github.com/sagheerys/metube-mobile/compare/v2.0.2...v2.1.0
 [2.0.2]: https://github.com/sagheerys/metube-mobile/compare/v2.0.1...v2.0.2
 [2.0.1]: https://github.com/sagheerys/metube-mobile/compare/v2.0.0...v2.0.1
 [2.0.0]: https://github.com/sagheerys/metube-mobile/releases/tag/v2.0.0
