@@ -77,6 +77,9 @@ restore.cmd
 tool/*.ps1
 tool/*.cmd
 tool/build-lite.log
+# The screenshot kit (mock server, generated demo media, emulator driver):
+# local paths again, and nothing anyone cloning can run as it stands.
+tool/demo-kit/
 tool/cmdtools-url.txt
 tool/flutter-url.txt
 .design/
