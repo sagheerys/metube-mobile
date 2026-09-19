@@ -16,6 +16,10 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#FBF6EE" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#1A130F" media="(prefers-color-scheme: dark)">
+<script>
+/* The visitor's own choice, if they made one, wins over the system's. */
+try{var t=localStorage.getItem('theme');if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t);}catch(e){}
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Kufi+Arabic:wght@500;700&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
@@ -26,10 +30,13 @@
   --onAccent:#FFF8F2; --frame:#2B211B; --gutter:16px;
 }
 @media (prefers-color-scheme: dark){
-  :root{ --bg:#1A130F; --ink:#F4EBDF; --muted:#C3B2A2; --line:#3A2C23;
+  :root:not([data-theme="light"]){ --bg:#1A130F; --ink:#F4EBDF; --muted:#C3B2A2; --line:#3A2C23;
          --card:#241B15; --super:#E0784A; --superDeep:#E0784A; --lite:#6FB3BA;
          --onAccent:#2B1207; --frame:#4A3A2F; }
 }
+:root[data-theme="dark"]{ --bg:#1A130F; --ink:#F4EBDF; --muted:#C3B2A2; --line:#3A2C23;
+         --card:#241B15; --super:#E0784A; --superDeep:#E0784A; --lite:#6FB3BA;
+         --onAccent:#2B1207; --frame:#4A3A2F; }
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
 img{max-width:100%;height:auto;display:block}
@@ -108,10 +115,32 @@ code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
 .ar{direction:rtl;text-align:right;border-top:1px solid var(--line);margin-top:64px;padding-top:36px}
 .ar ul{padding-inline-start:1.2em}
 .ar .app dt{letter-spacing:0}
+/* ── Day / night ── */
+.theme-toggle{position:fixed;top:12px;inset-inline-end:12px;z-index:10;width:46px;height:46px;
+  display:grid;place-items:center;padding:0;border-radius:50%;cursor:pointer;
+  background:var(--card);color:var(--ink);border:1px solid var(--line);
+  box-shadow:0 6px 18px -8px rgba(43,33,27,.45);-webkit-tap-highlight-color:transparent}
+.theme-toggle:hover{border-color:var(--super)}
+.theme-toggle:focus-visible{outline:2px solid var(--super);outline-offset:2px}
+.theme-toggle svg{width:22px;height:22px;display:block}
+/* Show the icon of where the button takes you: a moon by day, a sun at night. */
+.theme-toggle .sun{display:none}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]) .theme-toggle .sun{display:block}
+  :root:not([data-theme="light"]) .theme-toggle .moon{display:none}
+}
+:root[data-theme="dark"] .theme-toggle .sun{display:block}
+:root[data-theme="dark"] .theme-toggle .moon{display:none}
+body{transition:background-color .25s ease,color .25s ease}
+@media (prefers-reduced-motion: reduce){body{transition:none}}
 footer{margin-top:56px;border-top:1px solid var(--line);padding-top:22px;font-size:.9rem;color:var(--muted)}
 </style>
 </head>
 <body>
+<button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch between day and night" title="Day / night">
+  <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.5 14.2A8.5 8.5 0 0 1 9.8 3.5a8.5 8.5 0 1 0 10.7 10.7z"/></svg>
+  <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.4M12 19.1v2.4M2.5 12h2.4M19.1 12h2.4M5.3 5.3l1.7 1.7M17 17l1.7 1.7M18.7 5.3 17 7M7 17l-1.7 1.7"/></svg>
+</button>
 <div class="wrap">
 
   <header class="hero">
@@ -318,6 +347,32 @@ footer{margin-top:56px;border-top:1px solid var(--line);padding-top:22px;font-si
   </footer>
 
 </div>
+<script>
+(function(){
+  var root=document.documentElement, mq=window.matchMedia('(prefers-color-scheme: dark)');
+  var sources=[].slice.call(document.querySelectorAll('source[media*="prefers-color-scheme"]'));
+  var metas=[].slice.call(document.querySelectorAll('meta[name="theme-color"]'));
+  function isDark(){var t=root.getAttribute('data-theme');return t?t==='dark':mq.matches;}
+  function apply(){
+    var forced=root.getAttribute('data-theme');
+    sources.forEach(function(s){
+      s.media = !forced ? '(prefers-color-scheme: dark)' : (forced==='dark' ? 'all' : 'not all');
+    });
+    metas.forEach(function(m){ m.setAttribute('content', isDark() ? '#1A130F' : '#FBF6EE'); });
+    var b=document.getElementById('themeToggle');
+    if(b) b.setAttribute('aria-pressed', isDark() ? 'true' : 'false');
+  }
+  apply();
+  document.getElementById('themeToggle').addEventListener('click', function(){
+    var next=isDark() ? 'light' : 'dark';
+    root.setAttribute('data-theme', next);
+    try{localStorage.setItem('theme', next);}catch(e){}
+    apply();
+  });
+  /* Until a choice is made, the page keeps following the system. */
+  if(mq.addEventListener) mq.addEventListener('change', apply);
+})();
+</script>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
