@@ -217,6 +217,34 @@ POST {base}/delete       Content-Type: application/json
 - Lite deletes automatically after a pull; Super deletes on request
   (`DeletePolicy` in the engine).
 
+### 2.6 The server's own version (read-only, Super)
+
+```
+GET {base}/version    →  {"version": "2026.09.15", "yt-dlp": "2026.09.10"}
+```
+
+Read from MeTube's source on 2026-09-19 (`app/main.py`), and **not part of
+the four-endpoint pipeline**: nothing downloads or deletes through it, and
+every caller must survive its absence.
+
+- The value comes from the environment variable `METUBE_VERSION`, which the
+  official image stamps with the build date (`ARG VERSION` in the
+  Dockerfile, filled by the release workflow). It matches the GitHub release
+  tags, which are dates too (`2026.09.15`), so **comparing them is a string
+  comparison** and no version parser is needed.
+- **`"dev"` is a legitimate answer**, from an image built by hand without
+  that argument. It is not older and not newer: it is unknown, and unknown
+  is displayed rather than turned into an update notice.
+- **A 404 is equally legitimate** — an older MeTube that predates the
+  endpoint. Same treatment: unknown.
+- Older or narrower deployments may not expose it at all, so it is asked
+  once when the status card is opened, never polled.
+
+> The server exposes more than the five endpoints above (subscriptions,
+> presets, cookies, retry). They are **deliberately not used**: rule 1 says
+> the network is what this document describes, so anything adopted later is
+> documented here first.
+
 ## 3. The four-stage download pipeline
 
 ```

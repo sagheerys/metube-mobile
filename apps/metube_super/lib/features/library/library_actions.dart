@@ -130,17 +130,40 @@ class LibraryActions {
   /// and the artwork stayed **forever** in the same XML file that is
   /// re-serialised on every write, and `exportToString` copies whole, so
   /// backups swelled with corpses.
+  ///
+  /// **An item with a local copy is not removed, it becomes local-only**
+  /// (2026-09-19). Pruning ran over every deleted item, the offline entry
+  /// included, so deleting from the server took the copy on the phone out
+  /// of the library with it — while leaving the file itself on disk, since
+  /// nothing here deletes files. The download was invisible and
+  /// unreclaimable, and the library **already has a name for this state**:
+  /// [LibraryItem.fromOfflineOnly], "local and no longer on the server".
+  /// Its tags, its position and its cover belong to the clip that is still
+  /// playable, not to the server entry that is gone.
+  ///
+  /// The path is checked on disk rather than trusted: an index entry whose
+  /// file was deleted from outside the app is a corpse like any other.
   Future<void> pruneItemData(List<String> canonicalUrls) async {
     final tags = _ref.read(tagsIndexProvider);
     final artwork = _ref.read(artworkIndexProvider);
     final shapes = _ref.read(mediaShapeIndexProvider);
     final positions = _ref.read(playbackPositionsProvider);
     final offline = _ref.read(offlineIndexProvider);
+    final localCopies = await offline.readAll();
+    final gone = <String>[];
+    for (final url in canonicalUrls) {
+      final path = localCopies[url];
+      if (path != null && path.isNotEmpty && await File(path).exists()) {
+        continue; // it lives on as a local-only item
+      }
+      gone.add(url);
+    }
+    if (gone.isEmpty) return;
     // Artwork first: it deletes **the thumbnail file itself** along with
     // the entry, or it stays orphaned in `filesDir/thumbs`, which Android
     // never sweeps.
-    await artwork.removeKeysAndFiles(canonicalUrls);
-    for (final url in canonicalUrls) {
+    await artwork.removeKeysAndFiles(gone);
+    for (final url in gone) {
       await tags.removeKey(url);
       await shapes.removeKey(url);
       await positions.clear(url);
@@ -150,7 +173,7 @@ class LibraryActions {
     // was
     // pruned except the playlists, so a dead entry stayed and played
     // something else when tapped.
-    await _ref.read(playlistsStoreProvider).removeFromAll(canonicalUrls);
+    await _ref.read(playlistsStoreProvider).removeFromAll(gone);
     _ref.read(playlistsRevisionProvider.notifier).state++;
   }
 
@@ -165,8 +188,20 @@ class LibraryActions {
     _refreshLibrary();
   }
 
-  /// Deletes a local-only item for good.
-  Future<void> deleteLocalOnly(LibraryItem item) => removeLocalCopy(item);
+  /// Deletes a local-only item for good — the file **and** everything
+  /// indexed under its key.
+  ///
+  /// [removeLocalCopy] alone was enough while local-only items were rare.
+  /// Now every server delete of a clip with a copy on the phone produces
+  /// one (the prune above keeps its tags, position, cover and playlist
+  /// entries on purpose), and the day it is deleted for good those must go
+  /// with it — or a dead playlist entry stays and plays something else
+  /// when tapped, the 2026-09-04 defect all over again.
+  Future<void> deleteLocalOnly(LibraryItem item) async {
+    await removeLocalCopy(item);
+    // The file is gone, so the key lands in `gone` and is pruned.
+    await pruneItemData([item.canonicalUrl]);
+  }
 
   /// Smart sharing: the local file if there is one, otherwise download then
   /// share. **Field report 2026-09-02:** "there is no counter showing it is

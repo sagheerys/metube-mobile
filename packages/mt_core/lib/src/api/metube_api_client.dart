@@ -5,6 +5,7 @@ import 'package:dio/dio.dart';
 import '../constants/mt_constants.dart';
 import '../models/history_response.dart';
 import '../models/quality.dart';
+import '../models/server_version.dart';
 import '../urls/playlist_detector.dart';
 import '../urls/url_kit.dart';
 import 'api_exceptions.dart';
@@ -103,6 +104,32 @@ class MeTubeApiClient implements MeTubeApi {
       throw const NotMeTubeServerException();
     }
     return HistoryResponse.fromJson(Map<String, dynamic>.from(decoded as Map));
+  }
+
+  /// §2.6: what the server says it is, or **null for every reason it might
+  /// not say**.
+  ///
+  /// Older MeTubes have no such endpoint (404), a proxy may answer with an
+  /// HTML page, and an image built by hand reports `dev`. None of those is
+  /// a fault worth a message: the status card shows "unknown" and the rest
+  /// of the app never asks. So this swallows its errors rather than
+  /// classifying them — the one place in the client that does, because it
+  /// is the one call whose failure means nothing.
+  @override
+  Future<ServerVersion?> fetchVersion({Duration? timeout}) async {
+    try {
+      final response = await _request(
+        () => _dio.get<String>(
+          '${config.baseUrl}/version',
+          options: Options(
+            receiveTimeout: timeout ?? MTConstants.testConnectionTimeout,
+          ),
+        ),
+      );
+      return ServerVersion.fromJson(_decode(response));
+    } on Object {
+      return null;
+    }
   }
 
   /// **The name of the compatibility preset defined on the server**

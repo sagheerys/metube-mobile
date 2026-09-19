@@ -32,6 +32,63 @@ final serverStatusProvider = FutureProvider<MTEndpointStatus?>((ref) async {
   }
 });
 
+/// **What the server holds and what it is running** (§2.6), or null when
+/// there is nothing to say.
+///
+/// Read **once per visit to this screen** and never polled: the counts come
+/// from the `/history` the app fetches anyway, the version is a single
+/// extra request, and the newest MeTube release is one call to GitHub that
+/// Riverpod caches for the session. Whoever presses refresh gets a fresh
+/// answer; nobody else pays for one.
+final serverDetailsProvider = FutureProvider<ServerDetails?>((ref) async {
+  final api = ref.watch(apiClientProvider);
+  if (api == null) return null;
+  // The status above already said whether the server answers at all; there
+  // is nothing to show beside "unreachable".
+  final status = await ref.watch(serverStatusProvider.future);
+  if (status != MTEndpointStatus.ok) return null;
+  final history = await api.fetchHistory();
+  final version = await api.fetchVersion();
+  // **Last, and only if it can be compared.** Asking GitHub what the newest
+  // MeTube is, for a server that will not say what it runs, is a request
+  // whose answer nobody could use.
+  final latest = version != null && version.isKnown
+      ? await const MeTubeReleaseChecker(fetch: ioHttpGetString).latestTag()
+      : null;
+  return ServerDetails(
+    // Failed items sit in `done` too; a file count that counts them is
+    // wrong by exactly the number of things the user would least expect.
+    files: history.done.where((item) => item.isCompleted).length,
+    queued: history.active.length,
+    version: version,
+    latestRelease: latest,
+  );
+});
+
+/// The line under the server's address: how much it holds, and what it is.
+class ServerDetails {
+  const ServerDetails({
+    required this.files,
+    required this.queued,
+    this.version,
+    this.latestRelease,
+  });
+
+  final int files;
+  final int queued;
+  final ServerVersion? version;
+
+  /// The newest tag on `alexta69/metube`, when it was worth asking.
+  final String? latestRelease;
+
+  /// **Only ever true for two real dated versions**; `dev`, an old MeTube
+  /// with no `/version`, and a fork numbering releases its own way all
+  /// answer false. Saying "out of date" to someone whose server is fine is
+  /// worse than saying nothing.
+  bool get isOutdated =>
+      latestRelease != null && (version?.isOlderThan(latestRelease!) ?? false);
+}
+
 /// The server status card, always espresso-dark (log §4).
 class ServerStatusCard extends ConsumerWidget {
   const ServerStatusCard({super.key});
@@ -113,17 +170,82 @@ class ServerStatusCard extends ConsumerWidget {
                       color: MTPalette.serverCardInk.withValues(alpha: 0.6),
                     ),
                   ),
+                const _ServerDetailsLines(),
               ],
             ),
           ),
           IconButton(
             tooltip: l10n.refresh,
-            onPressed: () => ref.invalidate(serverStatusProvider),
+            onPressed: () {
+              ref.invalidate(serverStatusProvider);
+              ref.invalidate(serverDetailsProvider);
+            },
             icon: Icon(
               Icons.refresh_rounded,
               color: MTPalette.serverCardInk.withValues(alpha: 0.8),
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+/// The two lines under the address: how much the server holds, and what it
+/// is running.
+///
+/// **It shows nothing at all while it does not know** — no spinner, no
+/// placeholder. The card's own state line already says whether the server
+/// answers; a second "loading" under it would be noise on a screen that is
+/// opened to read one address.
+class _ServerDetailsLines extends ConsumerWidget {
+  const _ServerDetailsLines();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final details = ref.watch(serverDetailsProvider).valueOrNull;
+    if (details == null) return const SizedBox.shrink();
+    final l10n = context.mtl;
+    final text = Theme.of(context).textTheme.bodySmall!;
+    final ink = MTPalette.serverCardInk;
+
+    final counts = [
+      l10n.serverFilesCount(details.files),
+      if (details.queued > 0) l10n.serverQueueCount(details.queued),
+    ].join(' · ');
+
+    // `dev`, or a MeTube too old to have the endpoint: named as unknown
+    // rather than passed over, so the absence is a fact and not a gap.
+    final version = switch (details.version) {
+      final ServerVersion v when v.isKnown => l10n.serverVersionLabel(
+        v.version,
+      ),
+      _ => l10n.serverVersionUnknown,
+    };
+
+    return Padding(
+      padding: const EdgeInsets.only(top: MTSpace.xs),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '$counts · $version',
+            style: text.copyWith(color: ink.withValues(alpha: 0.6)),
+          ),
+          if (details.isOutdated)
+            Padding(
+              padding: const EdgeInsets.only(top: MTSpace.xs),
+              // **Full-strength ink and bold, not a colour.** There is no
+              // "warning" token in the palette, and inventing one is a
+              // design decision (§3, the owner's). Red would be wrong
+              // anyway: a server a release behind is information, not a
+              // fault, and the contrast against the muted line above is
+              // what makes it read.
+              child: Text(
+                l10n.serverVersionOutdated(details.latestRelease!),
+                style: text.copyWith(color: ink, fontWeight: FontWeight.w700),
+              ),
+            ),
         ],
       ),
     );

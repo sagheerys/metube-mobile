@@ -150,7 +150,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 child: TextField(
                   controller: _userController,
                   textDirection: TextDirection.ltr,
-                  decoration: InputDecoration(labelText: l10n.username),
+                  decoration: InputDecoration(
+                    labelText: l10n.username,
+                    // **Said in the open, not behind the help button**
+                    // (field report 2026-09-19): the two fields look
+                    // mandatory, so whoever runs an open server invents a
+                    // username to fill them. The text already existed; it
+                    // was only ever shown to someone who thought to press
+                    // "?" — which is exactly the person who did not need
+                    // it.
+                    helperText: l10n.authHelper,
+                    helperMaxLines: 2,
+                  ),
                 ),
               ),
               const HelpButtonGap(),
