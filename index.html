@@ -73,8 +73,15 @@ a{color:var(--superDeep)}
   margin:22px calc(var(--gutter) * -1) 0;padding:6px var(--gutter) 22px;scrollbar-width:thin}
 .rail > *{scroll-snap-align:center}
 @media (min-width:820px){.rail{grid-auto-columns:230px;margin-inline:0;padding-inline:2px}}
+/* Two phones side by side: small enough to sit under a paragraph. */
+.rail.pair{grid-auto-columns:min(42vw,190px);justify-content:start}
 .hint{font-size:.85rem;color:var(--muted);margin:0}
-@media (min-width:1040px){.hint{display:none}}
+/* On a wide screen nothing is hidden behind a scroll: the gallery wraps. */
+@media (min-width:1040px){
+  .hint{display:none}
+  .rail.wrap{grid-auto-flow:row;grid-template-columns:repeat(4,1fr);gap:34px 26px;
+    overflow:visible;scroll-snap-type:none;padding-bottom:0}
+}
 
 /* ── The two apps, as cards rather than a table: a table of four columns
       is the first thing to break on a phone. ── */
@@ -91,7 +98,7 @@ a{color:var(--superDeep)}
 
 .split{display:grid;gap:clamp(20px,5vw,48px);align-items:center;margin-top:12px}
 @media (min-width:760px){.split{grid-template-columns:1fr minmax(220px,280px)}}
-.split .phone{justify-self:center;width:min(70vw,280px)}
+.split > .phone{justify-self:center;width:min(70vw,280px)}
 
 ul{padding-inline-start:1.2em;margin:0 0 1em}
 li{margin:.45em 0}
@@ -134,7 +141,7 @@ footer{margin-top:56px;border-top:1px solid var(--line);padding-top:22px;font-si
 
   <h2>A look inside</h2>
   <p class="note">Every title, channel and cover below is invented for these screenshots; no real server or account appears in them.</p>
-  <div class="rail" aria-label="Screenshots of MeTube Super">
+  <div class="rail wrap" aria-label="Screenshots of MeTube Super">
     <figure class="phone">
       <img loading="lazy" src="screenshots/super-player.png" width="540" height="1200" alt="Streaming a video from the server, with actions and the up-next queue beneath it">
       <figcaption><strong>Stream from your server</strong>Save to the phone, continue as audio, share, with the queue beneath.</figcaption>
@@ -207,7 +214,7 @@ footer{margin-top:56px;border-top:1px solid var(--line);padding-top:22px;font-si
         <li>A four-stage pipeline — add, follow, pull, clean — with live progress and a cancel that leaves nothing behind.</li>
         <li>Reaches the server at home or through a tunnel, and can hold downloads to Wi-Fi.</li>
       </ul>
-      <div class="rail" aria-label="Screenshots of MeTube Lite" style="grid-auto-columns:min(46vw,190px)">
+      <div class="rail pair" aria-label="Screenshots of MeTube Lite">
         <figure class="phone"><img loading="lazy" src="screenshots/lite-day.png" width="540" height="1200" alt="The MeTube Lite library by day"><figcaption>By day</figcaption></figure>
         <figure class="phone"><img loading="lazy" src="screenshots/lite-night.png" width="540" height="1200" alt="The MeTube Lite library at night"><figcaption>At night</figcaption></figure>
       </div>
