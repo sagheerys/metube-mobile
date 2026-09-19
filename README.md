@@ -16,6 +16,11 @@ itself up. Written in Flutter as one monorepo, in Arabic and English, and free
 software under the GPL.
 
 <p align="center">
+  <img src="docs/screenshots/hero.jpg" alt="MeTube Super: the library, the video player with its queue, the audio player at night, and playlists">
+</p>
+<p align="center"><sub>MeTube Super — the merged library, streaming with an up-next queue, the audio player at night, and playlists. Every title and cover here is invented.</sub></p>
+
+<p align="center">
   <img src="docs/screenshots/lite-share.gif" width="300" alt="MeTube Lite: a link is shared to the app, the server downloads it, the phone pulls the file and the server is cleaned up">
 </p>
 <p align="center"><sub>MeTube Lite, start to finish: share a link, the server downloads it, the phone pulls the file, the server cleans up. Invented demo data; the waiting is sped up 3×.</sub></p>
@@ -126,10 +131,29 @@ installs without your confirmation, and a version can be skipped.
 
 ## Screenshots
 
-| MeTube Lite | MeTube Super |
-|---|---|
-| ![Lite, day](docs/screenshots/lite-day.png) | ![Super, day](docs/screenshots/super-day.png) |
-| ![Lite, night](docs/screenshots/lite-night.png) | ![Super, night](docs/screenshots/super-night.png) |
+**The players** — the audio player, the up-next queue at night, and the
+lane for portrait clips:
+
+![The audio player by day, the queue at night, and the shorts player](docs/screenshots/players.jpg)
+
+**The libraries** — MeTube Lite by day and by night, and MeTube Super at night
+with the mini player:
+
+![MeTube Lite by day and night, MeTube Super at night](docs/screenshots/libraries.jpg)
+
+<details>
+<summary><strong>More screens</strong> — playlists, batch selection, the video player</summary>
+<br>
+
+| Playlists | A playlist | Batch selection |
+|---|---|---|
+| ![Playlists, with smart lists above your own](docs/screenshots/super-playlists-day.png) | ![One playlist, with play-all, shuffle and audio-only](docs/screenshots/super-playlist.png) | ![Several items selected for a playlist, a tag or deletion](docs/screenshots/super-select.png) |
+
+| Video player | Playlists at night | Mini player |
+|---|---|---|
+| ![Streaming a video with the queue beneath it](docs/screenshots/super-player.png) | ![Playlists at night](docs/screenshots/super-playlists-night.png) | ![The library with the mini player](docs/screenshots/super-miniplayer.png) |
+
+</details>
 
 The library shown is invented for these screenshots — the titles, the channels
 and the covers are all generated, and no real server or account appears in

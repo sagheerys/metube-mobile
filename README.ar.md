@@ -15,6 +15,11 @@
 في مستودع واحد، بالعربية والإنجليزية، وبرمجية حرة برخصة GPL.
 
 <p align="center">
+  <img src="docs/screenshots/hero.jpg" alt="MeTube Super: المكتبة، ومشغل الفيديو مع قائمة «التالي»، ومشغل الصوت ليلاً، وقوائم التشغيل">
+</p>
+<p align="center"><sub>MeTube Super — المكتبة الموحَّدة، والبث مع قائمة «التالي»، ومشغل الصوت ليلاً، وقوائم التشغيل. كل عنوان وغلاف هنا مخترَع.</sub></p>
+
+<p align="center">
   <img src="docs/screenshots/lite-share.gif" width="300" alt="MeTube Lite: رابط يُشارَك إلى التطبيق، فينزّله السيرفر، ويسحبه الهاتف، ثم يُحذف من السيرفر">
 </p>
 <p align="center"><sub>MeTube Lite من البداية للنهاية: شارك الرابط، فينزّله السيرفر، ويسحبه الهاتف، وينظّف السيرفر نفسه. البيانات مخترعة للعرض، والانتظار مسرَّع ثلاث مرات.</sub></p>
@@ -113,10 +118,27 @@
 
 ## لقطات
 
-| MeTube Lite | MeTube Super |
-|---|---|
-| ![لايت، نهاراً](docs/screenshots/lite-day.png) | ![سوبر، نهاراً](docs/screenshots/super-day.png) |
-| ![لايت، ليلاً](docs/screenshots/lite-night.png) | ![سوبر، ليلاً](docs/screenshots/super-night.png) |
+**المشغّلات** — مشغل الصوت، وقائمة «التالي» ليلاً، ومسار المقاطع الطولية:
+
+![مشغل الصوت نهاراً، وقائمة التالي ليلاً، ومشغل المقاطع القصيرة](docs/screenshots/players.jpg)
+
+**المكتبات** — MeTube Lite نهاراً وليلاً، وMeTube Super ليلاً مع المشغل المصغّر:
+
+![MeTube Lite نهاراً وليلاً، وMeTube Super ليلاً](docs/screenshots/libraries.jpg)
+
+<details>
+<summary><strong>شاشات أخرى</strong> — قوائم التشغيل، والتحديد المتعدد، ومشغل الفيديو</summary>
+<br>
+
+| قوائم التشغيل | قائمة واحدة | التحديد المتعدد |
+|---|---|---|
+| ![قوائم التشغيل، والذكية فوق قوائمك](docs/screenshots/super-playlists-day.png) | ![قائمة تشغيل مع تشغيل الكل والخلط والصوت فقط](docs/screenshots/super-playlist.png) | ![عدة عناصر محددة لقائمة أو وسم أو حذف](docs/screenshots/super-select.png) |
+
+| مشغل الفيديو | قوائم التشغيل ليلاً | المشغل المصغّر |
+|---|---|---|
+| ![بث فيديو والقائمة تحته](docs/screenshots/super-player.png) | ![قوائم التشغيل ليلاً](docs/screenshots/super-playlists-night.png) | ![المكتبة مع المشغل المصغّر](docs/screenshots/super-miniplayer.png) |
+
+</details>
 
 المكتبة الظاهرة في اللقطات **مخترَعة**: العناوين والقنوات والأغلفة كلها
 مولَّدة، ولا يظهر فيها سيرفر حقيقي ولا حساب حقيقي.
