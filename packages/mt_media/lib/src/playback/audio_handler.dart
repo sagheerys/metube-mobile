@@ -35,6 +35,12 @@ class MTAudioHandler extends BaseAudioHandler with SeekHandler {
     required this.prefs,
     required this.stateStore,
     Duration saveInterval = const Duration(seconds: 5),
+    this.pausedAutoStop = const Duration(minutes: 15),
+    this.networkRetryBackoff = const [
+      Duration(seconds: 2),
+      Duration(seconds: 5),
+      Duration(seconds: 10),
+    ],
   }) {
     _subs
       ..add(player.events.listen((_) => _broadcast()))
@@ -49,12 +55,42 @@ class MTAudioHandler extends BaseAudioHandler with SeekHandler {
   final PlaybackPrefs prefs;
   final AudioStateStore stateStore;
 
+  /// **How long a paused session may hold the foreground service** before
+  /// it stops itself, releasing the wake lock and clearing the
+  /// notification.
+  ///
+  /// It exists because of the other half of the 2026-09-19 fix: the service
+  /// now survives a pause (`androidStopForegroundOnPause: false`), which is
+  /// what lets playback come back after a phone call — and the price is a
+  /// wake lock held for as long as the session is paused. Whoever pauses
+  /// and walks away gets it back.
+  final Duration pausedAutoStop;
+
+  /// **The waits before retrying a stream that failed**, longest last. Its
+  /// length is the number of retries, and `const []` disables them (tests).
+  ///
+  /// A dropped network used to be indistinguishable from a broken file:
+  /// both reached `_onError`, which skipped to the next item, and five
+  /// skips stopped the session. So one network hiccup silently ended a
+  /// playlist. Only a **stream** is retried; a local file that fails to
+  /// open is broken and skipping it is right.
+  final List<Duration> networkRetryBackoff;
+
   final List<StreamSubscription<Object?>> _subs = [];
   PlaybackQueue _queue = PlaybackQueue(items: const []);
   PlayMode _playMode = PlayMode.autoNext;
   String? _playlistId;
   int _consecutiveErrors = 0;
+
+  /// Retries spent on the **current** item; reset by any successful load.
+  int _networkRetries = 0;
   Timer? _saveTimer;
+  Timer? _pausedStopTimer;
+
+  /// Has this session played at all? The paused auto-stop is for a session
+  /// that **was** playing and was left; a restored session that nobody has
+  /// tapped yet holds no wake lock and must stay until they do.
+  bool _wasPlaying = false;
 
   /// **The race guard.** The video and reels sessions carry a
   /// similar guard, and this player had none despite having the most entry
@@ -243,9 +279,16 @@ class MTAudioHandler extends BaseAudioHandler with SeekHandler {
   @override
   Future<void> stop() async {
     _generation++; // a pending load does not revive the mini player after it closes
+    _pausedStopTimer?.cancel();
+    _pausedStopTimer = null;
     await savePosition();
-    await player.stop();
+    // **The queue is emptied before the player is stopped**, because the
+    // stop itself broadcasts — and a broadcast over a paused, non-empty
+    // queue would arm the auto-stop timer again, a ghost that fires into
+    // whatever session comes next.
     _queue = PlaybackQueue(items: const []);
+    _wasPlaying = false;
+    await player.stop();
     _playlistId = null;
     mediaItem.add(null);
     queue.add(const []);
@@ -259,6 +302,8 @@ class MTAudioHandler extends BaseAudioHandler with SeekHandler {
   Future<void> dispose() async {
     _saveTimer?.cancel();
     _saveTimer = null;
+    _pausedStopTimer?.cancel();
+    _pausedStopTimer = null;
     for (final sub in _subs) {
       await sub.cancel();
     }
@@ -281,25 +326,10 @@ class MTAudioHandler extends BaseAudioHandler with SeekHandler {
     if (state == MediaPlaybackState.completed) unawaited(onCompleted());
   }
 
-  /// The clip ended naturally, so the mode decides what happens next.
-  Future<void> onCompleted() async {
-    final url = _queue.current?.canonicalUrl;
-    if (url != null) await positions.clear(url);
-    if (_playMode == PlayMode.repeatOne) {
-      await player.seek(Duration.zero);
-      return player.play();
-    }
-    if (_playMode != PlayMode.stopAtEnd && _queue.moveNext(_playMode)) {
-      return _loadCurrent(autoPlay: true);
-    }
-    await player.pause();
-    await player.seek(Duration.zero);
-    _broadcast();
-  }
-
   void _broadcast() {
     final playing = player.playing;
     playingNotifier.value = playing;
+    _syncPausedStop(playing: playing);
     playbackState.add(
       playbackState.value.copyWith(
         controls: mtMediaControls(playing: playing),

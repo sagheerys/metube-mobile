@@ -21,9 +21,25 @@ extension PlaylistItemMediaItem on PlaylistItem {
     },
   );
 
+  /// **An absolute path is artwork too** (field report 2026-09-19: "some
+  /// audio clips have a cover, and it shows in the app but not in the
+  /// notification or on the lock screen").
+  ///
+  /// A video's cover arrives from the server as `https://…` and passed. An
+  /// audio clip's cover is the one **extracted from the file itself** and
+  /// written to disk by the library enricher, so it arrives as
+  /// `/data/.../thumbnails/x.jpg` — no scheme, thrown away here, and the
+  /// notification fell back to the app icon. `audio_service` decodes a file
+  /// path happily (`BitmapFactory.decodeFile`); it only ever needed the
+  /// `file://` in front of it.
+  ///
+  /// A relative path is still refused: it is a bug upstream, not artwork.
   static Uri? _artUri(String? raw) {
     if (raw == null || raw.isEmpty) return null;
-    final uri = Uri.tryParse(raw);
+    final trimmed = raw.trim();
+    if (trimmed.isEmpty) return null;
+    if (trimmed.startsWith('/')) return Uri.file(trimmed);
+    final uri = Uri.tryParse(trimmed);
     return uri == null || !uri.hasScheme ? null : uri;
   }
 }

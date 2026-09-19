@@ -19,6 +19,10 @@ class FakePlayerPort implements MediaPlayerPort {
   /// URLs that fail on load (a broken source).
   final Set<String> failing = {};
 
+  /// URLs that fail **a counted number of times** and then load normally:
+  /// a dropped network rather than a broken file.
+  final Map<String, int> failingTimes = {};
+
   @override
   Duration position = Duration.zero;
   @override
@@ -39,8 +43,14 @@ class FakePlayerPort implements MediaPlayerPort {
     PlaybackSource source, {
     Duration initialPosition = Duration.zero,
   }) async {
-    if (failing.contains(source.uri.toString())) {
+    final key = source.uri.toString();
+    if (failing.contains(key)) {
       throw StateError('مصدر معطوب: ${source.uri}');
+    }
+    final remaining = failingTimes[key] ?? 0;
+    if (remaining > 0) {
+      failingTimes[key] = remaining - 1;
+      throw StateError('الشبكة سقطت: ${source.uri}');
     }
     loaded.add(source);
     calls.add('setSource(${source.uri})');
@@ -67,6 +77,8 @@ class FakePlayerPort implements MediaPlayerPort {
     playing = false;
     state = MediaPlaybackState.idle;
     calls.add('stop');
+    // The real player broadcasts its stop like any other state change.
+    _events.add(null);
   }
 
   @override

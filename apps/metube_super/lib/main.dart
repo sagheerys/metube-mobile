@@ -58,8 +58,36 @@ Future<void> main() async {
     config: const AudioServiceConfig(
       androidNotificationChannelId: 'com.metubesuper.audio',
       androidNotificationChannelName: 'MeTube Super',
-      androidNotificationOngoing: true,
-      androidStopForegroundOnPause: true,
+      // **`false` is forced by the package**, whose own assertion says an
+      // ongoing flag "will make no effect with androidStopForegroundOnPause
+      // set to false": a live foreground service already makes its
+      // notification ongoing, so the flag only ever mattered in the paused,
+      // unprotected state we are leaving behind.
+      androidNotificationOngoing: false,
+      // **`false`, against the package's default of `true`, after the
+      // measurement of
+      // 2026-09-19.** It used to be `true`, which leaves the foreground
+      // service on every pause and releases the wake lock with it. A phone
+      // call is the trap: the pause drops the app to `CAC` (cached), and
+      // when the call ends and playback resumes the service has to be
+      // started again **from the background** — which Android 12+ forbids
+      // outright:
+      //
+      //   ActivityManager: Background started FGS: Disallowed
+      //     [callingPackage: com.yasir.metubesuper; uidState: CAC; DENIED]
+      //   ForegroundServiceStartNotAllowedException: mAllowStartForeground
+      //     false
+      //
+      // Playback carried on unprotected from the buffer, Samsung's Freecess
+      // froze the process 18 seconds later, the next item's request died on
+      // `SocketTimeoutException`, and the session stopped itself — silently,
+      // a minute after the call (logcat of a real S22 Ultra on Android 16).
+      //
+      // The cost of `false`, accepted by the owner: the notification stays
+      // while paused (dismissible on Android 13+, sticky below it) and the
+      // wake lock is held — which is why a paused session now stops itself
+      // after [MTAudioHandler.pausedAutoStop].
+      androidStopForegroundOnPause: false,
     ),
   );
   await handler.loadPreferences();

@@ -68,6 +68,31 @@ class _MTVideoFullscreenPageState extends State<MTVideoFullscreenPage> {
     super.dispose();
   }
 
+  /// **Leave fullscreen first, then open the playlist** (field report
+  /// 2026-09-19: "the picture disappears and it keeps playing with the
+  /// phone stuck sideways").
+  ///
+  /// The callback pushes the playlists screen, and pushing it **over** this
+  /// page left this page alive underneath: its [dispose] never ran, so the
+  /// immersive mode and the landscape lock it installed stayed in force
+  /// over a screen that wanted neither, while the video played on behind
+  /// it. Popping first lets [dispose] restore the system bars and the
+  /// orientation before anything else is shown.
+  void _leaveThenShowPlaylist(BuildContext context) {
+    final show = widget.onShowPlaylist;
+    if (show == null) return;
+    // **Restored here, not left to [dispose]:** the pop starts a
+    // transition, and this page — and its dispose — lives until the
+    // transition ends, well after the frame below. The playlist would open
+    // under the immersive mode and the landscape lock for the length of
+    // the animation. Dispose repeating both is harmless.
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    MTOrientation.allow();
+    Navigator.of(context).pop();
+    // After the frame that removes this route from the top.
+    WidgetsBinding.instance.addPostFrameCallback((_) => show());
+  }
+
   @override
   Widget build(BuildContext context) {
     final session = widget.session;
@@ -112,7 +137,9 @@ class _MTVideoFullscreenPageState extends State<MTVideoFullscreenPage> {
                   session: session,
                   artwork: widget.artwork,
                   playlistName: widget.playlistName,
-                  onShowAll: widget.onShowPlaylist,
+                  onShowAll: widget.onShowPlaylist == null
+                      ? null
+                      : () => _leaveThenShowPlaylist(context),
                   onClose: () => setState(() => _queueOpen = false),
                 ),
             ],
