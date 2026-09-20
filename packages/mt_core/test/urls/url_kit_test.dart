@@ -189,6 +189,11 @@ void main() {
       'https://v.redd.it/52oky0lgjanh1',
       'https://www.reddit.com/r/reacher/s/AbCdEfGh12',
       'https://www.reddit.com/u/someone/s/AbCdEfGh12',
+      // Vimeo, measured the same day: the address shown on an author's page
+      // is 301'd to the number the server files the clip under.
+      'https://vimeo.com/hugodesousa/bestfriendswiththedevil',
+      'https://vimeo.com/channels/staffpicks/1225400313',
+      'https://player.vimeo.com/video/1225400313',
     ]) {
       test(
         'short: $short',
@@ -219,6 +224,18 @@ void main() {
         UrlKit.needsResolution('https://www.reddit.com/r/reacher/'),
         isFalse,
       );
+    });
+
+    test('and a Vimeo link that is already the canonical number costs no '
+        'request either — that is the form most links take', () {
+      expect(UrlKit.needsResolution('https://vimeo.com/1225400313'), isFalse);
+      // An unlisted clip carries its hash after the number, and the server
+      // files it under exactly what it was given.
+      expect(
+        UrlKit.needsResolution('https://vimeo.com/1225400313/a1b2c3d4e5'),
+        isFalse,
+      );
+      expect(UrlKit.needsResolution('https://vimeo.com/'), isFalse);
     });
   });
 

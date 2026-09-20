@@ -239,7 +239,31 @@ abstract final class UrlKit {
         // What the Reddit app's share button produces. A post whose own slug
         // is `s` would be resolved needlessly, which costs one request and
         // changes nothing.
-        (u.contains('reddit.com') && u.contains('/s/'));
+        (u.contains('reddit.com') && u.contains('/s/')) ||
+        _isUnresolvedVimeo(u);
+  }
+
+  /// A Vimeo link that is **not** already the canonical `vimeo.com/<digits>`
+  /// the server will file it under.
+  ///
+  /// Field report 2026-09-20: `vimeo.com/hugodesousa/bestfriendswiththedevil`
+  /// — the address of a clip on its author's page, which is what Vimeo shows
+  /// you — answers **301 to `/1225400313`**, and that number is what the
+  /// item is filed as. The consequence was not only a stuck card: the
+  /// arrival notice marks a clip as "ours" by the canonical URL the poll
+  /// captures, so a download the owner started himself was announced back
+  /// to him as something that had arrived on its own.
+  ///
+  /// The canonical form is recognised so the common link costs no request.
+  static bool _isUnresolvedVimeo(String lower) {
+    const host = 'vimeo.com/';
+    final at = lower.indexOf(host);
+    if (at < 0) return false;
+    final first = lower
+        .substring(at + host.length)
+        .split(RegExp(r'[/?#]'))
+        .first;
+    return first.isNotEmpty && int.tryParse(first) == null;
   }
 
   /// Does the server's error text indicate a blocked platform (cookies)?

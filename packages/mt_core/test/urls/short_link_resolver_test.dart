@@ -85,6 +85,46 @@ void main() {
     });
   });
 
+  /// **Vimeo: the same defect, on a link nobody would call "short"** (field
+  /// report 2026-09-20, with cookies working and the clip downloaded).
+  ///
+  /// The owner pasted the address Vimeo shows on an author's page. The
+  /// server filed the clip under the number that address redirects to, so
+  /// the card sat at 0% beside the finished clip in the library — **and the
+  /// arrival notice announced his own download back to him**, because a task
+  /// is marked as ours by the canonical URL the poll captures, and the poll
+  /// never captured one.
+  group('Vimeo author-page links', () {
+    test('the link is followed to the number the server files it under', () {
+      const shown = 'https://vimeo.com/hugodesousa/bestfriendswiththedevil';
+      const filed = 'https://vimeo.com/1225400313';
+
+      expect(UrlKit.needsResolution(shown), isTrue);
+      expect(
+        UrlKit.urlsMatch(filed, shown),
+        isFalse,
+        reason: 'هذا الزوج بعينه هو ما رآه التطبيق فعلق',
+      );
+      // Resolved, the two are one string.
+      expect(UrlKit.urlsMatch(filed, filed), isTrue);
+    });
+
+    test('a relative Location is what Vimeo actually sends, and it resolves '
+        'against the host rather than being pasted on', () async {
+      final resolver = ShortLinkResolver(
+        // Measured: `location: /1225400313`, with no scheme and no host.
+        redirectStep: (url) async =>
+            url.contains('hugodesousa') ? '/1225400313' : null,
+      );
+      expect(
+        await resolver.resolve(
+          'https://vimeo.com/hugodesousa/bestfriendswiththedevil',
+        ),
+        'https://vimeo.com/1225400313',
+      );
+    });
+  });
+
   group('ShortLinkResolver', () {
     test('it follows a chain of redirects to the destination', () async {
       final hops = {

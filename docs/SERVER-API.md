@@ -390,6 +390,18 @@ download takes precedence over batch members.
   The third form is what the Reddit **app's** share button produces, and the
   `share_id`/`utm_medium=android_app` tail on a stored URL is the fingerprint of
   a link that arrived that way. Two hops are within the ceiling of 8.
+
+  **Vimeo belongs to the same family**, found the same day on the owner's
+  server: a clip's address on its author's page is `vimeo.com/<user>/<slug>`,
+  which answers `301 → /1225400313`, and `vimeo.com/1225400313` is what the
+  item is filed under. Only the non-canonical form is resolved — a
+  `vimeo.com/<digits>` link costs no request.
+
+  **The pattern, stated once:** any platform that can express one clip in two
+  addresses will do this, and the app's list of them is a list of the ones we
+  have been bitten by. The cure that does not need a list is identity by the
+  key the server files under, which §2.3 describes and which no endpoint
+  currently gives us directly.
 - **SoundCloud.** oEmbed (`soundcloud.com/oembed?format=json&url=…`, upgrading
   `-large.` → `-t500x500.`). For `/sets/` playlists: parse
   `window.__sc_hydration` out of the HTML, falling back to extracting a
