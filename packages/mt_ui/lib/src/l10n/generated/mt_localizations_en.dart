@@ -691,6 +691,17 @@ class MTLocalizationsEn extends MTLocalizations {
   String get neverChecked => 'Not checked yet';
 
   @override
+  String newFromSubscriptions(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count new from the channels you follow',
+      one: '1 new from a channel you follow',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get newPlaylistAction => 'New playlist';
 
   @override
@@ -749,6 +760,13 @@ class MTLocalizationsEn extends MTLocalizations {
 
   @override
   String get nothingHereYet => 'Nothing here yet';
+
+  @override
+  String get notifyArrivals => 'Tell me what arrives by itself';
+
+  @override
+  String get notifyArrivalsDesc =>
+      'One notice when a followed channel\'s new videos land on the server. It appears when the app next talks to the server, not while the phone is asleep.';
 
   @override
   String get nowPlaying => 'Now playing';
@@ -1130,6 +1148,11 @@ class MTLocalizationsEn extends MTLocalizations {
 
   @override
   String get shortsFilter => 'Shorts';
+
+  @override
+  String showChannel(String channel) {
+    return 'Everything from $channel';
+  }
 
   @override
   String get shuffle => 'Shuffle';

@@ -168,9 +168,21 @@ List<LibraryItem> buildLibraryView(
   Set<String> tags = const {},
   Set<String> excludedTags = const {},
   MediaPlatform? platform,
+  String? channel,
   LibrarySort sort = LibrarySort.newest,
 }) {
   final q = query.trim().toLowerCase();
+  // **Compared case-insensitively and trimmed**, because the name arrives
+  // from the server verbatim and the same channel can reach `/history`
+  // with a stray space after a yt-dlp upgrade.
+  //
+  // **A blank name is no filter, not "the items with no channel".** The
+  // interface never sets one, but a filter that quietly hides the whole
+  // library is the wrong thing to be one typo away from.
+  final trimmedChannel = channel?.trim().toLowerCase();
+  final wantedChannel = (trimmedChannel?.isEmpty ?? true)
+      ? null
+      : trimmedChannel;
   final filtered = items.where((item) {
     final scopeOk = switch (scope) {
       LibraryScope.all => true,
@@ -188,13 +200,24 @@ List<LibraryItem> buildLibraryView(
     };
     if (!typeOk) return false;
     if (platform != null && item.platform != platform) return false;
+    if (wantedChannel != null &&
+        (item.uploader?.trim().toLowerCase() ?? '') != wantedChannel) {
+      return false;
+    }
     // **Compound tag filtering**: included tags are combined with OR
     // (widening: show me tech or science), while excluded ones are always
     // subtracted and beat inclusion. An exclusion is an explicit intention
     // that another tag on the same item must not be able to override.
     if (tags.isNotEmpty && !item.tags.any(tags.contains)) return false;
     if (item.tags.any(excludedTags.contains)) return false;
-    if (q.isNotEmpty && !item.title.toLowerCase().contains(q)) return false;
+    // **The channel is searched as well as the title.** Someone looking
+    // for "Homelab Hour" is looking for the channel at least as often as
+    // for a clip whose title happens to contain those words.
+    if (q.isNotEmpty &&
+        !item.title.toLowerCase().contains(q) &&
+        !(item.uploader?.toLowerCase().contains(q) ?? false)) {
+      return false;
+    }
     return true;
   }).toList();
 

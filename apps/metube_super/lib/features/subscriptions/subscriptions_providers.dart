@@ -107,6 +107,10 @@ class SubscriptionsController {
   Future<void> checkNow({ChannelSubscription? only}) async {
     await _api?.checkSubscriptions(ids: only == null ? null : [only.id]);
     _reload();
+    // **And the library with it.** A check exists to find new clips;
+    // leaving the library on its cached answer makes a check that worked
+    // look like one that did nothing.
+    _ref.invalidate(historyProvider);
   }
 
   void _reload() => _ref.invalidate(subscriptionsProvider);

@@ -21,6 +21,7 @@ import '../library/library_providers.dart'
 import '../player/playback_providers.dart';
 import '../settings/status_refresh.dart';
 import '../update/update_sheet.dart';
+import '../subscriptions/arrival_watcher.dart';
 import '../update/update_state.dart';
 import '../shared/notification_permission.dart';
 
@@ -234,6 +235,9 @@ class _ShellScreenState extends ConsumerState<ShellScreen>
     ref.watch(batchDropWatcherProvider);
     // Kept alive so it drives the download notifications.
     ref.watch(downloadWatcherProvider);
+    // The other half of that: what the server fetched on its own, which no
+    // task in this app ever represented (م-72).
+    ref.watch(arrivalWatcherProvider);
     // Returning to the app asks the server again; the card is not truthful
     // without this.
     ref.watch(statusRefreshProvider);

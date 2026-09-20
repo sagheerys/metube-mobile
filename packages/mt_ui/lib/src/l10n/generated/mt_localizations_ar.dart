@@ -697,6 +697,20 @@ class MTLocalizationsAr extends MTLocalizations {
   String get neverChecked => 'لم تُفحص بعد';
 
   @override
+  String newFromSubscriptions(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count مقطعاً جديداً من قنواتك',
+      few: '$count مقاطع جديدة من قنواتك',
+      two: 'جديدان من قنواتك',
+      one: 'جديد من قناة تتابعها',
+      zero: 'لا جديد',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get newPlaylistAction => 'قائمة جديدة';
 
   @override
@@ -755,6 +769,13 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get nothingHereYet => 'لا يوجد شيء بعد';
+
+  @override
+  String get notifyArrivals => 'أخبرني بما يصل وحده';
+
+  @override
+  String get notifyArrivalsDesc =>
+      'إشعار واحد حين تنزل مقاطع قناة تتابعها على السيرفر. يظهر عند أول اتصال للتطبيق بالسيرفر، لا والجوال نائم.';
 
   @override
   String get nowPlaying => 'قيد التشغيل';
@@ -1144,6 +1165,11 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get shortsFilter => 'قِصار';
+
+  @override
+  String showChannel(String channel) {
+    return 'كل ما جاء من $channel';
+  }
 
   @override
   String get shuffle => 'تبديل عشوائي';

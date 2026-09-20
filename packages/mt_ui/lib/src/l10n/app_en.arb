@@ -129,6 +129,13 @@
       }
     }
   },
+  "@newFromSubscriptions": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "@onServerProgress": {
     "placeholders": {
       "percent": {
@@ -229,6 +236,13 @@
   "@serverVersionOutdated": {
     "placeholders": {
       "latest": {
+        "type": "String"
+      }
+    }
+  },
+  "@showChannel": {
+    "placeholders": {
+      "channel": {
         "type": "String"
       }
     }
@@ -476,6 +490,7 @@
   "networkSettings": "Networks",
   "networkSettingsSubtitle": "Auto-switch between local and external server URLs",
   "neverChecked": "Not checked yet",
+  "newFromSubscriptions": "{count, plural, =1{1 new from a channel you follow} other{{count} new from the channels you follow}}",
   "newPlaylistAction": "New playlist",
   "newTagHint": "New tag",
   "next": "Next",
@@ -495,6 +510,8 @@
   "noWarranty": "Provided as is, without any warranty.",
   "notAffiliated": "Unofficial client — not affiliated with the MeTube project or yt-dlp, and not endorsed by them.",
   "nothingHereYet": "Nothing here yet",
+  "notifyArrivals": "Tell me what arrives by itself",
+  "notifyArrivalsDesc": "One notice when a followed channel's new videos land on the server. It appears when the app next talks to the server, not while the phone is asleep.",
   "nowPlaying": "Now playing",
   "offlineSmartList": "Offline",
   "ok": "OK",
@@ -601,6 +618,7 @@
   "shareLogs": "Share Logs",
   "shareSelected": "Share Selected",
   "shortsFilter": "Shorts",
+  "showChannel": "Everything from {channel}",
   "shuffle": "Shuffle",
   "signInRequired": "Sign-in required",
   "signInRequiredHint": "The server rejected the saved credentials. Update the username and password in settings.",

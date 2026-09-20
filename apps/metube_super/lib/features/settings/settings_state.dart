@@ -20,6 +20,7 @@ class SuperSettings {
     this.saveBatchToDevice = false,
     this.autoRetry = true,
     this.compatiblePlayback = true,
+    this.notifyArrivals = true,
     this.themeMode = ThemeMode.system,
     this.localeCode,
   });
@@ -61,6 +62,12 @@ class SuperSettings {
   /// most phones, so the picture appears torn. On by default; turning it
   /// off allows the highest resolution at the cost of compatibility.
   final bool compatiblePlayback;
+
+  /// **Tell me when the server brought something I did not ask for**
+  /// (م-72): one grouped notice per batch, not one per clip. On by
+  /// default, because a download nobody was told about is a file that
+  /// appears on the disk for no visible reason.
+  final bool notifyArrivals;
   final ThemeMode themeMode;
 
   /// null means the system language (detected on first run).
@@ -95,6 +102,7 @@ class SuperSettings {
     bool? saveBatchToDevice,
     bool? autoRetry,
     bool? compatiblePlayback,
+    bool? notifyArrivals,
     ThemeMode? themeMode,
     String? localeCode,
     bool clearCredentials = false,
@@ -115,6 +123,7 @@ class SuperSettings {
     saveBatchToDevice: saveBatchToDevice ?? this.saveBatchToDevice,
     autoRetry: autoRetry ?? this.autoRetry,
     compatiblePlayback: compatiblePlayback ?? this.compatiblePlayback,
+    notifyArrivals: notifyArrivals ?? this.notifyArrivals,
     themeMode: themeMode ?? this.themeMode,
     localeCode: clearLocale ? null : (localeCode ?? this.localeCode),
   );
@@ -139,6 +148,7 @@ class SuperSettings {
       wifiOnly: await store.getBool('wifi_only_downloads') ?? false,
       saveBatchToDevice: await store.getBool('batch_save_to_device') ?? false,
       autoRetry: await store.getBool('auto_retry_downloads') ?? true,
+      notifyArrivals: await store.getBool('notify_arrivals') ?? true,
       compatiblePlayback: await store.getBool('compatible_playback') ?? true,
       themeMode: ThemeMode.values.firstWhere(
         (m) => m.name == themeName,
@@ -225,6 +235,11 @@ class SettingsNotifier extends Notifier<SuperSettings> {
   Future<void> setAutoRetry(bool enabled) async {
     await _mutex.run(() => _store.setBool('auto_retry_downloads', enabled));
     state = state.copyWith(autoRetry: enabled);
+  }
+
+  Future<void> setNotifyArrivals(bool enabled) async {
+    await _mutex.run(() => _store.setBool('notify_arrivals', enabled));
+    state = state.copyWith(notifyArrivals: enabled);
   }
 
   Future<void> setCompatiblePlayback(bool enabled) async {

@@ -1304,6 +1304,12 @@ abstract class MTLocalizations {
   /// **'Not checked yet'**
   String get neverChecked;
 
+  /// No description provided for @newFromSubscriptions.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 new from a channel you follow} other{{count} new from the channels you follow}}'**
+  String newFromSubscriptions(int count);
+
   /// No description provided for @newPlaylistAction.
   ///
   /// In en, this message translates to:
@@ -1417,6 +1423,18 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'Nothing here yet'**
   String get nothingHereYet;
+
+  /// No description provided for @notifyArrivals.
+  ///
+  /// In en, this message translates to:
+  /// **'Tell me what arrives by itself'**
+  String get notifyArrivals;
+
+  /// No description provided for @notifyArrivalsDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'One notice when a followed channel\'s new videos land on the server. It appears when the app next talks to the server, not while the phone is asleep.'**
+  String get notifyArrivalsDesc;
 
   /// No description provided for @nowPlaying.
   ///
@@ -2053,6 +2071,12 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'Shorts'**
   String get shortsFilter;
+
+  /// No description provided for @showChannel.
+  ///
+  /// In en, this message translates to:
+  /// **'Everything from {channel}'**
+  String showChannel(String channel);
 
   /// No description provided for @shuffle.
   ///

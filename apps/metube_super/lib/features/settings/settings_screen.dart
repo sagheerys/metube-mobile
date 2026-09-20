@@ -208,16 +208,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ),
           // Channels the server follows (م-71). It lives beside the network
           // row because it is the server's work, not the phone's.
-          ListTile(
-            contentPadding: EdgeInsets.zero,
-            leading: const Icon(Icons.rss_feed_rounded),
-            title: Text(l10n.subscriptions),
-            subtitle: Text(
-              l10n.subscriptionsSubtitle,
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
-            trailing: const Icon(Icons.chevron_right_rounded),
-            onTap: () => context.go('/settings/subscriptions'),
+          _navTile(
+            Icons.rss_feed_rounded,
+            l10n.subscriptions,
+            l10n.subscriptionsSubtitle,
+            '/settings/subscriptions',
           ),
           const SizedBox(height: MTSpace.xl),
 
@@ -281,6 +276,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             subtitle: l10n.autoRetryHelp,
             value: settings.autoRetry,
             onChanged: ref.read(settingsProvider.notifier).setAutoRetry,
+          ),
+          // م-72: beside the other download preferences, because that is
+          // what it governs — what the server fetched without being asked.
+          _switchTile(
+            title: l10n.notifyArrivals,
+            subtitle: l10n.notifyArrivalsDesc,
+            value: settings.notifyArrivals,
+            onChanged: ref.read(settingsProvider.notifier).setNotifyArrivals,
           ),
           _switchTile(
             title: l10n.compatiblePlayback,

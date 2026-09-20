@@ -19,6 +19,16 @@ only one.
   one can be paused, renamed, checked on the spot, or limited to titles
   matching a word you give. A MeTube too old to have subscriptions says so
   instead of showing an empty list. MeTube Super.
+- **And it tells you when something arrives.** One notice for the batch,
+  not one per clip, naming what came; it can be switched off in settings.
+  It appears the next time the app reaches the server rather than while
+  the phone is asleep, and it never repeats a batch, never announces what
+  you downloaded yourself, and says nothing at all on a first run.
+  MeTube Super.
+- **The channel is now something you can use.** Search covers it, so a
+  channel's name finds its clips even when no title contains the word; an
+  item's sheet offers "everything from this channel"; and the active
+  channel sits as a removable chip above the library. MeTube Super.
 
 ### Fixed
 

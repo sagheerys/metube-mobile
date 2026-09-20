@@ -130,6 +130,7 @@ class LibraryViewOptions {
     this.tags = const {},
     this.excludedTags = const {},
     this.platform,
+    this.channel,
     this.sort = LibrarySort.newest,
     this.mode = LibraryViewMode.list,
     this.selection = const {},
@@ -150,6 +151,12 @@ class LibraryViewOptions {
   /// would push the first card off screen. The chosen platform appears as a
   /// removable chip in **the first row**.
   final MediaPlatform? platform;
+
+  /// **One channel's clips only** (م-73). Set by tapping the channel name
+  /// on a card, cleared from its chip in the first row — the same shape as
+  /// [platform], and deliberately **not** a tag: a tag is something the
+  /// user creates, and this is something the server already knows.
+  final String? channel;
   final LibrarySort sort;
 
   /// The saved view mode: one of four, not overlapping flags.
@@ -169,6 +176,7 @@ class LibraryViewOptions {
       (scope == LibraryScope.all ? 0 : 1) +
       (type == MediaTypeFilter.all ? 0 : 1) +
       (platform == null ? 0 : 1) +
+      (channel == null ? 0 : 1) +
       tags.length +
       excludedTags.length;
 
@@ -179,6 +187,7 @@ class LibraryViewOptions {
     Set<String>? tags,
     Set<String>? excludedTags,
     MediaPlatform? Function()? platform,
+    String? Function()? channel,
     LibrarySort? sort,
     LibraryViewMode? mode,
     Set<String>? selection,
@@ -192,6 +201,8 @@ class LibraryViewOptions {
     // every other field, and here `null` is a valid value meaning "all
     // platforms".
     platform: platform == null ? this.platform : platform(),
+    // Same reason as platform: null is a real value here, "every channel".
+    channel: channel == null ? this.channel : channel(),
     sort: sort ?? this.sort,
     mode: mode ?? this.mode,
     selection: selection ?? this.selection,
@@ -240,6 +251,14 @@ class LibraryViewNotifier extends Notifier<LibraryViewOptions> {
   void setQuery(String query) => state = state.copyWith(query: query);
   void setPlatform(MediaPlatform? platform) =>
       state = state.copyWith(platform: () => platform);
+
+  /// **Tapping the same channel again clears it**, so the channel name on
+  /// a card is a toggle rather than a trap the user has to hunt for the
+  /// exit from.
+  void toggleChannel(String? channel) {
+    final next = (channel == null || channel == state.channel) ? null : channel;
+    state = state.copyWith(channel: () => next);
+  }
 
   /// One tag replaces everything, arriving from the "your tags" tab.
   void setTag(String? tag) => state = state.copyWith(
@@ -333,6 +352,7 @@ final visibleLibraryProvider = Provider<AsyncValue<List<LibraryItem>>>((ref) {
       tags: options.tags,
       excludedTags: options.excludedTags,
       platform: options.platform,
+      channel: options.channel,
       sort: options.sort,
     ),
   );

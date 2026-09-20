@@ -51,6 +51,37 @@ class LibraryFilterChips extends ConsumerWidget {
               // look incomplete for no visible reason. The chip appears
               // only while the
               // filter is on.
+              // **The active channel, first and removable** (م-73). It is
+              // set from an item's sheet, which is a screen the user has
+              // already left by the time the list narrows — so without a
+              // chip here the library would simply look half empty.
+              if (options.channel case final channel?) ...[
+                InputChip(
+                  avatar: Icon(
+                    Icons.subscriptions_rounded,
+                    size: 15,
+                    color: x.palette.bg,
+                  ),
+                  // A channel name can be long; the row scrolls, but one
+                  // chip must not own all of it.
+                  label: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 150),
+                    child: Text(
+                      channel,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  selected: true,
+                  showCheckmark: false,
+                  onDeleted: () => controller.toggleChannel(null),
+                  deleteIcon: const Icon(Icons.close_rounded, size: 16),
+                  deleteIconColor: x.palette.bg,
+                  labelStyle: Theme.of(context).textTheme.labelMedium!
+                      .copyWith(color: x.palette.bg),
+                ),
+                const SizedBox(width: MTSpace.xs),
+              ],
               if (options.platform != null) ...[
                 InputChip(
                   label: Text(options.platform!.label),
