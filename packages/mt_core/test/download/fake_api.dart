@@ -33,8 +33,17 @@ class FakeApi implements MeTubeApi {
   @override
   Future<void> testConnection({Duration? timeout}) async {}
 
+  /// Makes the **first** `/history` read fail, which is the reading taken
+  /// before the add: "the server could not be read" must not be read as
+  /// "the server is empty".
+  bool failHistoryOnce = false;
+
   @override
   Future<HistoryResponse> fetchHistory() async {
+    if (failHistoryOnce) {
+      failHistoryOnce = false;
+      throw const NetworkException('history unreachable');
+    }
     final call = historyCalls++;
     onHistoryFetch?.call(call);
     if (historyScript.isEmpty) return const HistoryResponse();

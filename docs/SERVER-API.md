@@ -193,10 +193,29 @@ stored: https://www.reddit.com/comments/1w64qio      ← measured, not inferred
 ```
 
 Nothing in the item points back at what was sent, so **a task whose URL the
-server rewrote can never be matched, and the poll runs to its ceiling while the
-file downloads perfectly.** The only defence is to resolve such a link
-**before** the add (§4), which is why that list is a correctness requirement and
-not a convenience.
+server rewrote cannot be matched by URL at all, and the poll runs to its ceiling
+while the file downloads perfectly.**
+
+**So the item is identified by that key instead** (`DownloadPoller`, from
+2026-09-20). The whole server is fingerprinted before the add; straight after
+it, **the one key that appeared or changed is ours**, whatever the server chose
+to call it. Measured against the owner's server: 356 keys before, `redd.it/…`
+sent, `reddit.com/comments/…` identified — and a single read after `/add`
+sufficed, because MeTube files the item before it answers.
+
+Three rules make it safe rather than clever:
+
+- **One change, or nothing.** Two changes mean somebody else is using the
+  server, and matching falls back to the URL. Adopting the wrong key in Lite
+  means pulling a stranger's file and deleting it from the server.
+- **A changed fingerprint counts like a new key.** Re-adding something already
+  filed moves it rather than adding a key; without this our own re-add would be
+  invisible and a stranger's new download would be the only change.
+- **The window is bounded** to the first few polls, and an unreadable history
+  identifies nothing — an empty answer is not an empty server.
+
+Resolving short links before the add (§4) stays, because it keeps the URL we
+send and the key the server files equal, which is what the fallback needs.
 
 ### 2.4 Pulling / streaming
 
@@ -359,10 +378,13 @@ app that leaks one.
 ## 3. The four-stage download pipeline
 
 ```
+0) Fingerprint the whole server (one GET /history, shared with the URL snapshot)
 1) POST /add {url, quality-after-the-platform-rule}
 2) Poll /history every 5s (≤120):
+     the one key that changed since step 0? ⇒ that is ours; follow it exactly
+     no key, or more than one ⇒ fall back to the fuzzy URL match
      in queue?   ⇒ update progress and status
-     in done (fuzzy match)? ⇒ capture filename and canonicalUrl ⇒ 3
+     in done? ⇒ capture filename and canonicalUrl ⇒ 3
      an error state? ⇒ fail immediately with a classified message
                        (no waiting out the 10 minutes — Super used to swallow errors)
 3) GET /download/<filename> ⇒ a local file (live progress; cancelling deletes the partial)
@@ -399,9 +421,10 @@ download takes precedence over batch members.
 
   **The pattern, stated once:** any platform that can express one clip in two
   addresses will do this, and the app's list of them is a list of the ones we
-  have been bitten by. The cure that does not need a list is identity by the
-  key the server files under, which §2.3 describes and which no endpoint
-  currently gives us directly.
+  have been bitten by. **The list is no longer what holds the app together** —
+  §2.3's identification by key is — but it stays, because it keeps the two URLs
+  equal for the fallback and for `PlaylistDetector`, which has to decide on the
+  final URL.
 - **SoundCloud.** oEmbed (`soundcloud.com/oembed?format=json&url=…`, upgrading
   `-large.` → `-t500x500.`). For `/sets/` playlists: parse
   `window.__sc_hydration` out of the HTML, falling back to extracting a

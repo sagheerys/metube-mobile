@@ -37,6 +37,19 @@ only one.
 
 ### Fixed
 
+- **A download is now followed by the name the server gave it, so it can no
+  longer finish on the server while the app waits forever.** The server
+  files a clip under the address the site redirects to, which is often not
+  the address you pasted — a Reddit link from the share button, a Vimeo
+  clip taken from its author's page. The app was watching for the address
+  it sent, so the file arrived, the library showed it, and the card sat at
+  0% until it gave up; in Lite nothing was pulled to the phone and nothing
+  was cleaned off the server. The app now notes what is on the server
+  before it asks for anything, and follows whatever single thing its own
+  request changed. If two things change at once — someone else using the
+  same server in the same seconds — it does not guess, and behaves as
+  before. **This also stops a clip you downloaded yourself being announced
+  back to you** as something a channel had just published. Both apps.
 - **A Reddit link shared from the Reddit app now finishes instead of hanging
   at nothing.** The clip downloaded on the server perfectly, and the app's
   counter never moved: MeTube files an item under the URL yt-dlp ended at,
@@ -45,8 +58,14 @@ only one.
   heard of. Lite therefore never pulled the file and never cleaned the
   server, and Super showed a stuck card beside a clip that was already in
   its library. Reddit's short forms are now resolved before the download is
-  requested, as TikTok's and Facebook's already were. A Reddit post whose
-  video is hosted somewhere else is still affected. Both apps.
+  requested, as TikTok's and Facebook's already were. Both apps.
+- **A Vimeo clip taken from its author's page, likewise.** `vimeo.com/name/
+  title` is redirected to the clip's number, and the number is what the
+  server files. Both apps.
+- **Cancelling such a download no longer leaves it running on the server.**
+  The cleanup looked for the address the app had sent, which was not the
+  one the item was filed under, so nothing was found and the server carried
+  on downloading a file nobody would come back for. Both apps.
 - **The floating add button can no longer be pushed off the screen by its
   own label.** It had no width of its own, so a long word at an enlarged
   system font size ran past the right edge of a small screen. Today's

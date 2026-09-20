@@ -112,6 +112,11 @@ class DownloadEngine {
   /// orphan left by a cancellation.
   final Map<String, Set<String>> _snapshots = {};
 
+  /// The whole server as it was before the add, per task, so the poller can
+  /// name the item by the key MeTube filed it under. Null when the history
+  /// could not be read, which simply means matching stays as it was.
+  final Map<String, Map<String, String>?> _fingerprints = {};
+
   /// The last **whole percentage** broadcast for each task, the filter used
   /// by [_emitProgress].
   final Map<String, int> _lastPercent = {};
@@ -189,6 +194,7 @@ class DownloadEngine {
     if (task == null || !task.isFinished) return;
     _tasks.remove(taskId);
     _snapshots.remove(taskId);
+    _fingerprints.remove(taskId);
     if (!_updates.isClosed) _updates.add(task);
   }
 
@@ -277,8 +283,17 @@ class DownloadEngine {
     task = _emit(task.copyWith(resolvedUrl: resolved));
     _throwIfCancelRequested(taskId);
     // Know what existed before us, so another operation is
-    // never attributed to this task.
-    _snapshots[taskId] = await _matcher.snapshot(task.effectiveUrl);
+    // never attributed to this task. **One reading serves both jobs**: the
+    // fingerprints of this URL's items for the fallback match, and the whole
+    // server so the one thing our add changes can be identified by key.
+    final history = await _matcher.read();
+    _snapshots[taskId] = HistoryMatcher.signaturesFor(
+      history,
+      task.effectiveUrl,
+    );
+    _fingerprints[taskId] = history == null
+        ? null
+        : HistoryMatcher.fingerprints(history);
     // **Before the add, not after**: the point of the record is to survive
     // a death, and the most likely moment to die is while the server is
     // working — which begins on the next line.
@@ -332,6 +347,12 @@ class DownloadEngine {
       ).pollUntilDone(
         url: task.effectiveUrl,
         before: _snapshots[taskId] ?? const <String>{},
+        fingerprintsBefore: _fingerprints[taskId],
+        // **Written down the moment it is known, not at the end.** The key
+        // is what a delete, a cancellation and the next launch's sweep all
+        // need, and the likeliest moment to be killed is while the server
+        // is working.
+        onIdentified: (key) => _noteServerKey(taskId, key),
         checkAborted: () {
           if (_disposed) throw const CancelledException();
           _throwIfCancelRequested(taskId);
@@ -339,13 +360,31 @@ class DownloadEngine {
         onProgress: (p) => _emitProgress(taskId, p),
       );
 
+  /// The task learns the URL the server filed it under, and so does its
+  /// record.
+  void _noteServerKey(String taskId, String key) {
+    final task = _tasks[taskId];
+    if (task == null || task.canonicalUrl == key) return;
+    final updated = _emit(task.copyWith(canonicalUrl: key));
+    _remember(updated, before: _snapshots[taskId]);
+  }
+
   /// What a cancelled task added is not left on the server.
   Future<void> _cleanupOrphan(String taskId) async {
     final task = _tasks[taskId];
     final before = _snapshots.remove(taskId);
+    _fingerprints.remove(taskId);
     if (task == null || before == null || _disposed) return;
     // The pull completed, so nothing was left orphaned on the server.
     if (task.localPath != null) return;
+    // **Knowing the key makes this exact.** The sweep by URL cannot find an
+    // item the server filed under a URL we never sent, which is how a
+    // cancelled Reddit or Vimeo download used to be left behind.
+    final key = task.canonicalUrl;
+    if (key != null && key.isNotEmpty) {
+      await _matcher.deleteByKey(key);
+      return;
+    }
     await _matcher.deleteOrphan(task.effectiveUrl, before);
   }
 
