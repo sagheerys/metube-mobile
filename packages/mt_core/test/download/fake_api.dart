@@ -127,6 +127,30 @@ class FakeApi implements MeTubeApi {
     checkedSubscriptions.addAll(ids ?? const ['*']);
   }
 
+  /// Null is the older MeTube that cannot say (§2.8).
+  bool? cookiesPresent;
+  final List<int> uploadedCookies = [];
+
+  @override
+  Future<bool?> hasCookies({Duration? timeout}) async => cookiesPresent;
+
+  @override
+  Future<void> uploadCookies(
+    List<int> bytes, {
+    String filename = 'cookies.txt',
+  }) async {
+    uploadedCookies
+      ..clear()
+      ..addAll(bytes);
+    cookiesPresent = true;
+  }
+
+  @override
+  Future<void> deleteCookies() async {
+    uploadedCookies.clear();
+    cookiesPresent = false;
+  }
+
   @override
   String downloadUrl(String serverFilename) {
     if (!UrlKit.isSafeServerFilename(serverFilename)) {

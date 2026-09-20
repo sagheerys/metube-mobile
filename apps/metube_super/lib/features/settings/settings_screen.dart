@@ -214,6 +214,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             l10n.subscriptionsSubtitle,
             '/settings/subscriptions',
           ),
+          // The two things only the server's owner can do (م-74, م-75).
+          _navTile(
+            Icons.cookie_outlined,
+            l10n.cookies,
+            l10n.cookiesSubtitle,
+            '/settings/cookies',
+          ),
+          _navTile(
+            Icons.qr_code_2_rounded,
+            l10n.pairTitle,
+            l10n.pairSubtitle,
+            '/settings/pair',
+          ),
           const SizedBox(height: MTSpace.xl),
 
           MTSectionHeader(title: l10n.preferences),

@@ -18,6 +18,7 @@ String errorText(MTLocalizations l10n, Object error) => switch (error) {
   NetworkException() => l10n.errNetwork,
   PlatformBlockedException() => l10n.errPlatformBlocked,
   PollTimeoutException() => l10n.errPollTimeout,
+  CookiesTooLargeException() => l10n.cookiesTooLarge,
   UnsafeFilenameException() => l10n.errServer('unsafe filename'),
   ServerErrorException(:final detail) => l10n.errServer(detail ?? '؟'),
   CancelledException() => l10n.cancel,

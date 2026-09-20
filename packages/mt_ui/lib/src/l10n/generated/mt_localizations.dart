@@ -572,6 +572,96 @@ abstract class MTLocalizations {
   /// **'Continue in the background?'**
   String get continueAsAudioTitle;
 
+  /// No description provided for @cookies.
+  ///
+  /// In en, this message translates to:
+  /// **'Cookies'**
+  String get cookies;
+
+  /// No description provided for @cookiesAbsent.
+  ///
+  /// In en, this message translates to:
+  /// **'The server has no cookies'**
+  String get cookiesAbsent;
+
+  /// No description provided for @cookiesDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete the cookies'**
+  String get cookiesDelete;
+
+  /// No description provided for @cookiesDeleteBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The server stops using them, and the platforms that needed a login will refuse again.'**
+  String get cookiesDeleteBody;
+
+  /// No description provided for @cookiesDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Cookies deleted from the server'**
+  String get cookiesDeleted;
+
+  /// No description provided for @cookiesHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'In your browser, use an extension that exports cookies in the Netscape format, and pick that file here. The server then uses it for every download, and yt-dlp decides when it needs it. Cookies expire, so a download that starts failing again usually means a fresh export is due.'**
+  String get cookiesHelp;
+
+  /// No description provided for @cookiesPresent.
+  ///
+  /// In en, this message translates to:
+  /// **'The server has cookies'**
+  String get cookiesPresent;
+
+  /// No description provided for @cookiesPrivacy.
+  ///
+  /// In en, this message translates to:
+  /// **'The file is sent straight to your server and never stored on this phone. It is your accounts\' sign-in material, so only ever upload it to a server you own.'**
+  String get cookiesPrivacy;
+
+  /// No description provided for @cookiesReplace.
+  ///
+  /// In en, this message translates to:
+  /// **'Replace the cookies file'**
+  String get cookiesReplace;
+
+  /// No description provided for @cookiesSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'For the platforms that will not download without a login'**
+  String get cookiesSubtitle;
+
+  /// No description provided for @cookiesTooLarge.
+  ///
+  /// In en, this message translates to:
+  /// **'That file is larger than 1 MB, which is more than the server accepts.'**
+  String get cookiesTooLarge;
+
+  /// No description provided for @cookiesUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'This MeTube cannot say whether it has cookies'**
+  String get cookiesUnknown;
+
+  /// No description provided for @cookiesUpload.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a cookies file'**
+  String get cookiesUpload;
+
+  /// No description provided for @cookiesUploaded.
+  ///
+  /// In en, this message translates to:
+  /// **'Cookies sent to the server'**
+  String get cookiesUploaded;
+
+  /// No description provided for @cookiesWhat.
+  ///
+  /// In en, this message translates to:
+  /// **'Some platforms refuse to hand a video over unless the request looks like a signed-in browser. A cookies file exported from your browser gives the server that.'**
+  String get cookiesWhat;
+
   /// No description provided for @copiedToClipboard.
   ///
   /// In en, this message translates to:
@@ -1484,6 +1574,60 @@ abstract class MTLocalizations {
   /// **'Open Original Link'**
   String get openOriginalLink;
 
+  /// No description provided for @pairCarriesPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'The code carries your server password. Anyone who photographs this screen can reach your server, so show it to the person in front of you and no one else.'**
+  String get pairCarriesPassword;
+
+  /// No description provided for @pairHowTo.
+  ///
+  /// In en, this message translates to:
+  /// **'On the other phone, open MeTube Lite, go to Settings and tap \"Scan a setup code\". Then point it at this.'**
+  String get pairHowTo;
+
+  /// No description provided for @pairLocalOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'This is your home address. Their app will work on your Wi-Fi and stop working the moment they leave the house.'**
+  String get pairLocalOnly;
+
+  /// No description provided for @pairNeedsServer.
+  ///
+  /// In en, this message translates to:
+  /// **'Set up your own server address first; there is nothing to hand over yet.'**
+  String get pairNeedsServer;
+
+  /// No description provided for @pairNoPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Your server has no password, so this code is all anyone needs to reach it.'**
+  String get pairNoPassword;
+
+  /// No description provided for @pairShowCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Show the code'**
+  String get pairShowCode;
+
+  /// No description provided for @pairSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'A code the family\'s app reads, instead of an address and a password'**
+  String get pairSubtitle;
+
+  /// No description provided for @pairTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Set up another phone'**
+  String get pairTitle;
+
+  /// No description provided for @pairWhichAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Which address should it use?'**
+  String get pairWhichAddress;
+
   /// No description provided for @password.
   ///
   /// In en, this message translates to:
@@ -1879,6 +2023,48 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'Saved on device'**
   String get savedOnDevice;
+
+  /// No description provided for @scanHowTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask whoever runs the server to open MeTube Super, then Settings, then \"Set up another phone\".'**
+  String get scanHowTo;
+
+  /// No description provided for @scanNoCamera.
+  ///
+  /// In en, this message translates to:
+  /// **'No camera available'**
+  String get scanNoCamera;
+
+  /// No description provided for @scanNoCameraBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow camera access for this app, or type the server address by hand in settings.'**
+  String get scanNoCameraBody;
+
+  /// No description provided for @scanNotOurCode.
+  ///
+  /// In en, this message translates to:
+  /// **'That is not a MeTube setup code. Try the one the server\'s owner is showing you.'**
+  String get scanNotOurCode;
+
+  /// No description provided for @scanPreparing.
+  ///
+  /// In en, this message translates to:
+  /// **'Getting the code reader ready. This happens once, and needs a moment of internet.'**
+  String get scanPreparing;
+
+  /// No description provided for @scanSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Let the server\'s owner set this phone up in one go'**
+  String get scanSubtitle;
+
+  /// No description provided for @scanTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan a setup code'**
+  String get scanTitle;
 
   /// No description provided for @searchLogs.
   ///

@@ -76,6 +76,22 @@ abstract interface class MeTubeApi {
 
   Future<void> deleteSubscriptions(List<String> ids);
 
+  /// **Does the server hold a cookies file** (§2.8), or null when it is
+  /// too old to say. Null is "unknown", not "no".
+  Future<bool?> hasCookies({Duration? timeout});
+
+  /// Uploads a Netscape cookies file. [bytes] is the file verbatim;
+  /// [filename] is only what the multipart part is labelled with.
+  ///
+  /// The server caps it at 1MB and answers 400 above that, so the caller
+  /// is told before the wire is used.
+  Future<void> uploadCookies(List<int> bytes, {String filename});
+
+  /// Removes the **uploaded** cookies. A server whose cookies come from
+  /// `YTDL_OPTIONS` instead answers 400 saying so, which is passed on
+  /// rather than swallowed: only the operator can undo that one.
+  Future<void> deleteCookies();
+
   /// Checks now instead of waiting for the interval. Null [ids] means
   /// every enabled subscription.
   Future<void> checkSubscriptions({List<String>? ids});

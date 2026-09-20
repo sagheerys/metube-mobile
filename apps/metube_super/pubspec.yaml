@@ -32,6 +32,9 @@ dependencies:
   go_router: ^16.2.0
   package_info_plus: ^9.0.0
   path_provider: ^2.1.5
+  # Draws the setup code (م-74). Pure Dart: it paints a QR, it does not
+  # read one, so it brings no camera and no native code with it.
+  qr_flutter: ^4.1.0
   receive_sharing_intent: ^1.8.1
   share_plus: ^10.1.2
   shared_preferences: ^2.3.3

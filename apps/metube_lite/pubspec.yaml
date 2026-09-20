@@ -32,6 +32,9 @@ dependencies:
   flutter_riverpod: ^2.6.1
   flutter_secure_storage: ^9.2.2
   go_router: ^16.2.0
+  # Reads the setup code (م-74). It is Lite's alone: Super draws codes, it
+  # does not scan them, so the camera stays out of the owner's app.
+  mobile_scanner: ^7.4.2
   package_info_plus: ^9.0.0
   path_provider: ^2.1.5
   # **Back after being removed 2026-09-05**, when it had no imports and the

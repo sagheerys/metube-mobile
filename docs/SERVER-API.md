@@ -240,10 +240,10 @@ every caller must survive its absence.
 - Older or narrower deployments may not expose it at all, so it is asked
   once when the status card is opened, never polled.
 
-> The server exposes more than the endpoints above (presets, cookies,
-> retry). They are **deliberately not used**: rule 1 says the network is
-> what this document describes, so anything adopted later is documented
-> here first. Subscriptions were adopted under that rule and are §2.7.
+> The server exposes more than the endpoints above (presets, retry). They
+> are **deliberately not used**: rule 1 says the network is what this
+> document describes, so anything adopted later is documented here first.
+> Subscriptions were adopted under that rule and are §2.7; cookies §2.8.
 
 ### 2.7 Channel subscriptions (Super only)
 
@@ -298,6 +298,43 @@ One subscription, as the server returns it:
   feature and what to do about it — an explanation rather than a row that
   silently does nothing, and rather than a settings entry that vanishes
   for reasons the user cannot see.
+
+### 2.8 Cookies (Super only)
+
+**What this replaces**: a platform asking for a login used to end the
+conversation. The app said "the server admin should refresh the cookies"
+and stopped — including when the person reading it was the admin, holding
+the phone, unable to do anything about it.
+
+| Method + path | Body | Answer |
+|---|---|---|
+| `GET /cookie-status` | — | `{status:'ok', has_cookies: bool}` |
+| `POST /upload-cookies` | **multipart**, one part named `cookies` | `{status:'ok', msg:'Cookies uploaded (N bytes)'}` |
+| `POST /delete-cookies` | — | `{status:'ok'}`, or **400** with a reason |
+
+**Measured facts:**
+
+- **The part must be named `cookies`.** The server reads the first
+  multipart part and answers 400 to any other name.
+- **1MB is the server's ceiling**, and it reads the whole body before
+  refusing. The client checks the size first: a phone's upload is the
+  slowest link in the chain and the answer is known in advance.
+- **`has_cookies` is true for an operator-configured `cookiefile` too**,
+  not only for an uploaded one. So "there are cookies" does not mean
+  "this app put them there".
+- **Uploaded cookies win** over a `cookiefile` set in `YTDL_OPTIONS`, and
+  the server logs the conflict.
+- **Delete removes only the uploaded file.** When the cookies come from
+  `YTDL_OPTIONS`, the server answers 400 with a message saying exactly
+  that, which the interface passes on verbatim: only whoever edits the
+  container can undo that one.
+- **A 404 from `/cookie-status` is an older MeTube**, so `hasCookies`
+  returns **null** — unknown, which is neither "no cookies" nor a fault.
+
+**The file itself never touches this app's storage.** It is read from the
+system picker into memory, sent, and dropped: cookies are live
+credentials for the user's accounts, and an app that keeps a copy is an
+app that leaks one.
 
 ## 3. The four-stage download pipeline
 

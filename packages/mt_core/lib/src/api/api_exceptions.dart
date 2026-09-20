@@ -84,3 +84,11 @@ final class PollTimeoutException extends MTApiException {
 final class LocalFailureException extends MTApiException {
   const LocalFailureException([super.detail]);
 }
+
+/// **The cookies file is bigger than the server will take** (§2.8, 1MB).
+///
+/// Refused before the upload rather than after: a phone's upload is the
+/// slowest link in the chain, and the answer is known in advance.
+final class CookiesTooLargeException extends MTApiException {
+  const CookiesTooLargeException([super.detail]);
+}

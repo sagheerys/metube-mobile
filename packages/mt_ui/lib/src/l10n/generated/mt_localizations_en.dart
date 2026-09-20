@@ -276,6 +276,57 @@ class MTLocalizationsEn extends MTLocalizations {
   String get continueAsAudioTitle => 'Continue in the background?';
 
   @override
+  String get cookies => 'Cookies';
+
+  @override
+  String get cookiesAbsent => 'The server has no cookies';
+
+  @override
+  String get cookiesDelete => 'Delete the cookies';
+
+  @override
+  String get cookiesDeleteBody =>
+      'The server stops using them, and the platforms that needed a login will refuse again.';
+
+  @override
+  String get cookiesDeleted => 'Cookies deleted from the server';
+
+  @override
+  String get cookiesHelp =>
+      'In your browser, use an extension that exports cookies in the Netscape format, and pick that file here. The server then uses it for every download, and yt-dlp decides when it needs it. Cookies expire, so a download that starts failing again usually means a fresh export is due.';
+
+  @override
+  String get cookiesPresent => 'The server has cookies';
+
+  @override
+  String get cookiesPrivacy =>
+      'The file is sent straight to your server and never stored on this phone. It is your accounts\' sign-in material, so only ever upload it to a server you own.';
+
+  @override
+  String get cookiesReplace => 'Replace the cookies file';
+
+  @override
+  String get cookiesSubtitle =>
+      'For the platforms that will not download without a login';
+
+  @override
+  String get cookiesTooLarge =>
+      'That file is larger than 1 MB, which is more than the server accepts.';
+
+  @override
+  String get cookiesUnknown => 'This MeTube cannot say whether it has cookies';
+
+  @override
+  String get cookiesUpload => 'Choose a cookies file';
+
+  @override
+  String get cookiesUploaded => 'Cookies sent to the server';
+
+  @override
+  String get cookiesWhat =>
+      'Some platforms refuse to hand a video over unless the request looks like a signed-in browser. A cookies file exported from your browser gives the server that.';
+
+  @override
   String get copiedToClipboard => 'Copied to clipboard';
 
   @override
@@ -796,6 +847,39 @@ class MTLocalizationsEn extends MTLocalizations {
   String get openOriginalLink => 'Open Original Link';
 
   @override
+  String get pairCarriesPassword =>
+      'The code carries your server password. Anyone who photographs this screen can reach your server, so show it to the person in front of you and no one else.';
+
+  @override
+  String get pairHowTo =>
+      'On the other phone, open MeTube Lite, go to Settings and tap \"Scan a setup code\". Then point it at this.';
+
+  @override
+  String get pairLocalOnly =>
+      'This is your home address. Their app will work on your Wi-Fi and stop working the moment they leave the house.';
+
+  @override
+  String get pairNeedsServer =>
+      'Set up your own server address first; there is nothing to hand over yet.';
+
+  @override
+  String get pairNoPassword =>
+      'Your server has no password, so this code is all anyone needs to reach it.';
+
+  @override
+  String get pairShowCode => 'Show the code';
+
+  @override
+  String get pairSubtitle =>
+      'A code the family\'s app reads, instead of an address and a password';
+
+  @override
+  String get pairTitle => 'Set up another phone';
+
+  @override
+  String get pairWhichAddress => 'Which address should it use?';
+
+  @override
   String get password => 'Password';
 
   @override
@@ -1023,6 +1107,32 @@ class MTLocalizationsEn extends MTLocalizations {
 
   @override
   String get savedOnDevice => 'Saved on device';
+
+  @override
+  String get scanHowTo =>
+      'Ask whoever runs the server to open MeTube Super, then Settings, then \"Set up another phone\".';
+
+  @override
+  String get scanNoCamera => 'No camera available';
+
+  @override
+  String get scanNoCameraBody =>
+      'Allow camera access for this app, or type the server address by hand in settings.';
+
+  @override
+  String get scanNotOurCode =>
+      'That is not a MeTube setup code. Try the one the server\'s owner is showing you.';
+
+  @override
+  String get scanPreparing =>
+      'Getting the code reader ready. This happens once, and needs a moment of internet.';
+
+  @override
+  String get scanSubtitle =>
+      'Let the server\'s owner set this phone up in one go';
+
+  @override
+  String get scanTitle => 'Scan a setup code';
 
   @override
   String get searchLogs => 'Search logs…';

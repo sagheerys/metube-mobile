@@ -277,6 +277,57 @@ class MTLocalizationsAr extends MTLocalizations {
   String get continueAsAudioTitle => 'متابعة بالخلفية؟';
 
   @override
+  String get cookies => 'الكوكيز';
+
+  @override
+  String get cookiesAbsent => 'السيرفر بلا كوكيز';
+
+  @override
+  String get cookiesDelete => 'احذف الكوكيز';
+
+  @override
+  String get cookiesDeleteBody =>
+      'سيتوقف السيرفر عن استعمالها، والمنصات التي كانت تطلب تسجيل الدخول سترفض من جديد.';
+
+  @override
+  String get cookiesDeleted => 'حُذفت الكوكيز من السيرفر';
+
+  @override
+  String get cookiesHelp =>
+      'من متصفحك، استعمل إضافة تصدّر الكوكيز بصيغة Netscape، ثم اختر الملف هنا. بعدها يستعمله السيرفر في كل تحميل، وyt-dlp هو من يقرر متى يحتاجه. والكوكيز تنتهي صلاحيتها، فعودة الفشل غالباً تعني أن وقت تصدير جديد قد حان.';
+
+  @override
+  String get cookiesPresent => 'السيرفر لديه كوكيز';
+
+  @override
+  String get cookiesPrivacy =>
+      'يُرسَل الملف إلى سيرفرك مباشرة ولا يُحفظ على هذا الجوال أبداً. وهو مادة دخولك إلى حساباتك، فلا ترفعه إلا إلى سيرفر تملكه.';
+
+  @override
+  String get cookiesReplace => 'استبدل ملف الكوكيز';
+
+  @override
+  String get cookiesSubtitle => 'للمنصات التي ترفض التحميل بلا تسجيل دخول';
+
+  @override
+  String get cookiesTooLarge =>
+      'هذا الملف أكبر من ميغابايت واحد، وهو أكثر مما يقبله السيرفر.';
+
+  @override
+  String get cookiesUnknown =>
+      'نسخة MeTube هذه لا تستطيع إخبارك إن كان لديها كوكيز';
+
+  @override
+  String get cookiesUpload => 'اختر ملف كوكيز';
+
+  @override
+  String get cookiesUploaded => 'أُرسلت الكوكيز إلى السيرفر';
+
+  @override
+  String get cookiesWhat =>
+      'بعض المنصات ترفض تسليم المقطع ما لم يبدُ الطلب قادماً من متصفح مسجَّل الدخول. وملف كوكيز مصدَّر من متصفحك يعطي السيرفر ذلك.';
+
+  @override
   String get copiedToClipboard => 'نُسِخ إلى الحافظة';
 
   @override
@@ -805,6 +856,37 @@ class MTLocalizationsAr extends MTLocalizations {
   String get openOriginalLink => 'فتح الرابط الأصلي';
 
   @override
+  String get pairCarriesPassword =>
+      'الرمز يحمل كلمة مرور سيرفرك. من يصوّر هذه الشاشة يصل إلى سيرفرك، فاعرضه على من أمامك لا على غيره.';
+
+  @override
+  String get pairHowTo =>
+      'على الجوال الآخر: افتح MeTube Lite، ثم الإعدادات، ثم «امسح رمز الإعداد». وصوّب الكاميرا إلى هذا الرمز.';
+
+  @override
+  String get pairLocalOnly =>
+      'هذا عنوان بيتك. سيعمل تطبيقهم على شبكتك، ويتوقف لحظة خروجهم من المنزل.';
+
+  @override
+  String get pairNeedsServer => 'اضبط عنوان سيرفرك أولاً؛ لا شيء تسلّمه بعد.';
+
+  @override
+  String get pairNoPassword =>
+      'سيرفرك بلا كلمة مرور، فهذا الرمز وحده يكفي للوصول إليه.';
+
+  @override
+  String get pairShowCode => 'أظهر الرمز';
+
+  @override
+  String get pairSubtitle => 'رمز يقرأه تطبيق العائلة بدل عنوان وكلمة مرور';
+
+  @override
+  String get pairTitle => 'إعداد جوال آخر';
+
+  @override
+  String get pairWhichAddress => 'أي عنوان يستعمل؟';
+
+  @override
   String get password => 'كلمة المرور';
 
   @override
@@ -1036,6 +1118,31 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get savedOnDevice => 'محفوظ للجهاز';
+
+  @override
+  String get scanHowTo =>
+      'اطلب من صاحب السيرفر أن يفتح MeTube Super، ثم الإعدادات، ثم «إعداد جوال آخر».';
+
+  @override
+  String get scanNoCamera => 'لا كاميرا متاحة';
+
+  @override
+  String get scanNoCameraBody =>
+      'اسمح للتطبيق باستخدام الكاميرا، أو اكتب عنوان السيرفر يدوياً في الإعدادات.';
+
+  @override
+  String get scanNotOurCode =>
+      'هذا ليس رمز إعداد لـMeTube. جرّب الرمز الذي يعرضه صاحب السيرفر.';
+
+  @override
+  String get scanPreparing =>
+      'يجهّز قارئ الرموز. يحدث هذا مرة واحدة، ويحتاج لحظة إنترنت.';
+
+  @override
+  String get scanSubtitle => 'دع صاحب السيرفر يضبط هذا الجوال دفعةً واحدة';
+
+  @override
+  String get scanTitle => 'امسح رمز الإعداد';
 
   @override
   String get searchLogs => 'بحث في السجلّات…';

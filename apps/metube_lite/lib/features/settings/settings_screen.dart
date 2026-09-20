@@ -195,6 +195,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 : const Icon(Icons.wifi_tethering_rounded, size: 18),
             label: Text(_testing ? l10n.testingConnection : l10n.saveSettings),
           ),
+          const SizedBox(height: MTSpace.sm),
+          // **Directly under the form it replaces** (م-74): whoever is
+          // stuck typing an address is exactly who should be told there is
+          // a code that does it for them.
+          _navTile(
+            Icons.qr_code_scanner_rounded,
+            l10n.scanTitle,
+            l10n.scanSubtitle,
+            '/settings/scan',
+          ),
           const SizedBox(height: MTSpace.xl),
 
           MTSectionHeader(title: l10n.preferences),

@@ -436,6 +436,74 @@ class MeTubeApiClient implements MeTubeApi {
     _throwIfBodyError(_decode(response));
   }
 
+  /// §2.8: **does the server hold cookies at all**, or null when it
+  /// cannot say.
+  ///
+  /// Null like [fetchVersion]: an older MeTube has no such endpoint, and
+  /// the difference between "no cookies" and "this server cannot tell
+  /// you" is the difference between offering a delete button and not.
+  @override
+  Future<bool?> hasCookies({Duration? timeout}) async {
+    try {
+      final response = await _request(
+        () => _dio.get<String>(
+          '${config.baseUrl}/cookie-status',
+          options: Options(
+            receiveTimeout: timeout ?? MTConstants.testConnectionTimeout,
+          ),
+        ),
+      );
+      final decoded = _decode(response);
+      if (decoded is! Map) return null;
+      final has = decoded['has_cookies'];
+      return has is bool ? has : null;
+    } on Object {
+      return null;
+    }
+  }
+
+  /// §2.8: the cookies file, as multipart under the name the server reads.
+  ///
+  /// **The 1MB ceiling is checked here** rather than left to the server:
+  /// a cookies export can be large, and sending megabytes over a phone's
+  /// connection to be told "too big" wastes the one thing the user has
+  /// less of than patience.
+  @override
+  Future<void> uploadCookies(
+    List<int> bytes, {
+    String filename = 'cookies.txt',
+  }) async {
+    if (bytes.isEmpty) throw const ServerErrorException('empty cookies file');
+    if (bytes.length > cookiesMaxBytes) {
+      throw const CookiesTooLargeException();
+    }
+    final form = FormData.fromMap({
+      // **The field must be called `cookies`**: the server reads the first
+      // multipart part and rejects any other name outright.
+      'cookies': MultipartFile.fromBytes(bytes, filename: filename),
+    });
+    final response = await _request(
+      () => _dio.post<String>('${config.baseUrl}/upload-cookies', data: form),
+    );
+    _throwIfBodyError(_decode(response));
+  }
+
+  /// The server's own ceiling, mirrored so the app can refuse first.
+  static const cookiesMaxBytes = 1000000;
+
+  /// §2.8: removing the uploaded cookies.
+  @override
+  Future<void> deleteCookies() async {
+    final response = await _request(
+      () => _dio.post<String>(
+        '${config.baseUrl}/delete-cookies',
+        data: jsonEncode(const <String, Object?>{}),
+        options: Options(contentType: 'application/json'),
+      ),
+    );
+    _throwIfBodyError(_decode(response));
+  }
+
   /// §2.5: deletion uses the canonicalUrl that came from `/history`, and
   /// nothing else.
   @override
