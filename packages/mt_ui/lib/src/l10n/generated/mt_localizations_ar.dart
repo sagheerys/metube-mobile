@@ -860,37 +860,6 @@ class MTLocalizationsAr extends MTLocalizations {
   String get openOriginalLink => 'فتح الرابط الأصلي';
 
   @override
-  String get pairCarriesPassword =>
-      'الرمز يحمل كلمة مرور سيرفرك. من يصوّر هذه الشاشة يصل إلى سيرفرك، فاعرضه على من أمامك لا على غيره.';
-
-  @override
-  String get pairHowTo =>
-      'على الجوال الآخر: افتح MeTube Lite، ثم الإعدادات، ثم «امسح رمز الإعداد». وصوّب الكاميرا إلى هذا الرمز.';
-
-  @override
-  String get pairLocalOnly =>
-      'هذا عنوان بيتك. سيعمل تطبيقهم على شبكتك، ويتوقف لحظة خروجهم من المنزل.';
-
-  @override
-  String get pairNeedsServer => 'اضبط عنوان سيرفرك أولاً؛ لا شيء تسلّمه بعد.';
-
-  @override
-  String get pairNoPassword =>
-      'سيرفرك بلا كلمة مرور، فهذا الرمز وحده يكفي للوصول إليه.';
-
-  @override
-  String get pairShowCode => 'أظهر الرمز';
-
-  @override
-  String get pairSubtitle => 'رمز يقرأه تطبيق العائلة بدل عنوان وكلمة مرور';
-
-  @override
-  String get pairTitle => 'إعداد جوال آخر';
-
-  @override
-  String get pairWhichAddress => 'أي عنوان يستعمل؟';
-
-  @override
   String get password => 'كلمة المرور';
 
   @override
@@ -1122,31 +1091,6 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get savedOnDevice => 'محفوظ للجهاز';
-
-  @override
-  String get scanHowTo =>
-      'اطلب من صاحب السيرفر أن يفتح MeTube Super، ثم الإعدادات، ثم «إعداد جوال آخر».';
-
-  @override
-  String get scanNoCamera => 'لا كاميرا متاحة';
-
-  @override
-  String get scanNoCameraBody =>
-      'اسمح للتطبيق باستخدام الكاميرا، أو اكتب عنوان السيرفر يدوياً في الإعدادات.';
-
-  @override
-  String get scanNotOurCode =>
-      'هذا ليس رمز إعداد لـMeTube. جرّب الرمز الذي يعرضه صاحب السيرفر.';
-
-  @override
-  String get scanPreparing =>
-      'يجهّز قارئ الرموز. يحدث هذا مرة واحدة، ويحتاج لحظة إنترنت.';
-
-  @override
-  String get scanSubtitle => 'دع صاحب السيرفر يضبط هذا الجوال دفعةً واحدة';
-
-  @override
-  String get scanTitle => 'امسح رمز الإعداد';
 
   @override
   String get searchLogs => 'بحث في السجلّات…';

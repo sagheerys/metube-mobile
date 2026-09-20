@@ -14,7 +14,6 @@ import 'features/settings/backup_screen.dart';
 import 'features/settings/cookies_screen.dart';
 import 'features/settings/logs_screen.dart';
 import 'features/settings/network_screen.dart';
-import 'features/settings/pair_screen.dart';
 import 'features/settings/settings_screen.dart';
 import 'features/shell/shell_screen.dart';
 import 'features/subscriptions/subscriptions_screen.dart';
@@ -83,8 +82,6 @@ final router = GoRouter(
                   path: 'cookies',
                   builder: (_, _) => const CookiesScreen(),
                 ),
-                // Setting up someone else's phone (م-74).
-                GoRoute(path: 'pair', builder: (_, _) => const PairScreen()),
                 GoRoute(path: 'about', builder: (_, _) => const AboutScreen()),
               ],
             ),

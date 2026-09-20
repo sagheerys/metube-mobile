@@ -29,13 +29,6 @@ only one.
   channel's name finds its clips even when no title contains the word; an
   item's sheet offers "everything from this channel"; and the active
   channel sits as a removable chip above the library. MeTube Super.
-- **Set someone else's phone up by showing them a code.** Super draws one
-  under Settings; Lite reads it with the camera and configures itself,
-  instead of anybody having to type an address and a password. The code is
-  kept covered until you ask for it, because it carries your password, and
-  the screen says so; it also warns when the address you picked is your
-  home one, which stops working the moment they leave the house. Both
-  apps.
 - **Cookies can be sent from the phone.** For the platforms that refuse to
   hand a video over without a login, Settings now takes a cookies file
   exported from your browser and passes it to the server — and shows

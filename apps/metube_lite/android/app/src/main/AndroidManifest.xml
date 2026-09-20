@@ -18,13 +18,6 @@
          declaration the install is refused silently. -->
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
     <uses-permission android:name="android.permission.VIBRATE"/>
-    <!-- Reading the owner's setup code (م-74). Asked for at the moment the
-         scanner opens and never before; the app works without it, by
-         typing the address by hand. -->
-    <uses-permission android:name="android.permission.CAMERA"/>
-    <!-- Not required: a phone with no camera still installs and still
-         downloads; only the scanner is missing. -->
-    <uses-feature android:name="android.hardware.camera" android:required="false"/>
     <!-- Media: reading what we downloaded, to show it in the library. -->
     <uses-permission android:name="android.permission.READ_MEDIA_VIDEO"/>
     <uses-permission android:name="android.permission.READ_MEDIA_AUDIO"/>

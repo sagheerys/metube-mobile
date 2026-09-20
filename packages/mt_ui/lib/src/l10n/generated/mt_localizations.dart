@@ -1580,60 +1580,6 @@ abstract class MTLocalizations {
   /// **'Open Original Link'**
   String get openOriginalLink;
 
-  /// No description provided for @pairCarriesPassword.
-  ///
-  /// In en, this message translates to:
-  /// **'The code carries your server password. Anyone who photographs this screen can reach your server, so show it to the person in front of you and no one else.'**
-  String get pairCarriesPassword;
-
-  /// No description provided for @pairHowTo.
-  ///
-  /// In en, this message translates to:
-  /// **'On the other phone, open MeTube Lite, go to Settings and tap \"Scan a setup code\". Then point it at this.'**
-  String get pairHowTo;
-
-  /// No description provided for @pairLocalOnly.
-  ///
-  /// In en, this message translates to:
-  /// **'This is your home address. Their app will work on your Wi-Fi and stop working the moment they leave the house.'**
-  String get pairLocalOnly;
-
-  /// No description provided for @pairNeedsServer.
-  ///
-  /// In en, this message translates to:
-  /// **'Set up your own server address first; there is nothing to hand over yet.'**
-  String get pairNeedsServer;
-
-  /// No description provided for @pairNoPassword.
-  ///
-  /// In en, this message translates to:
-  /// **'Your server has no password, so this code is all anyone needs to reach it.'**
-  String get pairNoPassword;
-
-  /// No description provided for @pairShowCode.
-  ///
-  /// In en, this message translates to:
-  /// **'Show the code'**
-  String get pairShowCode;
-
-  /// No description provided for @pairSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'A code the family\'s app reads, instead of an address and a password'**
-  String get pairSubtitle;
-
-  /// No description provided for @pairTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Set up another phone'**
-  String get pairTitle;
-
-  /// No description provided for @pairWhichAddress.
-  ///
-  /// In en, this message translates to:
-  /// **'Which address should it use?'**
-  String get pairWhichAddress;
-
   /// No description provided for @password.
   ///
   /// In en, this message translates to:
@@ -2029,48 +1975,6 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'Saved on device'**
   String get savedOnDevice;
-
-  /// No description provided for @scanHowTo.
-  ///
-  /// In en, this message translates to:
-  /// **'Ask whoever runs the server to open MeTube Super, then Settings, then \"Set up another phone\".'**
-  String get scanHowTo;
-
-  /// No description provided for @scanNoCamera.
-  ///
-  /// In en, this message translates to:
-  /// **'No camera available'**
-  String get scanNoCamera;
-
-  /// No description provided for @scanNoCameraBody.
-  ///
-  /// In en, this message translates to:
-  /// **'Allow camera access for this app, or type the server address by hand in settings.'**
-  String get scanNoCameraBody;
-
-  /// No description provided for @scanNotOurCode.
-  ///
-  /// In en, this message translates to:
-  /// **'That is not a MeTube setup code. Try the one the server\'s owner is showing you.'**
-  String get scanNotOurCode;
-
-  /// No description provided for @scanPreparing.
-  ///
-  /// In en, this message translates to:
-  /// **'Getting the code reader ready. This happens once, and needs a moment of internet.'**
-  String get scanPreparing;
-
-  /// No description provided for @scanSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Let the server\'s owner set this phone up in one go'**
-  String get scanSubtitle;
-
-  /// No description provided for @scanTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Scan a setup code'**
-  String get scanTitle;
 
   /// No description provided for @searchLogs.
   ///

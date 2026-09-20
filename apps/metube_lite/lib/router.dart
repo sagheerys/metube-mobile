@@ -12,7 +12,6 @@ import 'features/playlists/playlists_screen.dart';
 import 'features/settings/about_screen.dart';
 import 'features/settings/backup_screen.dart';
 import 'features/settings/logs_screen.dart';
-import 'features/settings/scan_screen.dart';
 import 'features/settings/settings_screen.dart';
 import 'features/shell/shell_screen.dart';
 
@@ -56,8 +55,6 @@ final router = GoRouter(
               path: '/settings',
               builder: (_, _) => const SettingsScreen(),
               routes: [
-                // Reading the owner's setup code (م-74).
-                GoRoute(path: 'scan', builder: (_, _) => const ScanScreen()),
                 GoRoute(
                   path: 'language',
                   builder: (_, _) => const LanguageScreen(),

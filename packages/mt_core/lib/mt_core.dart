@@ -25,7 +25,6 @@ export 'src/models/channel_subscription.dart';
 export 'src/models/download_task.dart';
 export 'src/models/history_item.dart';
 export 'src/models/history_response.dart';
-export 'src/models/pairing_payload.dart';
 export 'src/models/playlist_preview.dart';
 export 'src/models/server_version.dart';
 export 'src/models/quality.dart';
