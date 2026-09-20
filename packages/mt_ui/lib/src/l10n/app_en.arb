@@ -434,6 +434,7 @@
   "errNoApi": "The address responds but has no MeTube API",
   "errNotMeTube": "This address is not a MeTube server",
   "errPlatformBlocked": "The platform requires login — the server admin should refresh the cookies",
+  "errPlatformBlockedCookies": "The platform requires login — send it a cookies file from Settings → Cookies",
   "errPollTimeout": "The server took too long — try again",
   "errServer": "Server error: {message}",
   "errorGeneric": "Error: {message}",

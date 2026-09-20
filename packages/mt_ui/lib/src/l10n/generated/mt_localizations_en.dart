@@ -498,6 +498,10 @@ class MTLocalizationsEn extends MTLocalizations {
       'The platform requires login — the server admin should refresh the cookies';
 
   @override
+  String get errPlatformBlockedCookies =>
+      'The platform requires login — send it a cookies file from Settings → Cookies';
+
+  @override
   String get errPollTimeout => 'The server took too long — try again';
 
   @override

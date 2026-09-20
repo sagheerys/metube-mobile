@@ -16,7 +16,11 @@ String errorText(MTLocalizations l10n, Object error) => switch (error) {
   NetworkException(:final detail) when detail == wifiOnlyRejection =>
     l10n.waitingForWifi,
   NetworkException() => l10n.errNetwork,
-  PlatformBlockedException() => l10n.errPlatformBlocked,
+  // **Super names the way out, Lite does not** (2026-09-20). The shared
+  // wording tells you "the server admin should refresh the cookies", which
+  // was true while no app could. Super now takes the file itself, and the
+  // owner reading that sentence *is* the admin being deferred to.
+  PlatformBlockedException() => l10n.errPlatformBlockedCookies,
   PollTimeoutException() => l10n.errPollTimeout,
   CookiesTooLargeException() => l10n.cookiesTooLarge,
   UnsafeFilenameException() => l10n.errServer('unsafe filename'),

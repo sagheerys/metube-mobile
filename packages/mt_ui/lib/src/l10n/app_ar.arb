@@ -197,6 +197,7 @@
   "errNoApi": "العنوان يستجيب لكن لا يوجد MeTube API عليه",
   "errNotMeTube": "هذا العنوان ليس سيرفر MeTube",
   "errPlatformBlocked": "المنصة تطلب تسجيل الدخول — على مدير السيرفر تحديث الكوكيز",
+  "errPlatformBlockedCookies": "المنصة تطلب تسجيل الدخول — ارفع ملف كوكيز من الإعدادات ← الكوكيز",
   "errPollTimeout": "طال انتظار السيرفر — أعد المحاولة",
   "errServer": "خطأ من السيرفر: {message}",
   "errorGeneric": "خطأ: {message}",

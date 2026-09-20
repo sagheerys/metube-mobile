@@ -182,6 +182,13 @@ void main() {
       'https://fb.watch/abc123/',
       'https://www.facebook.com/share/v/abc/',
       'https://on.soundcloud.com/AbCd',
+      // Reddit, measured against a real server 2026-09-20: the server files
+      // the item under the URL it was redirected to, so leaving any of these
+      // unresolved is a download nothing can ever match.
+      'https://redd.it/1w64qio',
+      'https://v.redd.it/52oky0lgjanh1',
+      'https://www.reddit.com/r/reacher/s/AbCdEfGh12',
+      'https://www.reddit.com/u/someone/s/AbCdEfGh12',
     ]) {
       test(
         'short: $short',
@@ -196,6 +203,20 @@ void main() {
       );
       expect(
         UrlKit.needsResolution('https://www.facebook.com/reel/123'),
+        isFalse,
+      );
+    });
+
+    test('an ordinary Reddit post costs no request: `reddit.com` does not '
+        'contain `redd.it` — there is no dot after `redd` in it', () {
+      expect(
+        UrlKit.needsResolution(
+          'https://www.reddit.com/r/reacher/comments/1w64qio/reacher_matters/',
+        ),
+        isFalse,
+      );
+      expect(
+        UrlKit.needsResolution('https://www.reddit.com/r/reacher/'),
         isFalse,
       );
     });

@@ -968,6 +968,12 @@ abstract class MTLocalizations {
   /// **'The platform requires login — the server admin should refresh the cookies'**
   String get errPlatformBlocked;
 
+  /// No description provided for @errPlatformBlockedCookies.
+  ///
+  /// In en, this message translates to:
+  /// **'The platform requires login — send it a cookies file from Settings → Cookies'**
+  String get errPlatformBlockedCookies;
+
   /// No description provided for @errPollTimeout.
   ///
   /// In en, this message translates to:

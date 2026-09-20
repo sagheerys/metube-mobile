@@ -44,6 +44,16 @@ only one.
 
 ### Fixed
 
+- **A Reddit link shared from the Reddit app now finishes instead of hanging
+  at nothing.** The clip downloaded on the server perfectly, and the app's
+  counter never moved: MeTube files an item under the URL yt-dlp ended at,
+  and the share button hands out a short link that redirects — so the app
+  spent its whole polling budget waiting for a URL the server had never
+  heard of. Lite therefore never pulled the file and never cleaned the
+  server, and Super showed a stuck card beside a clip that was already in
+  its library. Reddit's short forms are now resolved before the download is
+  requested, as TikTok's and Facebook's already were. A Reddit post whose
+  video is hosted somewhere else is still affected. Both apps.
 - **The floating add button can no longer be pushed off the screen by its
   own label.** It had no width of its own, so a long word at an enlarged
   system font size ran past the right edge of a small screen. Today's
@@ -53,6 +63,15 @@ only one.
   stored as a system tag, and once any real tag existed the library offered
   `# __favorites__` as a filter beside it, as did "your tags" and the
   manage-tags sheet. MeTube Super.
+
+### Changed
+
+- **A platform that wants a login now names the screen that fixes it.** The
+  message said the server's administrator should refresh the cookies, which
+  was the only true answer while no app could do it. In Super the person
+  reading it is that administrator, so it now points at Settings → Cookies.
+  Lite keeps the old wording on purpose: it has no such screen, and whoever
+  holds it is usually not whoever runs the server. MeTube Super.
 
 ## [2.1.0] - 2026-09-19
 

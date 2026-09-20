@@ -213,14 +213,33 @@ abstract final class UrlKit {
   }
 
   /// Is this a short link that needs redirect resolution?
-  /// (`05-DATA-SCHEMA.md` §4.)
+  /// (`docs/SERVER-API.md` §4.)
+  ///
+  /// **This list is correctness, not convenience** (field report 2026-09-20,
+  /// Reddit). MeTube files an item under the URL **yt-dlp ended at**, and
+  /// keys every list by it; when extraction returns `_type: url` it re-adds
+  /// the redirect target and nothing in the item remembers what was sent. So
+  /// a short link left unresolved is a download that succeeds on the server
+  /// and **can never be matched to its task**: the counter sits still to the
+  /// polling ceiling, Lite never pulls the file and never cleans the server,
+  /// and Super shows a stuck card beside a clip that is already in the
+  /// library. Measured: `redd.it/1w64qio` was filed as
+  /// `reddit.com/comments/1w64qio`.
+  ///
+  /// `redd.it` covers `v.redd.it` too, and does **not** match
+  /// `reddit.com` — there is no dot after `redd` in it.
   static bool needsResolution(String url) {
     final u = url.toLowerCase();
     return u.contains('vt.tiktok.com') ||
         u.contains('vm.tiktok.com') ||
         u.contains('fb.watch') ||
         (u.contains('facebook.com') && u.contains('/share/')) ||
-        u.contains('on.soundcloud.com');
+        u.contains('on.soundcloud.com') ||
+        u.contains('redd.it') ||
+        // What the Reddit app's share button produces. A post whose own slug
+        // is `s` would be resolved needlessly, which costs one request and
+        // changes nothing.
+        (u.contains('reddit.com') && u.contains('/s/'));
   }
 
   /// Does the server's error text indicate a blocked platform (cookies)?

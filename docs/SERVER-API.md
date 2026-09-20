@@ -162,7 +162,7 @@ tested against real captures):
 
 | Field | Sources, in order | Notes |
 |---|---|---|
-| `url` | `url` | **The primary key, the canonical URL.** The server canonicalises `youtu.be/X` → `youtube.com/watch?v=X` |
+| `url` | `url` | **The primary key, the canonical URL.** The server canonicalises `youtu.be/X` → `youtube.com/watch?v=X`, and **stores the URL yt-dlp ended at, not the one we sent** (see below) |
 | `id` | `id` ‖ `_id` ‖ (a local uuid) | Not used for deletion — deletion goes by URL |
 | title | `title` ‖ `name` | |
 | filename | `filename` ‖ `file` | **Never invented from the title** when absent (that used to produce 404s) — wait, or fail clearly |
@@ -177,6 +177,26 @@ tested against real captures):
 characters) → longest numeric id of ≥10 digits (Facebook/Instagram/TikTok) →
 normalisation (dropping the scheme, `www./m./on.`, the query and the trailing
 slash) → containment.
+
+**Every list is keyed by that stored URL, and the stored URL is the one yt-dlp
+resolved to** (read in `ytdl.py`, measured against a real server 2026-09-20,
+MeTube 2026.09.15). `PersistentQueue.put` uses `key = value.info.url`, so
+`/delete`, `/start` and `cancel` all take **URLs** in their `ids` field, not the
+`id` the item reports — passing the reported `id` answers `{"status":"ok"}` and
+removes nothing. And when extraction returns `_type: url`/`url_transparent`,
+`__add_entry` **calls itself with the child's URL**, so what is filed is the
+redirect target:
+
+```
+sent:   https://redd.it/1w64qio
+stored: https://www.reddit.com/comments/1w64qio      ← measured, not inferred
+```
+
+Nothing in the item points back at what was sent, so **a task whose URL the
+server rewrote can never be matched, and the poll runs to its ceiling while the
+file downloads perfectly.** The only defence is to resolve such a link
+**before** the add (§4), which is why that list is a correctness requirement and
+not a convenience.
 
 ### 2.4 Pulling / streaming
 
@@ -356,8 +376,20 @@ download takes precedence over batch members.
 ## 4. External services (outside MeTube's contract, isolated in resolvers)
 
 - **Short links.** `vt./vm.tiktok.com`, `fb.watch`, `facebook.com/share/`,
-  `on.soundcloud.com` — redirects are followed, with an **HTTPS→HTTP downgrade
-  refused**.
+  `on.soundcloud.com`, **`redd.it` / `v.redd.it` / `reddit.com/…/s/<token>`** —
+  redirects are followed, with an **HTTPS→HTTP downgrade refused**.
+  Reddit's hops, measured 2026-09-20 with a `Dart/…` user agent (it is served
+  the same as any other):
+
+  | Sent | Hops | Ends at |
+  |---|---|---|
+  | `redd.it/<id36>` | 301 | `reddit.com/comments/<id36>` |
+  | `v.redd.it/<mediaid>` | 302 → 301 | `reddit.com/r/<sub>/comments/<id36>/<slug>/` |
+  | `reddit.com/r/<sub>/s/<token>` | 301 | the full post URL **with `share_id` and `utm_*`** |
+
+  The third form is what the Reddit **app's** share button produces, and the
+  `share_id`/`utm_medium=android_app` tail on a stored URL is the fingerprint of
+  a link that arrived that way. Two hops are within the ceiling of 8.
 - **SoundCloud.** oEmbed (`soundcloud.com/oembed?format=json&url=…`, upgrading
   `-large.` → `-t500x500.`). For `/sets/` playlists: parse
   `window.__sc_hydration` out of the HTML, falling back to extracting a

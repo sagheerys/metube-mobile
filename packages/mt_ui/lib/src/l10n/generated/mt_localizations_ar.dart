@@ -499,6 +499,10 @@ class MTLocalizationsAr extends MTLocalizations {
       'المنصة تطلب تسجيل الدخول — على مدير السيرفر تحديث الكوكيز';
 
   @override
+  String get errPlatformBlockedCookies =>
+      'المنصة تطلب تسجيل الدخول — ارفع ملف كوكيز من الإعدادات ← الكوكيز';
+
+  @override
   String get errPollTimeout => 'طال انتظار السيرفر — أعد المحاولة';
 
   @override

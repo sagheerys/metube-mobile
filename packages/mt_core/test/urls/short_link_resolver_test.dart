@@ -2,6 +2,89 @@ import 'package:mt_core/mt_core.dart';
 import 'package:test/test.dart';
 
 void main() {
+  /// **Reddit: the defect, and why resolution is the fix** (field report
+  /// 2026-09-20).
+  ///
+  /// The owner's report: a Reddit link downloads on the server but the app's
+  /// counter never moves — Lite never pulls the file and never cleans the
+  /// server, and Super shows a stuck card beside a clip already sitting in
+  /// the library. The cause is not the download: MeTube files an item under
+  /// the URL **yt-dlp ended at** and keys every list by it, so a task that
+  /// asked for the short link is polling for a URL that does not exist on
+  /// the server.
+  ///
+  /// The hops below are the ones measured against reddit.com on that day,
+  /// not invented.
+  group('Reddit share links', () {
+    const post =
+        'https://www.reddit.com/r/reacher/comments/1w64qio/reacher_matters/';
+
+    test('the app link — the one the share button produces — is followed to '
+        'the post, keeping the tail the redirect adds', () async {
+      const shared = 'https://www.reddit.com/r/reacher/s/AbCdEfGh12';
+      // The real Location carries share_id and utm_*; a stored URL wearing
+      // that tail is the fingerprint of a link that arrived this way.
+      const target =
+          '$post?share_id=OaIBOBGNVYFeEkmaAcJE2'
+          '&utm_medium=android_app&utm_source=share';
+      final resolver = ShortLinkResolver(
+        redirectStep: (url) async => url == shared ? target : null,
+      );
+      expect(await resolver.resolve(shared), target);
+    });
+
+    test('redd.it lands where the server files it', () async {
+      final resolver = ShortLinkResolver(
+        redirectStep: (url) async => url == 'https://redd.it/1w64qio'
+            ? 'https://www.reddit.com/comments/1w64qio'
+            : null,
+      );
+      // Exactly the pair measured on the owner's server: sent on the left,
+      // filed on the right.
+      expect(
+        await resolver.resolve('https://redd.it/1w64qio'),
+        'https://www.reddit.com/comments/1w64qio',
+      );
+    });
+
+    test('v.redd.it takes two hops, and both are followed', () async {
+      const hops = {
+        'https://v.redd.it/52oky0lgjanh1':
+            'https://www.reddit.com/video/52oky0lgjanh1',
+        'https://www.reddit.com/video/52oky0lgjanh1': post,
+      };
+      final resolver = ShortLinkResolver(
+        redirectStep: (url) async => hops[url],
+      );
+      expect(await resolver.resolve('https://v.redd.it/52oky0lgjanh1'), post);
+    });
+
+    test('and the point of all three: unresolved, the pair does not match, '
+        'so the task polls for something the server has never heard of', () {
+      for (final short in [
+        'https://redd.it/1w64qio',
+        'https://v.redd.it/52oky0lgjanh1',
+        'https://www.reddit.com/r/reacher/s/AbCdEfGh12',
+      ]) {
+        expect(
+          UrlKit.urlsMatch('https://www.reddit.com/comments/1w64qio', short),
+          isFalse,
+          reason:
+              'لو طابقها المطابِق لكان التخمين هو ما ينقذنا، لا الحل: $short',
+        );
+      }
+      // Resolved, it is the same string, which is the only match worth
+      // having.
+      expect(
+        UrlKit.urlsMatch(
+          'https://www.reddit.com/comments/1w64qio',
+          'https://www.reddit.com/comments/1w64qio',
+        ),
+        isTrue,
+      );
+    });
+  });
+
   group('ShortLinkResolver', () {
     test('it follows a chain of redirects to the destination', () async {
       final hops = {
