@@ -17,6 +17,7 @@ export 'src/widgets/mt_equalizer.dart';
 export 'src/widgets/mt_fab.dart';
 export 'src/widgets/mt_highlight_surface.dart';
 export 'src/widgets/mt_location_badge.dart';
+export 'src/widgets/mt_markdown_text.dart';
 export 'src/widgets/mt_media_card.dart';
 export 'src/widgets/mt_media_grid_card.dart';
 export 'src/widgets/mt_motion.dart';

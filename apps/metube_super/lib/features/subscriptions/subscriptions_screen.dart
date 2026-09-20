@@ -146,7 +146,7 @@ class SubscriptionsScreen extends ConsumerWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Text(l10n.unfollowConfirm(sub.name)),
+        title: Text(l10n.unfollowConfirm(mtName(sub.name))),
         content: Text(l10n.unfollowConfirmBody),
         actions: [
           TextButton(

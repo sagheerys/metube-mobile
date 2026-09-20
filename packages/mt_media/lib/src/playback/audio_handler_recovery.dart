@@ -66,6 +66,32 @@ extension MTAudioHandlerRecovery on MTAudioHandler {
     return resolver.resolve(item)?.origin == PlaybackOrigin.stream;
   }
 
+  /// **Is this a fresh incident, or the same stream flapping?**
+  ///
+  /// The retry budget used to be returned by any successful load, which is
+  /// right for a hiccup and wrong for a stream that loads, plays for a
+  /// second and drops — **that pair repeats for ever**, each failure
+  /// answered by a retry and each retry refilling the budget. The phone
+  /// holds a wake lock and hammers the server until the battery ends it,
+  /// with nothing on screen to say so.
+  ///
+  /// The budget is returned by **progress**, not by a successful load: a
+  /// different item, or at least [retryBudgetProgress] of this one actually
+  /// played since the last failure. The player's own position measures
+  /// that, and needs no clock — which also makes it testable without one.
+  void _openRetryBudget() {
+    final key = _queue.current?.canonicalUrl;
+    final position = player.position;
+    final last = _lastRetryPosition;
+    if (key != _retryKey ||
+        last == null ||
+        (position - last).abs() >= MTAudioHandler.retryBudgetProgress) {
+      _networkRetries = 0;
+    }
+    _retryKey = key;
+    _lastRetryPosition = position;
+  }
+
   /// Automatically skips a broken item, and stops if the fault repeats
   /// rather than looping forever.
   ///
@@ -83,6 +109,7 @@ extension MTAudioHandlerRecovery on MTAudioHandler {
   /// unreachable, **the next item started playing out loud with no tap at
   /// all**, breaking the rule that restoration never autoplays.
   Future<void> _onError({bool autoPlay = true}) async {
+    _openRetryBudget();
     if (_networkRetries < networkRetryBackoff.length && _isRetryableSource()) {
       final generation = _generation;
       final wait = networkRetryBackoff[_networkRetries];
@@ -152,7 +179,9 @@ extension MTAudioHandlerRecovery on MTAudioHandler {
       await player.setSource(source, initialPosition: resume);
       if (_isStale(generation)) return;
       _consecutiveErrors = 0;
-      _networkRetries = 0;
+      // **The retry budget is deliberately not returned here.** A load that
+      // succeeds proves nothing about a stream that drops a second later;
+      // `_openRetryBudget` returns it for playing, not for loading.
       final duration = player.duration;
       if (duration != null) {
         mediaItem.add(item.toMediaItem().copyWith(duration: duration));

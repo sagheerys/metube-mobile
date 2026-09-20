@@ -207,7 +207,12 @@ void main() {
       await tester.tap(find.text('Unfollow').last);
       await tester.pumpAndSettle();
 
-      expect(find.text('Unfollow Slow Coffee?'), findsOneWidget);
+      // **The channel's name is isolated inside the question** (2026-09-20):
+      // it comes from the server and may run the other way to the
+      // interface around it, and the `?` then has no defined side to land
+      // on. It is the same string with two invisible characters around the
+      // name, so the assertion carries them rather than dropping them.
+      expect(find.text('Unfollow ${mtName('Slow Coffee')}?'), findsOneWidget);
       expect(find.textContaining('forgets which videos'), findsOneWidget);
       // **Nothing has been sent yet.**
       expect(adapter.requests.any((r) => r.path.contains('delete')), isFalse);

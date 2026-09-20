@@ -68,7 +68,7 @@ class MTQueuePanel extends StatelessWidget {
               child: Text(
                 playlistName == null
                     ? l10n.upNext
-                    : l10n.upNextIn(playlistName!),
+                    : l10n.upNextIn(mtName(playlistName)),
                 style: text.titleMedium!.copyWith(color: ink),
               ),
             ),

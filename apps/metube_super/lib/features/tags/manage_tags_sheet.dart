@@ -134,7 +134,7 @@ class _TagRow extends ConsumerWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        content: Text(l10n.deleteTagConfirm(tag)),
+        content: Text(l10n.deleteTagConfirm(mtName(tag))),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, false),

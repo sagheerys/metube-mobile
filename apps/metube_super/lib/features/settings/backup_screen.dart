@@ -92,7 +92,7 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
     await file.parent.create(recursive: true);
     await file.writeAsString(await _service.exportToString(), flush: true);
     await Share.shareXFiles([XFile(file.path)]);
-    return l10n.backupSuccess(file.path);
+    return l10n.backupSuccess(mtLtrRun(file.path));
   }
 
   Future<String> _importPicked(MTLocalizations l10n) async {

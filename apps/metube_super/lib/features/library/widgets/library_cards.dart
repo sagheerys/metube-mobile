@@ -43,10 +43,13 @@ class LibraryItemCard extends ConsumerWidget {
 
     final subtitle = pulling != null
         ? '${l10n.pullingToDevice} ${l10n.percentValue((pulling * 100).round())}'
-        : [
-            if (item.uploader != null) item.uploader!,
+        // **Each part isolated** (field report 2026-09-20): a channel
+        // named in one language beside a time phrase in another had no
+        // defined place for the separator between them.
+        : mtMetaLine([
+            item.uploader,
             if (item.timestamp != null) mtTimeAgo(context, item.timestamp!),
-          ].join(' · ');
+          ]);
     final locationLabel = switch (item.location) {
       MTMediaLocation.offline ||
       MTMediaLocation.both => l10n.availabilityOffline,

@@ -91,13 +91,13 @@ class _ReelsScreenState extends ConsumerState<ReelsScreen> {
       // While the reel is alive, starting audio from the
       // notification silences it first.
       onLive: _setLive,
-      subtitleBuilder: (context, item) => [
+      subtitleBuilder: (context, item) => mtMetaLine([
         platformOfKey(item.canonicalUrl).label,
         // **Belonging under the title** (field report 2026-09-04): which
         // playlist. The information was in the store and appeared in no
         // player.
-        ?membership[item.canonicalUrl]?.line(l10n),
-      ].join(' · '),
+        membership[item.canonicalUrl]?.line(l10n),
+      ]),
       isFavorite: (item) => _libraryItemOf(item)?.favorite ?? false,
       // **No heart in the rail** (field report 2026-09-04): the "add to…"
       // button below covers favourites and playlists together. A double tap

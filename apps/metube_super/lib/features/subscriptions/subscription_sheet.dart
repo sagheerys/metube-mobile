@@ -97,7 +97,9 @@ class _SubscriptionSheetState extends ConsumerState<_SubscriptionSheet> {
         );
         // The server resolved the channel's real title; naming it is the
         // proof that the right channel was followed.
-        message = l10n.subscriptionAdded(name ?? _urlController.text.trim());
+        message = l10n.subscriptionAdded(
+          mtName(name ?? _urlController.text.trim()),
+        );
       }
       if (!mounted) return;
       Navigator.of(context).pop();

@@ -82,8 +82,20 @@ class MTAudioHandler extends BaseAudioHandler with SeekHandler {
   String? _playlistId;
   int _consecutiveErrors = 0;
 
-  /// Retries spent on the **current** item; reset by any successful load.
+  /// **How much of an item must play before its retry budget is returned.**
+  ///
+  /// Shorter than any clip worth watching and longer than the gap a
+  /// flapping stream manages, so a genuine hiccup an hour into a podcast
+  /// gets its retries back while a source that drops every few seconds
+  /// runs out of them.
+  static const Duration retryBudgetProgress = Duration(seconds: 30);
+
+  /// Retries spent on the **current** item, and where it had reached when
+  /// it last failed. Together they answer "is this the same fault over and
+  /// over?" — see `_openRetryBudget`.
   int _networkRetries = 0;
+  String? _retryKey;
+  Duration? _lastRetryPosition;
   Timer? _saveTimer;
   Timer? _pausedStopTimer;
 

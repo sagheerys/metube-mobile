@@ -37,6 +37,27 @@ only one.
 
 ### Fixed
 
+- **A stream that keeps dropping is now given up on instead of retried for
+  ever.** Waiting out a hiccup was right; the budget for it came back with
+  any successful load, and a source that loads, plays a second and drops
+  produces exactly the pair that defeats that — each failure answered by a
+  retry and each retry refilling the budget, with the screen holding the
+  phone awake and saying nothing. The budget now comes back for playing
+  rather than for loading. Both apps.
+- **A channel's name no longer comes apart from the time beside it.** A name
+  written in one language and a phrase in another have no agreed place for
+  the separator between them, so "channel · 5 minutes ago" and "Unfollow
+  …?" both rearranged themselves. Every name the app did not write itself —
+  a channel, a playlist, a tag, a title — is now kept whole, whichever
+  language the interface is in. Both apps.
+- **What is new in an update now reads as text rather than as a file.** The
+  release notes arrive from the release page in Markdown, and the update
+  sheet printed the stars, the dashes and the link brackets along with the
+  words. Both apps.
+- **A missing cover no longer leaves a black square in the player's
+  queue.** The clip's icon was drawn only when there was no cover at all, so
+  a cover that existed and failed to load — a cleared cache, an extracted
+  cover deleted with its file — left an empty box instead. Both apps.
 - **A download is now followed by the name the server gave it, so it can no
   longer finish on the server while the app waits forever.** The server
   files a clip under the address the site redirects to, which is often not

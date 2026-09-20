@@ -162,7 +162,7 @@ Future<bool> _confirmDelete(BuildContext context, String name) async {
   final result = await showDialog<bool>(
     context: context,
     builder: (dialogContext) => AlertDialog(
-      content: Text(l10n.deletePlaylistConfirm(name)),
+      content: Text(l10n.deletePlaylistConfirm(mtName(name))),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(dialogContext, false),

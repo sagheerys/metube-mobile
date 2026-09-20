@@ -87,8 +87,12 @@ class UpdateSheet extends ConsumerWidget {
                       const SizedBox(height: MTSpace.lg),
                       MTSectionHeader(title: l10n.updateWhatsNew),
                       const SizedBox(height: MTSpace.xs),
-                      Text(
-                        release.notes.trim(),
+                      // **The notes come from the release page, which is
+                      // Markdown** — printed raw they showed their own
+                      // stars and dashes in the one place the app asks to
+                      // be trusted with an install.
+                      MTMarkdownText(
+                        source: release.notes.trim(),
                         style: text.bodySmall!.copyWith(color: p.ink2),
                       ),
                     ],

@@ -98,11 +98,11 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
     BuildContext context,
     PlaylistItem item,
     Map<String, ItemMembership> membership,
-  ) => [
+  ) => mtMetaLine([
     MediaPlatform.detect(item.canonicalUrl).label,
-    if (item.uploader != null) item.uploader!,
-    ?membership[item.canonicalUrl]?.line(context.mtl),
-  ].join(' · ');
+    item.uploader,
+    membership[item.canonicalUrl]?.line(context.mtl),
+  ]);
 
   List<MTPlayerAction> _actions(MTVideoSession session) {
     final l10n = context.mtl;

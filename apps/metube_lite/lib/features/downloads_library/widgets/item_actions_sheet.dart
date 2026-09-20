@@ -137,12 +137,16 @@ class _ItemActionsSheet extends ConsumerWidget {
           tile(
             Icons.delete_outline_rounded,
             l10n.deleteVideo,
-            () => _confirm(context, l10n.deleteVideoConfirm(item.title), () {
-              run(
-                () => actions.deleteFiles([item]),
-                successText: l10n.deletedTitle(item.title),
-              );
-            }),
+            () => _confirm(
+              context,
+              l10n.deleteVideoConfirm(mtName(item.title)),
+              () {
+                run(
+                  () => actions.deleteFiles([item]),
+                  successText: l10n.deletedTitle(mtName(item.title)),
+                );
+              },
+            ),
             color: p.err,
           ),
           const SizedBox(height: MTSpace.md),

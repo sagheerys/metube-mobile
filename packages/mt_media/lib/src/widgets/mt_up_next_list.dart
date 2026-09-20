@@ -107,15 +107,30 @@ class _UpNextRow extends StatelessWidget {
                 borderRadius: BorderRadius.circular(MTRadius.thumb - 2),
                 border: Border.all(color: line),
               ),
-              child:
-                  artwork?.call(context, item) ??
-                  Icon(
-                    item.isAudio
-                        ? Icons.music_note_rounded
-                        : Icons.movie_rounded,
-                    size: 16,
-                    color: muted,
+              // **The icon sits underneath, not beside** (field report
+              // 2026-09-20: "an audio clip in the video player's queue is a
+              // black square"). The builder returns null only when there is
+              // no cover at all; a cover that **fails to load** — a cleared
+              // cache, a deleted extracted cover, a thumbnail the server no
+              // longer serves — returns an empty box instead, and the
+              // fallback beside it never ran. On a dark sheet an empty box
+              // is a black square. A cover that does load simply covers
+              // this.
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  Center(
+                    child: Icon(
+                      item.isAudio
+                          ? Icons.music_note_rounded
+                          : Icons.movie_rounded,
+                      size: 16,
+                      color: muted,
+                    ),
                   ),
+                  ?artwork?.call(context, item),
+                ],
+              ),
             ),
             const SizedBox(width: MTSpace.sm),
             Expanded(

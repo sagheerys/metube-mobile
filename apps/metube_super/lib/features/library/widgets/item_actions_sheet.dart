@@ -116,10 +116,14 @@ class _ItemActionsSheet extends ConsumerWidget {
           // the server already knows, so it needs no tag and no setup: the
           // row only appears when `/history` actually carried a name.
           if (item.uploader case final channel? when channel.trim().isNotEmpty)
-            tile(Icons.subscriptions_outlined, l10n.showChannel(channel), () {
-              Navigator.pop(context);
-              ref.read(libraryViewProvider.notifier).toggleChannel(channel);
-            }),
+            tile(
+              Icons.subscriptions_outlined,
+              l10n.showChannel(mtName(channel)),
+              () {
+                Navigator.pop(context);
+                ref.read(libraryViewProvider.notifier).toggleChannel(channel);
+              },
+            ),
           tile(Icons.info_outline_rounded, l10n.details, () {
             Navigator.pop(context);
             showItemDetailsSheet(host, item);
@@ -195,12 +199,16 @@ class _ItemActionsSheet extends ConsumerWidget {
             tile(
               Icons.delete_outline_rounded,
               l10n.deleteVideo,
-              () => _confirm(context, l10n.deleteVideoConfirm(item.title), () {
-                run(
-                  () => actions.deleteLocalOnly(item),
-                  successText: l10n.deletedTitle(item.title),
-                );
-              }),
+              () => _confirm(
+                context,
+                l10n.deleteVideoConfirm(mtName(item.title)),
+                () {
+                  run(
+                    () => actions.deleteLocalOnly(item),
+                    successText: l10n.deletedTitle(mtName(item.title)),
+                  );
+                },
+              ),
               color: p.err,
             ),
           const SizedBox(height: MTSpace.md),

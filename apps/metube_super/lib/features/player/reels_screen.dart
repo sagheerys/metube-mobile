@@ -98,9 +98,9 @@ class _ReelsScreenState extends ConsumerState<ReelsScreen> {
       // While the reel is alive, starting audio from the
       // notification silences it first.
       onLive: _setLive,
-      subtitleBuilder: (context, item) => [
+      subtitleBuilder: (context, item) => mtMetaLine([
         MediaPlatform.detect(item.canonicalUrl).label,
-        if (item.uploader != null) item.uploader!,
+        item.uploader,
         // From the live library: `item.hasLocal` is an old snapshot that
         // never updates.
         if (byUrl[item.canonicalUrl]?.isOffline ?? item.hasLocal)
@@ -108,8 +108,8 @@ class _ReelsScreenState extends ConsumerState<ReelsScreen> {
         // **Belonging under the title** (field report 2026-09-04): which
         // tag and which playlist. The information was in the store and
         // appeared in no player.
-        ?membership[item.canonicalUrl]?.line(l10n),
-      ].join(' · '),
+        membership[item.canonicalUrl]?.line(l10n),
+      ]),
       isFavorite: (item) => byUrl[item.canonicalUrl]?.favorite ?? false,
       // **No heart in the rail** (field report 2026-09-04): the "add to…"
       // button below covers favourites, tags and playlists together. A
