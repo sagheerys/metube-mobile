@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 
 import '../constants/mt_constants.dart';
+import '../models/channel_subscription.dart';
 import '../models/history_response.dart';
 import '../models/quality.dart';
 import '../models/server_version.dart';
@@ -45,8 +46,8 @@ class ServerConfig {
 }
 
 /// The one MeTube client. **All** network traffic towards the server goes
-/// through here (rule 1). The four endpoints plus testConnection follow
-/// `05-DATA-SCHEMA.md` §2 exactly.
+/// through here (rule 1). Every endpoint follows `docs/SERVER-API.md` §2
+/// exactly.
 class MeTubeApiClient implements MeTubeApi {
   MeTubeApiClient({required this.config, Dio? dio}) : _dio = dio ?? Dio() {
     _dio.options = BaseOptions(
@@ -214,14 +215,12 @@ class MeTubeApiClient implements MeTubeApi {
       () => _dio.post<String>(
         '${config.baseUrl}/add',
         data: jsonEncode({
-          'url': url,
-          'quality': applied.wire,
-          if (compatibleVideo && applied != Quality.audio) ...{
-            'download_type': 'video',
-            'format': 'mp4',
-            'codec': 'h264',
-          },
-          if (preset) 'ytdl_options_presets': const [compatPreset],
+          ..._downloadOptions(
+            url,
+            applied,
+            compatibleVideo: compatibleVideo,
+            preset: preset,
+          ),
           // **What we take for a single item stays single on the server**
           // (field report 2026-09-08). `PlaylistDetector` recognises
           // YouTube playlists and SoundCloud `/sets/` only; an artist page,
@@ -235,6 +234,203 @@ class MeTubeApiClient implements MeTubeApi {
           if (!PlaylistDetector.isPlaylist(url)) 'playlist_item_limit': 1,
         }),
         options: Options(contentType: 'application/json'),
+      ),
+    );
+    _throwIfBodyError(_decode(response));
+  }
+
+  /// **The download options `/add` and `/subscribe` share** (§2.2).
+  ///
+  /// A subscription downloads with exactly the same rules as a one-off:
+  /// anything else and the clips that arrive by themselves would be the
+  /// AV1-in-webm that the compatibility work exists to prevent.
+  Map<String, Object?> _downloadOptions(
+    String url,
+    Quality applied, {
+    required bool compatibleVideo,
+    required bool preset,
+  }) => {
+    'url': url,
+    'quality': applied.wire,
+    if (compatibleVideo && applied != Quality.audio) ...{
+      'download_type': 'video',
+      'format': 'mp4',
+      'codec': 'h264',
+    },
+    if (preset) 'ytdl_options_presets': const [compatPreset],
+  };
+
+  /// §2.7: the channels this server watches, or **null when it cannot
+  /// watch any** — an older MeTube has no such endpoint.
+  ///
+  /// Like [fetchVersion] this swallows its errors, and for the same
+  /// reason: the answer decides whether a screen exists at all, and an
+  /// app that shows a broken subscriptions screen to everyone running an
+  /// older container is worse than one that shows none.
+  @override
+  Future<List<ChannelSubscription>?> fetchSubscriptions({
+    Duration? timeout,
+  }) async {
+    try {
+      final response = await _request(
+        () => _dio.get<String>(
+          '${config.baseUrl}/subscriptions',
+          options: Options(
+            receiveTimeout: timeout ?? MTConstants.testConnectionTimeout,
+          ),
+        ),
+      );
+      return ChannelSubscription.listFromJson(_decode(response));
+    } on Object {
+      return null;
+    }
+  }
+
+  /// §2.7: start watching a channel.
+  ///
+  /// **`playlist_item_limit` is deliberately absent**, unlike [add]: there
+  /// the limit stops a channel exploding into dozens of one-off
+  /// downloads, but here the explosion is the point, and a limit would
+  /// make a check that finds more new videos than the limit skip the rest
+  /// **permanently** — they never enter `seen_ids`, so no later check
+  /// finds them either.
+  @override
+  Future<ChannelSubscription?> subscribe(
+    String url,
+    Quality quality, {
+    required int checkIntervalMinutes,
+    bool compatibleVideo = false,
+    String? titleRegex,
+  }) async {
+    final applied = quality.applyRule(url);
+    final withPreset = compatibleVideo && applied == Quality.best;
+    try {
+      return await _postSubscribe(
+        url,
+        applied,
+        checkIntervalMinutes: checkIntervalMinutes,
+        compatibleVideo: compatibleVideo,
+        preset: withPreset,
+        titleRegex: titleRegex,
+      );
+    } on ServerErrorException {
+      // The same retry as [add]: a container nobody configured answers 400
+      // to a preset it has never heard of.
+      if (!withPreset) rethrow;
+      return _postSubscribe(
+        url,
+        applied,
+        checkIntervalMinutes: checkIntervalMinutes,
+        compatibleVideo: compatibleVideo,
+        preset: false,
+        titleRegex: titleRegex,
+      );
+    }
+  }
+
+  Future<ChannelSubscription?> _postSubscribe(
+    String url,
+    Quality applied, {
+    required int checkIntervalMinutes,
+    required bool compatibleVideo,
+    required bool preset,
+    String? titleRegex,
+  }) async {
+    final response = await _request(
+      () => _dio.post<String>(
+        '${config.baseUrl}/subscribe',
+        data: jsonEncode({
+          ..._downloadOptions(
+            url,
+            applied,
+            compatibleVideo: compatibleVideo,
+            preset: preset,
+          ),
+          'check_interval_minutes': checkIntervalMinutes,
+          if (titleRegex != null && titleRegex.trim().isNotEmpty)
+            'title_regex': titleRegex.trim(),
+        }),
+        options: Options(contentType: 'application/json'),
+      ),
+    );
+    // **A duplicate URL comes back as 200 with an error body** — "This URL
+    // is already subscribed" — so the body is read, as §2.2 requires.
+    final decoded = _decode(response);
+    _throwIfBodyError(decoded);
+    // The server answers with the row it created, carrying the channel
+    // title it resolved. Worth keeping: it is the only place that name is
+    // known without asking for the whole list again.
+    if (decoded is! Map) return null;
+    return ChannelSubscription.fromJson(decoded['subscription']);
+  }
+
+  /// §2.7: change one subscription. The server ignores any field outside
+  /// its own list, so only the six it accepts are ever sent.
+  @override
+  Future<void> updateSubscription(
+    String id, {
+    String? name,
+    bool? enabled,
+    int? checkIntervalMinutes,
+    String? titleRegex,
+    bool clearTitleRegex = false,
+  }) async {
+    final changes = <String, Object?>{
+      'name': ?name,
+      'enabled': ?enabled,
+      'check_interval_minutes': ?checkIntervalMinutes,
+      // **An empty string is how a filter is removed**, not null: the
+      // server only reads keys that are present, so null would mean "leave
+      // the old filter alone" and the user's deletion would be silently
+      // ignored.
+      if (clearTitleRegex)
+        'title_regex': ''
+      else if (titleRegex != null)
+        'title_regex': titleRegex.trim(),
+    };
+    // Nothing to say is not a request worth making; the server answers 400
+    // to an empty change set.
+    if (changes.isEmpty) return;
+    final response = await _request(
+      () => _dio.post<String>(
+        '${config.baseUrl}/subscriptions/update',
+        data: jsonEncode({'id': id, ...changes}),
+        options: Options(contentType: 'application/json'),
+      ),
+    );
+    _throwIfBodyError(_decode(response));
+  }
+
+  /// §2.7: stop watching. **This throws away what the server had seen**,
+  /// so the interface offers pausing first.
+  @override
+  Future<void> deleteSubscriptions(List<String> ids) async {
+    if (ids.isEmpty) return;
+    final response = await _request(
+      () => _dio.post<String>(
+        '${config.baseUrl}/subscriptions/delete',
+        data: jsonEncode({'ids': ids}),
+        options: Options(contentType: 'application/json'),
+      ),
+    );
+    _throwIfBodyError(_decode(response));
+  }
+
+  /// §2.7: check now. The call returns as soon as the server accepts the
+  /// request; what it finds arrives through `/history` like any other
+  /// download.
+  @override
+  Future<void> checkSubscriptions({List<String>? ids}) async {
+    final response = await _request(
+      () => _dio.post<String>(
+        '${config.baseUrl}/subscriptions/check',
+        data: jsonEncode({'ids': ?ids}),
+        options: Options(
+          contentType: 'application/json',
+          // A check walks every channel with yt-dlp, which is slower than
+          // anything else in this client.
+          receiveTimeout: MTConstants.downloadReceiveTimeout,
+        ),
       ),
     );
     _throwIfBodyError(_decode(response));

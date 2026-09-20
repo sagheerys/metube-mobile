@@ -89,6 +89,9 @@ class MTLocalizationsAr extends MTLocalizations {
   String get alreadyInPlaylist => 'مضاف مسبقاً';
 
   @override
+  String get alreadySubscribed => 'هذه القناة متابَعة أصلاً';
+
+  @override
   String get appTitle => 'MeTube Super';
 
   @override
@@ -201,7 +204,22 @@ class MTLocalizationsAr extends MTLocalizations {
   String get changeQuality => 'تغيير الجودة';
 
   @override
+  String get channelUrl => 'رابط قناة أو قائمة';
+
+  @override
+  String get channelUrlHint => 'https://www.youtube.com/@name';
+
+  @override
+  String get checkEvery => 'معدّل الفحص';
+
+  @override
   String get checkForUpdates => 'التحقق من التحديثات';
+
+  @override
+  String get checkNow => 'افحص الآن';
+
+  @override
+  String get checkQueued => 'بدأ الفحص. وما يجده يظهر في المكتبة.';
 
   @override
   String get chooseOptions => 'خيارات';
@@ -443,6 +461,22 @@ class MTLocalizationsAr extends MTLocalizations {
   }
 
   @override
+  String get every30Minutes => 'كل نصف ساعة';
+
+  @override
+  String everyHours(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'كل $count ساعة',
+      few: 'كل $count ساعات',
+      two: 'كل ساعتين',
+      one: 'كل ساعة',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get exitFullscreen => 'خروج من ملء الشاشة';
 
   @override
@@ -496,6 +530,12 @@ class MTLocalizationsAr extends MTLocalizations {
   String get filterVideo => 'فيديو';
 
   @override
+  String get follow => 'متابعة';
+
+  @override
+  String get followChannel => 'تابِع قناة';
+
+  @override
   String get format => 'الصيغة';
 
   @override
@@ -512,6 +552,20 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get itemUnavailable => 'لم يعد متوفراً';
+
+  @override
+  String knownVideos(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count مقطعاً معروفاً',
+      few: '$count مقاطع معروفة',
+      two: 'مقطعان معروفان',
+      one: 'مقطع معروف',
+      zero: 'لا مقاطع معروفة',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get language => 'اللغة';
@@ -640,6 +694,9 @@ class MTLocalizationsAr extends MTLocalizations {
       'التبديل التلقائي بين عناوين الخادم المحلية والخارجية';
 
   @override
+  String get neverChecked => 'لم تُفحص بعد';
+
+  @override
   String get newPlaylistAction => 'قائمة جديدة';
 
   @override
@@ -717,6 +774,10 @@ class MTLocalizationsAr extends MTLocalizations {
   }
 
   @override
+  String get onlyNewVideos =>
+      'لا يُنزَّل إلا ما يُنشر من الآن. أما مقاطع القناة الموجودة فتُترك مكانها.';
+
+  @override
   String get openInExternalPlayer => 'فتح في مشغل خارجي';
 
   @override
@@ -730,6 +791,9 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get pause => 'إيقاف مؤقت';
+
+  @override
+  String get pauseSubscription => 'إيقاف مؤقت';
 
   @override
   String percentValue(Object percent) {
@@ -938,6 +1002,9 @@ class MTLocalizationsAr extends MTLocalizations {
   }
 
   @override
+  String get resumeSubscription => 'استئناف';
+
+  @override
   String get retry => 'إعادة المحاولة';
 
   @override
@@ -1134,6 +1201,40 @@ class MTLocalizationsAr extends MTLocalizations {
   String get streamingFromServer => 'بث مباشر من السيرفر';
 
   @override
+  String subscriptionAdded(String name) {
+    return 'تتابع الآن $name';
+  }
+
+  @override
+  String get subscriptionName => 'الاسم';
+
+  @override
+  String get subscriptionPaused => 'موقوفة مؤقتاً';
+
+  @override
+  String get subscriptionQuality => 'جودة هذه القناة';
+
+  @override
+  String get subscriptions => 'الاشتراكات';
+
+  @override
+  String get subscriptionsEmpty => 'لا قنوات متابَعة بعد';
+
+  @override
+  String get subscriptionsEmptyBody =>
+      'تابِع قناة، وينزّل السيرفر كل مقطع جديد فيها وحده ويصل مكتبتك مباشرة. وما هو منشور عليها الآن يبقى مكانه.';
+
+  @override
+  String get subscriptionsSubtitle => 'قنوات يتابعها السيرفر نيابةً عنك';
+
+  @override
+  String get subscriptionsUnsupported => 'نسخة MeTube لديك أقدم من الاشتراكات';
+
+  @override
+  String get subscriptionsUnsupportedBody =>
+      'حدّث حاوية MeTube إلى إصدار فيه اشتراكات القنوات ثم عد إلى هنا. لا شيء آخر في التطبيق يتأثر.';
+
+  @override
   String get tagActionsHint => 'اضغط مطوّلاً على وسم لإعادة تسميته أو حذفه.';
 
   @override
@@ -1158,6 +1259,16 @@ class MTLocalizationsAr extends MTLocalizations {
   String get themeSystem => 'النظام';
 
   @override
+  String get titleFilter => 'العناوين المطابقة فقط';
+
+  @override
+  String get titleFilterHelper =>
+      'كلمة أو تعبير نمطي. لا يُنزَّل إلا ما يطابق عنوانه.';
+
+  @override
+  String get titleFilterHint => 'اتركه فارغاً لكل شيء';
+
+  @override
   String get titleLabel => 'العنوان';
 
   @override
@@ -1170,6 +1281,18 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get undo => 'تراجع';
+
+  @override
+  String get unfollow => 'إلغاء المتابعة';
+
+  @override
+  String unfollowConfirm(String name) {
+    return 'إلغاء متابعة $name؟';
+  }
+
+  @override
+  String get unfollowConfirmBody =>
+      'سينسى السيرفر ما رآه من مقاطع هذه القناة. وإن تابعتها لاحقاً عُدَّ كل الموجود عليها حينها مرئياً، فلا يُسدّ ما فاتك. والإيقاف المؤقت يحفظ هذه الذاكرة.';
 
   @override
   String get unlockTouch => 'فك القفل';

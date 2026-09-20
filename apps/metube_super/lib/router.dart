@@ -15,6 +15,7 @@ import 'features/settings/logs_screen.dart';
 import 'features/settings/network_screen.dart';
 import 'features/settings/settings_screen.dart';
 import 'features/shell/shell_screen.dart';
+import 'features/subscriptions/subscriptions_screen.dart';
 
 /// The single route table (`03-APP-FLOW.md` §1). No direct
 /// Navigator.push.
@@ -58,6 +59,14 @@ final router = GoRouter(
                 GoRoute(
                   path: 'network',
                   builder: (_, _) => const NetworkScreen(),
+                ),
+                // A new route rather than a fourth tab: the shell's three
+                // destinations are wired into every "is this settings?"
+                // check in the app, and a subscription is set up once and
+                // then left alone.
+                GoRoute(
+                  path: 'subscriptions',
+                  builder: (_, _) => const SubscriptionsScreen(),
                 ),
                 GoRoute(
                   path: 'language',

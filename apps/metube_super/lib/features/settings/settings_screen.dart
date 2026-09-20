@@ -206,6 +206,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             trailing: const Icon(Icons.chevron_right_rounded),
             onTap: () => context.go('/settings/network'),
           ),
+          // Channels the server follows (م-71). It lives beside the network
+          // row because it is the server's work, not the phone's.
+          ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: const Icon(Icons.rss_feed_rounded),
+            title: Text(l10n.subscriptions),
+            subtitle: Text(
+              l10n.subscriptionsSubtitle,
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+            trailing: const Icon(Icons.chevron_right_rounded),
+            onTap: () => context.go('/settings/subscriptions'),
+          ),
           const SizedBox(height: MTSpace.xl),
 
           MTSectionHeader(title: l10n.preferences),

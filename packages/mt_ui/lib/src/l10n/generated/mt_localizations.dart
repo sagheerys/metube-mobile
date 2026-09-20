@@ -224,6 +224,12 @@ abstract class MTLocalizations {
   /// **'Already added'**
   String get alreadyInPlaylist;
 
+  /// No description provided for @alreadySubscribed.
+  ///
+  /// In en, this message translates to:
+  /// **'This channel is already followed'**
+  String get alreadySubscribed;
+
   /// No description provided for @appTitle.
   ///
   /// In en, this message translates to:
@@ -422,11 +428,41 @@ abstract class MTLocalizations {
   /// **'Change quality'**
   String get changeQuality;
 
+  /// No description provided for @channelUrl.
+  ///
+  /// In en, this message translates to:
+  /// **'Channel or playlist link'**
+  String get channelUrl;
+
+  /// No description provided for @channelUrlHint.
+  ///
+  /// In en, this message translates to:
+  /// **'https://www.youtube.com/@name'**
+  String get channelUrlHint;
+
+  /// No description provided for @checkEvery.
+  ///
+  /// In en, this message translates to:
+  /// **'How often to look'**
+  String get checkEvery;
+
   /// No description provided for @checkForUpdates.
   ///
   /// In en, this message translates to:
   /// **'Check for updates'**
   String get checkForUpdates;
+
+  /// No description provided for @checkNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Check now'**
+  String get checkNow;
+
+  /// No description provided for @checkQueued.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking now. Anything new appears in the library.'**
+  String get checkQueued;
 
   /// No description provided for @chooseOptions.
   ///
@@ -860,6 +896,18 @@ abstract class MTLocalizations {
   /// **'Error: {message}'**
   String errorGeneric(Object message);
 
+  /// No description provided for @every30Minutes.
+  ///
+  /// In en, this message translates to:
+  /// **'Every 30 minutes'**
+  String get every30Minutes;
+
+  /// No description provided for @everyHours.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Every hour} other{Every {count} hours}}'**
+  String everyHours(int count);
+
   /// No description provided for @exitFullscreen.
   ///
   /// In en, this message translates to:
@@ -962,6 +1010,18 @@ abstract class MTLocalizations {
   /// **'Video'**
   String get filterVideo;
 
+  /// No description provided for @follow.
+  ///
+  /// In en, this message translates to:
+  /// **'Follow'**
+  String get follow;
+
+  /// No description provided for @followChannel.
+  ///
+  /// In en, this message translates to:
+  /// **'Follow a channel'**
+  String get followChannel;
+
   /// No description provided for @format.
   ///
   /// In en, this message translates to:
@@ -997,6 +1057,12 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'No longer available'**
   String get itemUnavailable;
+
+  /// No description provided for @knownVideos.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{Nothing known yet} =1{1 video known} other{{count} videos known}}'**
+  String knownVideos(int count);
 
   /// No description provided for @language.
   ///
@@ -1232,6 +1298,12 @@ abstract class MTLocalizations {
   /// **'Auto-switch between local and external server URLs'**
   String get networkSettingsSubtitle;
 
+  /// No description provided for @neverChecked.
+  ///
+  /// In en, this message translates to:
+  /// **'Not checked yet'**
+  String get neverChecked;
+
   /// No description provided for @newPlaylistAction.
   ///
   /// In en, this message translates to:
@@ -1376,6 +1448,12 @@ abstract class MTLocalizations {
   /// **'On the server · {percent}%'**
   String onServerProgress(Object percent);
 
+  /// No description provided for @onlyNewVideos.
+  ///
+  /// In en, this message translates to:
+  /// **'Only what appears from now on is downloaded. The videos already on the channel are left where they are.'**
+  String get onlyNewVideos;
+
   /// No description provided for @openInExternalPlayer.
   ///
   /// In en, this message translates to:
@@ -1405,6 +1483,12 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'Pause'**
   String get pause;
+
+  /// No description provided for @pauseSubscription.
+  ///
+  /// In en, this message translates to:
+  /// **'Pause'**
+  String get pauseSubscription;
 
   /// No description provided for @percentValue.
   ///
@@ -1748,6 +1832,12 @@ abstract class MTLocalizations {
   /// **'{count, plural, =1{1 result} other{{count} results}}'**
   String resultsFound(int count);
 
+  /// No description provided for @resumeSubscription.
+  ///
+  /// In en, this message translates to:
+  /// **'Resume'**
+  String get resumeSubscription;
+
   /// No description provided for @retry.
   ///
   /// In en, this message translates to:
@@ -2072,6 +2162,66 @@ abstract class MTLocalizations {
   /// **'Streaming from the server'**
   String get streamingFromServer;
 
+  /// No description provided for @subscriptionAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Now following {name}'**
+  String subscriptionAdded(String name);
+
+  /// No description provided for @subscriptionName.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get subscriptionName;
+
+  /// No description provided for @subscriptionPaused.
+  ///
+  /// In en, this message translates to:
+  /// **'Paused'**
+  String get subscriptionPaused;
+
+  /// No description provided for @subscriptionQuality.
+  ///
+  /// In en, this message translates to:
+  /// **'Quality for this channel'**
+  String get subscriptionQuality;
+
+  /// No description provided for @subscriptions.
+  ///
+  /// In en, this message translates to:
+  /// **'Subscriptions'**
+  String get subscriptions;
+
+  /// No description provided for @subscriptionsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No channels followed yet'**
+  String get subscriptionsEmpty;
+
+  /// No description provided for @subscriptionsEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Follow a channel and the server downloads each new video by itself, straight into your library. What is already on the channel stays where it is.'**
+  String get subscriptionsEmptyBody;
+
+  /// No description provided for @subscriptionsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Channels the server follows for you'**
+  String get subscriptionsSubtitle;
+
+  /// No description provided for @subscriptionsUnsupported.
+  ///
+  /// In en, this message translates to:
+  /// **'This MeTube is older than subscriptions'**
+  String get subscriptionsUnsupported;
+
+  /// No description provided for @subscriptionsUnsupportedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Update the MeTube container to a release that has channel subscriptions, then come back here. Nothing else in the app is affected.'**
+  String get subscriptionsUnsupportedBody;
+
   /// No description provided for @tagActionsHint.
   ///
   /// In en, this message translates to:
@@ -2120,6 +2270,24 @@ abstract class MTLocalizations {
   /// **'System'**
   String get themeSystem;
 
+  /// No description provided for @titleFilter.
+  ///
+  /// In en, this message translates to:
+  /// **'Only titles matching'**
+  String get titleFilter;
+
+  /// No description provided for @titleFilterHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'A word, or a regular expression. Only videos whose title matches are downloaded.'**
+  String get titleFilterHelper;
+
+  /// No description provided for @titleFilterHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave empty for everything'**
+  String get titleFilterHint;
+
   /// No description provided for @titleLabel.
   ///
   /// In en, this message translates to:
@@ -2143,6 +2311,24 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'Undo'**
   String get undo;
+
+  /// No description provided for @unfollow.
+  ///
+  /// In en, this message translates to:
+  /// **'Unfollow'**
+  String get unfollow;
+
+  /// No description provided for @unfollowConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Unfollow {name}?'**
+  String unfollowConfirm(String name);
+
+  /// No description provided for @unfollowConfirmBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The server forgets which videos it has already seen. If you follow this channel again later, everything on it by then counts as seen, and what you missed is not filled in. Pausing keeps that memory.'**
+  String get unfollowConfirmBody;
 
   /// No description provided for @unlockTouch.
   ///

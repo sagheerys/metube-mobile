@@ -21,6 +21,7 @@ export 'src/download/local_filename.dart';
 export 'src/download/trashcan_probe.dart';
 export 'src/download/transfer.dart';
 export 'src/logging/mt_logger.dart';
+export 'src/models/channel_subscription.dart';
 export 'src/models/download_task.dart';
 export 'src/models/history_item.dart';
 export 'src/models/history_response.dart';

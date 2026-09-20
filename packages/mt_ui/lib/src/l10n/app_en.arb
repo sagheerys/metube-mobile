@@ -101,6 +101,20 @@
       }
     }
   },
+  "@everyHours": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@knownVideos": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "@lastBackup": {
     "placeholders": {
       "when": {
@@ -219,10 +233,24 @@
       }
     }
   },
+  "@subscriptionAdded": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "@totalDuration": {
     "placeholders": {
       "duration": {
         "type": "Object"
+      }
+    }
+  },
+  "@unfollowConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
       }
     }
   },
@@ -268,6 +296,7 @@
   "allDownloadsFinished": "All downloads finished!",
   "allPlatforms": "All platforms",
   "alreadyInPlaylist": "Already added",
+  "alreadySubscribed": "This channel is already followed",
   "appTitle": "MeTube Super",
   "audioOnly": "Audio Only",
   "authHelper": "Leave empty for open servers (no password)",
@@ -301,7 +330,12 @@
   "builtWith": "Built with",
   "cancel": "Cancel",
   "changeQuality": "Change quality",
+  "channelUrl": "Channel or playlist link",
+  "channelUrlHint": "https://www.youtube.com/@name",
+  "checkEvery": "How often to look",
   "checkForUpdates": "Check for updates",
+  "checkNow": "Check now",
+  "checkQueued": "Checking now. Anything new appears in the library.",
   "chooseOptions": "Options",
   "cleaningServer": "Cleaning up the server...",
   "clear": "Clear",
@@ -374,6 +408,8 @@
   "errPollTimeout": "The server took too long — try again",
   "errServer": "Server error: {message}",
   "errorGeneric": "Error: {message}",
+  "every30Minutes": "Every 30 minutes",
+  "everyHours": "{count, plural, =1{Every hour} other{Every {count} hours}}",
   "exitFullscreen": "Exit fullscreen",
   "exportShare": "Export & share",
   "exportShareSubtitle": "A dated copy to send or keep elsewhere",
@@ -391,12 +427,15 @@
   "filterOffline": "Offline",
   "filterServer": "Server",
   "filterVideo": "Video",
+  "follow": "Follow",
+  "followChannel": "Follow a channel",
   "format": "Format",
   "helpAboutField": "About this field",
   "inPlaylists": "In playlists",
   "invalidUrl": "Enter a valid link",
   "itemOptions": "Item options",
   "itemUnavailable": "No longer available",
+  "knownVideos": "{count, plural, =0{Nothing known yet} =1{1 video known} other{{count} videos known}}",
   "language": "Language",
   "languageArabic": "العربية",
   "languageEnglish": "English",
@@ -436,6 +475,7 @@
   "needsAttention": "Needs your attention",
   "networkSettings": "Networks",
   "networkSettingsSubtitle": "Auto-switch between local and external server URLs",
+  "neverChecked": "Not checked yet",
   "newPlaylistAction": "New playlist",
   "newTagHint": "New tag",
   "next": "Next",
@@ -460,11 +500,13 @@
   "ok": "OK",
   "onServerPhase": "On the server",
   "onServerProgress": "On the server · {percent}%",
+  "onlyNewVideos": "Only what appears from now on is downloaded. The videos already on the channel are left where they are.",
   "openInExternalPlayer": "Open in another player",
   "openOriginalLink": "Open Original Link",
   "password": "Password",
   "pasteUrlHint": "Paste the link here…",
   "pause": "Pause",
+  "pauseSubscription": "Pause",
   "percentValue": "{percent}%",
   "pickAnotherFile": "From another file…",
   "pickAnotherFileSubtitle": "A backup from another phone or an older version",
@@ -522,6 +564,7 @@
   "restoreSettings": "Restore All Data",
   "restoreSuccess": "Data restored successfully",
   "resultsFound": "{count, plural, =1{1 result} other{{count} results}}",
+  "resumeSubscription": "Resume",
   "retry": "Retry",
   "saveSettings": "Save Settings",
   "saveToDevice": "Save to device",
@@ -576,6 +619,16 @@
   "startDownload": "Start download",
   "status": "Status",
   "streamingFromServer": "Streaming from the server",
+  "subscriptionAdded": "Now following {name}",
+  "subscriptionName": "Name",
+  "subscriptionPaused": "Paused",
+  "subscriptionQuality": "Quality for this channel",
+  "subscriptions": "Subscriptions",
+  "subscriptionsEmpty": "No channels followed yet",
+  "subscriptionsEmptyBody": "Follow a channel and the server downloads each new video by itself, straight into your library. What is already on the channel stays where it is.",
+  "subscriptionsSubtitle": "Channels the server follows for you",
+  "subscriptionsUnsupported": "This MeTube is older than subscriptions",
+  "subscriptionsUnsupportedBody": "Update the MeTube container to a release that has channel subscriptions, then come back here. Nothing else in the app is affected.",
   "tagActionsHint": "Long-press a tag to rename or delete it.",
   "tags": "Tags",
   "tagsOpenFiltered": "Opens the library filtered",
@@ -584,10 +637,16 @@
   "themeDark": "Dark",
   "themeLight": "Light",
   "themeSystem": "System",
+  "titleFilter": "Only titles matching",
+  "titleFilterHelper": "A word, or a regular expression. Only videos whose title matches are downloaded.",
+  "titleFilterHint": "Leave empty for everything",
   "titleLabel": "Title",
   "totalDuration": "Total: {duration}",
   "tryAgain": "Try again",
   "undo": "Undo",
+  "unfollow": "Unfollow",
+  "unfollowConfirm": "Unfollow {name}?",
+  "unfollowConfirmBody": "The server forgets which videos it has already seen. If you follow this channel again later, everything on it by then counts as seen, and what you missed is not filled in. Pausing keeps that memory.",
   "unlockTouch": "Unlock",
   "unpinPlaylist": "Unpin",
   "upNext": "Up next",

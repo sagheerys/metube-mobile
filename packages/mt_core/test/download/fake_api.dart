@@ -81,6 +81,52 @@ class FakeApi implements MeTubeApi {
   @override
   Future<ServerVersion?> fetchVersion({Duration? timeout}) async => version;
 
+  /// The subscriptions this fake server watches. **Null is the older
+  /// MeTube that has no such endpoint** (§2.7), and it is the default: the
+  /// download engine knows nothing about subscriptions, so every test that
+  /// does not care gets the server that cannot do them.
+  List<ChannelSubscription>? subscriptions;
+
+  final List<String> subscribeCalls = [];
+  final List<String> checkedSubscriptions = [];
+
+  @override
+  Future<List<ChannelSubscription>?> fetchSubscriptions({
+    Duration? timeout,
+  }) async => subscriptions;
+
+  @override
+  Future<ChannelSubscription?> subscribe(
+    String url,
+    Quality quality, {
+    required int checkIntervalMinutes,
+    bool compatibleVideo = false,
+    String? titleRegex,
+  }) async {
+    subscribeCalls.add(url);
+    return null;
+  }
+
+  @override
+  Future<void> updateSubscription(
+    String id, {
+    String? name,
+    bool? enabled,
+    int? checkIntervalMinutes,
+    String? titleRegex,
+    bool clearTitleRegex = false,
+  }) async {}
+
+  @override
+  Future<void> deleteSubscriptions(List<String> ids) async {
+    subscriptions?.removeWhere((sub) => ids.contains(sub.id));
+  }
+
+  @override
+  Future<void> checkSubscriptions({List<String>? ids}) async {
+    checkedSubscriptions.addAll(ids ?? const ['*']);
+  }
+
   @override
   String downloadUrl(String serverFilename) {
     if (!UrlKit.isSafeServerFilename(serverFilename)) {

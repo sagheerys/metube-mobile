@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart' show CancelToken;
 
+import '../models/channel_subscription.dart';
 import '../models/history_response.dart';
 import '../models/quality.dart';
 import '../models/server_version.dart';
@@ -35,6 +36,49 @@ abstract interface class MeTubeApi {
   /// item was enough to freeze the entire thumbnail probe queue
   /// (2026-09-07).
   Future<bool> fileExists(String serverFilename, {Duration? timeout});
+
+  /// **The channels the server watches** (§2.7), or null when this server
+  /// has no such endpoint.
+  ///
+  /// Null is not an empty list: an older MeTube answers 404, and the
+  /// difference between "no subscriptions yet" and "this server cannot do
+  /// subscriptions" is the difference between an empty screen and no
+  /// screen at all.
+  Future<List<ChannelSubscription>?> fetchSubscriptions({Duration? timeout});
+
+  /// Starts watching [url]. The quality rule of [add] applies here too, so
+  /// a numeric quality cannot escape to a non-YouTube channel.
+  ///
+  /// **Only videos published after this call are downloaded** — the server
+  /// marks the existing catalogue as seen (§2.7).
+  ///
+  /// Returns the row the server created, whose `name` is the channel title
+  /// it resolved, or null when the answer did not carry one.
+  Future<ChannelSubscription?> subscribe(
+    String url,
+    Quality quality, {
+    required int checkIntervalMinutes,
+    bool compatibleVideo,
+    String? titleRegex,
+  });
+
+  /// Changes one subscription. Every argument left null is left alone;
+  /// [clearTitleRegex] is how a filter is removed, since null means "no
+  /// change".
+  Future<void> updateSubscription(
+    String id, {
+    String? name,
+    bool? enabled,
+    int? checkIntervalMinutes,
+    String? titleRegex,
+    bool clearTitleRegex,
+  });
+
+  Future<void> deleteSubscriptions(List<String> ids);
+
+  /// Checks now instead of waiting for the interval. Null [ids] means
+  /// every enabled subscription.
+  Future<void> checkSubscriptions({List<String>? ids});
 
   /// Pulls a file to a local path with live progress and cancellation. One
   /// attempt, no retry; the retry logic lives in `Transfer`.

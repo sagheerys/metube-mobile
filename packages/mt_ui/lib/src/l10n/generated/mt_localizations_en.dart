@@ -87,6 +87,9 @@ class MTLocalizationsEn extends MTLocalizations {
   String get alreadyInPlaylist => 'Already added';
 
   @override
+  String get alreadySubscribed => 'This channel is already followed';
+
+  @override
   String get appTitle => 'MeTube Super';
 
   @override
@@ -198,7 +201,23 @@ class MTLocalizationsEn extends MTLocalizations {
   String get changeQuality => 'Change quality';
 
   @override
+  String get channelUrl => 'Channel or playlist link';
+
+  @override
+  String get channelUrlHint => 'https://www.youtube.com/@name';
+
+  @override
+  String get checkEvery => 'How often to look';
+
+  @override
   String get checkForUpdates => 'Check for updates';
+
+  @override
+  String get checkNow => 'Check now';
+
+  @override
+  String get checkQueued =>
+      'Checking now. Anything new appears in the library.';
 
   @override
   String get chooseOptions => 'Options';
@@ -441,6 +460,20 @@ class MTLocalizationsEn extends MTLocalizations {
   }
 
   @override
+  String get every30Minutes => 'Every 30 minutes';
+
+  @override
+  String everyHours(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Every $count hours',
+      one: 'Every hour',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get exitFullscreen => 'Exit fullscreen';
 
   @override
@@ -493,6 +526,12 @@ class MTLocalizationsEn extends MTLocalizations {
   String get filterVideo => 'Video';
 
   @override
+  String get follow => 'Follow';
+
+  @override
+  String get followChannel => 'Follow a channel';
+
+  @override
   String get format => 'Format';
 
   @override
@@ -509,6 +548,18 @@ class MTLocalizationsEn extends MTLocalizations {
 
   @override
   String get itemUnavailable => 'No longer available';
+
+  @override
+  String knownVideos(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count videos known',
+      one: '1 video known',
+      zero: 'Nothing known yet',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get language => 'Language';
@@ -637,6 +688,9 @@ class MTLocalizationsEn extends MTLocalizations {
       'Auto-switch between local and external server URLs';
 
   @override
+  String get neverChecked => 'Not checked yet';
+
+  @override
   String get newPlaylistAction => 'New playlist';
 
   @override
@@ -714,6 +768,10 @@ class MTLocalizationsEn extends MTLocalizations {
   }
 
   @override
+  String get onlyNewVideos =>
+      'Only what appears from now on is downloaded. The videos already on the channel are left where they are.';
+
+  @override
   String get openInExternalPlayer => 'Open in another player';
 
   @override
@@ -727,6 +785,9 @@ class MTLocalizationsEn extends MTLocalizations {
 
   @override
   String get pause => 'Pause';
+
+  @override
+  String get pauseSubscription => 'Pause';
 
   @override
   String percentValue(Object percent) {
@@ -931,6 +992,9 @@ class MTLocalizationsEn extends MTLocalizations {
   }
 
   @override
+  String get resumeSubscription => 'Resume';
+
+  @override
   String get retry => 'Retry';
 
   @override
@@ -1123,6 +1187,41 @@ class MTLocalizationsEn extends MTLocalizations {
   String get streamingFromServer => 'Streaming from the server';
 
   @override
+  String subscriptionAdded(String name) {
+    return 'Now following $name';
+  }
+
+  @override
+  String get subscriptionName => 'Name';
+
+  @override
+  String get subscriptionPaused => 'Paused';
+
+  @override
+  String get subscriptionQuality => 'Quality for this channel';
+
+  @override
+  String get subscriptions => 'Subscriptions';
+
+  @override
+  String get subscriptionsEmpty => 'No channels followed yet';
+
+  @override
+  String get subscriptionsEmptyBody =>
+      'Follow a channel and the server downloads each new video by itself, straight into your library. What is already on the channel stays where it is.';
+
+  @override
+  String get subscriptionsSubtitle => 'Channels the server follows for you';
+
+  @override
+  String get subscriptionsUnsupported =>
+      'This MeTube is older than subscriptions';
+
+  @override
+  String get subscriptionsUnsupportedBody =>
+      'Update the MeTube container to a release that has channel subscriptions, then come back here. Nothing else in the app is affected.';
+
+  @override
   String get tagActionsHint => 'Long-press a tag to rename or delete it.';
 
   @override
@@ -1147,6 +1246,16 @@ class MTLocalizationsEn extends MTLocalizations {
   String get themeSystem => 'System';
 
   @override
+  String get titleFilter => 'Only titles matching';
+
+  @override
+  String get titleFilterHelper =>
+      'A word, or a regular expression. Only videos whose title matches are downloaded.';
+
+  @override
+  String get titleFilterHint => 'Leave empty for everything';
+
+  @override
   String get titleLabel => 'Title';
 
   @override
@@ -1159,6 +1268,18 @@ class MTLocalizationsEn extends MTLocalizations {
 
   @override
   String get undo => 'Undo';
+
+  @override
+  String get unfollow => 'Unfollow';
+
+  @override
+  String unfollowConfirm(String name) {
+    return 'Unfollow $name?';
+  }
+
+  @override
+  String get unfollowConfirmBody =>
+      'The server forgets which videos it has already seen. If you follow this channel again later, everything on it by then counts as seen, and what you missed is not filled in. Pausing keeps that memory.';
 
   @override
   String get unlockTouch => 'Unlock';

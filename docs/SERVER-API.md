@@ -29,7 +29,7 @@ wrong in places (one claimed an `/api` prefix that does not exist).
   `responseType: plain` and decoded defensively. Never pass
   `responseType: bytes` to `dio.download`.
 
-## 2. The four endpoints
+## 2. The endpoints
 
 ### 2.1 Connection test / discovery
 
@@ -240,10 +240,64 @@ every caller must survive its absence.
 - Older or narrower deployments may not expose it at all, so it is asked
   once when the status card is opened, never polled.
 
-> The server exposes more than the five endpoints above (subscriptions,
-> presets, cookies, retry). They are **deliberately not used**: rule 1 says
-> the network is what this document describes, so anything adopted later is
-> documented here first.
+> The server exposes more than the endpoints above (presets, cookies,
+> retry). They are **deliberately not used**: rule 1 says the network is
+> what this document describes, so anything adopted later is documented
+> here first. Subscriptions were adopted under that rule and are §2.7.
+
+### 2.7 Channel subscriptions (Super only)
+
+**The server already owns the whole mechanism.** It runs its own check
+loop, remembers what it has downloaded, and queues what is new. The app
+adds no polling, no scheduler and no background work of its own: it is a
+remote control for a list the server keeps.
+
+| Method + path | Body | Answer |
+|---|---|---|
+| `GET /subscriptions` | — | a JSON **array** of subscriptions |
+| `POST /subscribe` | the §2.2 download options plus `check_interval_minutes` and optional `title_regex` | `{status:'ok', subscription:{…}}` or `{status:'error', msg:…}` |
+| `POST /subscriptions/update` | `{id, …changes}` | `{status:…}` |
+| `POST /subscriptions/delete` | `{ids:[…]}` | `{status:…}` |
+| `POST /subscriptions/check` | `{ids:[…]}`, or `{}` for every enabled one | `{status:…}` |
+
+Only these fields may be sent to `update`, and the server drops the rest:
+`enabled` · `check_interval_minutes` · `name` · `folder` · `title_regex` ·
+`skip_subscriber_only`.
+
+One subscription, as the server returns it:
+
+```json
+{ "id": "uuid", "name": "channel title", "url": "https://…",
+  "enabled": true, "check_interval_minutes": 60, "quality": "best",
+  "folder": "", "title_regex": null, "skip_subscriber_only": false,
+  "last_checked": 1758300000.0, "seen_count": 214, "error": null }
+```
+
+**Measured facts that the interface depends on:**
+
+- **`last_checked` is in *seconds*, as a float** — `/history`'s `timestamp`
+  is in *milliseconds*. Mixing them puts the date in 1970 or in the year
+  57000.
+- **Subscribing does not download the archive.** `add_subscription` lists
+  the channel once and stores **every existing id as already seen**, with
+  `last_checked` set to that moment. Only what appears afterwards is
+  downloaded. This is the single most important thing to be able to tell a
+  user before they press the button.
+- **`seen_count` is a count of ids, not of downloads.** It starts at the
+  size of the channel, so it is shown as "known", never as "downloaded".
+- **A duplicate URL is refused** with `{status:'error', msg:'This URL is
+  already subscribed'}` and HTTP 200. The body must be read (§2.2's rule).
+- **`playlist_item_limit` is deliberately not sent.** The server's default
+  of 0 means "list the whole feed"; a limit of *n* would make a check that
+  finds more than *n* new videos skip the rest **permanently**, because
+  they never enter `seen_ids` and never appear in a later listing either.
+  Silent loss is worse than a busy night of downloading.
+- **An older MeTube has no `/subscriptions`** and answers 404. Like §2.6
+  that is not a fault: `fetchSubscriptions` returns **null**, which is not
+  an empty list. The screen then says the container is older than the
+  feature and what to do about it — an explanation rather than a row that
+  silently does nothing, and rather than a settings entry that vanishes
+  for reasons the user cannot see.
 
 ## 3. The four-stage download pipeline
 

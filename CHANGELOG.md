@@ -9,8 +9,24 @@ only one.
 
 ## [Unreleased]
 
+### Added
+
+- **Follow a channel and the server keeps it for you.** Settings now has
+  "Subscriptions": paste a channel or playlist link, choose a quality and
+  how often to look, and MeTube downloads each new video by itself, into
+  the same library as everything else. Only what appears from then on is
+  fetched — the videos already on the channel are left where they are. Each
+  one can be paused, renamed, checked on the spot, or limited to titles
+  matching a word you give. A MeTube too old to have subscriptions says so
+  instead of showing an empty list. MeTube Super.
+
 ### Fixed
 
+- **The floating add button can no longer be pushed off the screen by its
+  own label.** It had no width of its own, so a long word at an enlarged
+  system font size ran past the right edge of a small screen. Today's
+  labels are short enough that nobody saw it; the next language's might
+  not have been. Both apps.
 - **The favourites tag no longer shows up as one of yours.** Favourites are
   stored as a system tag, and once any real tag existed the library offered
   `# __favorites__` as a filter beside it, as did "your tags" and the
