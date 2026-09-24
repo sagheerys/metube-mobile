@@ -132,7 +132,15 @@ final playlistViewProvider = FutureProvider.family<PlaylistView, String>((
   ref,
   id,
 ) async {
-  final playlist = await ref.watch(playlistsStoreProvider).byId(id);
+  // **Read through [playlistsProvider], not from the store directly**
+  // (field report 2026-09-25: a clip added to a playlist, or removed from
+  // it, showed only after the app was closed). Every add, remove, rename
+  // and reorder already refreshes that list; reading the store here gave
+  // this view no reason to be rebuilt, so it kept its first answer for the
+  // whole run.
+  final playlist = (await ref.watch(playlistsProvider.future))
+      .where((p) => p.id == id)
+      .firstOrNull;
   if (playlist == null) {
     return const PlaylistView(items: [], missing: {});
   }

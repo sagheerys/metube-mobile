@@ -90,6 +90,24 @@ class MTAudioHandler extends BaseAudioHandler with SeekHandler {
   /// runs out of them.
   static const Duration retryBudgetProgress = Duration(seconds: 30);
 
+  /// **Only something this long picks up where it was left** (field report
+  /// 2026-09-25: skipping through a music playlist, every song came back
+  /// half-way in).
+  ///
+  /// Music players start a song from the top; podcast players resume an
+  /// episode. Length is what tells the two apart without asking: songs are
+  /// minutes, lectures and episodes are tens of minutes. Positions are
+  /// still **saved** for everything, so the video player keeps resuming
+  /// any clip, and reopening the app still continues the song that was
+  /// playing — that is a session coming back, not a song being chosen.
+  static const Duration resumeMinimumLength = Duration(minutes: 10);
+
+  /// **"Previous" restarts the song first** (field report 2026-09-25, in
+  /// the car): past this point one press goes back to the start, and a
+  /// second press within it goes to the song before — what Samsung Music,
+  /// Spotify and every car head unit expect.
+  static const Duration restartThreshold = Duration(seconds: 3);
+
   /// Retries spent on the **current** item, and where it had reached when
   /// it last failed. Together they answer "is this the same fault over and
   /// over?" — see `_openRetryBudget`.
@@ -225,6 +243,14 @@ class MTAudioHandler extends BaseAudioHandler with SeekHandler {
 
   @override
   Future<void> play() async {
+    // **Play with nothing queued revives the session, or does nothing**
+    // (field report 2026-09-25: "coming back after a while, the clip plays
+    // on its own, outside the playlist, and next does nothing"). A stopped
+    // queue is empty while the player still holds its last source, so a
+    // play from the car or the earphones started that one clip with no
+    // list around it. It now brings the saved list back first, and a
+    // session the user closed by hand, which saves none, stays closed.
+    if (_queue.isEmpty && !await restoreSession()) return;
     await _takeVideoFocus();
     await player.play();
   }
@@ -254,7 +280,14 @@ class MTAudioHandler extends BaseAudioHandler with SeekHandler {
   Future<void> skipToNext() => _skip(forward: true);
 
   @override
-  Future<void> skipToPrevious() => _skip(forward: false);
+  Future<void> skipToPrevious() async {
+    if (player.position > restartThreshold) {
+      await player.seek(Duration.zero);
+      _broadcast();
+      return;
+    }
+    await _skip(forward: false);
+  }
 
   /// A tap on an item in the queue sheet; [index] is an index into the
   /// items.
@@ -289,7 +322,12 @@ class MTAudioHandler extends BaseAudioHandler with SeekHandler {
   /// **Trap §6.5**: stopping clears everything that keeps the mini player
   /// visible.
   @override
-  Future<void> stop() async {
+  Future<void> stop() => _stop(forgetSession: true);
+
+  /// [forgetSession] is false only for the paused auto-stop: that one
+  /// gives the phone its resources back, and must not also throw away the
+  /// list someone paused and meant to come back to.
+  Future<void> _stop({required bool forgetSession}) async {
     _generation++; // a pending load does not revive the mini player after it closes
     _pausedStopTimer?.cancel();
     _pausedStopTimer = null;
@@ -304,7 +342,7 @@ class MTAudioHandler extends BaseAudioHandler with SeekHandler {
     _playlistId = null;
     mediaItem.add(null);
     queue.add(const []);
-    await stateStore.clear();
+    if (forgetSession) await stateStore.clear();
     playbackState.add(
       PlaybackState(processingState: AudioProcessingState.idle, playing: false),
     );

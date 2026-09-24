@@ -49,7 +49,10 @@ extension MTAudioHandlerRecovery on MTAudioHandler {
       _pausedStopTimer = null;
       return;
     }
-    _pausedStopTimer ??= Timer(pausedAutoStop, () => unawaited(stop()));
+    _pausedStopTimer ??= Timer(
+      pausedAutoStop,
+      () => unawaited(_stop(forgetSession: false)),
+    );
   }
 
   /// Is this worth waiting for rather than skipping past?
@@ -168,10 +171,17 @@ extension MTAudioHandlerRecovery on MTAudioHandler {
     if (source == null) return _onError(autoPlay: autoPlay);
 
     mediaItem.add(item.toMediaItem());
-    final resume =
-        startAt ??
-        await positions.positionOf(item.canonicalUrl) ??
-        Duration.zero;
+    // A restored session ([startAt]) always continues exactly; a saved
+    // position only for something long (see [resumeMinimumLength]). When
+    // the length is not known yet, the position is taken and dropped
+    // after loading if the item turns out short.
+    final saved = startAt == null
+        ? await positions.positionOf(item.canonicalUrl)
+        : null;
+    final known = item.duration;
+    final keepSaved =
+        known == null || known >= MTAudioHandler.resumeMinimumLength;
+    final resume = startAt ?? (keepSaved ? saved : null) ?? Duration.zero;
     if (_isStale(generation)) return;
     try {
       if (autoPlay) await _takeVideoFocus();
@@ -185,6 +195,14 @@ extension MTAudioHandlerRecovery on MTAudioHandler {
       final duration = player.duration;
       if (duration != null) {
         mediaItem.add(item.toMediaItem().copyWith(duration: duration));
+      }
+      if (known == null &&
+          saved != null &&
+          startAt == null &&
+          duration != null &&
+          duration < MTAudioHandler.resumeMinimumLength) {
+        await player.seek(Duration.zero);
+        if (_isStale(generation)) return;
       }
       if (autoPlay) await player.play();
       if (_isStale(generation)) return;

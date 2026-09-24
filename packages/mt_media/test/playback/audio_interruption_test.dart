@@ -189,6 +189,39 @@ void main() {
       expect(handler.currentItem, isNull);
     });
 
+    test('play after the auto-stop brings the WHOLE list back, not the last '
+        'clip alone (field report 2026-09-25: it played on its own and next '
+        'did nothing)', () async {
+      handler = build(pausedAutoStop: const Duration(milliseconds: 20));
+      await handler.playItems([_item('a'), _item('b')]);
+      await handler.pause();
+      await pumpEventQueue();
+      await Future<void>.delayed(const Duration(milliseconds: 60));
+      expect(handler.currentItem, isNull, reason: 'auto-stopped');
+
+      // The car, or the earphones.
+      await handler.play();
+
+      expect(handler.items, hasLength(2));
+      expect(handler.currentItem?.canonicalUrl, 'https://x/a');
+      expect(player.playing, isTrue);
+      await handler.skipToNext();
+      expect(handler.currentItem?.canonicalUrl, 'https://x/b');
+    });
+
+    test('a session closed by hand stays closed: play then plays nothing, '
+        'not the clip the player still holds', () async {
+      handler = build();
+      await handler.playItems([_item('a'), _item('b')]);
+      await handler.stop();
+      player.calls.clear();
+
+      await handler.play();
+
+      expect(player.calls, isNot(contains('play')));
+      expect(handler.currentItem, isNull);
+    });
+
     test('stopping by hand cancels the timer rather than leaving it to '
         'fire into a dead session', () async {
       handler = build(pausedAutoStop: const Duration(milliseconds: 20));

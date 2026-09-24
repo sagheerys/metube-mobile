@@ -117,47 +117,48 @@ class MTVideoCenterControls extends StatelessWidget {
   Widget build(BuildContext context) {
     final p = MTThemeX.of(context).palette;
     final l10n = context.mtl;
-    // The same rule as the audio bar: transport glyphs do not mirror with
-    // the language, and `replay_10`/`forward_10` carry the number "10",
-    // which mirroring would invert.
-    return Directionality(
-      textDirection: TextDirection.ltr,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          _Seek(
-            icon: Icons.replay_10_rounded,
-            label: l10n.seekBackward10,
-            onTap: () => session.seekBy(const Duration(seconds: -10)),
-          ),
-          const SizedBox(width: MTSpace.xxl),
-          Material(
-            color: p.accent.withValues(alpha: 0.94),
+    // **The buttons follow the timeline, not the audio bar** (field report
+    // 2026-09-25: "in Arabic the rewind and forward buttons are reversed").
+    // Here the progress bar runs right to left in Arabic, and so does the
+    // double tap — the right half goes back — so a rewind button pinned to
+    // the left pointed against both. The row now mirrors with the language;
+    // the glyphs themselves do not (`replay_10`/`forward_10` carry the
+    // number "10", and Material does not flip them).
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        _Seek(
+          icon: Icons.replay_10_rounded,
+          label: l10n.seekBackward10,
+          onTap: () => session.seekBy(const Duration(seconds: -10)),
+        ),
+        const SizedBox(width: MTSpace.xxl),
+        Material(
+          color: p.accent.withValues(alpha: 0.94),
+          borderRadius: BorderRadius.circular(20),
+          child: InkWell(
+            onTap: session.playPause,
             borderRadius: BorderRadius.circular(20),
-            child: InkWell(
-              onTap: session.playPause,
-              borderRadius: BorderRadius.circular(20),
-              child: SizedBox(
-                width: 58,
-                height: 58,
-                child: Icon(
-                  session.isPlaying
-                      ? Icons.pause_rounded
-                      : Icons.play_arrow_rounded,
-                  size: 26,
-                  color: p.onAccent,
-                ),
+            child: SizedBox(
+              width: 58,
+              height: 58,
+              child: Icon(
+                session.isPlaying
+                    ? Icons.pause_rounded
+                    : Icons.play_arrow_rounded,
+                size: 26,
+                color: p.onAccent,
               ),
             ),
           ),
-          const SizedBox(width: MTSpace.xxl),
-          _Seek(
-            icon: Icons.forward_10_rounded,
-            label: l10n.seekForward10,
-            onTap: () => session.seekBy(const Duration(seconds: 10)),
-          ),
-        ],
-      ),
+        ),
+        const SizedBox(width: MTSpace.xxl),
+        _Seek(
+          icon: Icons.forward_10_rounded,
+          label: l10n.seekForward10,
+          onTap: () => session.seekBy(const Duration(seconds: 10)),
+        ),
+      ],
     );
   }
 }

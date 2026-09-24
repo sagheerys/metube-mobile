@@ -47,6 +47,25 @@ only one.
 
 ### Fixed
 
+- **A song you skip to starts from the top.** Skipping through a music
+  playlist brought every song back half-way in, because every clip
+  resumed where it was last left. Only something ten minutes or longer —
+  a lecture, an episode — now picks up where it was; the video player
+  still resumes any clip, and reopening the app still continues the song
+  that was playing. Both apps.
+- **"Previous" restarts the song first.** Past three seconds one press
+  goes back to the start and a second press to the song before, as car
+  stereos and other music players expect. Both apps.
+- **A paused playlist comes back whole.** Fifteen minutes after a pause
+  the app releases the phone; a later "play" from the car or earphones
+  then started the last clip alone, outside its playlist, with nothing
+  next. It now brings the whole list back, and the mini player returns
+  with it when the app is opened. Both apps.
+- **A clip added to or removed from a playlist shows at once**, instead of
+  after the app was closed. Both apps.
+- **In Arabic, the video's rewind and forward buttons now sit the way its
+  timeline runs**, matching the double tap. Both apps.
+
 - **A stream that keeps dropping is now given up on instead of retried for
   ever.** Waiting out a hiccup was right; the budget for it came back with
   any successful load, and a source that loads, plays a second and drops
