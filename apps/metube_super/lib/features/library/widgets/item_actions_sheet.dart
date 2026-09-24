@@ -112,7 +112,7 @@ class _ItemActionsSheet extends ConsumerWidget {
                 successText: l10n.madeOffline,
               ),
             ),
-          // **Everything from this channel** (م-73). The channel is a fact
+          // **Everything from this channel**. The channel is a fact
           // the server already knows, so it needs no tag and no setup: the
           // row only appears when `/history` actually carried a name.
           if (item.uploader case final channel? when channel.trim().isNotEmpty)

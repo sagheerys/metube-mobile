@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mt_ui/mt_ui.dart';
 
 /// **A name the app did not write, inside a sentence it did** (field report
-/// 2026-09-20: "قناة جديدة · 5 minutes ago" came apart, and so did the
+/// 2026-09-20: an Arabic channel name before "· 5 minutes ago" came apart, and so did the
 /// "Unfollow …?" dialog).
 ///
 /// The interface has one direction and the name has its own. Where the two

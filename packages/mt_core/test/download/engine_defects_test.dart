@@ -6,9 +6,9 @@ import 'package:test/test.dart';
 import 'fake_api.dart';
 
 /// Defect tests from 2026-09-02. Every test here **fails before its fix**:
-/// ح-3 (polling picks up an old item), ع-2 (a local error kills the
-/// worker), ع-6 (a failed cleanup destroys a successful transfer), ع-7 (a
-/// server orphan after cancellation).
+/// polling that picks up an old item, a local error that kills the
+/// worker, a failed cleanup that destroys a successful transfer, and a
+/// server orphan left after cancellation.
 void main() {
   late Directory tempDir;
   setUp(() async {

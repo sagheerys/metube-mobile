@@ -51,7 +51,7 @@ class LibraryFilterChips extends ConsumerWidget {
               // look incomplete for no visible reason. The chip appears
               // only while the
               // filter is on.
-              // **The active channel, first and removable** (م-73). It is
+              // **The active channel, first and removable**. It is
               // set from an item's sheet, which is a screen the user has
               // already left by the time the list narrows — so without a
               // chip here the library would simply look half empty.

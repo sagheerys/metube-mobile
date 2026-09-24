@@ -88,7 +88,7 @@ void main() {
     test("a full success under Lite's policy: add, poll, pull, then delete by the canonical URL", () async {
       final api = FakeApi(
         historyScript: [
-          historyWith(), // the snapshot from before the add (defect ح-3)
+          historyWith(), // the snapshot from before the add
           historyWith(
             queue: [
               {'url': canonical, 'status': 'downloading', 'percent': 40},

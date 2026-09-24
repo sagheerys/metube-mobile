@@ -25,10 +25,6 @@ only one.
   the phone is asleep, and it never repeats a batch, never announces what
   you downloaded yourself, and says nothing at all on a first run.
   MeTube Super.
-- **The channel is now something you can use.** Search covers it, so a
-  channel's name finds its clips even when no title contains the word; an
-  item's sheet offers "everything from this channel"; and the active
-  channel sits as a removable chip above the library. MeTube Super.
 - **Cookies can be sent from the phone.** For the platforms that refuse to
   hand a video over without a login, Settings now takes a cookies file
   exported from your browser and passes it to the server — and shows

@@ -1,6 +1,6 @@
 /// **Every language named in itself**, never translated.
 ///
-/// The language picker shows "العربية" and "English" the way their own
+/// The language picker shows Arabic and English the way their own
 /// speakers write them, so someone who cannot read the current interface
 /// language can still find theirs. That is why these names **stay out of
 /// the arb files**: translating them into every other language costs

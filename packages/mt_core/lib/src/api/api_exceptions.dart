@@ -76,7 +76,7 @@ final class PollTimeoutException extends MTApiException {
 /// An unexpected local failure while running the task: filesystem,
 /// permissions, space.
 ///
-/// **Its cause was defect ع-2:** the download worker caught only
+/// **Its cause (found in the 2026-09-02 audit):** the download worker caught only
 /// `MTApiException`, so any `FileSystemException` from renaming the partial
 /// file escaped the pump. The task froze on "pulling" and **the whole queue
 /// stopped with no message**. Everything unclassified is now wrapped here,

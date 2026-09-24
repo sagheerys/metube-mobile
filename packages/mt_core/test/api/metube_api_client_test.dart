@@ -445,7 +445,7 @@ void main() {
     expect(client.streamingHeaders['Connection'], 'keep-alive');
   });
 
-  /// **Critical defect ح-1** — `downloadTo` had not a single test, and that
+  /// **A critical defect from the 2026-09-02 audit** — `downloadTo` had not a single test, and that
   /// is what hid the fact that `validateStatus < 600` let an error page be
   /// saved as **a successful media file**, after which the original was
   /// deleted from the server.

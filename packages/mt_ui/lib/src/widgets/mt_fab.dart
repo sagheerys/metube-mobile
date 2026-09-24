@@ -44,7 +44,7 @@ class MTFab extends StatelessWidget {
     // wants, so a long label at a large text scale walks off the right of
     // a narrow screen: "Follow a channel" at ×1.3 on 320dp overflowed by
     // 35 pixels (device matrix, 2026-09-20). Today's shipped labels are
-    // short enough, but م-50 adds languages whose words are not.
+    // short enough, but more languages are planned whose words are not.
     final media = MediaQuery.of(context);
     final maxWidth = media.size.width - MTSpace.pagePad * 2;
 

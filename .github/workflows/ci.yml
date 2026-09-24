@@ -35,6 +35,11 @@ jobs:
       - name: Analyze
         run: flutter analyze --no-pub
 
+      # Comments are read by strangers: English, no private references, no
+      # untracked TODOs, no switched-off code. Python 3 is on the runner.
+      - name: Check comments
+        run: python3 tool/comment-lint.py
+
       # mt_core is pure Dart, so it runs under `dart test`; the rest need
       # the Flutter test runner.
       - name: Test mt_core

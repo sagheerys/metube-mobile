@@ -152,7 +152,7 @@ class LibraryViewOptions {
   /// removable chip in **the first row**.
   final MediaPlatform? platform;
 
-  /// **One channel's clips only** (م-73). Set by tapping the channel name
+  /// **One channel's clips only**. Set by tapping the channel name
   /// on a card, cleared from its chip in the first row — the same shape as
   /// [platform], and deliberately **not** a tag: a tag is something the
   /// user creates, and this is something the server already knows.

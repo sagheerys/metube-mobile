@@ -27,7 +27,7 @@ const arrivalWatermarkKey = 'subs_seen_timestamp';
 const arrivalNotificationId = 770001;
 
 /// **Telling the user when the server brought something by itself**
-/// (م-72).
+/// (subscription arrivals).
 ///
 /// Every other notification in this app is about a download **this app**
 /// started, and comes from the engine. A subscription download has no task

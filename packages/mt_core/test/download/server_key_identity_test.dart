@@ -3,7 +3,7 @@ import 'package:test/test.dart';
 
 import 'fake_api.dart';
 
-/// **Following the item by the key the server filed it under** (م-77).
+/// **Following the item by the key the server filed it under**.
 ///
 /// Three field reports in two days had one shape: the clip downloaded
 /// perfectly and the app never noticed, because MeTube files an item under

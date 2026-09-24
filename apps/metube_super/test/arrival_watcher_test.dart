@@ -54,7 +54,7 @@ ResponseBody _json(Object body, {int status = 200}) => ResponseBody.fromString(
   },
 );
 
-/// **The notice for what the server fetched on its own** (م-72).
+/// **The notice for what the server fetched on its own**.
 ///
 /// Every other notification here describes a task this app created. These
 /// have none: MeTube decides, downloads, and the clip turns up in

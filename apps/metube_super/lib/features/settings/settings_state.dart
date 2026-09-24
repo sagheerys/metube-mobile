@@ -64,7 +64,7 @@ class SuperSettings {
   final bool compatiblePlayback;
 
   /// **Tell me when the server brought something I did not ask for**
-  /// (م-72): one grouped notice per batch, not one per clip. On by
+  /// (subscription arrivals): one grouped notice per batch, not one per clip. On by
   /// default, because a download nobody was told about is a file that
   /// appears on the disk for no visible reason.
   final bool notifyArrivals;

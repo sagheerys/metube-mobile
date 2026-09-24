@@ -9,7 +9,7 @@ import 'subscription_sheet.dart';
 import 'subscriptions_providers.dart';
 import 'widgets/subscription_card.dart';
 
-/// **Channels the server follows** (م-71, Super only).
+/// **Channels the server follows** (Super only).
 ///
 /// Nothing here runs on the phone. MeTube keeps the list, checks it on its
 /// own schedule and downloads what is new; this screen is a remote control

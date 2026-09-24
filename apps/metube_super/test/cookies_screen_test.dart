@@ -76,7 +76,7 @@ class _FakePicker extends FilePicker {
   }
 }
 
-/// **The cookies screen** (م-75).
+/// **The cookies screen**.
 ///
 /// Its job is to be honest about three states the server can be in, and
 /// to offer only the buttons that can succeed in each one.

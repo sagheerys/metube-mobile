@@ -8,10 +8,10 @@ import 'package:mt_ui/mt_ui.dart';
 /// unbounded width, so the button grows to whatever its label asks for and
 /// walks off the right edge without anyone noticing on a normal phone.
 ///
-/// Measured 2026-09-20 by the device matrix while adding م-71: the label
+/// Measured 2026-09-20 by the device matrix while adding subscriptions: the label
 /// "Follow a channel" at text scale ×1.3 on a 320dp screen overflowed by
 /// **35 pixels**. The shipped labels ("Add link", "Paste link") are short
-/// enough to hide the fault — and م-50 adds languages whose words are not,
+/// enough to hide the fault — and more languages are planned whose words are not,
 /// so this guards the translations that do not exist yet.
 void main() {
   Widget host(String label, {required Size size, required double scale}) =>

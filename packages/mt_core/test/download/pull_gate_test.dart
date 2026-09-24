@@ -18,7 +18,7 @@ void main() {
 
   FakeApi apiWithDone() => FakeApi(
     historyScript: [
-      historyWith(), // the snapshot from before the add (defect ح-3)
+      historyWith(), // the snapshot from before the add
       historyWith(
         done: [
           {

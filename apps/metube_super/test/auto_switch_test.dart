@@ -50,7 +50,7 @@ void main() {
           ),
         ),
         // Probing now asks the engine "is anything in flight?" before
-        // switching (defect ع-1), and the engine needs the logger, which is
+        // switching (a race found in the 2026-09-02 audit), and the engine needs the logger, which is
         // overridden in main and so is overridden here too.
         loggerProvider.overrideWithValue(
           MTLogger(filePath: '${Directory.systemTemp.path}/mtf_test.log'),

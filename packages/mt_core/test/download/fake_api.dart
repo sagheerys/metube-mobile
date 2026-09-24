@@ -18,8 +18,8 @@ class FakeApi implements MeTubeApi {
 
   final List<(List<String> ids, String where)> deletes = [];
 
-  /// Thrown instead of performing the delete, to test ع-6 (a failed cleanup
-  /// after a successful pull).
+  /// Thrown instead of performing the delete, to test a failed cleanup
+  /// after a successful pull.
   MTApiException? deleteError;
 
   int downloadCalls = 0;

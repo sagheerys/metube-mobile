@@ -206,7 +206,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             trailing: const Icon(Icons.chevron_right_rounded),
             onTap: () => context.go('/settings/network'),
           ),
-          // Channels the server follows (م-71). It lives beside the network
+          // Channels the server follows. It lives beside the network
           // row because it is the server's work, not the phone's.
           _navTile(
             Icons.rss_feed_rounded,
@@ -214,7 +214,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             l10n.subscriptionsSubtitle,
             '/settings/subscriptions',
           ),
-          // Something only the server's owner can do (م-75).
+          // Something only the server's owner can do.
           _navTile(
             Icons.cookie_outlined,
             l10n.cookies,
@@ -284,7 +284,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             value: settings.autoRetry,
             onChanged: ref.read(settingsProvider.notifier).setAutoRetry,
           ),
-          // م-72: beside the other download preferences, because that is
+          // The arrivals notice sits beside the other download preferences, because that is
           // what it governs — what the server fetched without being asked.
           _switchTile(
             title: l10n.notifyArrivals,

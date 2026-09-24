@@ -236,7 +236,7 @@ class _ShellScreenState extends ConsumerState<ShellScreen>
     // Kept alive so it drives the download notifications.
     ref.watch(downloadWatcherProvider);
     // The other half of that: what the server fetched on its own, which no
-    // task in this app ever represented (م-72).
+    // task in this app ever represented (a subscription arrival).
     ref.watch(arrivalWatcherProvider);
     // Returning to the app asks the server again; the card is not truthful
     // without this.

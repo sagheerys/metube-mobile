@@ -15,7 +15,7 @@ final cookieStatusProvider = FutureProvider<bool?>((ref) async {
   return api?.hasCookies();
 });
 
-/// **Cookies from the phone** (م-75, Super only).
+/// **Cookies from the phone** (Super only).
 ///
 /// A platform asking for a login used to end the conversation: the app
 /// said "the server admin should refresh the cookies" and stopped —

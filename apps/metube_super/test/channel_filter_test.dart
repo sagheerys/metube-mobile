@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:metube_super/features/library/library_models.dart';
 import 'package:metube_super/features/library/library_providers.dart';
 
-/// **Filtering and searching by the channel** (م-73).
+/// **Filtering and searching by the channel**.
 ///
 /// The channel name has always arrived in `/history` and has always been
 /// printed on the card, and was usable for nothing: search covered the

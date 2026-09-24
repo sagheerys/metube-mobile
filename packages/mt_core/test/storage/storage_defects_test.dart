@@ -4,9 +4,9 @@ import 'dart:io';
 import 'package:mt_core/mt_core.dart';
 import 'package:test/test.dart';
 
-/// Storage defects from 2026-09-02: خ-1 (a store breaking permanently), خ-2
-/// (a non-transactional restore plus a password leak), خ-3 (name collisions
-/// and orphaned partials).
+/// Storage defects from 2026-09-02: a store breaking permanently, a
+/// non-transactional restore plus a password leak, and name collisions
+/// with orphaned partials.
 void main() {
   group('the playlists store is not broken for good by malformed JSON', () {
     test('an entry whose items is a map rather than a list is dropped, and the rest survive', () async {
