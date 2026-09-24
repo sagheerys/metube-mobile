@@ -38,7 +38,8 @@ only one.
   cookies file and each upload replaces it whole, so sending one platform's
   file signed the previous one out. Pick all their files together and they
   are merged on the phone, in memory, into the one file the server keeps;
-  the screen now says plainly that an upload replaces what was there.
+  the screen now says plainly that an upload replaces what was there, how
+  to pick more than one file, and — once sent — which sites went in.
   MeTube Super.
 - **A followed channel opens from the list.** Tap its name, or choose
   "Open channel" from its menu, and it opens in its own app. MeTube Super.

@@ -294,7 +294,7 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get cookiesHelp =>
-      'من متصفحك، استعمل إضافة تصدّر الكوكيز بصيغة Netscape، ثم اختر الملف هنا. بعدها يستعمله السيرفر في كل تحميل، وyt-dlp هو من يقرر متى يحتاجه. والكوكيز تنتهي صلاحيتها، فعودة الفشل غالباً تعني أن وقت تصدير جديد قد حان.';
+      'من متصفحك، استعمل إضافة تصدّر الكوكيز بصيغة Netscape — ملفاً لكل منصة — ثم اختر الملفات هنا. بعدها يستعملها السيرفر في كل تحميل، وyt-dlp هو من يقرر متى يحتاجها. والكوكيز تنتهي صلاحيتها، فعودة الفشل غالباً تعني أن وقت تصدير جديد قد حان.';
 
   @override
   String get cookiesNotNetscape =>
@@ -308,11 +308,16 @@ class MTLocalizationsAr extends MTLocalizations {
       'يُرسَل الملف إلى سيرفرك مباشرة ولا يُحفظ على هذا الجوال أبداً. وهو مادة دخولك إلى حساباتك، فلا ترفعه إلا إلى سيرفر تملكه.';
 
   @override
-  String get cookiesReplace => 'استبدل ملف الكوكيز';
+  String get cookiesReplace => 'استبدل ملفات الكوكيز';
 
   @override
   String get cookiesReplaceNote =>
-      'الرفع يستبدل ملف الكوكيز على السيرفر كله. لأكثر من منصة، اختر ملفاتها معاً فتُرسَل ملفاً واحداً.';
+      'كل رفع يستبدل ملف الكوكيز على السيرفر كله. لتبقى عدة منصات، اختر ملفاتها كلها معاً في كل مرة — حتى التي رفعتها قبل. للاختيار المتعدد: اضغط مطوّلاً على أول ملف.';
+
+  @override
+  String cookiesSentFor(String sites) {
+    return 'أُرسلت كوكيز: $sites';
+  }
 
   @override
   String get cookiesSubtitle => 'للمنصات التي ترفض التحميل بلا تسجيل دخول';
@@ -326,7 +331,7 @@ class MTLocalizationsAr extends MTLocalizations {
       'نسخة MeTube هذه لا تستطيع إخبارك إن كان لديها كوكيز';
 
   @override
-  String get cookiesUpload => 'اختر ملف كوكيز';
+  String get cookiesUpload => 'اختر ملفات الكوكيز';
 
   @override
   String get cookiesUploaded => 'أُرسلت الكوكيز إلى السيرفر';

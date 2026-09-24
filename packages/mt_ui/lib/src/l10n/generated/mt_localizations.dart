@@ -605,7 +605,7 @@ abstract class MTLocalizations {
   /// No description provided for @cookiesHelp.
   ///
   /// In en, this message translates to:
-  /// **'In your browser, use an extension that exports cookies in the Netscape format, and pick that file here. The server then uses it for every download, and yt-dlp decides when it needs it. Cookies expire, so a download that starts failing again usually means a fresh export is due.'**
+  /// **'In your browser, use an extension that exports cookies in the Netscape format — one file per platform — and pick the files here. The server then uses them for every download, and yt-dlp decides when it needs them. Cookies expire, so a download that starts failing again usually means a fresh export is due.'**
   String get cookiesHelp;
 
   /// No description provided for @cookiesNotNetscape.
@@ -629,14 +629,20 @@ abstract class MTLocalizations {
   /// No description provided for @cookiesReplace.
   ///
   /// In en, this message translates to:
-  /// **'Replace the cookies file'**
+  /// **'Replace the cookies files'**
   String get cookiesReplace;
 
   /// No description provided for @cookiesReplaceNote.
   ///
   /// In en, this message translates to:
-  /// **'Uploading replaces the server\'s whole cookies file. For more than one platform, pick their files together and they are sent as one.'**
+  /// **'Each upload replaces the server\'s whole cookies file. To keep several platforms, pick all their files together every time — the ones you sent before too. To pick more than one, long-press the first file.'**
   String get cookiesReplaceNote;
+
+  /// No description provided for @cookiesSentFor.
+  ///
+  /// In en, this message translates to:
+  /// **'Cookies sent for: {sites}'**
+  String cookiesSentFor(String sites);
 
   /// No description provided for @cookiesSubtitle.
   ///
@@ -659,7 +665,7 @@ abstract class MTLocalizations {
   /// No description provided for @cookiesUpload.
   ///
   /// In en, this message translates to:
-  /// **'Choose a cookies file'**
+  /// **'Choose cookies files'**
   String get cookiesUpload;
 
   /// No description provided for @cookiesUploaded.

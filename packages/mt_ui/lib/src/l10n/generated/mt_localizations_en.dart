@@ -293,7 +293,7 @@ class MTLocalizationsEn extends MTLocalizations {
 
   @override
   String get cookiesHelp =>
-      'In your browser, use an extension that exports cookies in the Netscape format, and pick that file here. The server then uses it for every download, and yt-dlp decides when it needs it. Cookies expire, so a download that starts failing again usually means a fresh export is due.';
+      'In your browser, use an extension that exports cookies in the Netscape format — one file per platform — and pick the files here. The server then uses them for every download, and yt-dlp decides when it needs them. Cookies expire, so a download that starts failing again usually means a fresh export is due.';
 
   @override
   String get cookiesNotNetscape =>
@@ -307,11 +307,16 @@ class MTLocalizationsEn extends MTLocalizations {
       'The file is sent straight to your server and never stored on this phone. It is your accounts\' sign-in material, so only ever upload it to a server you own.';
 
   @override
-  String get cookiesReplace => 'Replace the cookies file';
+  String get cookiesReplace => 'Replace the cookies files';
 
   @override
   String get cookiesReplaceNote =>
-      'Uploading replaces the server\'s whole cookies file. For more than one platform, pick their files together and they are sent as one.';
+      'Each upload replaces the server\'s whole cookies file. To keep several platforms, pick all their files together every time — the ones you sent before too. To pick more than one, long-press the first file.';
+
+  @override
+  String cookiesSentFor(String sites) {
+    return 'Cookies sent for: $sites';
+  }
 
   @override
   String get cookiesSubtitle =>
@@ -325,7 +330,7 @@ class MTLocalizationsEn extends MTLocalizations {
   String get cookiesUnknown => 'This MeTube cannot say whether it has cookies';
 
   @override
-  String get cookiesUpload => 'Choose a cookies file';
+  String get cookiesUpload => 'Choose cookies files';
 
   @override
   String get cookiesUploaded => 'Cookies sent to the server';

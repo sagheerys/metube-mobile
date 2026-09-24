@@ -79,9 +79,15 @@ class _CookiesScreenState extends ConsumerState<CookiesScreen> {
       showMTSnack(context, l10n.cookiesNotNetscape, type: MTSnackType.error);
       return;
     }
+    // **What went in, by name** (2026-09-24): after picking two files,
+    // naming both sites is the only proof that both were sent. A file the
+    // app cannot read a site from is still sent, and says so generically.
+    final sites = CookieFiles.sites(bytes);
     await _run(
       () => api.uploadCookies(bytes, filename: name),
-      l10n.cookiesUploaded,
+      sites.isEmpty
+          ? l10n.cookiesUploaded
+          : l10n.cookiesSentFor(mtLtrRun(sites.join(' · '))),
     );
   }
 

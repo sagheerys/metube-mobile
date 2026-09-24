@@ -79,7 +79,9 @@ abstract final class CookieFiles {
           labels.last.length == 2 &&
           labels[labels.length - 2].length <= 3;
       final keep = countrySecondLevel ? 3 : 2;
-      found.add(labels.skip(labels.length < keep ? 0 : labels.length - keep).join('.'));
+      found.add(
+        labels.skip(labels.length < keep ? 0 : labels.length - keep).join('.'),
+      );
     }
     return found.toList()..sort();
   }

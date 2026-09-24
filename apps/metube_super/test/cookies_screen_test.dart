@@ -137,7 +137,7 @@ void main() {
     await open(tester, (_) => _json('{"status":"ok","has_cookies":true}'));
 
     expect(find.text('The server has cookies'), findsOneWidget);
-    expect(find.text('Replace the cookies file'), findsOneWidget);
+    expect(find.text('Replace the cookies files'), findsOneWidget);
     expect(find.text('Delete the cookies'), findsOneWidget);
   });
 
@@ -148,7 +148,7 @@ void main() {
       await open(tester, (_) => _json('{"status":"ok","has_cookies":false}'));
 
       expect(find.text('The server has no cookies'), findsOneWidget);
-      expect(find.text('Choose a cookies file'), findsOneWidget);
+      expect(find.text('Choose cookies files'), findsOneWidget);
       expect(find.text('Delete the cookies'), findsNothing);
     },
   );
@@ -165,7 +165,7 @@ void main() {
       );
       // Upload is still offered: the status endpoint being absent does not
       // mean the upload one is.
-      expect(find.text('Choose a cookies file'), findsOneWidget);
+      expect(find.text('Choose cookies files'), findsOneWidget);
       expect(find.text('Delete the cookies'), findsNothing);
     },
   );
@@ -206,13 +206,18 @@ void main() {
 
     // The note that says so is on screen before anyone learns it the hard way.
     expect(find.textContaining('replaces the server'), findsOneWidget);
-    await tester.tap(find.text('Replace the cookies file'));
+    await tester.tap(find.text('Replace the cookies files'));
     await tester.pumpAndSettle();
 
     expect(picker.askedForMany, isTrue);
     final sent = await uploaded();
     expect(sent, contains(row('.youtube.com', 'SID')));
     expect(sent, contains(row('.vimeo.com', 'vuid')));
+    // And the screen says so by name: the only proof that both went in.
+    expect(
+      find.text('Cookies sent for: ${mtLtrRun('vimeo.com · youtube.com')}'),
+      findsOneWidget,
+    );
   });
 
   testWidgets('files with no cookie in them are refused on the phone, and '
@@ -223,7 +228,7 @@ void main() {
     ]);
     await open(tester, (_) => _json('{"status":"ok","has_cookies":true}'));
 
-    await tester.tap(find.text('Replace the cookies file'));
+    await tester.tap(find.text('Replace the cookies files'));
     await tester.pumpAndSettle();
 
     expect(await uploaded(), isNull);
@@ -240,7 +245,7 @@ void main() {
     FilePicker.platform = _FakePicker([('cookies.txt', text)]);
     await open(tester, (_) => _json('{"status":"ok","has_cookies":true}'));
 
-    await tester.tap(find.text('Replace the cookies file'));
+    await tester.tap(find.text('Replace the cookies files'));
     await tester.pumpAndSettle();
 
     expect(await uploaded(), text);

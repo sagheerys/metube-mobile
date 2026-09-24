@@ -85,6 +85,31 @@ void main() {
       expect(CookieFiles.merge([file(const [])]), isNull);
     });
 
+    test('the sites are named for the person reading: subdomains fold into '
+        'their site, HttpOnly counts, a country second level keeps three '
+        'labels, and the list is sorted and unique', () {
+      final merged = CookieFiles.merge([
+        file([
+          row('.youtube.com', 'SID', '1'),
+          row('#HttpOnly_accounts.google.com', 'LSID', '2'),
+          row('.google.com', 'NID', '3'),
+          row('www.bbc.co.uk', 'ckns', '4'),
+          row('vimeo.com', 'vuid', '5'),
+        ]),
+      ])!;
+
+      expect(CookieFiles.sites(merged), [
+        'bbc.co.uk',
+        'google.com',
+        'vimeo.com',
+        'youtube.com',
+      ]);
+    });
+
+    test('a file with no cookie lines names no site', () {
+      expect(CookieFiles.sites(utf8.encode('[{"name":"SID"}]')), isEmpty);
+    });
+
     test('a bad line among good ones is skipped, not fatal', () {
       final merged = CookieFiles.merge([
         file(['not a cookie line', row('.x.com', 'a', '1')]),
