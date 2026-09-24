@@ -116,9 +116,12 @@ class _MTBreathingGlowState extends State<MTBreathingGlow>
     // Night needs more of it to be seen on espresso than day needs on
     // cream, where the same strength would read as a stain.
     final dark = Theme.of(context).brightness == Brightness.dark;
-    final rest = dark ? 0.24 : 0.16;
-    final swing = dark ? 0.14 : 0.10;
-    final reach = widget.size * 0.22;
+    final rest = dark ? 0.30 : 0.22;
+    final swing = dark ? 0.16 : 0.14;
+    final reach = widget.size * 0.34;
+    // The cover hides the middle of the halo, so its strength is kept out
+    // to just past the cover's edge (0.55 of a radius of 0.84 sides) and
+    // only fades beyond it; a halo fading from the centre shows nothing.
 
     return Stack(
       clipBehavior: Clip.none,
@@ -156,7 +159,7 @@ class _MTBreathingGlowState extends State<MTBreathingGlow>
                               ),
                               accent.withValues(alpha: 0),
                             ],
-                            stops: const [0.3, 1],
+                            stops: const [0.55, 1],
                           ),
                         ),
                       ),
