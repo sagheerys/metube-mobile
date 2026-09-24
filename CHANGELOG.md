@@ -43,9 +43,10 @@ only one.
   MeTube Super.
 - **A followed channel opens from the list.** Tap its name, or choose
   "Open channel" from its menu, and it opens in its own app. MeTube Super.
-- **The glow behind the cover breathes while the sound plays.** In the
-  audio player, a halo in the app's own colour widens and fades slowly
-  behind the cover, and settles when you pause. It stays still if
+- **The glow behind the cover moves while the sound plays.** In the audio
+  player, two embers in the app's own colour circle the cover in opposite
+  directions, meeting and parting somewhere new each time, and settle
+  when you pause. It stays still if
   animations are turned off in Android. Both apps.
 
 ### Fixed

@@ -24,6 +24,44 @@ void main() {
         ),
       );
 
+  group('the embers (the owner\'s pick, 2026-09-24)', () {
+    test('at rest both sit at the centre: the still halo of before', () {
+      final (large, small) = MTBreathingGlow.embersAt(3.7, 0);
+
+      expect(large.centre, Offset.zero);
+      expect(small.centre, Offset.zero);
+    });
+
+    test('awake, the large one goes ALL the way round the cover in one '
+        'turn — the complaint was a glow that stayed in one place', () {
+      var left = false, right = false, up = false, down = false;
+      for (var s = 0.0; s < 9; s += 0.25) {
+        final c = MTBreathingGlow.embersAt(s, 1).$1.centre;
+        left |= c.dx < -0.3;
+        right |= c.dx > 0.3;
+        up |= c.dy < -0.2;
+        down |= c.dy > 0.2;
+      }
+
+      expect([left, right, up, down], everyElement(isTrue));
+    });
+
+    test('the small one circles the OTHER way, so they meet and part', () {
+      double turning(int index) {
+        MTEmber at(double s) {
+          final (large, small) = MTBreathingGlow.embersAt(s, 1);
+          return index == 0 ? large : small;
+        }
+
+        final a = at(1).centre, b = at(1.2).centre;
+        // The sign of the cross product is the direction of travel.
+        return a.dx * b.dy - a.dy * b.dx;
+      }
+
+      expect(turning(0).sign, isNot(turning(1).sign));
+    });
+  });
+
   testWidgets('paused, it asks for no frames at all', (tester) async {
     final playing = ValueNotifier(false);
     await tester.pumpWidget(host(playing));
