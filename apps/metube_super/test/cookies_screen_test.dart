@@ -1,6 +1,8 @@
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -39,6 +41,40 @@ ResponseBody _json(String body, {int status = 200}) => ResponseBody.fromString(
     Headers.contentTypeHeader: ['application/json'],
   },
 );
+
+/// The system picker, answered with files chosen by the test.
+class _FakePicker extends FilePicker {
+  _FakePicker(this.files);
+
+  final List<(String, String)> files;
+  bool? askedForMany;
+
+  @override
+  Future<FilePickerResult?> pickFiles({
+    String? dialogTitle,
+    String? initialDirectory,
+    FileType type = FileType.any,
+    List<String>? allowedExtensions,
+    Function(FilePickerStatus)? onFileLoading,
+    bool allowCompression = false,
+    int compressionQuality = 0,
+    bool allowMultiple = false,
+    bool withData = false,
+    bool withReadStream = false,
+    bool lockParentWindow = false,
+    bool readSequential = false,
+  }) async {
+    askedForMany = allowMultiple;
+    return FilePickerResult([
+      for (final (name, text) in files)
+        PlatformFile(
+          name: name,
+          size: text.length,
+          bytes: Uint8List.fromList(utf8.encode(text)),
+        ),
+    ]);
+  }
+}
 
 /// **The cookies screen** (م-75).
 ///
@@ -133,6 +169,82 @@ void main() {
       expect(find.text('Delete the cookies'), findsNothing);
     },
   );
+
+  /// What reached `/upload-cookies`, as text; null when nothing did.
+  Future<String?> uploaded() async {
+    final posts = adapter.requests.where(
+      (r) => r.path.endsWith('/upload-cookies'),
+    );
+    if (posts.isEmpty) return null;
+    final form = posts.single.data as FormData;
+    final bytes = await form.files.single.value
+        .clone()
+        .finalize()
+        .expand((chunk) => chunk)
+        .toList();
+    return utf8.decode(bytes);
+  }
+
+  String row(String domain, String name) =>
+      [domain, 'TRUE', '/', 'TRUE', '1790000000', name, 'v'].join('\t');
+
+  testWidgets('two platforms picked together reach the server as ONE file '
+      'holding both — it keeps one file and replaces it whole, so two '
+      'uploads would sign the first platform out (2026-09-24)', (tester) async {
+    final picker = _FakePicker([
+      (
+        'youtube.txt',
+        '# Netscape HTTP Cookie File\n${row('.youtube.com', 'SID')}\n',
+      ),
+      (
+        'vimeo.txt',
+        '# Netscape HTTP Cookie File\n${row('.vimeo.com', 'vuid')}\n',
+      ),
+    ]);
+    FilePicker.platform = picker;
+    await open(tester, (_) => _json('{"status":"ok","has_cookies":true}'));
+
+    // The note that says so is on screen before anyone learns it the hard way.
+    expect(find.textContaining('replaces the server'), findsOneWidget);
+    await tester.tap(find.text('Replace the cookies file'));
+    await tester.pumpAndSettle();
+
+    expect(picker.askedForMany, isTrue);
+    final sent = await uploaded();
+    expect(sent, contains(row('.youtube.com', 'SID')));
+    expect(sent, contains(row('.vimeo.com', 'vuid')));
+  });
+
+  testWidgets('files with no cookie in them are refused on the phone, and '
+      'the working file on the server is left alone', (tester) async {
+    FilePicker.platform = _FakePicker([
+      ('a.json', '[{"name":"SID"}]'),
+      ('b.json', '[{"name":"vuid"}]'),
+    ]);
+    await open(tester, (_) => _json('{"status":"ok","has_cookies":true}'));
+
+    await tester.tap(find.text('Replace the cookies file'));
+    await tester.pumpAndSettle();
+
+    expect(await uploaded(), isNull);
+    expect(
+      find.text('None of these files holds cookies in the Netscape format'),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('ONE file is sent exactly as picked, as it always was', (
+    tester,
+  ) async {
+    const text = 'anything the server may judge for itself';
+    FilePicker.platform = _FakePicker([('cookies.txt', text)]);
+    await open(tester, (_) => _json('{"status":"ok","has_cookies":true}'));
+
+    await tester.tap(find.text('Replace the cookies file'));
+    await tester.pumpAndSettle();
+
+    expect(await uploaded(), text);
+  });
 
   testWidgets('the privacy line is always on screen, not behind a button', (
     tester,

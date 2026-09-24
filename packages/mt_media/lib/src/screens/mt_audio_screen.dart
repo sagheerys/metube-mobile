@@ -5,6 +5,7 @@ import 'package:mt_ui/mt_ui.dart';
 import '../models/playlist_item.dart';
 import '../playback/audio_handler.dart';
 import '../widgets/media_time.dart';
+import '../widgets/mt_breathing_glow.dart';
 import '../widgets/mt_player_controls_row.dart';
 import '../widgets/mt_progress_slider.dart';
 import '../widgets/mt_queue_panel.dart';
@@ -70,10 +71,14 @@ class MTAudioScreen extends StatelessWidget {
                 children: [
                   _Header(handler: handler, onDetails: onDetails),
                   const Spacer(flex: 2),
-                  MTTiltedArtwork(
-                    item: item,
-                    artwork: artwork,
+                  MTBreathingGlow(
+                    playing: handler.playingNotifier,
                     size: _artSize(context),
+                    child: MTTiltedArtwork(
+                      item: item,
+                      artwork: artwork,
+                      size: _artSize(context),
+                    ),
                   ),
                   const Spacer(),
                   _Titles(

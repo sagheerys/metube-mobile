@@ -608,6 +608,12 @@ abstract class MTLocalizations {
   /// **'In your browser, use an extension that exports cookies in the Netscape format, and pick that file here. The server then uses it for every download, and yt-dlp decides when it needs it. Cookies expire, so a download that starts failing again usually means a fresh export is due.'**
   String get cookiesHelp;
 
+  /// No description provided for @cookiesNotNetscape.
+  ///
+  /// In en, this message translates to:
+  /// **'None of these files holds cookies in the Netscape format'**
+  String get cookiesNotNetscape;
+
   /// No description provided for @cookiesPresent.
   ///
   /// In en, this message translates to:
@@ -625,6 +631,12 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'Replace the cookies file'**
   String get cookiesReplace;
+
+  /// No description provided for @cookiesReplaceNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Uploading replaces the server\'s whole cookies file. For more than one platform, pick their files together and they are sent as one.'**
+  String get cookiesReplaceNote;
 
   /// No description provided for @cookiesSubtitle.
   ///
@@ -1567,6 +1579,12 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'Only what appears from now on is downloaded. The videos already on the channel are left where they are.'**
   String get onlyNewVideos;
+
+  /// No description provided for @openChannel.
+  ///
+  /// In en, this message translates to:
+  /// **'Open channel'**
+  String get openChannel;
 
   /// No description provided for @openInExternalPlayer.
   ///

@@ -297,6 +297,10 @@ class MTLocalizationsAr extends MTLocalizations {
       'من متصفحك، استعمل إضافة تصدّر الكوكيز بصيغة Netscape، ثم اختر الملف هنا. بعدها يستعمله السيرفر في كل تحميل، وyt-dlp هو من يقرر متى يحتاجه. والكوكيز تنتهي صلاحيتها، فعودة الفشل غالباً تعني أن وقت تصدير جديد قد حان.';
 
   @override
+  String get cookiesNotNetscape =>
+      'لا يحوي أيٌّ من هذه الملفات كوكيز بصيغة Netscape';
+
+  @override
   String get cookiesPresent => 'السيرفر لديه كوكيز';
 
   @override
@@ -305,6 +309,10 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get cookiesReplace => 'استبدل ملف الكوكيز';
+
+  @override
+  String get cookiesReplaceNote =>
+      'الرفع يستبدل ملف الكوكيز على السيرفر كله. لأكثر من منصة، اختر ملفاتها معاً فتُرسَل ملفاً واحداً.';
 
   @override
   String get cookiesSubtitle => 'للمنصات التي ترفض التحميل بلا تسجيل دخول';
@@ -852,6 +860,9 @@ class MTLocalizationsAr extends MTLocalizations {
   @override
   String get onlyNewVideos =>
       'لا يُنزَّل إلا ما يُنشر من الآن. أما مقاطع القناة الموجودة فتُترك مكانها.';
+
+  @override
+  String get openChannel => 'فتح القناة';
 
   @override
   String get openInExternalPlayer => 'فتح في مشغل خارجي';

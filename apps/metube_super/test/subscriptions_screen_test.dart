@@ -1,8 +1,8 @@
 import 'dart:convert';
-import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:metube_super/di.dart';
@@ -230,6 +230,48 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(adapter.requests.any((r) => r.path.contains('delete')), isFalse);
+  });
+
+  testWidgets('tapping a channel name opens the channel itself, and the '
+      'menu offers the same as its first line (asked 2026-09-24)', (
+    tester,
+  ) async {
+    // No plugin is registered under test, so url_launcher falls back to
+    // its method channel; answering it records what would have opened.
+    final opened = <String>[];
+    const channel = MethodChannel('plugins.flutter.io/url_launcher');
+    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(channel, (
+      call,
+    ) async {
+      if (call.method == 'launch') {
+        opened.add((call.arguments as Map)['url'] as String);
+        return true;
+      }
+      return true;
+    });
+    addTearDown(
+      () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        channel,
+        null,
+      ),
+    );
+    await open(tester, (_) => _json(_twoRows));
+
+    await tester.tap(find.text('Homelab Hour'));
+    await tester.pumpAndSettle();
+    expect(opened, ['https://yt.example/@homelab']);
+
+    await tester.tap(find.byIcon(Icons.more_vert_rounded).last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Open channel'));
+    await tester.pumpAndSettle();
+    // The channel with an error sorts first, so the last menu is Homelab's.
+    expect(opened, [
+      'https://yt.example/@homelab',
+      'https://yt.example/@homelab',
+    ]);
+    // Opening is not a server action: nothing was sent besides the list.
+    expect(adapter.requests.map((r) => r.method).toSet(), {'GET'});
   });
 
   testWidgets('the layout holds on every device and every text scale', (

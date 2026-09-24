@@ -88,24 +88,28 @@ void main() {
   ProviderContainer containerWith({
     bool subscribed = true,
     bool notify = true,
+    int failFirst = 0,
   }) {
+    var failures = failFirst;
     final api = MeTubeApiClient(
       config: ServerConfig(baseUrl: 'https://srv.example.com'),
       dio: Dio()
         ..httpClientAdapter = _Adapter(
-          (_) => _json(
-            subscribed
-                ? [
-                    {
-                      'id': 's1',
-                      'name': 'Homelab Hour',
-                      'url': 'https://yt.example/@homelab',
-                      'enabled': true,
-                      'check_interval_minutes': 60,
-                    },
-                  ]
-                : <dynamic>[],
-          ),
+          (_) => failures-- > 0
+              ? _json('boom', status: 500)
+              : _json(
+                  subscribed
+                      ? [
+                          {
+                            'id': 's1',
+                            'name': 'Homelab Hour',
+                            'url': 'https://yt.example/@homelab',
+                            'enabled': true,
+                            'check_interval_minutes': 60,
+                          },
+                        ]
+                      : <dynamic>[],
+                ),
         ),
     );
     return ProviderContainer(
@@ -125,14 +129,18 @@ void main() {
     );
   }
 
-  /// Builds a watcher and lets the subscriptions list load, because the
-  /// watcher only speaks when one exists.
-  Future<ArrivalWatcher> watcherIn(ProviderContainer container) async {
-    await container.read(subscriptionsProvider.future);
-    return container.read(arrivalWatcherInstanceProvider);
-  }
+  /// Builds a watcher **without loading the subscriptions list first**.
+  /// That is how the app starts: only the subscriptions screen watches the
+  /// list, so it is still loading when the first `/history` lands. An
+  /// earlier version of these tests loaded it here, and so guarded a state
+  /// the app is never in while the real one went silent.
+  Future<ArrivalWatcher> watcherIn(ProviderContainer container) async =>
+      container.read(arrivalWatcherInstanceProvider);
 
-  test('the first run announces NOTHING and only records the watermark — a '
+  Future<Set<String>?> seenKeys() async =>
+      (await store.getStringList(arrivalSeenKey))?.toSet();
+
+  test('the first run announces NOTHING and only records what is there — a '
       'fresh install would otherwise report the whole server library as '
       'having just arrived', () async {
     final container = containerWith();
@@ -144,10 +152,10 @@ void main() {
     );
 
     expect(spy.posted, isEmpty);
-    expect(await store.getInt(arrivalWatermarkKey), 2000);
+    expect(await seenKeys(), {'https://v/1', 'https://v/2'});
   });
 
-  test('a later item is announced once, and the watermark moves', () async {
+  test('a later item is announced once, and becomes seen', () async {
     final container = containerWith();
     addTearDown(container.dispose);
     final watcher = await watcherIn(container);
@@ -159,7 +167,7 @@ void main() {
 
     expect(spy.posted, hasLength(1));
     expect(spy.posted.single.$2, 'Two');
-    expect(await store.getInt(arrivalWatermarkKey), 5000);
+    expect(await seenKeys(), {'https://v/1', 'https://v/2'});
   });
 
   test('the same batch is never announced twice, even though the library '
@@ -219,8 +227,8 @@ void main() {
     );
 
     expect(spy.posted, isEmpty);
-    // The watermark still moves, so it is not re-examined for ever.
-    expect(await store.getInt(arrivalWatermarkKey), 5000);
+    // Still accounted for, so it is not re-examined for ever.
+    expect(await seenKeys(), contains('https://v/1'));
   });
 
   test(
@@ -263,7 +271,7 @@ void main() {
     },
   );
 
-  test('the setting turns it off, and the watermark still advances', () async {
+  test('the setting turns it off, and what arrived is still seen', () async {
     final container = containerWith(notify: false);
     addTearDown(container.dispose);
     final watcher = await watcherIn(container);
@@ -275,20 +283,110 @@ void main() {
 
     expect(spy.posted, isEmpty);
     // Otherwise switching the setting back on would announce a backlog.
-    expect(await store.getInt(arrivalWatermarkKey), 5000);
+    expect(await seenKeys(), contains('https://v/1'));
   });
 
-  test('an item older than the watermark is not news', () async {
+  // Replaced on purpose (2026-09-24): "an item older than the watermark is
+  // not news" documented the defect. MeTube stamps an item when it is
+  // queued, so "older" was never "already seen".
+  test('a clip QUEUED before the last one but FINISHED after it is still '
+      'news — the timestamp watermark this replaced skipped exactly this '
+      'one', () async {
     final container = containerWith();
     addTearDown(container.dispose);
     final watcher = await watcherIn(container);
 
     await watcher.onHistory(historyAt([('https://v/1', 'One', 5000)]));
-    // A record that was always there and simply arrived later in the list.
+    // Queued at 100 by the subscription, finished only now.
     await watcher.onHistory(
-      historyAt([('https://v/1', 'One', 5000), ('https://v/0', 'Older', 100)]),
+      historyAt([('https://v/1', 'One', 5000), ('https://v/0', 'Slow', 100)]),
+    );
+
+    expect(spy.posted, hasLength(1));
+    expect(spy.posted.single.$2, 'Slow');
+  });
+
+  test('the subscriptions list still LOADING when the arrival lands is not '
+      '"no subscriptions" — the case that silenced the notice on the '
+      "owner's phone (2026-09-23)", () async {
+    final container = containerWith();
+    addTearDown(container.dispose);
+    final watcher = await watcherIn(container);
+
+    await watcher.onHistory(historyAt([('https://v/0', 'Old', 100)]));
+    // Nothing has read the list: it is loading when this pass starts.
+    expect(container.read(subscriptionsProvider).isLoading, isTrue);
+    await watcher.onHistory(
+      historyAt([('https://v/0', 'Old', 100), ('https://v/1', 'New', 5000)]),
+    );
+
+    expect(spy.posted, hasLength(1));
+    expect(spy.posted.single.$2, 'New');
+  });
+
+  test('a list that cannot be read leaves the arrival UNSEEN, and the next '
+      'read announces it', () async {
+    final container = containerWith(failFirst: 1);
+    addTearDown(container.dispose);
+    final watcher = await watcherIn(container);
+    final later = historyAt([
+      ('https://v/0', 'Old', 100),
+      ('https://v/1', 'New', 5000),
+    ]);
+
+    await watcher.onHistory(historyAt([('https://v/0', 'Old', 100)]));
+    await watcher.onHistory(later);
+    expect(spy.posted, isEmpty);
+    expect(await seenKeys(), isNot(contains('https://v/1')));
+
+    await watcher.onHistory(later);
+    expect(spy.posted, hasLength(1));
+  });
+
+  test('another server is another library, not a thousand arrivals: no key '
+      'in common is recorded silently', () async {
+    final container = containerWith();
+    addTearDown(container.dispose);
+    final watcher = await watcherIn(container);
+
+    await watcher.onHistory(historyAt([('https://a/1', 'A', 100)]));
+    await watcher.onHistory(
+      historyAt([('https://b/1', 'B1', 200), ('https://b/2', 'B2', 300)]),
     );
 
     expect(spy.posted, isEmpty);
+    expect(await seenKeys(), {'https://b/1', 'https://b/2'});
+  });
+
+  test('a clip deleted and fetched again is news again', () async {
+    final container = containerWith();
+    addTearDown(container.dispose);
+    final watcher = await watcherIn(container);
+
+    await watcher.onHistory(
+      historyAt([('https://v/0', 'Old', 100), ('https://v/1', 'One', 200)]),
+    );
+    await watcher.onHistory(historyAt([('https://v/0', 'Old', 100)]));
+    await watcher.onHistory(
+      historyAt([('https://v/0', 'Old', 100), ('https://v/1', 'One', 900)]),
+    );
+
+    expect(spy.posted, hasLength(1));
+  });
+
+  test("a test build's timestamp is carried over once: what it had passed "
+      'stays seen, what came after is news, and the old key goes', () async {
+    await store.setInt(arrivalWatermarkKey, 1000);
+    final container = containerWith();
+    addTearDown(container.dispose);
+    final watcher = await watcherIn(container);
+
+    await watcher.onHistory(
+      historyAt([('https://v/0', 'Old', 500), ('https://v/1', 'New', 5000)]),
+    );
+
+    expect(spy.posted, hasLength(1));
+    expect(spy.posted.single.$2, 'New');
+    expect(await store.getInt(arrivalWatermarkKey), isNull);
   });
 }

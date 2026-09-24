@@ -13,6 +13,7 @@ class SubscriptionCard extends StatelessWidget {
     super.key,
     required this.subscription,
     required this.onToggle,
+    required this.onOpen,
     required this.onEdit,
     required this.onCheckNow,
     required this.onUnfollow,
@@ -20,6 +21,11 @@ class SubscriptionCard extends StatelessWidget {
 
   final ChannelSubscription subscription;
   final ValueChanged<bool> onToggle;
+
+  /// Opens the channel's own page. The only place its clips can be listed:
+  /// MeTube keeps which videos a subscription fetched to itself, and
+  /// `/history` carries no channel name, so the library cannot filter by it.
+  final VoidCallback onOpen;
   final VoidCallback onEdit;
   final VoidCallback onCheckNow;
   final VoidCallback onUnfollow;
@@ -48,28 +54,34 @@ class SubscriptionCard extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: Opacity(
-                  opacity: dim,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        sub.name,
-                        style: text.titleSmall,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        sub.url,
-                        // The link is Latin whatever the interface
-                        // language, and reads backwards without this.
-                        textDirection: TextDirection.ltr,
-                        style: text.bodySmall?.copyWith(color: p.ink3),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
+                // **Tapping the name opens the channel** (asked 2026-09-24):
+                // the name looks like a link and the URL under it is one.
+                child: InkWell(
+                  onTap: onOpen,
+                  borderRadius: BorderRadius.circular(MTRadius.chip),
+                  child: Opacity(
+                    opacity: dim,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          sub.name,
+                          style: text.titleSmall,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          sub.url,
+                          // The link is Latin whatever the interface
+                          // language, and reads backwards without this.
+                          textDirection: TextDirection.ltr,
+                          style: text.bodySmall?.copyWith(color: p.ink3),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -139,11 +151,19 @@ class SubscriptionCard extends StatelessWidget {
       PopupMenuButton<_CardAction>(
         icon: const Icon(Icons.more_vert_rounded),
         onSelected: (action) => switch (action) {
+          _CardAction.open => onOpen(),
           _CardAction.check => onCheckNow(),
           _CardAction.edit => onEdit(),
           _CardAction.unfollow => onUnfollow(),
         },
         itemBuilder: (_) => [
+          PopupMenuItem(
+            value: _CardAction.open,
+            child: _MenuRow(
+              icon: Icons.open_in_new_rounded,
+              label: l10n.openChannel,
+            ),
+          ),
           PopupMenuItem(
             value: _CardAction.check,
             child: _MenuRow(icon: Icons.refresh_rounded, label: l10n.checkNow),
@@ -205,7 +225,7 @@ class SubscriptionCard extends StatelessWidget {
   }
 }
 
-enum _CardAction { check, edit, unfollow }
+enum _CardAction { open, check, edit, unfollow }
 
 class _MenuRow extends StatelessWidget {
   const _MenuRow({required this.icon, required this.label});

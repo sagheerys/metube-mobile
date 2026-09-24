@@ -34,6 +34,18 @@ only one.
   exported from your browser and passes it to the server — and shows
   whether the server has one, and removes it again. The file is never
   stored on the phone. MeTube Super.
+- **Cookies for several platforms at once.** The server keeps a single
+  cookies file and each upload replaces it whole, so sending one platform's
+  file signed the previous one out. Pick all their files together and they
+  are merged on the phone, in memory, into the one file the server keeps;
+  the screen now says plainly that an upload replaces what was there.
+  MeTube Super.
+- **A followed channel opens from the list.** Tap its name, or choose
+  "Open channel" from its menu, and it opens in its own app. MeTube Super.
+- **The glow behind the cover breathes while the sound plays.** In the
+  audio player, a halo in the app's own colour widens and fades slowly
+  behind the cover, and settles when you pause. It stays still if
+  animations are turned off in Android. Both apps.
 
 ### Fixed
 

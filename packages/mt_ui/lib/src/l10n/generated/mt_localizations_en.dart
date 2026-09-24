@@ -296,6 +296,10 @@ class MTLocalizationsEn extends MTLocalizations {
       'In your browser, use an extension that exports cookies in the Netscape format, and pick that file here. The server then uses it for every download, and yt-dlp decides when it needs it. Cookies expire, so a download that starts failing again usually means a fresh export is due.';
 
   @override
+  String get cookiesNotNetscape =>
+      'None of these files holds cookies in the Netscape format';
+
+  @override
   String get cookiesPresent => 'The server has cookies';
 
   @override
@@ -304,6 +308,10 @@ class MTLocalizationsEn extends MTLocalizations {
 
   @override
   String get cookiesReplace => 'Replace the cookies file';
+
+  @override
+  String get cookiesReplaceNote =>
+      'Uploading replaces the server\'s whole cookies file. For more than one platform, pick their files together and they are sent as one.';
 
   @override
   String get cookiesSubtitle =>
@@ -843,6 +851,9 @@ class MTLocalizationsEn extends MTLocalizations {
   @override
   String get onlyNewVideos =>
       'Only what appears from now on is downloaded. The videos already on the channel are left where they are.';
+
+  @override
+  String get openChannel => 'Open channel';
 
   @override
   String get openInExternalPlayer => 'Open in another player';

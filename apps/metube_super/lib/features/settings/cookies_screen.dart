@@ -1,6 +1,7 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mt_core/mt_core.dart';
 import 'package:mt_ui/mt_ui.dart';
 
 import '../../di.dart';
@@ -56,13 +57,31 @@ class _CookiesScreenState extends ConsumerState<CookiesScreen> {
     // **`withData: true`**: on Android 11+ the app cannot open a path it
     // did not create, so the bytes have to come back from the picker
     // itself rather than from a file we then try to read.
-    final picked = await FilePicker.platform.pickFiles(withData: true);
-    final file = picked?.files.firstOrNull;
-    final bytes = file?.bytes;
-    if (bytes == null || !mounted) return;
+    //
+    // **Several at once** (2026-09-24): the server keeps one file and each
+    // upload replaces it whole, so a platform per upload signs the last
+    // one out. Picked together, they are merged here into the one file.
+    final picked = await FilePicker.platform.pickFiles(
+      withData: true,
+      allowMultiple: true,
+    );
+    final files = [
+      for (final file in picked?.files ?? const <PlatformFile>[])
+        if (file.bytes case final bytes?) (file.name, bytes),
+    ];
+    if (files.isEmpty || !mounted) return;
+    final l10n = context.mtl;
+    // One file is sent exactly as picked, as it always was.
+    final (name, bytes) = files.length == 1
+        ? files.single
+        : ('cookies.txt', CookieFiles.merge([for (final f in files) f.$2]));
+    if (bytes == null) {
+      showMTSnack(context, l10n.cookiesNotNetscape, type: MTSnackType.error);
+      return;
+    }
     await _run(
-      () => api.uploadCookies(bytes, filename: file!.name),
-      context.mtl.cookiesUploaded,
+      () => api.uploadCookies(bytes, filename: name),
+      l10n.cookiesUploaded,
     );
   }
 
@@ -141,6 +160,12 @@ class _CookiesScreenState extends ConsumerState<CookiesScreen> {
                 has == true ? l10n.cookiesReplace : l10n.cookiesUpload,
               ),
             ),
+          ),
+          const SizedBox(height: MTSpace.sm),
+          Text(
+            l10n.cookiesReplaceNote,
+            style: Theme.of(context).textTheme.bodySmall
+                ?.copyWith(color: p.ink2),
           ),
           // **Offered only when there is something to remove.** A delete
           // button on a server with no cookies answers 400 and teaches the

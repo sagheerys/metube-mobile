@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mt_core/mt_core.dart';
 import 'package:mt_ui/mt_ui.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../shared/error_text.dart';
 import 'subscription_sheet.dart';
@@ -114,6 +115,10 @@ class SubscriptionsScreen extends ConsumerWidget {
               subscription: sub,
               onToggle: (enabled) =>
                   _run(context, ref, (c) => c.setEnabled(sub, enabled)),
+              onOpen: () => launchUrl(
+                Uri.parse(sub.url),
+                mode: LaunchMode.externalApplication,
+              ),
               onEdit: () => showSubscriptionSheet(context, ref, editing: sub),
               onCheckNow: () => _checkAll(context, ref, only: sub),
               onUnfollow: () => _confirmUnfollow(context, ref, sub),
