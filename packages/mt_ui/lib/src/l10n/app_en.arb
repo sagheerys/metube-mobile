@@ -45,6 +45,13 @@
       }
     }
   },
+  "@cookiesSentFor": {
+    "placeholders": {
+      "sites": {
+        "type": "String"
+      }
+    }
+  },
   "@deleteMultipleConfirm": {
     "placeholders": {
       "count": {
@@ -373,16 +380,17 @@
   "cookiesDelete": "Delete the cookies",
   "cookiesDeleteBody": "The server stops using them, and the platforms that needed a login will refuse again.",
   "cookiesDeleted": "Cookies deleted from the server",
-  "cookiesHelp": "In your browser, use an extension that exports cookies in the Netscape format, and pick that file here. The server then uses it for every download, and yt-dlp decides when it needs it. Cookies expire, so a download that starts failing again usually means a fresh export is due.",
+  "cookiesHelp": "In your browser, use an extension that exports cookies in the Netscape format — one file per platform — and pick the files here. The server then uses them for every download, and yt-dlp decides when it needs them. Cookies expire, so a download that starts failing again usually means a fresh export is due.",
   "cookiesNotNetscape": "None of these files holds cookies in the Netscape format",
   "cookiesPresent": "The server has cookies",
   "cookiesPrivacy": "The file is sent straight to your server and never stored on this phone. It is your accounts' sign-in material, so only ever upload it to a server you own.",
-  "cookiesReplace": "Replace the cookies file",
-  "cookiesReplaceNote": "Uploading replaces the server's whole cookies file. For more than one platform, pick their files together and they are sent as one.",
+  "cookiesReplace": "Replace the cookies files",
+  "cookiesReplaceNote": "Each upload replaces the server's whole cookies file. To keep several platforms, pick all their files together every time — the ones you sent before too. To pick more than one, long-press the first file.",
+  "cookiesSentFor": "Cookies sent for: {sites}",
   "cookiesSubtitle": "For the platforms that will not download without a login",
   "cookiesTooLarge": "That file is larger than 1 MB, which is more than the server accepts.",
   "cookiesUnknown": "This MeTube cannot say whether it has cookies",
-  "cookiesUpload": "Choose a cookies file",
+  "cookiesUpload": "Choose cookies files",
   "cookiesUploaded": "Cookies sent to the server",
   "cookiesWhat": "Some platforms refuse to hand a video over unless the request looks like a signed-in browser. A cookies file exported from your browser gives the server that.",
   "copiedToClipboard": "Copied to clipboard",

@@ -47,4 +47,40 @@ abstract final class CookieFiles {
     if (byKey.isEmpty) return null;
     return utf8.encode('$header\n${byKey.values.join('\n')}\n');
   }
+
+  /// **The sites a file carries cookies for**, so the screen can say what
+  /// was sent: after picking two files, "Cookies sent for: vimeo.com ·
+  /// youtube.com" is the only proof that both went in. Read at the moment
+  /// of sending and kept nowhere.
+  ///
+  /// A cookie for `accounts.google.com` and one for `.google.com` are the
+  /// same site to the person reading, so each host is cut to its last two
+  /// labels — three when the last two look like a country's second level
+  /// (`bbc.co.uk`, not `co.uk`).
+  static List<String> sites(List<int> bytes) {
+    final found = <String>{};
+    final text = utf8.decode(bytes, allowMalformed: true);
+    for (final raw in const LineSplitter().convert(text)) {
+      final line = raw.trim();
+      if (line.isEmpty) continue;
+      if (line.startsWith('#') && !line.startsWith(_httpOnly)) continue;
+      final fields = line.split('\t');
+      if (fields.length < 7) continue;
+      var host = fields[0];
+      if (host.startsWith(_httpOnly)) host = host.substring(_httpOnly.length);
+      final labels = host
+          .toLowerCase()
+          .split('.')
+          .where((label) => label.isNotEmpty)
+          .toList();
+      if (labels.isEmpty) continue;
+      final countrySecondLevel =
+          labels.length >= 3 &&
+          labels.last.length == 2 &&
+          labels[labels.length - 2].length <= 3;
+      final keep = countrySecondLevel ? 3 : 2;
+      found.add(labels.skip(labels.length < keep ? 0 : labels.length - keep).join('.'));
+    }
+    return found.toList()..sort();
+  }
 }
