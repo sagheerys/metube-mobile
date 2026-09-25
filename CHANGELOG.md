@@ -73,6 +73,11 @@ only one.
 - **"Other" is translated.** The one platform with no name showed as the
   English word in an Arabic interface — under a video's title, in the
   reels, and in the platform chips. Both apps.
+- **Following a channel says, before you choose, that the quality is
+  final.** The server keeps the quality it was given and offers no way to
+  change it, so the note sits under the choice, and its help explains the
+  one thing that decides it: "Best" can be 4K in AV1, smooth on recent
+  phones and choppy on phones without AV1 hardware decoding. MeTube Super.
 - **The subscription title filter says what it does.** "Only titles
   matching" became "Only download titles containing", with an example, and
   a help button explains "or", letter case, and that a video the filter

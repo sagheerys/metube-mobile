@@ -1318,6 +1318,13 @@ class MTLocalizationsAr extends MTLocalizations {
   String get subscriptionQuality => 'جودة هذه القناة';
 
   @override
+  String get subscriptionQualityHelp =>
+      'السيرفر يحفظ الجودة لحظة المتابعة ولا يسمح بتغييرها. لتغييرها: افحص الآن، ثم ألغِ المتابعة وتابع من جديد.\n\n«الأفضل» قد يأتي بدقة 4K بترميز AV1. الجوالات الحديثة تشغّله بسلاسة، فإن رأيت تقطيعاً فجوالك لا يفكّه بالعتاد: اختر 1080p، أو فعّل «أفضل توافق للتشغيل» قبل المتابعة.';
+
+  @override
+  String get subscriptionQualityNote => 'لا تُغيَّر بعد المتابعة.';
+
+  @override
   String get subscriptions => 'الاشتراكات';
 
   @override

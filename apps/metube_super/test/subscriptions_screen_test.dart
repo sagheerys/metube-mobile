@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:metube_super/di.dart';
 import 'package:metube_super/features/settings/settings_state.dart';
+import 'package:metube_super/features/subscriptions/subscription_sheet.dart';
 import 'package:metube_super/features/subscriptions/subscriptions_screen.dart';
 import 'package:mt_core/mt_core.dart';
 import 'package:mt_ui/mt_ui.dart';
@@ -278,6 +279,45 @@ void main() {
     expect(adapter.requests.map((r) => r.method).toSet(), {'GET'});
   });
 
+  testWidgets('the quality says, before the choice, that it cannot be '
+      'changed later — and the help explains, without pushing a phone that '
+      'plays AV1 well down to 1080p (2026-09-25)', (tester) async {
+    await open(tester, (_) => _json('[]'));
+    await tester.tap(find.text('Follow a channel').last);
+    await tester.pumpAndSettle();
+
+    expect(find.text("Can't be changed after following."), findsOneWidget);
+    await tester.tap(find.byIcon(Icons.help_outline_rounded).first);
+    await tester.pumpAndSettle();
+    expect(
+      find.textContaining('Recent phones play it smoothly'),
+      findsOneWidget,
+    );
+    expect(find.textContaining('unfollow and follow again'), findsOneWidget);
+  });
+
+  testWidgets('the follow sheet holds on every device and text scale', (
+    tester,
+  ) async {
+    final container = containerWith((_) => _json('[]'));
+    addTearDown(container.dispose);
+    Widget sheetHost({Locale locale = const Locale('en')}) =>
+        UncontrolledProviderScope(
+          container: container,
+          child: MaterialApp(
+            theme: mtTheme(MTVariant.superApp, Brightness.light),
+            locale: locale,
+            localizationsDelegates: MTLocalizations.localizationsDelegates,
+            supportedLocales: MTLocalizations.supportedLocales,
+            home: const _OpensFollowSheet(),
+          ),
+        );
+    await expectNoOverflow(tester, sheetHost);
+    // The sheet itself was measured, not an empty screen behind it.
+    expect(find.text("Can't be changed after following."), findsOneWidget);
+    await expectNoOverflow(tester, () => sheetHost(locale: const Locale('ar')));
+  });
+
   testWidgets('the layout holds on every device and every text scale', (
     tester,
   ) async {
@@ -294,4 +334,26 @@ void main() {
       () => host(container, locale: const Locale('ar')),
     );
   });
+}
+
+/// Opens the follow sheet once, so the device matrix measures the sheet
+/// itself at every size and text scale.
+class _OpensFollowSheet extends ConsumerStatefulWidget {
+  const _OpensFollowSheet();
+
+  @override
+  ConsumerState<_OpensFollowSheet> createState() => _OpensFollowSheetState();
+}
+
+class _OpensFollowSheetState extends ConsumerState<_OpensFollowSheet> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => showSubscriptionSheet(context, ref),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) => const Scaffold();
 }

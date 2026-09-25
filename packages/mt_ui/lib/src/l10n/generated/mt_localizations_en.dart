@@ -1301,6 +1301,13 @@ class MTLocalizationsEn extends MTLocalizations {
   String get subscriptionQuality => 'Quality for this channel';
 
   @override
+  String get subscriptionQualityHelp =>
+      'The server keeps the quality chosen when you follow, and does not let it be changed. To change it: Check now, then unfollow and follow again.\n\n\"Best\" can mean 4K in the AV1 format. Recent phones play it smoothly; if you see stuttering, your phone does not decode AV1 in hardware — choose 1080p, or turn on \"Best playback compatibility\" before following.';
+
+  @override
+  String get subscriptionQualityNote => 'Can\'t be changed after following.';
+
+  @override
   String get subscriptions => 'Subscriptions';
 
   @override

@@ -2342,6 +2342,18 @@ abstract class MTLocalizations {
   /// **'Quality for this channel'**
   String get subscriptionQuality;
 
+  /// No description provided for @subscriptionQualityHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'The server keeps the quality chosen when you follow, and does not let it be changed. To change it: Check now, then unfollow and follow again.\n\n\"Best\" can mean 4K in the AV1 format. Recent phones play it smoothly; if you see stuttering, your phone does not decode AV1 in hardware — choose 1080p, or turn on \"Best playback compatibility\" before following.'**
+  String get subscriptionQualityHelp;
+
+  /// No description provided for @subscriptionQualityNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Can\'t be changed after following.'**
+  String get subscriptionQualityNote;
+
   /// No description provided for @subscriptions.
   ///
   /// In en, this message translates to:
