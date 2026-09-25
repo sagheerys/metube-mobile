@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show Clipboard, ClipboardData;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mt_media/mt_media.dart';
 import 'package:mt_ui/mt_ui.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -8,6 +9,7 @@ import '../../shared/external_player.dart';
 import '../../shared/membership.dart';
 import '../../shared/platform_label.dart';
 import '../local_item.dart';
+import '../media_probe.dart';
 
 /// Item details, opened from the actions sheet and from the reels player
 /// alike.
@@ -66,6 +68,15 @@ class _DetailsSheet extends ConsumerWidget {
             row(
               l10n.fileSize,
               '${(item.sizeBytes / (1024 * 1024)).toStringAsFixed(1)} MB',
+            ),
+            // **What the file actually is** (asked 2026-09-25), read from
+            // its header.
+            MTQualityRows(
+              cacheKey: item.key,
+              row: row,
+              sizeBytes: item.sizeBytes,
+              duration: item.duration,
+              load: () => const MediaProbe().quality(item.path),
             ),
             row(l10n.downloadDate, mtTimeAgo(context, item.modified)),
             row(l10n.platform, platformLabel(l10n, item.platform)),

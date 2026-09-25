@@ -1,4 +1,32 @@
 {
+  "@audioChannels": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@bitrateKbps": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "@bitrateMbps": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "@framesPerSecond": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "@@locale": "en",
   "@activeDownloadsCount": {
     "placeholders": {
@@ -319,7 +347,10 @@
   "alreadyInPlaylist": "Already added",
   "alreadySubscribed": "This channel is already followed",
   "appTitle": "MeTube Super",
+  "audioChannels": "{count} channels",
+  "audioMono": "Mono",
   "audioOnly": "Audio Only",
+  "audioStereo": "Stereo",
   "authHelper": "Leave empty for open servers (no password)",
   "authentication": "Authentication (Optional)",
   "autoBuilt": "Automatic",
@@ -348,6 +379,8 @@
   "batchSelectedOf": "{selected} of {total} selected",
   "batchThisVideoOnly": "Download this video only",
   "batchTitle": "Batch download",
+  "bitrateKbps": "{value} kb/s",
+  "bitrateMbps": "{value} Mb/s",
   "builtWith": "Built with",
   "cancel": "Cancel",
   "changeQuality": "Change quality",
@@ -471,6 +504,7 @@
   "follow": "Follow",
   "followChannel": "Follow a channel",
   "format": "Format",
+  "framesPerSecond": "{count} fps",
   "helpAboutField": "About this field",
   "inPlaylists": "In playlists",
   "invalidUrl": "Enter a valid link",
@@ -581,8 +615,12 @@
   "quality1080": "1080p",
   "quality480": "480p",
   "quality720": "720p",
+  "qualityAudio": "Audio",
   "qualityBest": "Best",
   "qualityHelper": "Used by quick download, by whole-playlist downloads, and by \"Download now\" in the clipboard bar — and it is the preselected option in the add-link sheet. So it matters whether or not quick download is on.",
+  "qualityReading": "Reading the file…",
+  "qualityUnavailable": "Unavailable",
+  "qualityVideo": "Video",
   "queueItemsCount": "{count, plural, =0{No items} =1{1 item} other{{count} items}}",
   "queueLabel": "Queue",
   "queued": "Queued",

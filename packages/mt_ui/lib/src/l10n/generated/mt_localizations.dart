@@ -236,11 +236,29 @@ abstract class MTLocalizations {
   /// **'MeTube Super'**
   String get appTitle;
 
+  /// No description provided for @audioChannels.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} channels'**
+  String audioChannels(int count);
+
+  /// No description provided for @audioMono.
+  ///
+  /// In en, this message translates to:
+  /// **'Mono'**
+  String get audioMono;
+
   /// No description provided for @audioOnly.
   ///
   /// In en, this message translates to:
   /// **'Audio Only'**
   String get audioOnly;
+
+  /// No description provided for @audioStereo.
+  ///
+  /// In en, this message translates to:
+  /// **'Stereo'**
+  String get audioStereo;
 
   /// No description provided for @authHelper.
   ///
@@ -409,6 +427,18 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'Batch download'**
   String get batchTitle;
+
+  /// No description provided for @bitrateKbps.
+  ///
+  /// In en, this message translates to:
+  /// **'{value} kb/s'**
+  String bitrateKbps(String value);
+
+  /// No description provided for @bitrateMbps.
+  ///
+  /// In en, this message translates to:
+  /// **'{value} Mb/s'**
+  String bitrateMbps(String value);
 
   /// No description provided for @builtWith.
   ///
@@ -1148,6 +1178,12 @@ abstract class MTLocalizations {
   /// **'Format'**
   String get format;
 
+  /// No description provided for @framesPerSecond.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} fps'**
+  String framesPerSecond(int count);
+
   /// No description provided for @helpAboutField.
   ///
   /// In en, this message translates to:
@@ -1808,6 +1844,12 @@ abstract class MTLocalizations {
   /// **'720p'**
   String get quality720;
 
+  /// No description provided for @qualityAudio.
+  ///
+  /// In en, this message translates to:
+  /// **'Audio'**
+  String get qualityAudio;
+
   /// No description provided for @qualityBest.
   ///
   /// In en, this message translates to:
@@ -1819,6 +1861,24 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'Used by quick download, by whole-playlist downloads, and by \"Download now\" in the clipboard bar — and it is the preselected option in the add-link sheet. So it matters whether or not quick download is on.'**
   String get qualityHelper;
+
+  /// No description provided for @qualityReading.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading the file…'**
+  String get qualityReading;
+
+  /// No description provided for @qualityUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Unavailable'**
+  String get qualityUnavailable;
+
+  /// No description provided for @qualityVideo.
+  ///
+  /// In en, this message translates to:
+  /// **'Video'**
+  String get qualityVideo;
 
   /// No description provided for @queueItemsCount.
   ///

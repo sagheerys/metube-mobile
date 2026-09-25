@@ -1,4 +1,5 @@
 import 'package:flutter/services.dart';
+import 'package:mt_media/mt_media.dart';
 
 /// The result of probing one file. Any field may be missing, from a corrupt
 /// file or an unsupported codec.
@@ -61,6 +62,23 @@ class MediaProbe {
       return const [];
     } on MissingPluginException {
       return const [];
+    }
+  }
+
+  /// **The file's real quality** for the details sheet: its tracks, read
+  /// from the header (see `QualityProbe.kt`). Null when the platform could
+  /// not answer.
+  Future<MediaQuality?> quality(String path) async {
+    try {
+      final raw = await channel.invokeMethod<Map<Object?, Object?>>(
+        'probeQuality',
+        {'path': path},
+      );
+      return raw == null ? null : MediaQuality.fromMap(raw);
+    } on PlatformException {
+      return null;
+    } on MissingPluginException {
+      return null;
     }
   }
 }

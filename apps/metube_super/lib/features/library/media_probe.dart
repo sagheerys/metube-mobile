@@ -1,4 +1,5 @@
 import 'package:flutter/services.dart';
+import 'package:mt_media/mt_media.dart';
 
 /// One probe request: the item key plus its source, a local file or a
 /// streaming URL.
@@ -85,6 +86,27 @@ class MediaProbe {
       return const [];
     } on MissingPluginException {
       return const [];
+    }
+  }
+
+  /// **The file's real quality** for the details sheet: its tracks, from
+  /// a local file or the server's stream (see `QualityProbe.kt`). Null
+  /// when the platform could not answer.
+  Future<MediaQuality?> quality({
+    String? path,
+    String? url,
+    Map<String, String> headers = const {},
+  }) async {
+    try {
+      final raw = await channel.invokeMethod<Map<Object?, Object?>>(
+        'probeQuality',
+        {'path': path, 'url': url, 'headers': headers},
+      );
+      return raw == null ? null : MediaQuality.fromMap(raw);
+    } on PlatformException {
+      return null;
+    } on MissingPluginException {
+      return null;
     }
   }
 }

@@ -93,7 +93,18 @@ class MTLocalizationsEn extends MTLocalizations {
   String get appTitle => 'MeTube Super';
 
   @override
+  String audioChannels(int count) {
+    return '$count channels';
+  }
+
+  @override
+  String get audioMono => 'Mono';
+
+  @override
   String get audioOnly => 'Audio Only';
+
+  @override
+  String get audioStereo => 'Stereo';
 
   @override
   String get authHelper => 'Leave empty for open servers (no password)';
@@ -190,6 +201,16 @@ class MTLocalizationsEn extends MTLocalizations {
 
   @override
   String get batchTitle => 'Batch download';
+
+  @override
+  String bitrateKbps(String value) {
+    return '$value kb/s';
+  }
+
+  @override
+  String bitrateMbps(String value) {
+    return '$value Mb/s';
+  }
 
   @override
   String get builtWith => 'Built with';
@@ -606,6 +627,11 @@ class MTLocalizationsEn extends MTLocalizations {
   String get format => 'Format';
 
   @override
+  String framesPerSecond(int count) {
+    return '$count fps';
+  }
+
+  @override
   String get helpAboutField => 'About this field';
 
   @override
@@ -978,11 +1004,23 @@ class MTLocalizationsEn extends MTLocalizations {
   String get quality720 => '720p';
 
   @override
+  String get qualityAudio => 'Audio';
+
+  @override
   String get qualityBest => 'Best';
 
   @override
   String get qualityHelper =>
       'Used by quick download, by whole-playlist downloads, and by \"Download now\" in the clipboard bar — and it is the preselected option in the add-link sheet. So it matters whether or not quick download is on.';
+
+  @override
+  String get qualityReading => 'Reading the file…';
+
+  @override
+  String get qualityUnavailable => 'Unavailable';
+
+  @override
+  String get qualityVideo => 'Video';
 
   @override
   String queueItemsCount(int count) {

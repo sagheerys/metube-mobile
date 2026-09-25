@@ -37,6 +37,12 @@ only one.
   the screen now says plainly that an upload replaces what was there, how
   to pick more than one file, and — once sent — which sites went in.
   MeTube Super.
+- **The details show what a file really is.** The server records the
+  quality a download asked for — "best", for everything — never what it
+  got. The item's details now read the file itself: resolution, codec and
+  frame rate for the video, codec and channels for the audio, and the
+  average bitrate. "Best" turns out to be, say, 4K · AV1 · 60 fps. Both
+  apps.
 - **A followed channel opens from the list.** Tap its name, or choose
   "Open channel" from its menu, and it opens in its own app. MeTube Super.
 - **The glow behind the cover moves while the sound plays.** In the audio

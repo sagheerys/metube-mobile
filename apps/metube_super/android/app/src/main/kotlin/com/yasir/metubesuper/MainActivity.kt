@@ -41,6 +41,19 @@ class MainActivity : AudioServiceActivity() {
                             runOnUiThread { result.success(data) }
                         }.start()
                     }
+                    // **The file's real quality** for the details sheet: its
+                    // tracks from the header, over range requests for a stream
+                    // (see QualityProbe).
+                    "probeQuality" -> {
+                        val path = call.argument<String>("path")
+                        val url = call.argument<String>("url")
+                        val headers = call.argument<Map<String, String>>("headers")
+                            ?: emptyMap()
+                        Thread {
+                            val data = QualityProbe.read(path, url, headers)
+                            runOnUiThread { result.success(data) }
+                        }.start()
+                    }
                     // **Open in an external player**, handed over as a `content://`
                     // URI from `FileProvider` rather than `file://`: Android 7+
                     // throws `FileUriExposedException` on the latter, while the

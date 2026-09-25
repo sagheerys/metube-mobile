@@ -4,6 +4,7 @@
 /// `02-TRD.md` §2.2.
 library;
 
+export 'src/models/media_quality.dart';
 export 'src/models/play_mode.dart';
 export 'src/models/playback_source.dart';
 export 'src/models/playlist_item.dart';
@@ -33,6 +34,7 @@ export 'src/widgets/mt_drag_to_dismiss.dart';
 export 'src/widgets/mt_mini_player.dart';
 export 'src/widgets/mt_player_controls_row.dart';
 export 'src/widgets/mt_progress_slider.dart';
+export 'src/widgets/mt_quality_rows.dart';
 export 'src/widgets/mt_queue_panel.dart';
 export 'src/widgets/mt_tilted_artwork.dart';
 export 'src/widgets/mt_up_next_list.dart';

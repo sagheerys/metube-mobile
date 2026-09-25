@@ -95,7 +95,18 @@ class MTLocalizationsAr extends MTLocalizations {
   String get appTitle => 'MeTube Super';
 
   @override
+  String audioChannels(int count) {
+    return '$count قنوات';
+  }
+
+  @override
+  String get audioMono => 'أحادي';
+
+  @override
   String get audioOnly => 'صوت فقط';
+
+  @override
+  String get audioStereo => 'ستيريو';
 
   @override
   String get authHelper => 'اتركه فارغاً للخوادم المفتوحة (بلا كلمة مرور)';
@@ -193,6 +204,16 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get batchTitle => 'التحميل الدفعي';
+
+  @override
+  String bitrateKbps(String value) {
+    return '$value ك.ب/ث';
+  }
+
+  @override
+  String bitrateMbps(String value) {
+    return '$value م.ب/ث';
+  }
 
   @override
   String get builtWith => 'مبنيّ على';
@@ -610,6 +631,11 @@ class MTLocalizationsAr extends MTLocalizations {
   String get format => 'الصيغة';
 
   @override
+  String framesPerSecond(int count) {
+    return '$count إطار/ث';
+  }
+
+  @override
   String get helpAboutField => 'حول هذا الحقل';
 
   @override
@@ -986,11 +1012,23 @@ class MTLocalizationsAr extends MTLocalizations {
   String get quality720 => '720p';
 
   @override
+  String get qualityAudio => 'الصوت';
+
+  @override
   String get qualityBest => 'الأفضل';
 
   @override
   String get qualityHelper =>
       'تُستعمل في التحميل السريع، وفي تحميل قائمة كاملة، وفي «حمّل الآن» من شريط الحافظة — وتكون الخيار المُنتقى مسبقاً في نافذة إضافة الرابط. فهي مفيدة سواء كان التحميل السريع مفعَّلاً أم لا.';
+
+  @override
+  String get qualityReading => 'جارٍ قراءة الملف…';
+
+  @override
+  String get qualityUnavailable => 'غير متاحة';
+
+  @override
+  String get qualityVideo => 'الفيديو';
 
   @override
   String queueItemsCount(int count) {

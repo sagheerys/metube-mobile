@@ -49,6 +49,13 @@ class PlaylistDetailsScreen extends ConsumerWidget {
         ],
       ),
       body: itemsAsync.when(
+        // **A reload keeps the list on screen** (field report 2026-09-25:
+        // tapping a clip low in the list flashed and jumped to the top).
+        // Playing records "last played" and refreshes the playlists list,
+        // which this view reads since the same morning so that adding and
+        // removing show at once; without this the reload swapped the list
+        // for a spinner and rebuilt it from the top.
+        skipLoadingOnReload: true,
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (_, _) => MTEmptyState(
           icon: Icons.error_outline_rounded,
