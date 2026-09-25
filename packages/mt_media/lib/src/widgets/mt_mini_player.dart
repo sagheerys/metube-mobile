@@ -239,13 +239,17 @@ class _Progress extends StatelessWidget {
                 .toDouble();
       return Padding(
         padding: const EdgeInsets.only(top: 2, bottom: 4),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(2),
-          child: LinearProgressIndicator(
-            value: value,
-            minHeight: 2.5,
-            backgroundColor: palette.miniInk.withValues(alpha: 0.18),
-            valueColor: AlwaysStoppedAnimation(palette.accent),
+        // Left to right like every media timeline (see MTProgressSlider).
+        child: Directionality(
+          textDirection: TextDirection.ltr,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(2),
+            child: LinearProgressIndicator(
+              value: value,
+              minHeight: 2.5,
+              backgroundColor: palette.miniInk.withValues(alpha: 0.18),
+              valueColor: AlwaysStoppedAnimation(palette.accent),
+            ),
           ),
         ),
       );

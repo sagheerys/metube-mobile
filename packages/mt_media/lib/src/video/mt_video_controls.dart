@@ -67,9 +67,9 @@ class _MTVideoControlsState extends State<MTVideoControls> {
 
   void _onDoubleTap(TapDownDetails details, BoxConstraints constraints) {
     if (_locked) return;
-    final isStart = details.localPosition.dx < constraints.maxWidth / 2;
-    final rtl = Directionality.of(context) == TextDirection.rtl;
-    final backward = rtl ? !isStart : isStart;
+    // The left half goes back in every language: the timeline under it
+    // runs left to right (see MTProgressSlider), as YouTube's does.
+    final backward = details.localPosition.dx < constraints.maxWidth / 2;
     widget.session.seekBy(Duration(seconds: backward ? -10 : 10));
     _restartTimer();
   }

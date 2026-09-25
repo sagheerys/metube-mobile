@@ -56,12 +56,12 @@ class _ReelsProgressBarState extends State<ReelsProgressBar> {
     controller.seekTo(total * fraction.clamp(0, 1));
   }
 
-  /// The fraction from a horizontal coordinate, **respecting RTL**: the
-  /// extreme "start" of the direction is 0.
+  /// The fraction from a horizontal coordinate: the left edge is 0 in
+  /// every language, because media time runs left to right (see
+  /// MTProgressSlider).
   double _fractionFrom(Offset local, double width) {
     if (width <= 0) return 0;
-    final raw = (local.dx / width).clamp(0.0, 1.0);
-    return Directionality.of(context) == TextDirection.rtl ? 1 - raw : raw;
+    return (local.dx / width).clamp(0.0, 1.0);
   }
 
   /// Changing page mid-drag used to leave [_dragFraction] stuck, freezing
@@ -131,6 +131,7 @@ class _ReelsProgressBarState extends State<ReelsProgressBar> {
                     final dragging = _dragFraction != null;
                     final shown = _dragFraction ?? playedFraction;
                     return Row(
+                      textDirection: TextDirection.ltr,
                       children: [
                         Expanded(
                           child: ClipRRect(

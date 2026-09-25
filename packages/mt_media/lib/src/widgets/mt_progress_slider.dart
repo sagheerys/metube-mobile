@@ -51,58 +51,70 @@ class _MTProgressSliderState extends State<MTProgressSlider> {
         : p.ink.withValues(alpha: 0.1);
     final timeColor = onDark ? p.miniInkMuted : p.ink3;
 
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        SliderTheme(
-          data: SliderThemeData(
-            trackHeight: onDark ? 4 : 5,
-            activeTrackColor: p.accent,
-            inactiveTrackColor: trackInactive,
-            secondaryActiveTrackColor: trackInactive,
-            thumbColor: onDark ? p.miniInk : p.ink,
-            overlayColor: p.accent.withValues(alpha: 0.12),
-            thumbShape: RoundSliderThumbShape(
-              enabledThumbRadius: onDark ? 5.5 : 7.5,
+    // **Media time runs left to right in every language** (field report
+    // 2026-09-25). A timeline is a tape moving past, not a sentence being read:
+    // Samsung Music, the system's media notification buttons, the lock screen,
+    // car head units, YouTube and Spotify all keep it left to right in Arabic,
+    // and Material's bidirectionality guidance says the same. Mirrored, the
+    // bar ran leftwards while "next" pointed right, and the owner read the
+    // buttons as reversed.
+    return Directionality(
+      textDirection: TextDirection.ltr,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SliderTheme(
+            data: SliderThemeData(
+              trackHeight: onDark ? 4 : 5,
+              activeTrackColor: p.accent,
+              inactiveTrackColor: trackInactive,
+              secondaryActiveTrackColor: trackInactive,
+              thumbColor: onDark ? p.miniInk : p.ink,
+              overlayColor: p.accent.withValues(alpha: 0.12),
+              thumbShape: RoundSliderThumbShape(
+                enabledThumbRadius: onDark ? 5.5 : 7.5,
+              ),
+              overlayShape: const RoundSliderOverlayShape(overlayRadius: 16),
+              trackShape: const RoundedRectSliderTrackShape(),
             ),
-            overlayShape: const RoundSliderOverlayShape(overlayRadius: 16),
-            trackShape: const RoundedRectSliderTrackShape(),
+            child: Slider(
+              value: maxMs < 1 ? 0 : value.clamp(0, maxMs),
+              max: maxMs < 1 ? 1 : maxMs,
+              secondaryTrackValue: widget.buffered?.inMilliseconds
+                  .clamp(0, maxMs < 1 ? 1 : maxMs.toInt())
+                  .toDouble(),
+              onChanged: maxMs < 1
+                  ? null
+                  : (v) => setState(() => _dragValue = v),
+              onChangeEnd: (v) {
+                widget.onSeek(Duration(milliseconds: v.round()));
+                setState(() => _dragValue = null);
+              },
+            ),
           ),
-          child: Slider(
-            value: maxMs < 1 ? 0 : value.clamp(0, maxMs),
-            max: maxMs < 1 ? 1 : maxMs,
-            secondaryTrackValue: widget.buffered?.inMilliseconds
-                .clamp(0, maxMs < 1 ? 1 : maxMs.toInt())
-                .toDouble(),
-            onChanged: maxMs < 1 ? null : (v) => setState(() => _dragValue = v),
-            onChangeEnd: (v) {
-              widget.onSeek(Duration(milliseconds: v.round()));
-              setState(() => _dragValue = null);
-            },
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: MTSpace.sm),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  mtFormatDuration(Duration(milliseconds: value.round())),
+                  style: _timeStyle(context, timeColor),
+                ),
+                Text(
+                  widget.showRemaining
+                      ? mtFormatRemaining(
+                          Duration(milliseconds: value.round()),
+                          widget.duration,
+                        )
+                      : mtFormatDuration(total),
+                  style: _timeStyle(context, timeColor),
+                ),
+              ],
+            ),
           ),
-        ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: MTSpace.sm),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                mtFormatDuration(Duration(milliseconds: value.round())),
-                style: _timeStyle(context, timeColor),
-              ),
-              Text(
-                widget.showRemaining
-                    ? mtFormatRemaining(
-                        Duration(milliseconds: value.round()),
-                        widget.duration,
-                      )
-                    : mtFormatDuration(total),
-                style: _timeStyle(context, timeColor),
-              ),
-            ],
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
