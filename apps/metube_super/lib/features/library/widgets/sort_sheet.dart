@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mt_core/mt_core.dart' show MediaPlatform;
 import 'package:mt_ui/mt_ui.dart';
 
+import '../../shared/platform_label.dart';
 import '../library_models.dart';
 import '../library_providers.dart';
 
@@ -159,7 +160,7 @@ class _PlatformSection extends ConsumerWidget {
             chip(l10n.allPlatforms, selected == null, null),
             for (final MapEntry(:key, :value) in counts)
               chip(
-                l10n.platformCount(key.label, value),
+                l10n.platformCount(platformLabel(l10n, key), value),
                 selected == key,
                 selected == key ? null : key,
               ),

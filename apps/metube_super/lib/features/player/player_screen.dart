@@ -13,6 +13,7 @@ import '../library/library_actions.dart';
 import '../library/library_models.dart';
 import '../library/library_providers.dart';
 import '../shared/membership.dart';
+import '../shared/platform_label.dart';
 import 'playback_providers.dart';
 
 /// Super's video player (rule 4): it feeds `MTVideoScreen` with the app's
@@ -99,7 +100,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
     PlaylistItem item,
     Map<String, ItemMembership> membership,
   ) => mtMetaLine([
-    MediaPlatform.detect(item.canonicalUrl).label,
+    platformLabel(context.mtl, MediaPlatform.detect(item.canonicalUrl)),
     item.uploader,
     membership[item.canonicalUrl]?.line(context.mtl),
   ]);

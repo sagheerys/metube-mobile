@@ -65,6 +65,14 @@ only one.
   after the app was closed. Both apps.
 - **In Arabic, the video's rewind and forward buttons now sit the way its
   timeline runs**, matching the double tap. Both apps.
+- **Coming back to the app re-reads the library.** Android keeps the app
+  in the background for hours; on return the library stayed as it was
+  until pulled by hand, and the arrivals notice — which promised to appear
+  "when you return" — could not. Both now happen on return, one request,
+  like the server status beside it. MeTube Super.
+- **"Other" is translated.** The one platform with no name showed as the
+  English word in an Arabic interface — under a video's title, in the
+  reels, and in the platform chips. Both apps.
 - **The subscription title filter says what it does.** "Only titles
   matching" became "Only download titles containing", with an example, and
   a help button explains "or", letter case, and that a video the filter

@@ -12,6 +12,7 @@ import '../library/library_providers.dart';
 import '../library/widgets/item_details_sheet.dart';
 import '../shared/add_to_sheet.dart';
 import '../shared/membership.dart';
+import '../shared/platform_label.dart';
 import 'playback_providers.dart';
 
 /// Super's reels player: it builds the shorts lane from the request itself
@@ -99,7 +100,7 @@ class _ReelsScreenState extends ConsumerState<ReelsScreen> {
       // notification silences it first.
       onLive: _setLive,
       subtitleBuilder: (context, item) => mtMetaLine([
-        MediaPlatform.detect(item.canonicalUrl).label,
+        platformLabel(l10n, MediaPlatform.detect(item.canonicalUrl)),
         item.uploader,
         // From the live library: `item.hasLocal` is an old snapshot that
         // never updates.

@@ -12,7 +12,7 @@ import 'package:metube_super/di.dart';
 import 'package:metube_super/features/home/download_watcher.dart';
 import 'package:metube_super/features/home/notifications.dart';
 import 'package:metube_super/features/settings/settings_state.dart';
-import 'package:metube_super/features/settings/status_refresh.dart';
+import 'package:metube_super/features/settings/resume_refresh.dart';
 import 'package:metube_super/features/settings/widgets/server_status_card.dart';
 import 'package:metube_super/features/shared/error_report.dart';
 import 'package:mt_core/mt_core.dart';
@@ -146,7 +146,7 @@ void main() {
       // A listener keeps the provider alive; invalidating does not
       // recompute a provider nobody watches.
       container.listen(serverStatusProvider, (_, _) {});
-      container.read(statusRefreshProvider);
+      container.read(resumeRefreshProvider);
       await tester.pump();
       expect(probes, 1);
 

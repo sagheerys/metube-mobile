@@ -19,7 +19,7 @@ import '../library/library_models.dart' show MediaTypeFilter;
 import '../library/library_providers.dart'
     show completionGlowProvider, libraryViewProvider;
 import '../player/playback_providers.dart';
-import '../settings/status_refresh.dart';
+import '../settings/resume_refresh.dart';
 import '../update/update_sheet.dart';
 import '../subscriptions/arrival_watcher.dart';
 import '../update/update_state.dart';
@@ -240,7 +240,7 @@ class _ShellScreenState extends ConsumerState<ShellScreen>
     ref.watch(arrivalWatcherProvider);
     // Returning to the app asks the server again; the card is not truthful
     // without this.
-    ref.watch(statusRefreshProvider);
+    ref.watch(resumeRefreshProvider);
 
     return Scaffold(
       body: widget.navigationShell,

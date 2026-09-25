@@ -1553,7 +1553,7 @@ abstract class MTLocalizations {
   /// No description provided for @notifyArrivalsDesc.
   ///
   /// In en, this message translates to:
-  /// **'One notice when a followed channel\'s new videos land on the server. It appears when the app next talks to the server, not while the phone is asleep.'**
+  /// **'One notice when a followed channel\'s new videos land on the server. It appears when you open the app, return to it, or refresh the library — not while the app is in the background.'**
   String get notifyArrivalsDesc;
 
   /// No description provided for @nowPlaying.
@@ -1669,6 +1669,12 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'{name} · {count}'**
   String platformCount(Object name, int count);
+
+  /// No description provided for @platformOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get platformOther;
 
   /// No description provided for @play.
   ///

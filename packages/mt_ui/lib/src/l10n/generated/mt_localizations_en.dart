@@ -837,7 +837,7 @@ class MTLocalizationsEn extends MTLocalizations {
 
   @override
   String get notifyArrivalsDesc =>
-      'One notice when a followed channel\'s new videos land on the server. It appears when the app next talks to the server, not while the phone is asleep.';
+      'One notice when a followed channel\'s new videos land on the server. It appears when you open the app, return to it, or refresh the library — not while the app is in the background.';
 
   @override
   String get nowPlaying => 'Now playing';
@@ -903,6 +903,9 @@ class MTLocalizationsEn extends MTLocalizations {
   String platformCount(Object name, int count) {
     return '$name · $count';
   }
+
+  @override
+  String get platformOther => 'Other';
 
   @override
   String get play => 'Play';

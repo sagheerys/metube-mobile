@@ -6,6 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../shared/external_player.dart';
 import '../../shared/membership.dart';
+import '../../shared/platform_label.dart';
 import '../local_item.dart';
 
 /// Item details, opened from the actions sheet and from the reels player
@@ -67,7 +68,7 @@ class _DetailsSheet extends ConsumerWidget {
               '${(item.sizeBytes / (1024 * 1024)).toStringAsFixed(1)} MB',
             ),
             row(l10n.downloadDate, mtTimeAgo(context, item.modified)),
-            row(l10n.platform, item.platform.label),
+            row(l10n.platform, platformLabel(l10n, item.platform)),
             // **Where it belongs** (field report 2026-09-04): which
             // playlists is this clip in? The information was in the store
             // and no screen displayed it.

@@ -846,7 +846,7 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get notifyArrivalsDesc =>
-      'إشعار واحد حين تنزل مقاطع قناة تتابعها على السيرفر. يظهر عند أول اتصال للتطبيق بالسيرفر، لا والجوال نائم.';
+      'إشعار واحد حين تنزل مقاطع قناة تتابعها على السيرفر. يظهر حين تفتح التطبيق أو تعود إليه أو تحدّث المكتبة، لا والتطبيق في الخلفية.';
 
   @override
   String get nowPlaying => 'قيد التشغيل';
@@ -911,6 +911,9 @@ class MTLocalizationsAr extends MTLocalizations {
   String platformCount(Object name, int count) {
     return '$name · $count';
   }
+
+  @override
+  String get platformOther => 'أخرى';
 
   @override
   String get play => 'تشغيل';

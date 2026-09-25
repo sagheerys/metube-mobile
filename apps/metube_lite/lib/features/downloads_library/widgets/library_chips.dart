@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mt_ui/mt_ui.dart';
 
+import '../../shared/platform_label.dart';
 import '../library_providers.dart';
 import '../local_item.dart';
 
@@ -122,7 +123,7 @@ class PlatformFilterChips extends ConsumerWidget {
           for (final MapEntry(:key, :value) in counts) ...[
             const SizedBox(width: MTSpace.xs),
             _Chip(
-              label: l10n.platformCount(key.label, value),
+              label: l10n.platformCount(platformLabel(l10n, key), value),
               selected: selected == key,
               onTap: () => controller.setPlatform(selected == key ? null : key),
             ),
