@@ -130,35 +130,44 @@ class _ReelsProgressBarState extends State<ReelsProgressBar> {
                           );
                     final dragging = _dragFraction != null;
                     final shown = _dragFraction ?? playedFraction;
-                    return Row(
+                    // **The whole row, not only its order.** A Row's
+                    // `textDirection` places its children but does not
+                    // reach inside them: LinearProgressIndicator reads the
+                    // ambient direction to paint, so with only the Row
+                    // pinned the line still filled from the right in
+                    // Arabic while the drag counted from the left (caught
+                    // by the owner the same day, 2026-09-25).
+                    return Directionality(
                       textDirection: TextDirection.ltr,
-                      children: [
-                        Expanded(
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(3),
-                            child: LinearProgressIndicator(
-                              value: shown,
-                              // It thickens under the finger: confirmation
-                              // that the drag was caught.
-                              minHeight: dragging ? 6 : 3,
-                              backgroundColor: MTPalette.serverCardInk
-                                  .withValues(alpha: 0.25),
-                              valueColor: AlwaysStoppedAnimation(p.accent),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(3),
+                              child: LinearProgressIndicator(
+                                value: shown,
+                                // It thickens under the finger: confirmation
+                                // that the drag was caught.
+                                minHeight: dragging ? 6 : 3,
+                                backgroundColor: MTPalette.serverCardInk
+                                    .withValues(alpha: 0.25),
+                                valueColor: AlwaysStoppedAnimation(p.accent),
+                              ),
                             ),
                           ),
-                        ),
-                        if (dragging) ...[
-                          const SizedBox(width: MTSpace.sm),
-                          Text(
-                            mtFormatDuration(state.duration * shown),
-                            style: const TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w700,
-                              color: MTPalette.serverCardInk,
-                            ).tabular,
-                          ),
+                          if (dragging) ...[
+                            const SizedBox(width: MTSpace.sm),
+                            Text(
+                              mtFormatDuration(state.duration * shown),
+                              style: const TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                                color: MTPalette.serverCardInk,
+                              ).tabular,
+                            ),
+                          ],
                         ],
-                      ],
+                      ),
                     );
                   },
                 ),
