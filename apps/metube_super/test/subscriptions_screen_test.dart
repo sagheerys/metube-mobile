@@ -263,6 +263,10 @@ void main() {
 
     await tester.tap(find.byIcon(Icons.more_vert_rounded).last);
     await tester.pumpAndSettle();
+    // "Edit", not "Rename": the sheet it opens edits name, interval and
+    // filter together (2026-09-25).
+    expect(find.text('Edit'), findsOneWidget);
+    expect(find.text('Rename'), findsNothing);
     await tester.tap(find.text('Open channel'));
     await tester.pumpAndSettle();
     // The channel with an error sorts first, so the last menu is Homelab's.

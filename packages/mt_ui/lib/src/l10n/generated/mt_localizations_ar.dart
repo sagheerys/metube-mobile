@@ -481,6 +481,9 @@ class MTLocalizationsAr extends MTLocalizations {
   String get downloadingTitle => 'جارٍ التنزيل';
 
   @override
+  String get editSubscription => 'تعديل';
+
+  @override
   String get emptyLibraryMessage => 'أضِف رابط فيديو، أو اسحب للتحديث.';
 
   @override
@@ -1356,14 +1359,18 @@ class MTLocalizationsAr extends MTLocalizations {
   String get themeSystem => 'النظام';
 
   @override
-  String get titleFilter => 'العناوين المطابقة فقط';
+  String get titleFilter => 'نزّل فقط ما يحوي عنوانه';
+
+  @override
+  String get titleFilterHelp =>
+      'لا ينزّل السيرفر مقطعاً جديداً من هذه القناة إلا إذا احتوى عنوانه على ما تكتبه هنا.\n\n• كلمة عادية تكفي: الحلقة\n• أيّ كلمة من عدة كلمات: الحلقة|الجزء — العلامة | تعني «أو»\n• الإنجليزية حساسة لحالة الأحرف: episode لا تطابق Episode. اكتب ‎[Ee]pisode‎ أو الكلمتين.\n\nالمقطع الذي يتجاهله الفلتر يُعدّ مُشاهَداً نهائياً: إزالة الفلتر لاحقاً تُنزّل ما يأتي بعدها، لا ما تجاهله.';
 
   @override
   String get titleFilterHelper =>
-      'كلمة أو تعبير نمطي. لا يُنزَّل إلا ما يطابق عنوانه.';
+      'عدة كلمات: افصل بينها بـ | . اتركه فارغاً لكل شيء.';
 
   @override
-  String get titleFilterHint => 'اتركه فارغاً لكل شيء';
+  String get titleFilterHint => 'مثال: الحلقة';
 
   @override
   String get titleLabel => 'العنوان';

@@ -170,7 +170,10 @@ class SubscriptionCard extends StatelessWidget {
           ),
           PopupMenuItem(
             value: _CardAction.edit,
-            child: _MenuRow(icon: Icons.edit_outlined, label: l10n.rename),
+            child: _MenuRow(
+              icon: Icons.edit_outlined,
+              label: l10n.editSubscription,
+            ),
           ),
           PopupMenuItem(
             value: _CardAction.unfollow,

@@ -926,6 +926,12 @@ abstract class MTLocalizations {
   /// **'Downloading'**
   String get downloadingTitle;
 
+  /// No description provided for @editSubscription.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get editSubscription;
+
   /// No description provided for @emptyLibraryMessage.
   ///
   /// In en, this message translates to:
@@ -2417,19 +2423,25 @@ abstract class MTLocalizations {
   /// No description provided for @titleFilter.
   ///
   /// In en, this message translates to:
-  /// **'Only titles matching'**
+  /// **'Only download titles containing'**
   String get titleFilter;
+
+  /// No description provided for @titleFilterHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'The server downloads a new video from this channel only if its title contains what you write here.\n\n• A plain word is enough: Episode\n• Any of several words: Episode|Part — the | means \"or\"\n• English is case-sensitive: episode does not match Episode. Write [Ee]pisode, or both words.\n\nA video the filter skips counts as seen for good: removing the filter later downloads what comes after, not what was skipped.'**
+  String get titleFilterHelp;
 
   /// No description provided for @titleFilterHelper.
   ///
   /// In en, this message translates to:
-  /// **'A word, or a regular expression. Only videos whose title matches are downloaded.'**
+  /// **'Several words: separate them with | . Leave empty for everything.'**
   String get titleFilterHelper;
 
   /// No description provided for @titleFilterHint.
   ///
   /// In en, this message translates to:
-  /// **'Leave empty for everything'**
+  /// **'e.g. Episode'**
   String get titleFilterHint;
 
   /// No description provided for @titleLabel.

@@ -4,6 +4,7 @@ import 'package:mt_core/mt_core.dart';
 import 'package:mt_ui/mt_ui.dart';
 
 import '../../di.dart';
+import '../settings/widgets/help_button.dart';
 import '../shared/error_text.dart';
 import 'subscriptions_providers.dart';
 
@@ -224,6 +225,13 @@ class _SubscriptionSheetState extends ConsumerState<_SubscriptionSheet> {
                 hintText: l10n.titleFilterHint,
                 helperText: l10n.titleFilterHelper,
                 helperMaxLines: 3,
+                // The line underneath covers the everyday use; the rest —
+                // "or", letter case, and that a skipped video is never
+                // fetched later — is asked for, not imposed (2026-09-25).
+                suffixIcon: HelpButton(
+                  title: l10n.titleFilter,
+                  body: l10n.titleFilterHelp,
+                ),
               ),
             ),
             const SizedBox(height: MTSpace.md),

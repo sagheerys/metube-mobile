@@ -65,6 +65,11 @@ only one.
   after the app was closed. Both apps.
 - **In Arabic, the video's rewind and forward buttons now sit the way its
   timeline runs**, matching the double tap. Both apps.
+- **The subscription title filter says what it does.** "Only titles
+  matching" became "Only download titles containing", with an example, and
+  a help button explains "or", letter case, and that a video the filter
+  skipped is never fetched later. The menu item that opens the whole edit
+  sheet is now "Edit" rather than "Rename". MeTube Super.
 
 - **A stream that keeps dropping is now given up on instead of retried for
   ever.** Waiting out a hiccup was right; the budget for it came back with

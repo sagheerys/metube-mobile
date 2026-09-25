@@ -480,6 +480,9 @@ class MTLocalizationsEn extends MTLocalizations {
   String get downloadingTitle => 'Downloading';
 
   @override
+  String get editSubscription => 'Edit';
+
+  @override
   String get emptyLibraryMessage => 'Add a video link, or pull to refresh.';
 
   @override
@@ -1340,14 +1343,18 @@ class MTLocalizationsEn extends MTLocalizations {
   String get themeSystem => 'System';
 
   @override
-  String get titleFilter => 'Only titles matching';
+  String get titleFilter => 'Only download titles containing';
+
+  @override
+  String get titleFilterHelp =>
+      'The server downloads a new video from this channel only if its title contains what you write here.\n\n• A plain word is enough: Episode\n• Any of several words: Episode|Part — the | means \"or\"\n• English is case-sensitive: episode does not match Episode. Write [Ee]pisode, or both words.\n\nA video the filter skips counts as seen for good: removing the filter later downloads what comes after, not what was skipped.';
 
   @override
   String get titleFilterHelper =>
-      'A word, or a regular expression. Only videos whose title matches are downloaded.';
+      'Several words: separate them with | . Leave empty for everything.';
 
   @override
-  String get titleFilterHint => 'Leave empty for everything';
+  String get titleFilterHint => 'e.g. Episode';
 
   @override
   String get titleLabel => 'Title';
