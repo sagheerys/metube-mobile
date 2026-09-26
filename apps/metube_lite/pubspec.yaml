@@ -20,7 +20,7 @@ dependencies:
   cached_network_image: ^3.4.1
   # The "Wi-Fi only" gate before a pull, and retrying when the network comes
   # back. (Super already uses it for automatic server switching.)
-  connectivity_plus: ^6.1.0
+  connectivity_plus: ^7.3.1
   # The system file picker (SAF). Android 11+ forbids reading a file the app
   # did not create, so importing a backup from another device cannot work
   # from a fixed path.
