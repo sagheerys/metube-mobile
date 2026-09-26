@@ -12,8 +12,10 @@
 server** — the yt-dlp web downloader you already run on your NAS or homelab.
 Queue a link from your phone, watch the download happen, then keep the file on
 the server and stream it, or pull it to the device and let the server clean
-itself up. Written in Flutter as one monorepo, in Arabic and English, and free
-software under the GPL.
+itself up. MeTube Super can also **follow a channel**: your server downloads
+each new video by itself, and the app tells you when it arrives. Written in
+Flutter as one monorepo, in Arabic and English, and free software under the
+GPL.
 
 <p align="center">
   <img src="docs/screenshots/hero.jpg" alt="MeTube Super: the library, the video player with its queue, the audio player at night, and playlists">
@@ -36,7 +38,7 @@ software under the GPL.
 | After a download completes | pulls it to the device, then **deletes it from the server** | **keeps it on the server** |
 | Library | a scan of the local folder | `/history` + the local index, merged into one list |
 | Playback | local files | streaming from the server **and** local files |
-| Exclusive | an optional Wi-Fi-only rule, server cleanup | tags, batch downloads, "make available offline", server switching |
+| Exclusive | an optional Wi-Fi-only rule, server cleanup | channel subscriptions, tags, batch downloads, "make available offline", server switching |
 
 Both apps share the same core, media and design packages, and both ship in
 **Arabic and English** with a right-to-left-first layout.
@@ -114,6 +116,16 @@ installs without your confirmation, and a version can be skipped.
 
 ### MeTube Super only
 
+- **Subscriptions**: follow a channel or playlist, and your MeTube server
+  checks it on a schedule and downloads each new video into the same
+  library — only what appears from then on, not the channel's archive.
+  Pause, rename, check now, or keep only titles containing a word. One
+  notice for each batch that arrives, shown when the app next reaches the
+  server. Needs a MeTube recent enough to have subscriptions; an older one
+  says so.
+- **Cookies from the phone** for the sites that want a login: pick the files
+  exported from your browser, several platforms at once, and they are merged
+  into the single file the server keeps.
 - **Keeps the file on the server** and merges `/history` with the local index
   into one library keyed by canonical URL, with filters for everything,
   what is offline, and what is only on the server.
@@ -130,6 +142,11 @@ installs without your confirmation, and a version can be skipped.
   live status dot for each and a server card in settings.
 
 ## Screenshots
+
+**Subscriptions** — the channels your server follows, following a new one,
+and the notice when their videos arrive:
+
+![The subscriptions list, the follow sheet, and the arrivals notice](docs/screenshots/subscriptions.jpg)
 
 **The players** — the audio player, the up-next queue at night, and the
 lane for portrait clips:
