@@ -53,6 +53,14 @@ only one.
 
 ### Fixed
 
+- **The queue opens on the song that is playing.** With the song near the
+  end of a long playlist, the queue sheet opened at the first song and it
+  had to be scrolled to. It now opens with the playing song in view, and
+  the one before it just above. The same in full-screen video's side
+  panel. Both apps.
+- **Large files read in gigabytes.** A 3 GB video read "3000 MB"; sizes
+  from a thousand megabytes up now read in GB, and in Arabic the figure no
+  longer swaps places with its unit. Both apps.
 - **A song you skip to starts from the top.** Skipping through a music
   playlist brought every song back half-way in, because every clip
   resumed where it was last left. Only something ten minutes or longer —

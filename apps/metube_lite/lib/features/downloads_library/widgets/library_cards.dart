@@ -53,7 +53,7 @@ class LibraryItemCard extends ConsumerWidget {
 
     final subtitle = [
       mtTimeAgo(context, item.modified),
-      '${(item.sizeBytes / (1024 * 1024)).toStringAsFixed(1)} MB',
+      mtFormatSize(item.sizeBytes),
     ].join(' · ');
 
     Future<void> toggleFavorite() async {

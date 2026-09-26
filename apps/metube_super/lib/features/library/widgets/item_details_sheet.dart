@@ -69,10 +69,6 @@ class _DetailsSheet extends ConsumerWidget {
       ),
     );
 
-    final sizeMb = item.sizeBytes == null
-        ? null
-        : (item.sizeBytes! / (1024 * 1024)).toStringAsFixed(1);
-
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(
@@ -91,7 +87,8 @@ class _DetailsSheet extends ConsumerWidget {
             // label of the title row and "MB" the label of the size row, a
             // hard-coded string and a wrong meaning at once (rule 5).
             row(l10n.titleLabel, item.title),
-            if (sizeMb != null) row(l10n.fileSize, '$sizeMb MB'),
+            if (item.sizeBytes case final int bytes)
+              row(l10n.fileSize, mtFormatSize(bytes)),
             // **What the file actually is** (asked 2026-09-25): the server
             // says "best" for everything; the header says 4K AV1.
             MTQualityRows(

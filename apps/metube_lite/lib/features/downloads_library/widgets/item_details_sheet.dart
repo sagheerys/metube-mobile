@@ -65,10 +65,7 @@ class _DetailsSheet extends ConsumerWidget {
             // The same correction as Super: two wrong labels, one of them a
             // hard-coded string.
             row(l10n.titleLabel, item.title),
-            row(
-              l10n.fileSize,
-              '${(item.sizeBytes / (1024 * 1024)).toStringAsFixed(1)} MB',
-            ),
+            row(l10n.fileSize, mtFormatSize(item.sizeBytes)),
             // **What the file actually is** (asked 2026-09-25), read from
             // its header.
             MTQualityRows(

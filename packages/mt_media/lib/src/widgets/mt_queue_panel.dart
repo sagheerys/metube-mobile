@@ -99,6 +99,7 @@ class MTQueuePanel extends StatelessWidget {
             paused: paused,
             shrinkWrap: true,
             physics: nested ? const NeverScrollableScrollPhysics() : null,
+            revealCurrent: !nested,
             onTap: onSelect,
           ),
         ),

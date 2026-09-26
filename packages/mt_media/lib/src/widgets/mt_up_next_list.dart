@@ -18,7 +18,7 @@ typedef MTArtworkBuilder = Widget? Function(
 /// The "up next" rows, the same content in all three shapes: a section
 /// under portrait video, a side panel in landscape, a bottom sheet in
 /// audio.
-class MTUpNextList extends StatelessWidget {
+class MTUpNextList extends StatefulWidget {
   const MTUpNextList({
     super.key,
     required this.items,
@@ -29,6 +29,7 @@ class MTUpNextList extends StatelessWidget {
     this.paused = false,
     this.shrinkWrap = false,
     this.physics,
+    this.revealCurrent = false,
   });
 
   final List<PlaylistItem> items;
@@ -47,25 +48,87 @@ class MTUpNextList extends StatelessWidget {
   final bool shrinkWrap;
   final ScrollPhysics? physics;
 
+  /// **Opens on the current item** (field report 2026-09-26: with the song
+  /// playing near the end of a thirty-song queue, the sheet opened at the
+  /// top and it had to be hunted for). Only where the list scrolls by
+  /// itself: nested in a page, under the portrait video, moving it would
+  /// move the page.
+  final bool revealCurrent;
+
+  @override
+  State<MTUpNextList> createState() => _MTUpNextListState();
+}
+
+class _MTUpNextListState extends State<MTUpNextList> {
+  final _controller = ScrollController();
+  final _currentKey = GlobalKey();
+
+  /// Where the current row settles: a fifth of the way down, so the song
+  /// before it shows too and it reads as a place in the list.
+  static const _alignment = 0.2;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.revealCurrent && widget.currentIndex > 0) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _reveal());
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  /// Rows are built lazily, so a far one does not exist yet: jump to its
+  /// estimated place — rows are near enough the same height — then, once
+  /// it is built, put it exactly where it belongs.
+  void _reveal() {
+    if (!mounted) return;
+    if (_currentKey.currentContext case final BuildContext row) {
+      Scrollable.ensureVisible(row, alignment: _alignment);
+      return;
+    }
+    if (!_controller.hasClients) return;
+    final position = _controller.position;
+    final perRow =
+        (position.maxScrollExtent + position.viewportDimension) /
+        widget.items.length;
+    position.jumpTo(
+      (perRow * widget.currentIndex - position.viewportDimension * _alignment)
+          .clamp(0.0, position.maxScrollExtent),
+    );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      if (_currentKey.currentContext case final BuildContext row) {
+        Scrollable.ensureVisible(row, alignment: _alignment);
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) => ListView.builder(
-    shrinkWrap: shrinkWrap,
-    physics: physics,
+    controller: _controller,
+    shrinkWrap: widget.shrinkWrap,
+    physics: widget.physics,
     padding: EdgeInsets.zero,
-    itemCount: items.length,
+    itemCount: widget.items.length,
     itemBuilder: (context, index) => _UpNextRow(
-      item: items[index],
-      playing: index == currentIndex,
-      paused: paused,
-      artwork: artwork,
-      dark: dark,
-      onTap: () => onTap(index),
+      key: index == widget.currentIndex ? _currentKey : null,
+      item: widget.items[index],
+      playing: index == widget.currentIndex,
+      paused: widget.paused,
+      artwork: widget.artwork,
+      dark: widget.dark,
+      onTap: () => widget.onTap(index),
     ),
   );
 }
 
 class _UpNextRow extends StatelessWidget {
   const _UpNextRow({
+    super.key,
     required this.item,
     required this.playing,
     required this.paused,

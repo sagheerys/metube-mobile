@@ -5,6 +5,7 @@ library;
 
 export 'src/gallery/gallery_screen.dart';
 export 'src/l10n/bidi.dart';
+export 'src/l10n/file_size.dart';
 export 'src/l10n/l10n.dart';
 export 'src/l10n/language_names.dart';
 export 'src/theme/mt_theme.dart';
