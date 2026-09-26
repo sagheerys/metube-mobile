@@ -13,8 +13,7 @@ import 'widgets/server_status_card.dart';
 /// server went down after the last probe it said "connected" until the
 /// user pressed refresh.
 ///
-/// The library since 2026-09-25, found while explaining the arrivals
-/// notice: it promised to appear "when you return to the app" and could
+/// The library since 2026-09-25: the arrivals notice promised to appear "when you return to the app" and could
 /// not, because nothing re-read `/history` on a return. Android keeps the
 /// app in the background for hours, so a return is exactly where a
 /// subscription's clips have most likely landed — and the library was

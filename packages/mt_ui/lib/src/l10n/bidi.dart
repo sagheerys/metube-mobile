@@ -15,7 +15,7 @@ String mtLtrRun(String text) => '\u2066$text\u2069';
 const String mtLtrIsolate = '\u2066';
 const String mtPopIsolate = '\u2069';
 
-/// **Isolation for a name the app did not write** \u2014 a channel, an uploader,
+/// **Isolation for a name the app did not write** — a channel, an uploader,
 /// a playlist, a tag, a title.
 ///
 /// [mtLtrRun] forces left to right, which is right for a clock or a
@@ -25,7 +25,7 @@ const String mtPopIsolate = '\u2069';
 /// left to right, whichever language the interface is in.
 ///
 /// Field report 2026-09-20: an Arabic channel beside an English "5 minutes
-/// ago" came apart \u2014 the separator and the neutral characters between the
+/// ago" came apart — the separator and the neutral characters between the
 /// two runs belong to whichever side wins, and with an unisolated name
 /// there is no defined answer. Isolated, the separator belongs to the
 /// sentence and the name to itself.
@@ -39,7 +39,7 @@ String mtName(String? name) => (name == null || name.isEmpty)
 /// The first-strong isolate, for callers that assemble their own string.
 const String mtFirstStrongIsolate = '\u2068';
 
-/// A "a \u00b7 b \u00b7 c" line whose parts are each isolated, for the meta line
+/// A "a · b · c" line whose parts are each isolated, for the meta line
 /// under a title. Empty parts are dropped rather than leaving a stray
 /// separator.
 String mtMetaLine(List<String?> parts) => [

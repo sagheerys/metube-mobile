@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mt_media/mt_media.dart';
 
-/// **What a file actually is** (2026-09-25). The values are the owner's own
-/// clips, probed on his server: 4096×2160 AV1 at 24, 3840×2160 AV1 at 60,
+/// **What a file actually is** (2026-09-25). The values are real clips,
+/// probed on a real server: 4096×2160 AV1 at 24, 3840×2160 AV1 at 60,
 /// a vertical 1080×1920 VP9 reel, an audio-only SoundCloud track.
 void main() {
   group('the resolution people say', () {
@@ -41,7 +41,7 @@ void main() {
   });
 
   group('the codec by name', () {
-    test('the ones the owner has: AV1, VP9, H.264, AAC, Opus', () {
+    test('the common ones: AV1, VP9, H.264, AAC, Opus', () {
       expect(const MediaQuality(videoMime: 'video/av01').videoCodec, 'AV1');
       expect(
         const MediaQuality(videoMime: 'video/x-vnd.on2.vp9').videoCodec,

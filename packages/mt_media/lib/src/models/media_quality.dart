@@ -1,10 +1,10 @@
 /// **What a file actually is**, read from its own header (asked
 /// 2026-09-25: the item details should say the video and audio quality).
 ///
-/// The server records the quality a download was *asked* for — "best" for
-/// every item on the owner's server — never what it *got*. And the
-/// difference matters: "best" was 4K in AV1, which his phone could not
-/// decode in hardware, and nothing on screen said so. The header says the
+/// The server records the quality a download was *asked* for — usually
+/// "best" — never what it *got*. And the difference matters: "best" can
+/// be 4K in AV1, which a phone without an AV1 decoder cannot play in
+/// hardware, and nothing on screen said so. The header says the
 /// resolution, the codec and the frame rate; this class holds them and
 /// turns them into words.
 ///

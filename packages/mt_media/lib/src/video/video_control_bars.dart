@@ -117,11 +117,9 @@ class MTVideoCenterControls extends StatelessWidget {
   Widget build(BuildContext context) {
     final p = MTThemeX.of(context).palette;
     final l10n = context.mtl;
-    // **Pinned left to right, like the timeline under them.** The same
-    // day these briefly followed the language to match a mirrored bar and
-    // double tap; the owner then found the audio bar read as reversed for
-    // the same reason, and the rule became one for all media time: left
-    // to right in every language (see MTProgressSlider).
+    // **Pinned left to right, like the timeline under them.** Media time
+    // runs left to right in every language, so buttons that followed the
+    // interface direction would read as reversed (see MTProgressSlider).
     return Directionality(
       textDirection: TextDirection.ltr,
       child: Row(

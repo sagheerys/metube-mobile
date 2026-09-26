@@ -5,7 +5,7 @@ void main() {
   /// **Reddit: the defect, and why resolution is the fix** (field report
   /// 2026-09-20).
   ///
-  /// The owner's report: a Reddit link downloads on the server but the app's
+  /// The report: a Reddit link downloads on the server but the app's
   /// counter never moves — Lite never pulls the file and never cleans the
   /// server, and Super shows a stuck card beside a clip already sitting in
   /// the library. The cause is not the download: MeTube files an item under
@@ -39,7 +39,7 @@ void main() {
             ? 'https://www.reddit.com/comments/1w64qio'
             : null,
       );
-      // Exactly the pair measured on the owner's server: sent on the left,
+      // Exactly the pair measured on a real server: sent on the left,
       // filed on the right.
       expect(
         await resolver.resolve('https://redd.it/1w64qio'),
@@ -88,10 +88,11 @@ void main() {
   /// **Vimeo: the same defect, on a link nobody would call "short"** (field
   /// report 2026-09-20, with cookies working and the clip downloaded).
   ///
-  /// The owner pasted the address Vimeo shows on an author's page. The
+  /// The link pasted was the address Vimeo shows on an author's page. The
   /// server filed the clip under the number that address redirects to, so
   /// the card sat at 0% beside the finished clip in the library — **and the
-  /// arrival notice announced his own download back to him**, because a task
+  /// arrival notice announced the user's own download back to them**,
+  /// because a task
   /// is marked as ours by the canonical URL the poll captures, and the poll
   /// never captured one.
   group('Vimeo author-page links', () {

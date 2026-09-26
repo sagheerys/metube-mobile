@@ -10,8 +10,8 @@ import 'package:mt_ui/mt_ui.dart';
 /// hashes before every heading, and `[text](https://…)` mid-sentence — in
 /// the one screen that asks someone to trust the app with an install.
 ///
-/// The text below is the shape `CLAUDE.md` §7 requires of every release
-/// page, so these are the constructs that actually turn up.
+/// The text below has the shape every release page of this project
+/// takes, so these are the constructs that actually turn up.
 void main() {
   const notes = '''
 Installs over the previous version and keeps your settings and library.

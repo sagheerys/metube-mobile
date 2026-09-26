@@ -43,8 +43,8 @@ class _CookiesScreenState extends ConsumerState<CookiesScreen> {
       if (mounted) showMTSnack(context, success, type: MTSnackType.success);
     } on Object catch (e) {
       // **The server's own words**, which for cookies are the useful ones:
-      // "configured manually via YTDL_OPTIONS" tells the owner to go and
-      // edit the container, and nothing this app could invent says that.
+      // "configured manually via YTDL_OPTIONS" tells the server's
+      // operator to go and edit the container, and nothing this app could invent says that.
       if (mounted) showErrorSnack(context, ref, e, tag: 'cookies');
     } finally {
       if (mounted) setState(() => _busy = false);

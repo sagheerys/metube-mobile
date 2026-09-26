@@ -8,17 +8,17 @@ import 'package:mt_ui/mt_ui.dart';
 /// centre: where it is, how large, and how strong against the full one.
 typedef MTEmber = ({Offset centre, double radius, double strength});
 
-/// **The glow behind the cover moves while the sound plays** (asked
-/// 2026-09-24, after the owner saw Samsung Music's drifting background).
+/// **The glow behind the cover moves while the sound plays** (requested
+/// 2026-09-24, after Samsung Music's drifting background).
 ///
-/// Samsung tints its background from the cover; the owner declined that,
+/// Samsung tints its background from the cover; that was declined,
 /// because a clip's colours would repaint the app. So the idea is kept and
 /// the source changed: the identity is called "glow", and this is light in
 /// the app's **own accent** — ember in Super, petrol in Lite, read from the
 /// palette like everything else.
 ///
-/// **Two embers, circling opposite ways** (the owner's pick, 2026-09-24:
-/// one halo breathing at the centre "looked like it stayed in one place").
+/// **Two embers, circling opposite ways** (chosen 2026-09-24: one halo
+/// breathing at the centre looked as if it stayed in one place).
 /// The large one goes round the cover every nine seconds; the small one
 /// the other way every thirteen, on a path that widens and narrows. The
 /// periods share no factor, so where they meet and part is different every

@@ -13,7 +13,7 @@ import '../tokens/tokens.dart';
 ///
 /// **Not a Markdown package.** A full one is a large dependency, and its
 /// job — arbitrary documents — is not this one. What is rendered here is
-/// the shape our own release notes take (`CLAUDE.md` §7): headings, bullets,
+/// the shape this project's release notes take: headings, bullets,
 /// bold, inline code, a small table, links. Anything else is shown as its
 /// own text rather than as syntax, which is the failure that matters: an
 /// unknown construct must read as a sentence, never as a stray symbol.

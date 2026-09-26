@@ -4,11 +4,11 @@ import 'package:metube_super/features/library/library_providers.dart';
 
 /// **Filtering and searching by the channel**.
 ///
-/// The channel name has always arrived in `/history` and has always been
-/// printed on the card, and was usable for nothing: search covered the
-/// title alone and no filter existed, so "show me everything from this
-/// channel" could not be asked. Subscriptions made that gap the obvious
-/// one — the whole point of following a channel is the channel.
+/// Stock MeTube leaves the channel out of `/history`, so on most servers
+/// only local items, and servers that do send an uploader, carry one.
+/// Where it exists it was printed on the card and usable for nothing:
+/// search covered the title alone and no filter existed. These tests pin
+/// the filter and the search for the items that have a channel.
 void main() {
   LibraryItem item(String url, {required String title, String? uploader}) =>
       LibraryItem(

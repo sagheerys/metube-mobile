@@ -13,7 +13,7 @@ import 'fake_video_platform.dart';
 /// got its drag and its row order pinned — but not the line itself:
 /// LinearProgressIndicator paints by the ambient direction, not by its
 /// Row's, so in Arabic it still filled from the right while the finger was
-/// counted from the left. The owner saw it against Instagram and YouTube.
+/// counted from the left. Instagram and YouTube keep it left to right.
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 

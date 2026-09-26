@@ -4,11 +4,12 @@ import 'package:metube_super/features/shared/error_text.dart';
 import 'package:mt_core/mt_core.dart';
 import 'package:mt_ui/mt_ui.dart';
 
-/// **What a platform that wants a login tells the owner** (2026-09-20).
+/// **What a platform that wants a login tells the Super user**
+/// (2026-09-20).
 ///
 /// Vimeo answers `The web client only works when logged-in. Use --cookies…`,
 /// which the core classifies as [PlatformBlockedException]. The message the
-/// owner then reads used to defer to "the server admin" — and in Super the
+/// user then reads used to defer to "the server admin" — and in Super the
 /// reader *is* the admin, holding a screen that takes the file.
 void main() {
   for (final locale in [const Locale('en'), const Locale('ar')]) {
@@ -31,7 +32,7 @@ void main() {
   }
 
   test('the real Vimeo error is what reaches it', () {
-    // Copied from the owner's own server, 2026-09-20.
+    // Copied from a real server, 2026-09-20.
     const vimeo =
         'ERROR: [vimeo] 1225400313: The web client only works when logged-in. '
         'Use --cookies, --cookies-from-browser, --username and --password, '

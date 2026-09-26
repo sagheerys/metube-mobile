@@ -251,8 +251,8 @@ abstract final class UrlKit {
   /// you — answers **301 to `/1225400313`**, and that number is what the
   /// item is filed as. The consequence was not only a stuck card: the
   /// arrival notice marks a clip as "ours" by the canonical URL the poll
-  /// captures, so a download the owner started himself was announced back
-  /// to him as something that had arrived on its own.
+  /// captures, so a download the user started was announced back to them
+  /// as something that had arrived on its own.
   ///
   /// The canonical form is recognised so the common link costs no request.
   static bool _isUnresolvedVimeo(String lower) {

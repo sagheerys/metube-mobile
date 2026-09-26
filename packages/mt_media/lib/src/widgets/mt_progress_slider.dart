@@ -56,8 +56,8 @@ class _MTProgressSliderState extends State<MTProgressSlider> {
     // Samsung Music, the system's media notification buttons, the lock screen,
     // car head units, YouTube and Spotify all keep it left to right in Arabic,
     // and Material's bidirectionality guidance says the same. Mirrored, the
-    // bar ran leftwards while "next" pointed right, and the owner read the
-    // buttons as reversed.
+    // bar ran leftwards while "next" pointed right, and the buttons read
+    // as reversed.
     return Directionality(
       textDirection: TextDirection.ltr,
       child: Column(

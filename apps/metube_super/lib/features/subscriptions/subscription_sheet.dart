@@ -194,7 +194,8 @@ class _SubscriptionSheetState extends ConsumerState<_SubscriptionSheet> {
               // phone that decodes AV1 in hardware and choppy on one that
               // does not, and a warning for everyone would push the first
               // kind down to 1080p for nothing. Telling the two apart
-              // needs the device asked, which is the next batch.
+              // would need the device's decoders queried, which this
+              // sheet does not do yet.
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
