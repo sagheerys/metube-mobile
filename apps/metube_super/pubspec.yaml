@@ -2,7 +2,7 @@ name: metube_super
 description: "MeTube Super — the server owner's edition: streaming, a merged library, tags, management."
 publish_to: none
 resolution: workspace
-version: 2.2.0+7
+version: 2.2.1+8
 
 environment:
   sdk: ^3.13.0

@@ -9,6 +9,8 @@ only one.
 
 ## [Unreleased]
 
+## [2.2.1] - 2026-09-26
+
 ### Fixed
 
 - **The notification, lock-screen, car and headphone buttons no longer stop
@@ -395,7 +397,8 @@ each one left behind a test that fails on the old code.
 - An album pasted as one link expanding into twenty downloads on the server,
   with only one of them pulled.
 
-[Unreleased]: https://github.com/sagheerys/metube-mobile/compare/v2.2.0...HEAD
+[Unreleased]: https://github.com/sagheerys/metube-mobile/compare/v2.2.1...HEAD
+[2.2.1]: https://github.com/sagheerys/metube-mobile/compare/v2.2.0...v2.2.1
 [2.2.0]: https://github.com/sagheerys/metube-mobile/compare/v2.1.0...v2.2.0
 [2.1.0]: https://github.com/sagheerys/metube-mobile/compare/v2.0.2...v2.1.0
 [2.0.2]: https://github.com/sagheerys/metube-mobile/compare/v2.0.1...v2.0.2
