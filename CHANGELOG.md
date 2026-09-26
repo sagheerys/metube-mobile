@@ -9,6 +9,8 @@ only one.
 
 ## [Unreleased]
 
+## [2.2.0] - 2026-09-26
+
 ### Added
 
 - **Follow a channel and the server keeps it for you.** Settings now has
@@ -111,7 +113,6 @@ only one.
   a help button explains "or", letter case, and that a video the filter
   skipped is never fetched later. The menu item that opens the whole edit
   sheet is now "Edit" rather than "Rename". MeTube Super.
-
 - **A stream that keeps dropping is now given up on instead of retried for
   ever.** Waiting out a hiccup was right; the budget for it came back with
   any successful load, and a source that loads, plays a second and drops
@@ -385,7 +386,8 @@ each one left behind a test that fails on the old code.
 - An album pasted as one link expanding into twenty downloads on the server,
   with only one of them pulled.
 
-[Unreleased]: https://github.com/sagheerys/metube-mobile/compare/v2.1.0...HEAD
+[Unreleased]: https://github.com/sagheerys/metube-mobile/compare/v2.2.0...HEAD
+[2.2.0]: https://github.com/sagheerys/metube-mobile/compare/v2.1.0...v2.2.0
 [2.1.0]: https://github.com/sagheerys/metube-mobile/compare/v2.0.2...v2.1.0
 [2.0.2]: https://github.com/sagheerys/metube-mobile/compare/v2.0.1...v2.0.2
 [2.0.1]: https://github.com/sagheerys/metube-mobile/compare/v2.0.0...v2.0.1
