@@ -2,21 +2,29 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mt_ui/mt_ui.dart';
 
-/// **A notification speaks the app's language** (found 2026-09-26 while
-/// taking the subscriptions screenshots: an English app on an English
-/// phone posted its arrivals notice in Arabic).
+/// **Which language a phone gets, on screen and in notifications.**
+///
+/// Found 2026-09-26 while taking the subscriptions screenshots: an English
+/// app on an English phone posted its arrivals notice in Arabic. Checking
+/// that showed the second fault: a phone in a language the app lacks got
+/// the whole app in Arabic, Flutter's fallback being the first supported
+/// language.
 void main() {
-  const phones = <String, List<Locale>>{
-    'English phone': [Locale('en', 'US')],
-    'Arabic phone': [Locale('ar', 'SA')],
-    'French first, English second': [Locale('fr', 'FR'), Locale('en', 'GB')],
-    'a language the app lacks': [Locale('de', 'DE')],
+  const phones = <String, (List<Locale>, String)>{
+    'English phone': ([Locale('en', 'US')], 'en'),
+    'Arabic phone': ([Locale('ar', 'SA')], 'ar'),
+    'French first, Arabic second': (
+      [Locale('fr', 'FR'), Locale('ar', 'EG')],
+      'ar',
+    ),
+    'German only': ([Locale('de', 'DE')], 'en'),
+    'French and German': ([Locale('fr', 'FR'), Locale('de', 'DE')], 'en'),
   };
 
-  for (final MapEntry(key: phone, value: locales) in phones.entries) {
-    testWidgets('$phone on "system": the notice matches the screen', (
-      tester,
-    ) async {
+  for (final MapEntry(key: phone, value: (locales, expected))
+      in phones.entries) {
+    testWidgets('$phone on "system": the screen and the notice both get '
+        '"$expected"', (tester) async {
       tester.platformDispatcher.localesTestValue = locales;
       addTearDown(tester.platformDispatcher.clearLocalesTestValue);
       late Locale shown;
@@ -24,6 +32,7 @@ void main() {
         MaterialApp(
           localizationsDelegates: MTLocalizations.localizationsDelegates,
           supportedLocales: MTLocalizations.supportedLocales,
+          localeListResolutionCallback: mtLocaleResolution,
           home: Builder(
             builder: (context) {
               shown = Localizations.localeOf(context);
@@ -33,20 +42,13 @@ void main() {
         ),
       );
 
+      expect(shown.languageCode, expected);
       expect(
         mtLocalizationsFor(null, systemLocales: locales).localeName,
-        lookupMTLocalizations(shown).localeName,
+        expected,
       );
     });
   }
-
-  test('an English phone gets English, not the old Arabic fallback', () {
-    final l10n = mtLocalizationsFor(
-      null,
-      systemLocales: const [Locale('en', 'US')],
-    );
-    expect(l10n.localeName, 'en');
-  });
 
   test('a language chosen in the app wins over the phone', () {
     final l10n = mtLocalizationsFor(

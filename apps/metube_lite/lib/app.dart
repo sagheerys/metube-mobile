@@ -25,6 +25,7 @@ class LiteApp extends ConsumerWidget {
       locale: localeCode == null ? null : Locale(localeCode),
       localizationsDelegates: MTLocalizations.localizationsDelegates,
       supportedLocales: MTLocalizations.supportedLocales,
+      localeListResolutionCallback: mtLocaleResolution,
       routerConfig: router,
       // **The system bars follow the theme**, without the contrast scrim
       // Android imposes behind the three navigation buttons, which cuts

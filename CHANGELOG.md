@@ -58,6 +58,11 @@ only one.
   had to be scrolled to. It now opens with the playing song in view, and
   the one before it just above. The same in full-screen video's side
   panel. Both apps.
+- **A phone in a language the app does not have gets English.** With the
+  language left on "System", a phone in German or French showed the whole
+  app in Arabic, the first language in its list. It now falls back to
+  English; a phone that lists Arabic or English anywhere in its languages
+  still gets that one. Both apps.
 - **Notifications speak the app's language.** With the language left on
   "System", the download and arrival notices came out in Arabic whatever
   the phone spoke, while the app itself was in English. They now follow
