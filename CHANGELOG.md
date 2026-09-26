@@ -9,6 +9,15 @@ only one.
 
 ## [Unreleased]
 
+### Fixed
+
+- **The notification, lock-screen, car and headphone buttons no longer stop
+  responding.** When Android restarted the app's audio service while the
+  app itself kept running, every button outside the app was silently
+  ignored — the song played on, the in-app controls still worked, and only
+  closing and reopening the app brought the buttons back. They now reach
+  the player whatever restarted the service. Both apps.
+
 ## [2.2.0] - 2026-09-26
 
 ### Added

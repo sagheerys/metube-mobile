@@ -10,3 +10,9 @@ workspace:
   - packages/mt_ui
   - apps/metube_lite
   - apps/metube_super
+
+# audio_service 0.18.19 with one fix, kept in third_party until upstream has
+# it: see third_party/audio_service/PATCHES.md.
+dependency_overrides:
+  audio_service:
+    path: third_party/audio_service
