@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/widgets.dart' show Locale;
 import 'package:flutter_background/flutter_background.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mt_core/mt_core.dart';
@@ -41,9 +40,8 @@ final downloadWatcherProvider = Provider<void>((ref) {
   /// one arrive after a newer one and put the percentage back.
   Future<void> chain = Future.value();
 
-  MTLocalizations l10n() => lookupMTLocalizations(
-    Locale(ref.read(settingsProvider).localeCode ?? 'ar'),
-  );
+  MTLocalizations l10n() =>
+      mtLocalizationsFor(ref.read(settingsProvider).localeCode);
 
   int idOf(DownloadTask task) => task.id.hashCode & 0x7fffffff;
 

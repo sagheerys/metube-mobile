@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/widgets.dart' show Locale;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mt_core/mt_core.dart';
 import 'package:mt_ui/mt_ui.dart';
@@ -187,9 +186,7 @@ class ArrivalWatcher {
   }
 
   Future<void> _announce(List<HistoryItem> arrivals) async {
-    final l10n = lookupMTLocalizations(
-      Locale(_ref.read(settingsProvider).localeCode ?? 'ar'),
-    );
+    final l10n = mtLocalizationsFor(_ref.read(settingsProvider).localeCode);
     // **One notice for the batch**, as asked 2026-09-20: a channel checked
     // hourly can deliver several clips at once, and one line per clip
     // would be the reason the feature gets turned off.

@@ -58,6 +58,10 @@ only one.
   had to be scrolled to. It now opens with the playing song in view, and
   the one before it just above. The same in full-screen video's side
   panel. Both apps.
+- **Notifications speak the app's language.** With the language left on
+  "System", the download and arrival notices came out in Arabic whatever
+  the phone spoke, while the app itself was in English. They now follow
+  the same choice the screens make. Both apps.
 - **Large files read in gigabytes.** A 3 GB video read "3000 MB"; sizes
   from a thousand megabytes up now read in GB, and in Arabic the figure no
   longer swaps places with its unit. Both apps.
