@@ -81,8 +81,8 @@ only one.
   progress bars filled from the right while the play buttons stayed left to
   right, so a song moved leftwards and "next" pointed right. The bars in
   the audio and video players, the mini player's line and the reels now
-  run left to right, as in Samsung Music, the system's media buttons and
-  car stereos; in video, a double tap on the left half goes back in every
+  run left to right, as in most music players, the system's media buttons
+  and car stereos; in video, a double tap on the left half goes back in every
   language. Both apps.
 - **Coming back to the app re-reads the library.** Android keeps the app
   in the background for hours; on return the library stayed as it was
