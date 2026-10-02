@@ -62,7 +62,14 @@ class SidecarBackfill {
       if (candidates.isEmpty) return;
 
       final service = _ref.read(transcriptsServiceProvider);
-      final reader = SidecarReader(api);
+      final SidecarListing? listing;
+      try {
+        listing = await _listing(api);
+      } on MTApiException {
+        return; // unreachable: nothing is asked, nothing marked missing
+      }
+      if (_cancelled) return;
+      final reader = SidecarReader(api, listing: listing);
       for (final item in candidates) {
         if (_cancelled) return;
         _tried.add(item.canonicalUrl);
@@ -91,6 +98,18 @@ class SidecarBackfill {
       }
     } finally {
       _running = false;
+    }
+  }
+
+  /// The folder's names, read once per run so each clip's files are found
+  /// whatever their track suffix. A server that does not list its folder
+  /// leaves the reader to the plain names; any other failure is the
+  /// caller's to end the run on.
+  Future<SidecarListing?> _listing(MeTubeApi api) async {
+    try {
+      return SidecarListing.parse(await api.fetchDownloadIndex());
+    } on NoApiException {
+      return null;
     }
   }
 

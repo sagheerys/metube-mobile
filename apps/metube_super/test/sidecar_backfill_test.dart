@@ -89,9 +89,7 @@ void main() {
     );
     expect(server.asked, [
       'a.ar.vtt',
-      'a.en.vtt',
-      'a.en.srt',
-    ], reason: 'the app language, then English, each by its two names');
+    ], reason: 'only a file the folder lists is asked for');
     expect((await c.read(transcriptStatsProvider.future)).clips, 1);
   });
 
@@ -101,19 +99,27 @@ void main() {
       final c = await container();
       final backfill = c.read(sidecarBackfillProvider);
       await backfill.run([onServer('a')]);
-      final firstRun = server.asked.length;
-      expect(firstRun, 4, reason: 'two languages by two names');
+      final misses = c.read(sidecarMissIndexProvider);
+      const url = 'https://www.youtube.com/watch?v=a';
+      expect(await misses.readAll(), {url: 'a.mp4'});
+      final firstRun = server.indexReads;
+      expect(firstRun, 1);
 
       // A fresh walker, as after a relaunch: nothing is asked again.
       c.invalidate(sidecarBackfillProvider);
       final again = c.read(sidecarBackfillProvider);
       expect(again, isNot(same(backfill)));
       await again.run([onServer('a')]);
-      expect(server.asked.length, firstRun);
+      expect(
+        server.indexReads,
+        firstRun,
+        reason: 'nothing to look for, so the folder is not even listed',
+      );
 
       // Downloaded again to a new file: checked once more.
       await again.run([onServer('a', ext: 'webm')]);
-      expect(server.asked.length, firstRun + 4);
+      expect(server.indexReads, firstRun + 1);
+      expect((await misses.readAll())[url], 'a.webm');
     },
   );
 
@@ -146,7 +152,8 @@ void main() {
       server.failure = const NetworkException('blip');
       final c = await container();
       await c.read(sidecarBackfillProvider).run([onServer('a'), onServer('b')]);
-      expect(server.asked, hasLength(1));
+      expect(server.indexReads, 1);
+      expect(server.asked, isEmpty);
       expect(await c.read(sidecarMissIndexProvider).readAll(), isEmpty);
 
       // Recovered: asked again by a fresh walker, found this time.
@@ -173,7 +180,30 @@ void main() {
     expect(server.asked, isEmpty);
   });
 
+  test('a track with a suffix is found through the folder index, which is '
+      'read once per run', () async {
+    server.texts['a.ar-ar-nP7-2PuUl7o.vtt'] = vtt;
+    server.texts['b.ar.vtt'] = vtt;
+    final c = await container();
+    await c.read(sidecarBackfillProvider).run([onServer('a'), onServer('b')]);
+
+    expect((await c.read(transcriptIndexProvider.future)).length, 2);
+    expect(server.indexReads, 1);
+    expect(server.asked, isNot(contains('a.ar.vtt')));
+  });
+
+  test('a server that does not list its folder still gets the plain '
+      'names', () async {
+    server.listsFolder = false;
+    server.texts['a.ar.vtt'] = vtt;
+    final c = await container();
+    await c.read(sidecarBackfillProvider).run([onServer('a')]);
+    expect((await c.read(transcriptIndexProvider.future)).length, 1);
+  });
+
   test('the newest clip is asked first', () async {
+    server.texts['old.ar.vtt'] = vtt;
+    server.texts['new.ar.vtt'] = vtt;
     final c = await container();
     await c.read(sidecarBackfillProvider).run([
       onServer('old', at: DateTime.utc(2026, 1)),
@@ -187,6 +217,21 @@ class _FakeServer implements MeTubeApi {
   final texts = <String, String>{};
   final asked = <String>[];
   MTApiException? failure;
+  int indexReads = 0;
+
+  /// The folder index as the real server serves it, or none at all.
+  bool listsFolder = true;
+
+  @override
+  Future<String> fetchDownloadIndex() async {
+    indexReads++;
+    if (failure case final e?) throw e;
+    if (!listsFolder) throw const NoApiException();
+    return [
+      for (final name in texts.keys)
+        '<li><a href="/download/${Uri.encodeComponent(name)}">x</a></li>',
+    ].join();
+  }
 
   @override
   Future<String> fetchText(String serverFilename, {int maxBytes = 0}) async {

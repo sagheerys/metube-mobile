@@ -32,6 +32,11 @@ abstract interface class MeTubeApi {
   Future<String> fetchText(String serverFilename, {int maxBytes});
   String downloadUrl(String serverFilename);
 
+  /// The server's own index of its download folder, as the HTML it serves
+  /// for `GET /download/` under `DOWNLOAD_DIRS_INDEXABLE`. Throws
+  /// [NoApiException] on a server that does not list it.
+  Future<String> fetchDownloadIndex();
+
   /// **What the server says it is** (§2.6), or null when it will not say.
   ///
   /// Outside the download pipeline: nothing depends on the answer, and

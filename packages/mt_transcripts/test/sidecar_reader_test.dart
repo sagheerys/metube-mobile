@@ -39,6 +39,60 @@ void main() {
     });
   });
 
+  group('with the folder listed', () {
+    const html =
+        '<html><ul>'
+        '<li><a href="/download/.metube">.metube/</a></li>'
+        '<li><a href="/download/Me%20at%20the%20zoo%20%5BjNQXAC9IVRw%5D.webm">x</a></li>'
+        '<li><a href="/download/Me%20at%20the%20zoo%20%5BjNQXAC9IVRw%5D.en-nP7-2PuUl7o.vtt">x</a></li>'
+        '<li><a href="/download/Me%20at%20the%20zoo%20%5BjNQXAC9IVRw%5D.en-en-nP7-2PuUl7o.vtt">x</a></li>'
+        '<li><a href="/download/Me%20at%20the%20zoo%20%5BjNQXAC9IVRw%5D.ar-en-nP7-2PuUl7o.vtt">x</a></li>'
+        '<li><a href="/download/Me%20at%20the%20zoo%20%5BjNQXAC9IVRw%5D.en-orig.srt">x</a></li>'
+        '<li><a href="/download/Me%20at%20the%20zoo%20%5BjNQXAC9IVRw%5D.en-US.vtt">x</a></li>'
+        '<li><a href="/download/Me%20at%20the%20zoo%20%5BjNQXAC9IVRw%5D%202.en.vtt">x</a></li>'
+        '<li><a href="/download/Other%20%5Bx%5D.en.vtt">x</a></li>'
+        '<li><a href="/download/bad%E0%A4%A">x</a></li>'
+        '</ul></html>';
+
+    test('the names are decoded, and only the files beside the clip count', () {
+      final listing = SidecarListing.parse(html);
+      expect(listing.names, contains('Me at the zoo [jNQXAC9IVRw].webm'));
+      expect(listing.besides(media).map((e) => e.$1), [
+        'en-nP7-2PuUl7o',
+        'en-en-nP7-2PuUl7o',
+        'ar-en-nP7-2PuUl7o',
+        'en-orig',
+        'en-US',
+      ]);
+    });
+
+    test('the clip\'s own tracks come before a translation into the '
+        'language, and a suffixed track is found at all', () {
+      final listing = SidecarListing.parse(html);
+      expect(SidecarReader.choose(listing, media, 'en'), [
+        'Me at the zoo [jNQXAC9IVRw].en-orig.srt',
+        'Me at the zoo [jNQXAC9IVRw].en-en-nP7-2PuUl7o.vtt',
+        'Me at the zoo [jNQXAC9IVRw].en-US.vtt',
+        'Me at the zoo [jNQXAC9IVRw].en-nP7-2PuUl7o.vtt',
+      ]);
+      expect(SidecarReader.choose(listing, media, 'ar'), [
+        'Me at the zoo [jNQXAC9IVRw].ar-en-nP7-2PuUl7o.vtt',
+      ]);
+      expect(SidecarReader.choose(listing, media, 'de'), isEmpty);
+    });
+
+    test('a suffixed track is read where the plain name would miss', () async {
+      server.texts['Me at the zoo [jNQXAC9IVRw].en-nP7-2PuUl7o.vtt'] = vtt;
+      expect((await read()).outcome, SidecarOutcome.none);
+      final listed = await SidecarReader(
+        server,
+        listing: SidecarListing.parse(html),
+      ).read(canonicalUrl: watch, filename: media, language: 'en');
+      expect(listed.outcome, SidecarOutcome.found);
+      expect(listed.transcript!.language, 'en');
+    });
+  });
+
   test('found as vtt, the language asked for is the one stored', () async {
     server.texts['Me at the zoo [jNQXAC9IVRw].en.vtt'] = vtt;
     final result = await read();

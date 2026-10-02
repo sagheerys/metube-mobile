@@ -85,6 +85,11 @@ class FakeApi implements MeTubeApi {
   /// Text files by server filename, for [fetchText].
   final Map<String, String> textFiles = {};
 
+  /// The engine never lists the folder; a server without the index is the
+  /// simplest fake.
+  @override
+  Future<String> fetchDownloadIndex() async => throw const NoApiException();
+
   @override
   Future<String> fetchText(
     String serverFilename, {

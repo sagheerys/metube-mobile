@@ -1,5 +1,6 @@
 import 'package:mt_core/mt_core.dart';
 
+import 'sidecar_listing.dart';
 import 'subtitle_parser.dart';
 import 'transcript.dart';
 
@@ -34,22 +35,58 @@ class SidecarResult {
 /// replaces the clip's own record.
 ///
 /// yt-dlp names the subtitle file after the media file, with the extension
-/// replaced by `<language>.<format>`, so the name is computed from the
-/// clip's `filename` in `/history` and no folder is ever listed. Measured
-/// on a real server (MeTube 2026.09.25) for a video and for an audio
-/// download alike: `Me at the zoo [jNQXAC9IVRw].en.vtt` beside the `.webm`
-/// and beside the `.m4a`.
+/// replaced by `<track>.<format>`, so the name is derived from the clip's
+/// `filename` in `/history`. Measured on a real server (MeTube 2026.09.25)
+/// for a video and for an audio download alike: `Me at the zoo
+/// [jNQXAC9IVRw].en.vtt` beside the `.webm` and beside the `.m4a`.
+///
+/// The track is the language alone on most clips, but not on one with
+/// several audio tracks, where YouTube suffixes it (`en-nP7-2PuUl7o`,
+/// measured 2026-10-03). So with a [SidecarListing] of the folder the file
+/// is picked among the names beside the clip, by language; without one,
+/// the plain names are tried.
 class SidecarReader {
-  const SidecarReader(this.api);
+  const SidecarReader(this.api, {this.listing});
 
   final MeTubeApi api;
+  final SidecarListing? listing;
 
-  /// The names the file can have, most likely first: `vtt` is what YouTube
-  /// serves and what the guide asks for, `srt` what a converter leaves.
+  /// The names the file can have when the track is the plain language,
+  /// most likely first: `vtt` is what YouTube serves and what the guide
+  /// asks for, `srt` what a converter leaves.
   static List<String> namesFor(String filename, String language) {
-    final dot = filename.lastIndexOf('.');
-    final stem = dot <= 0 ? filename : filename.substring(0, dot);
+    final stem = SidecarListing.stemOf(filename);
     return ['$stem.$language.vtt', '$stem.$language.srt'];
+  }
+
+  /// The files beside [filename] that hold [language], best first: the
+  /// language alone, then the clip's own tracks under a suffix, then a
+  /// translation into it (`ar-en-…`), which costs nothing to read once the
+  /// server has it.
+  static List<String> choose(
+    SidecarListing listing,
+    String filename,
+    String language,
+  ) {
+    final beside = listing.besides(filename);
+    int rank(String label) {
+      final lower = label.toLowerCase();
+      if (lower == language || lower == '$language-orig') return 0;
+      if (lower.startsWith('$language-$language-')) return 1;
+      if (!lower.startsWith('$language-')) return -1;
+      final next = label.substring(language.length + 1).split('-').first;
+      // A translation names its source language second, in lower case; a
+      // region is upper case (`en-US`) and a track id mixes cases, as
+      // `nP7-2PuUl7o` does.
+      final translated = RegExp(r'^[a-z]{2,3}$').hasMatch(next);
+      return translated ? 3 : 2;
+    }
+
+    final ranked = [
+      for (final (label, name) in beside)
+        if (rank(label) case final r when r >= 0) (r, name),
+    ]..sort((a, b) => a.$1 != b.$1 ? a.$1 - b.$1 : a.$2.compareTo(b.$2));
+    return [for (final (_, name) in ranked) name];
   }
 
   Future<SidecarResult> read({
@@ -63,8 +100,12 @@ class SidecarReader {
     if (!UrlKit.isSafeServerFilename(filename)) {
       return const SidecarResult(SidecarOutcome.none);
     }
-    for (final name in namesFor(filename, language)) {
-      if (!UrlKit.isSafeServerFilename(name)) break;
+    final names = switch (listing) {
+      final listing? => choose(listing, filename, language),
+      null => namesFor(filename, language),
+    };
+    for (final name in names) {
+      if (!UrlKit.isSafeServerFilename(name)) continue;
       final String text;
       try {
         text = await api.fetchText(name);
@@ -79,6 +120,8 @@ class SidecarReader {
         SidecarOutcome.found,
         transcript: Transcript(
           canonicalUrl: canonicalUrl,
+          // What was asked for, not the track's own label: a clip holds
+          // one transcript per language asked, as the captions job does.
           language: language,
           // The same subtitles the captions job fetches, only written by
           // the server on its own; the rest of the app need not tell them

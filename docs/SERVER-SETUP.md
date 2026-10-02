@@ -168,15 +168,23 @@ file it downloads**, and let Super read them from there. Extend the
       YTDL_OPTIONS: >-
         {"outtmpl":"/downloads/%(title)s.%(id)s.%(ext)s",
          "writesubtitles":true,"writeautomaticsub":true,
-         "subtitleslangs":["ar","en"],"subtitlesformat":"vtt/srt/best",
-         "ignoreerrors":true}
+         "subtitleslangs":["ar(-(?![a-z][a-z][a-z]?(-|$)).*)?","ar-ar-.*",
+                           "en(-(?![a-z][a-z][a-z]?(-|$)).*)?","en-en-.*"],
+         "subtitlesformat":"vtt/srt/best","ignoreerrors":true}
 ```
 
-Put the languages you use in `subtitleslangs`, as plain codes: a pattern
-like `ar.*` also pulls YouTube's machine translations, which it refuses at
-once with a 429. Measured on a real server for a video and an audio download
+`subtitleslangs` looks the way it does because YouTube no longer names every
+track by its language alone. On a clip with several audio tracks (music
+videos from the big labels, dubbed films) the tracks carry a suffix:
+`en-nP7-2PuUl7o` is the English subtitles, `en-en-nP7-2PuUl7o` the English
+automatic captions, `ar-en-nP7-2PuUl7o` a machine translation into Arabic.
+Each pair above takes a language's own tracks, plain or suffixed, and leaves
+the machine translations out, which YouTube refuses with a 429 far sooner
+than the rest. Swap `ar` for the languages you use, and keep the pairs as
+they are. Measured on a real server for a video and an audio download
 alike: `Me at the zoo [jNQXAC9IVRw].en.vtt` appears beside the clip, and the
-clip completes.
+clip completes; Super reads the folder's index once per pass, so a suffixed
+name is found too.
 
 Three things to know before adding it:
 

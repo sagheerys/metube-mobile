@@ -552,6 +552,24 @@ class MeTubeApiClient implements MeTubeApi {
     return utf8.decode(bytes, allowMalformed: true);
   }
 
+  @override
+  Future<String> fetchDownloadIndex() async {
+    final Response<String> response;
+    try {
+      response = await _dio.get<String>(
+        '${config.baseUrl}/download/',
+        options: Options(
+          responseType: ResponseType.plain,
+          receiveTimeout: MTConstants.textFileTimeout,
+        ),
+      );
+    } on DioException catch (e) {
+      throw NetworkException(e.message);
+    }
+    _throwIfDownloadRejected(response.statusCode ?? 0);
+    return response.data ?? '';
+  }
+
   /// §2.5: deletion uses the canonicalUrl that came from `/history`, and
   /// nothing else.
   @override

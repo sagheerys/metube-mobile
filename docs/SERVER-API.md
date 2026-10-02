@@ -144,13 +144,26 @@ raises `DownloadError` for every value **other than `True`** (`False` and
 afterwards, so the line breaks neither audio extraction nor thumbnails, and
 subscription downloads honour it.
 
-**Language codes are not what they were.** On a clip with several audio
-tracks YouTube now suffixes every track (`en-nP7-2PuUl7o`,
-`ar-en-nP7-2PuUl7o`); `subtitleslangs: ["ar","en"]` matches the plain
-original tracks only, whose file names are predictable. A pattern such as
-`ar.*` pulls the machine translations too, which YouTube refuses with 429
-at once, under names nothing can compute. The guide therefore asks for the
-plain codes.
+**Language codes are not what they were** (measured 2026-10-03). On a clip
+with several audio tracks YouTube suffixes every track, and the plain codes
+are then absent altogether: the Shakira "Zoo" clip offers `en-nP7-2PuUl7o`
+(subtitles), `en-en-nP7-2PuUl7o` (automatic captions) and
+`ar-en-nP7-2PuUl7o` (a machine translation), and nothing named `en` or
+`ar`. `subtitleslangs` entries are regular expressions matched whole, so
+the guide's pair per language, `L(-(?![a-z][a-z][a-z]?(-|$)).*)?` and
+`L-L-.*`, takes the plain and the suffixed own tracks and leaves the
+translations, whose second segment is a source-language code. The suffixed
+own tracks download without a 429 (measured); the translations, plain `ar`
+on an English clip included, are rate-limited and sometimes refused. This
+also means **MeTube's captions job, and so the app's fetch before an add,
+finds nothing on such a clip**: the server asks for `[L, L-orig]` and the
+language is not accepted as a pattern (`^[A-Za-z0-9][A-Za-z0-9-]{0,34}$`).
+
+Because the suffix cannot be computed, Super reads the folder's index
+(`GET /download/`, the HTML `DOWNLOAD_DIRS_INDEXABLE` serves, 79 KB for 500
+files) once per backfill pass and picks the files beside each clip by
+prefix (`SidecarListing`); a server without the index falls back to the
+plain names.
 
 #### `playlist_item_limit` — what the app thinks is a single item stays single
 
