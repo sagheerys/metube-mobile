@@ -96,11 +96,8 @@ class TranscriptsService {
     if (PlaylistDetector.isPlaylist(url)) return;
     if (UrlKit.youtubeVideoId(url) == null) return;
 
-    final appLanguage = mtLocalizationsFor(
-      _ref.read(settingsProvider).localeCode,
-    ).localeName;
     final fetcher = _ref.read(captionsFetcherFactoryProvider)(api);
-    for (final language in transcriptLanguages(appLanguage)) {
+    for (final language in languages) {
       final result = await fetcher.fetch(url, language: language);
       _log(
         'captions $language ${result.outcome.name} for $url'
@@ -124,6 +121,11 @@ class TranscriptsService {
     appLanguage,
     if (appLanguage != 'en') 'en',
   ];
+
+  /// [transcriptLanguages] for the language the app is showing now.
+  List<String> get languages => transcriptLanguages(
+    mtLocalizationsFor(_ref.read(settingsProvider).localeCode).localeName,
+  );
 
   Future<void> save(Transcript transcript) async {
     await (await _ref.read(transcriptStoreProvider.future)).write(transcript);

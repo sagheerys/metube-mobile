@@ -118,13 +118,39 @@ is added, it asks for the captions alone, reads the `.srt`, deletes that
 captions entry, and only then adds the video (`CaptionsFetcher` in
 `packages/mt_transcripts`). A clip already in the library is never asked for.
 
-**Do not turn subtitles on for every download through `YTDL_OPTIONS`**
-(`writeautomaticsub` and friends), though it looks like the way around the
-shared key. Read from yt-dlp 2026.08.19 and MeTube's source: subtitles are
-fetched **before** the media, and a subtitle HTTP error (a 429 from YouTube,
-say) raises unless `ignoreerrors` is `true`, which MeTube never sets — so the
-**whole download fails with no video**. The sidecar is also never tracked, so a
-delete leaves it behind, and it is written next to audio downloads as well.
+#### Subtitles beside every download — the way around the shared key (measured 2026-10-02)
+
+`YTDL_OPTIONS` with `writesubtitles` and `writeautomaticsub` has yt-dlp save
+each clip's subtitles **next to its file**, whoever asked for the clip: the
+app, a subscription, the web page. Super reads those files back
+(`SidecarReader` in `packages/mt_transcripts`) for every clip that has no
+transcript yet, which is what covers subscriptions. Measured on the owner's
+server (MeTube 2026.09.25, template `%(title)s [%(id)s].%(ext)s`):
+
+| | Result |
+|---|---|
+| A video download | `Me at the zoo [jNQXAC9IVRw].en.vtt` beside the `.webm` |
+| An audio download (m4a) | the same file beside the `.m4a` |
+| The file's name | the media filename with its extension replaced by `<lang>.vtt` (yt-dlp's `subtitles_filename`), so it is computed, never listed |
+| Deleting the clip | **leaves the subtitle file behind**: MeTube records `subtitle_files` for captions jobs only |
+| A captions job for the same URL and language, `format: vtt` | adopts the existing file ("already present"), and deleting that job deletes it — the only way to remove an orphan through the API |
+
+**`ignoreerrors: true` is part of the line, not optional.** Read from yt-dlp
+(`_write_subtitles`): a subtitle download error, a 429 from YouTube say,
+raises `DownloadError` for every value **other than `True`** (`False` and
+`'only_download'` alike), and the whole download fails with no video. With
+`True` it becomes a warning and the media is downloaded. MeTube merges
+`YTDL_OPTIONS` over its own options and appends its own postprocessors
+afterwards, so the line breaks neither audio extraction nor thumbnails, and
+subscription downloads honour it.
+
+**Language codes are not what they were.** On a clip with several audio
+tracks YouTube now suffixes every track (`en-nP7-2PuUl7o`,
+`ar-en-nP7-2PuUl7o`); `subtitleslangs: ["ar","en"]` matches the plain
+original tracks only, whose file names are predictable. A pattern such as
+`ar.*` pulls the machine translations too, which YouTube refuses with 429
+at once, under names nothing can compute. The guide therefore asks for the
+plain codes.
 
 #### `playlist_item_limit` — what the app thinks is a single item stays single
 

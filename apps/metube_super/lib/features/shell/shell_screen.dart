@@ -23,6 +23,7 @@ import '../player/playback_providers.dart';
 import '../settings/resume_refresh.dart';
 import '../update/update_sheet.dart';
 import '../subscriptions/arrival_watcher.dart';
+import '../transcripts/sidecar_backfill.dart';
 import '../update/update_state.dart';
 import '../update/whats_new_prompt.dart';
 import '../shared/notification_permission.dart';
@@ -237,6 +238,9 @@ class _ShellScreenState extends ConsumerState<ShellScreen>
     // Stores each item's quality ahead of time, after the enricher has
     // shown its file is readable.
     ref.watch(qualityBackfillRunProvider);
+    // Reads the subtitle files a server writes beside its clips, for the
+    // clips that arrived without this app's own transcript fetch.
+    ref.watch(sidecarBackfillRunProvider);
     // The completed item's highlight, watched from the shell so it never
     // misses a completion that happened while the user was on another
     // screen.

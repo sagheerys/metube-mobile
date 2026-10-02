@@ -130,7 +130,9 @@ that again at any time.
   Transcripts): each YouTube clip you add has its subtitles fetched from your
   server and kept on the phone, so a library search also lists the clips in
   which your words were said, with the moment for each. Tap one to play from
-  that second.
+  that second. A server set to write subtitles beside each clip (one line in
+  its configuration, in the setup guide) covers everything it downloads,
+  subscriptions included.
 - **Read along**: a clip with a transcript opens it beside the audio or video
   player, with the line being said marked as it plays and a tap on any line
   to jump there.

@@ -2639,7 +2639,7 @@ abstract class MTLocalizations {
   /// No description provided for @transcriptsHelp.
   ///
   /// In en, this message translates to:
-  /// **'The app keeps the words said in each YouTube clip you add, so a library search also finds what was said inside your clips, not only their titles. Other sites are not covered yet.\n\nThe words are fetched from your server just before the download and kept on this phone only. The server does not keep them, and the full backup does not include them. To move them to another phone, use Export here and Import there. An import adds to what is already here and deletes nothing.'**
+  /// **'The app keeps the words said in each YouTube clip you add, so a library search also finds what was said inside your clips, not only their titles. Other sites are not covered yet.\n\nThe words are fetched from your server just before the download and kept on this phone only. The server does not keep them, and the full backup does not include them. To move them to another phone, use Export here and Import there. An import adds to what is already here and deletes nothing.\n\nA server set to write subtitles beside each clip (one line in its configuration; the setup guide shows it) covers everything it downloads, subscriptions included: the app reads those files on its own.'**
   String get transcriptsHelp;
 
   /// No description provided for @transcriptsImport.

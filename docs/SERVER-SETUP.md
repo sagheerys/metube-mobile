@@ -150,6 +150,51 @@ client can hand your server arbitrary options.
 A server that does not know the name answers 400, and the app quietly retries
 without it. So this is optional: you lose the fix, not the download.
 
+### Optional: `YTDL_OPTIONS` with subtitles, for Super's search inside clips
+
+**Without it, Super has transcripts only for the clips added from the app.**
+
+Super's "Search inside clips" fetches a YouTube clip's subtitles through the
+server before the clip itself is added. It cannot do that afterwards: MeTube
+keeps one record per URL, and asking for an existing clip's subtitles replaces
+the clip's own record. So what a subscription brings, what the web page or a
+batch downloads, has no transcript.
+
+The way around it is to have the server write the subtitles **beside every
+file it downloads**, and let Super read them from there. Extend the
+`YTDL_OPTIONS` line (keep your own `outtmpl`):
+
+```yaml
+      YTDL_OPTIONS: >-
+        {"outtmpl":"/downloads/%(title)s.%(id)s.%(ext)s",
+         "writesubtitles":true,"writeautomaticsub":true,
+         "subtitleslangs":["ar","en"],"subtitlesformat":"vtt/srt/best",
+         "ignoreerrors":true}
+```
+
+Put the languages you use in `subtitleslangs`, as plain codes: a pattern
+like `ar.*` also pulls YouTube's machine translations, which it refuses at
+once with a 429. Measured on a real server for a video and an audio download
+alike: `Me at the zoo [jNQXAC9IVRw].en.vtt` appears beside the clip, and the
+clip completes.
+
+Three things to know before adding it:
+
+- **`ignoreerrors` must stay `true`.** Without it, a subtitle that YouTube
+  refuses (a 429) fails the **whole download**, with no video. With it, the
+  refusal is a warning and the video arrives; a download that really fails
+  is still reported as failed.
+- **The subtitle file outlives its clip.** MeTube deletes the clip's own file
+  on a trashcan delete and leaves the subtitle beside it, a few kilobytes
+  each.
+- **It covers new downloads only.** Clips downloaded before the line was
+  added have no file to read; for those there is the backfill tool in
+  `packages/mt_transcripts/bin`.
+
+A machine translation into a language the clip was not spoken in is not
+fetched by the plain codes, so an English talk gives an English transcript,
+and an Arabic one an Arabic transcript. Both are searchable.
+
 ### `COOKIES_FILE`
 
 Only needed for platforms that refuse anonymous access. When a download fails
@@ -364,6 +409,7 @@ server at all:
 | Downloads complete on the server but the app cannot pull them | `DOWNLOAD_DIRS_INDEXABLE=true` |
 | Two clips with the same title become one file | `%(id)s` in `YTDL_OPTIONS` `outtmpl` |
 | One platform always fails with a sign-in message | `COOKIES_FILE` |
+| Super's search inside clips finds nothing in what subscriptions bring | `writesubtitles` and friends in `YTDL_OPTIONS` (optional, above) |
 | Streaming fails in Super while downloading works | HTTPS, or cleartext allowed for that host |
 | From outside: "not a MeTube server"; at home it connects | a login page in front of the API (Cloudflare Access) — use basic auth, or a Bypass policy for that hostname |
 | The password is right and the app still says wrong credentials | a non-ASCII password hashed with `btoa()` in a Worker — encode it as UTF-8 (see above) or keep the password ASCII |

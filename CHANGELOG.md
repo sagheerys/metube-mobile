@@ -9,6 +9,18 @@ only one.
 
 ## [Unreleased]
 
+### Added
+
+- **Transcripts for the clips your server downloads by itself.** Until now
+  "Search inside clips" covered the YouTube clips added from the app, and
+  not what a subscription brought, nor what the web page or a batch
+  downloaded. A server set to write subtitles beside each clip (one line in
+  its configuration, shown in the setup guide) now has those read in the
+  background, newest first, and they join the search within a minute of the
+  library refreshing. Nothing is asked twice, nothing runs while the
+  feature is off, and a server that cannot write them changes nothing.
+  Super only.
+
 ## [2.3.0] - 2026-10-02
 
 ### Added
