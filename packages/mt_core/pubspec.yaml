@@ -10,7 +10,7 @@ environment:
 dependencies:
   dio: ^5.11.1
   encrypt: ^5.0.3
-  synchronized: ^3.3.0
+  synchronized: ^3.4.2
   uuid: ^4.5.1
 
 dev_dependencies:
