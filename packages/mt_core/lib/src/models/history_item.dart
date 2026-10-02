@@ -32,6 +32,7 @@ class HistoryItem {
     this.quality,
     this.format,
     this.sizeBytes,
+    this.downloadType,
   });
 
   final String id;
@@ -56,6 +57,14 @@ class HistoryItem {
   /// The file's size on the server in bytes if it reported one (`size`),
   /// for sorting and display.
   final int? sizeBytes;
+
+  /// `download_type` as the server sent it: `video`, `audio`, `captions`
+  /// or `thumbnail`, or null from a server too old to send it.
+  final String? downloadType;
+
+  /// A subtitles-only job: its file is a transcript, not media, so it
+  /// belongs in no library.
+  bool get isCaptions => downloadType == 'captions';
 
   bool get isDownloading => status == ItemStatus.inProgress;
   bool get isCompleted => status == ItemStatus.completed;
@@ -89,6 +98,7 @@ class HistoryItem {
       quality: _str(json['quality']),
       format: _str(json['format']),
       sizeBytes: json['size'] is num ? (json['size'] as num).toInt() : null,
+      downloadType: _str(json['download_type']),
     );
   }
 

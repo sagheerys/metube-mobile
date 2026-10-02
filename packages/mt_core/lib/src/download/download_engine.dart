@@ -45,6 +45,7 @@ class DownloadEngine {
     this.onCompleted,
     this.pullGate,
     this.compatibleVideo,
+    this.beforeAdd,
     this.onLog,
     this.pending,
   }) : _resolver = shortLinkResolver ?? ShortLinkResolver(),
@@ -99,6 +100,15 @@ class DownloadEngine {
   /// on purpose, so toggling the setting does not require rebuilding the
   /// engine.
   final bool Function()? compatibleVideo;
+
+  /// **Work to finish before the clip is added**, or null. Super fetches a
+  /// clip's transcript here: the server keys finished jobs by URL alone, so
+  /// subtitles asked for after the clip would replace it in the history.
+  ///
+  /// It runs inside the adding phase, so the task card shows at once. It
+  /// can only delay the add, never stop it: a failure is logged and the
+  /// add goes ahead.
+  final Future<void> Function(DownloadTask task)? beforeAdd;
 
   final ShortLinkResolver _resolver;
   final Transfer _transfer;
@@ -282,6 +292,14 @@ class DownloadEngine {
     final resolved = await _resolver.resolve(task.inputUrl);
     task = _emit(task.copyWith(resolvedUrl: resolved));
     _throwIfCancelRequested(taskId);
+    if (beforeAdd case final hook?) {
+      try {
+        await hook(task);
+      } on Object catch (e) {
+        onLog?.call('before add failed: $e');
+      }
+      _throwIfCancelRequested(taskId);
+    }
     // Know what existed before us, so another operation is
     // never attributed to this task. **One reading serves both jobs**: the
     // fingerprints of this URL's items for the fallback match, and the whole

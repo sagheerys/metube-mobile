@@ -6,6 +6,7 @@ import 'package:mt_ui/mt_ui.dart';
 
 import '../../di.dart';
 import '../shared/error_report.dart';
+import '../transcripts/transcripts_section.dart';
 import '../update/update_section.dart';
 import 'widgets/help_button.dart';
 import 'widgets/server_status_card.dart';
@@ -347,6 +348,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 : mtLanguageName(settings.localeCode!),
             '/settings/language',
           ),
+          const SizedBox(height: MTSpace.xl),
+          const TranscriptsSection(),
           const SizedBox(height: MTSpace.xl),
 
           // Data and diagnostics, then About last.

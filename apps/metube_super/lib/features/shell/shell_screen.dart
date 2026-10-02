@@ -18,11 +18,13 @@ import '../library/library_enricher.dart';
 import '../library/library_models.dart' show MediaTypeFilter;
 import '../library/library_providers.dart'
     show completionGlowProvider, libraryViewProvider;
+import '../library/quality_backfill.dart';
 import '../player/playback_providers.dart';
 import '../settings/resume_refresh.dart';
 import '../update/update_sheet.dart';
 import '../subscriptions/arrival_watcher.dart';
 import '../update/update_state.dart';
+import '../update/whats_new_prompt.dart';
 import '../shared/notification_permission.dart';
 
 /// The shell: three bottom destinations plus the floating layer holding
@@ -50,7 +52,16 @@ class _ShellScreenState extends ConsumerState<ShellScreen>
   /// accent colour for anyone who closed the sheet.
   bool _updatePrompted = false;
 
+  /// "What's new" comes first, and an update offer waits for the next
+  /// resume rather than stacking on top of it.
+  bool _whatsNewDone = false;
+
   Future<void> _maybeShowUpdate() async {
+    if (!_whatsNewDone) {
+      final outcome = await maybeShowWhatsNew(context, ref);
+      if (outcome != WhatsNewOutcome.later) _whatsNewDone = true;
+      if (outcome != WhatsNewOutcome.nothing || !mounted) return;
+    }
     if (_updatePrompted) return;
     await ref.read(updateControllerProvider.notifier).checkSilently();
     if (!mounted || _updatePrompted) return;
@@ -81,8 +92,6 @@ class _ShellScreenState extends ConsumerState<ShellScreen>
       // Download notifications (decision 2026-09-06); their channels are
       // separate from the media channel above.
       const NotificationPermission().request();
-      // Download notifications (decision 2026-09-06); their channels are
-      // separate from the media channel above.
       await initDownloadNotifications(ref);
       if (mounted) unawaited(_handleShortcut());
       if (mounted) unawaited(_maybeShowUpdate());
@@ -225,6 +234,9 @@ class _ShellScreenState extends ConsumerState<ShellScreen>
     // Returning to the app asks the server again; the card is not truthful
     // without this.
     ref.watch(libraryEnrichmentProvider);
+    // Stores each item's quality ahead of time, after the enricher has
+    // shown its file is readable.
+    ref.watch(qualityBackfillRunProvider);
     // The completed item's highlight, watched from the shell so it never
     // misses a completion that happened while the user was on another
     // screen.

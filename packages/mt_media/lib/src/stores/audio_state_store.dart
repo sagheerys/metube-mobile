@@ -12,6 +12,7 @@ class AudioSessionSnapshot {
     required this.index,
     this.position = Duration.zero,
     this.playlistId,
+    this.playlistName,
   });
 
   final List<PlaylistItem> items;
@@ -21,6 +22,9 @@ class AudioSessionSnapshot {
   /// The id of the saved playlist the session came from, if any.
   final String? playlistId;
 
+  /// Its name, for the notification's second line after a restart.
+  final String? playlistName;
+
   bool get isEmpty => items.isEmpty;
 
   Map<String, dynamic> toJson() => {
@@ -28,6 +32,7 @@ class AudioSessionSnapshot {
     'index': index,
     'positionMs': position.inMilliseconds,
     if (playlistId != null) 'playlistId': playlistId,
+    if (playlistName != null) 'playlistName': playlistName,
   };
 }
 
@@ -67,6 +72,7 @@ class AudioStateStore {
           milliseconds: ms is num ? ms.toInt().clamp(0, 1 << 40) : 0,
         ),
         playlistId: decoded['playlistId']?.toString(),
+        playlistName: decoded['playlistName']?.toString(),
       );
     } on FormatException {
       return null; // corrupt state is ignored silently and never blocks startup.

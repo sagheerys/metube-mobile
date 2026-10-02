@@ -14,6 +14,8 @@ import '../library/library_models.dart';
 import '../library/library_providers.dart';
 import '../shared/membership.dart';
 import '../shared/platform_label.dart';
+import '../transcripts/transcript_openers.dart';
+import '../transcripts/transcripts_state.dart';
 import 'playback_providers.dart';
 
 /// Super's video player (rule 4): it feeds `MTVideoScreen` with the app's
@@ -92,6 +94,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
       onShowPlaylist: request.playlistId == null
           ? null
           : () => context.push('/playlists/${request.playlistId}'),
+      fullscreenPanel: transcriptPanels(context, session),
     );
   }
 
@@ -125,7 +128,20 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
     final offline = (live?.isNotEmpty ?? false)
         ? live!.first.isOffline
         : item.hasLocal;
+    // Empty while transcripts are off, so the action never shows then.
+    final hasTranscript =
+        ref
+            .watch(transcriptIndexProvider)
+            .valueOrNull
+            ?.contains(item.canonicalUrl) ??
+        false;
     return [
+      if (hasTranscript)
+        MTPlayerAction(
+          icon: Icons.subject_rounded,
+          label: l10n.transcript,
+          onTap: () => showVideoTranscript(context, session, item),
+        ),
       MTPlayerAction(
         icon: pulling != null
             ? Icons.downloading_rounded
@@ -225,6 +241,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
             ordered,
             startIndex: index < 0 ? 0 : index,
             playlistId: playlistId,
+            playlistName: _request?.playlistName,
           )
           .catchError(
             (Object error) => unawaited(

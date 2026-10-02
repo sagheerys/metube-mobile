@@ -367,6 +367,14 @@ public class AudioService extends MediaBrowserServiceCompat {
     }
 
     public void stop() {
+        // Patched: leave the foreground before cancelling. With
+        // androidStopForegroundOnPause off, the service is still in the
+        // foreground here, cancel() cannot remove a foreground notification,
+        // and stopSelf() does nothing while the app is bound, so a closed
+        // player left its notification behind. The next play starts the
+        // foreground again (enterPlayingState).
+        ServiceCompat.stopForeground(this, STOP_FOREGROUND_REMOVE);
+        releaseWakeLock();
         deactivateMediaSession();
         stopSelf();
     }

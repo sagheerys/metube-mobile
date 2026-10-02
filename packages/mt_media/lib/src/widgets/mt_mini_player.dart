@@ -7,8 +7,9 @@ import '../playback/audio_handler.dart';
 import 'mt_up_next_list.dart';
 
 /// The mini player: a permanent bar at the bottom of the main screens
-/// whenever something is playing. Cover, title, play and pause, progress,
-/// drag to dismiss, and a tap that opens the audio screen.
+/// whenever something is playing. Cover, title, play and pause, next when
+/// a list plays, progress, drag to dismiss, and a tap that opens the audio
+/// screen.
 ///
 /// **Trap §6.5:** visibility hangs on `mediaItem != null`, not on
 /// `processingState`, or a ghost survives the stop.
@@ -142,10 +143,9 @@ class _Bar extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Text(
+                            MTForeignText(
                               title,
                               maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
                               style: text.bodyMedium!.copyWith(
                                 color: p.miniInk,
                                 fontWeight: FontWeight.w700,
@@ -163,10 +163,38 @@ class _Bar extends StatelessWidget {
                           ],
                         ),
                       ),
-                      _PlayButton(
-                        handler: handler,
-                        palette: p,
-                        label: l10n.play,
+                      // **Play, then next, left to right in every
+                      // language**, like the full player's controls: in an
+                      // Arabic bar the pair was mirrored, and the next
+                      // arrow pointed back at play (field report
+                      // 2026-09-30).
+                      Directionality(
+                        textDirection: TextDirection.ltr,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            _PlayButton(
+                              handler: handler,
+                              palette: p,
+                              label: l10n.play,
+                            ),
+                            // The second thing people do from the bar while
+                            // a list plays (design review 2026-09-25);
+                            // previous stays in the full player, where it
+                            // is rare enough.
+                            if (handler.items.length > 1)
+                              IconButton(
+                                onPressed: handler.skipToNext,
+                                tooltip: l10n.next,
+                                visualDensity: VisualDensity.compact,
+                                icon: Icon(
+                                  Icons.skip_next_rounded,
+                                  size: 24,
+                                  color: p.miniInk,
+                                ),
+                              ),
+                          ],
+                        ),
                       ),
                       IconButton(
                         onPressed: handler.stop,

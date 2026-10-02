@@ -201,7 +201,12 @@ class PlaylistPlayer {
     if (!visual) {
       await _ref
           .read(audioHandlerProvider)
-          .playItems(items, startIndex: startIndex, playlistId: playlistId);
+          .playItems(
+            items,
+            startIndex: startIndex,
+            playlistId: playlistId,
+            playlistName: playlistName,
+          );
       return false;
     }
     _ref.read(playbackRequestProvider.notifier).state = PlaybackRequest(

@@ -80,6 +80,7 @@ class MTAudioHandler extends BaseAudioHandler with SeekHandler {
   PlaybackQueue _queue = PlaybackQueue(items: const []);
   PlayMode _playMode = PlayMode.autoNext;
   String? _playlistId;
+  String? _playlistName;
   int _consecutiveErrors = 0;
 
   /// **How much of an item must play before its retry budget is returned.**
@@ -187,6 +188,7 @@ class MTAudioHandler extends BaseAudioHandler with SeekHandler {
     List<PlaylistItem> items, {
     int startIndex = 0,
     String? playlistId,
+    String? playlistName,
     bool autoPlay = true,
   }) async {
     if (items.isEmpty) return;
@@ -197,6 +199,7 @@ class MTAudioHandler extends BaseAudioHandler with SeekHandler {
     // and played**, bringing back the bar the user had just closed.
     final generation = ++_generation;
     _playlistId = playlistId;
+    _playlistName = playlistName;
     _playMode = await prefs.playMode(playlistId: playlistId);
     final shuffle = await prefs.shuffle();
     if (_isStale(generation)) return;
@@ -214,6 +217,7 @@ class MTAudioHandler extends BaseAudioHandler with SeekHandler {
     final snapshot = await stateStore.read();
     if (snapshot == null || snapshot.isEmpty) return false;
     _playlistId = snapshot.playlistId;
+    _playlistName = snapshot.playlistName;
     _playMode = await prefs.playMode(playlistId: _playlistId);
     final shuffle = await prefs.shuffle();
     // The commands, from the notification, the lock screen and the
@@ -340,6 +344,7 @@ class MTAudioHandler extends BaseAudioHandler with SeekHandler {
     _wasPlaying = false;
     await player.stop();
     _playlistId = null;
+    _playlistName = null;
     mediaItem.add(null);
     queue.add(const []);
     if (forgetSession) await stateStore.clear();
@@ -385,7 +390,10 @@ class MTAudioHandler extends BaseAudioHandler with SeekHandler {
         controls: mtMediaControls(playing: playing),
         systemActions: const {MediaAction.seek},
         androidCompactActionIndices: const [0, 1, 2],
-        processingState: mtProcessingState(player.state),
+        processingState: mtProcessingState(
+          player.state,
+          sessionOpen: !_queue.isEmpty,
+        ),
         playing: playing,
         updatePosition: player.position,
         bufferedPosition: player.bufferedPosition,

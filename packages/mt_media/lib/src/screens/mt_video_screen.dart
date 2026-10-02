@@ -7,6 +7,7 @@ import '../video/mt_orientation.dart';
 import '../video/mt_video_controls.dart';
 import '../video/mt_video_fullscreen.dart';
 import '../video/mt_video_session.dart';
+import '../video/video_side_panel.dart';
 import '../widgets/mt_queue_panel.dart';
 import '../widgets/mt_up_next_list.dart';
 import 'video_info_sheet.dart';
@@ -44,10 +45,15 @@ class MTVideoScreen extends StatelessWidget {
     this.shouldOfferContinueAsAudio,
     this.playlistName,
     this.membershipLine,
+    this.fullscreenPanel,
   });
 
   final MTVideoSession session;
   final List<MTPlayerAction> actions;
+
+  /// A panel the app offers beside the video in full screen, for the item
+  /// playing; portrait offers the same through [actions].
+  final MTVideoPanel? Function(PlaylistItem item)? fullscreenPanel;
   final MTArtworkBuilder? artwork;
 
   /// The meta line under the title (platform, uploader), supplied by the
@@ -166,6 +172,7 @@ class MTVideoScreen extends StatelessWidget {
             playlistName: playlistName,
             membershipLine: membershipLine,
             onShowPlaylist: onShowPlaylist,
+            panel: fullscreenPanel,
           ),
         ),
       );

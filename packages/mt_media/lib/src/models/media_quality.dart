@@ -43,6 +43,18 @@ class MediaQuality {
     );
   }
 
+  /// The inverse of [MediaQuality.fromMap], for storing an answer. Missing
+  /// fields are left out rather than written as null.
+  Map<String, Object> toMap() => {
+    'width': ?width,
+    'height': ?height,
+    'videoMime': ?videoMime,
+    'frameRate': ?frameRate,
+    'audioMime': ?audioMime,
+    'sampleRate': ?sampleRate,
+    'channels': ?channels,
+  };
+
   /// As displayed: after the recorded rotation.
   final int? width;
   final int? height;

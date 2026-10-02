@@ -76,6 +76,25 @@ class FakeApi implements MeTubeApi {
     if (deleteError != null) throw deleteError!;
   }
 
+  final List<(String url, String language)> captionsAdds = [];
+
+  @override
+  Future<void> addCaptions(String url, {required String language}) async =>
+      captionsAdds.add((url, language));
+
+  /// Text files by server filename, for [fetchText].
+  final Map<String, String> textFiles = {};
+
+  @override
+  Future<String> fetchText(
+    String serverFilename, {
+    int maxBytes = MTConstants.maxTextFileBytes,
+  }) async {
+    final text = textFiles[serverFilename];
+    if (text == null) throw const NoApiException();
+    return text;
+  }
+
   /// Names claimed to be missing on the server, to test the probe guard.
   final Set<String> missingFiles = {};
 

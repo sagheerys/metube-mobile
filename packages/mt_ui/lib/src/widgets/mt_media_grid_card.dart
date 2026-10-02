@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show HapticFeedback;
 
+import '../l10n/bidi.dart';
 import '../l10n/l10n.dart';
 import '../theme/mt_theme.dart';
 import '../tokens/tokens.dart';
@@ -10,6 +11,7 @@ import 'mt_location_badge.dart';
 import 'mt_media_card.dart' show MTMediaLocation;
 import 'mt_platform_chip.dart';
 import 'mt_polish.dart';
+import 'mt_thumb_pill.dart';
 
 /// The library card **led by its cover**: a 16:9 thumbnail first, with two
 /// lines of title underneath. It serves two modes:
@@ -41,6 +43,7 @@ class MTMediaGridCard extends StatelessWidget {
     this.playing = false,
     this.paused = false,
     this.favorite = false,
+    this.audio = false,
     this.feed = false,
     this.onTap,
     this.onLongPress,
@@ -65,6 +68,9 @@ class MTMediaGridCard extends StatelessWidget {
   final bool paused;
   final bool favorite;
 
+  /// An audio file: its cover carries a music-note mark.
+  final bool audio;
+
   /// Cards mode: a single column, so there is room for larger text and a
   /// location badge.
   final bool feed;
@@ -77,6 +83,7 @@ class MTMediaGridCard extends StatelessWidget {
     title,
     ?subtitle,
     ?locationLabel,
+    if (audio) l10n.filterAudio,
     if (favorite) l10n.favorites,
     if (playing) l10n.nowPlaying,
   ].join(l10n.listSeparator);
@@ -86,6 +93,7 @@ class MTMediaGridCard extends StatelessWidget {
     final p = MTThemeX.of(context).palette;
     final l10n = context.mtl;
     final text = Theme.of(context).textTheme;
+    final (titleDirection, titleAlign) = mtForeignLine(context, title);
 
     return Semantics(
       button: onTap != null,
@@ -116,6 +124,7 @@ class MTMediaGridCard extends StatelessWidget {
                   playing: playing,
                   paused: paused,
                   favorite: favorite,
+                  audio: audio,
                   onFavoriteToggle: onFavoriteToggle,
                   onMore: onMore,
                   child: thumbnail,
@@ -123,6 +132,8 @@ class MTMediaGridCard extends StatelessWidget {
                 SizedBox(height: feed ? MTSpace.sm : MTSpace.xs),
                 Text(
                   title,
+                  textDirection: titleDirection,
+                  textAlign: titleAlign,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: (feed ? text.bodyMedium! : text.bodySmall!).copyWith(
@@ -180,6 +191,7 @@ class _Cover extends StatelessWidget {
     required this.playing,
     required this.paused,
     required this.favorite,
+    required this.audio,
     required this.onFavoriteToggle,
     required this.onMore,
     this.child,
@@ -189,6 +201,7 @@ class _Cover extends StatelessWidget {
   final bool playing;
   final bool paused;
   final bool favorite;
+  final bool audio;
   final VoidCallback? onFavoriteToggle;
   final VoidCallback? onMore;
   final Widget? child;
@@ -228,24 +241,15 @@ class _Cover extends StatelessWidget {
               PositionedDirectional(
                 bottom: 5,
                 start: 5,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 6,
-                    vertical: 2,
-                  ),
-                  decoration: BoxDecoration(
-                    color: p.ink.withValues(alpha: 0.8),
-                    borderRadius: BorderRadius.circular(5),
-                  ),
-                  child: Text(
-                    duration!,
-                    style: TextStyle(
-                      fontSize: 9.5,
-                      fontWeight: FontWeight.w700,
-                      color: p.bg,
-                    ).tabular,
-                  ),
-                ),
+                child: MTThumbPill.duration(duration!),
+              ),
+            // Without a cover the placeholder is already a music note, so
+            // a second one would only repeat it.
+            if (audio && child != null)
+              PositionedDirectional(
+                bottom: 5,
+                end: 5,
+                child: MTThumbPill.audio(),
               ),
             PositionedDirectional(
               top: 0,

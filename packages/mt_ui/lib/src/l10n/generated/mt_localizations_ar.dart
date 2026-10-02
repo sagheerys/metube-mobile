@@ -1429,6 +1429,141 @@ class MTLocalizationsAr extends MTLocalizations {
   }
 
   @override
+  String get transcript => 'النص';
+
+  @override
+  String get transcriptFind => 'ابحث في النص';
+
+  @override
+  String get transcriptFull => 'النص الكامل';
+
+  @override
+  String transcriptMatches(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count موضع',
+      many: '$count موضعاً',
+      few: '$count مواضع',
+      two: 'موضعان',
+      one: 'موضع واحد',
+      zero: 'لا مواضع',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get transcriptNextMatch => 'الموضع التالي';
+
+  @override
+  String get transcriptPreviousMatch => 'الموضع السابق';
+
+  @override
+  String transcriptSaidMore(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'قيلت $count مرة أخرى',
+      many: 'قيلت $count مرة أخرى',
+      few: 'قيلت $count مرات أخرى',
+      two: 'قيلت مرتين أخريين',
+      one: 'قيلت مرة أخرى',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String transcriptsClips(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count مقطع',
+      many: '$count مقطعاً',
+      few: '$count مقاطع',
+      two: 'مقطعان',
+      one: 'مقطع واحد',
+      zero: 'لا مقاطع بعد',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get transcriptsDeleteAll => 'حذف الكل';
+
+  @override
+  String get transcriptsDeleteBody =>
+      'تُحذف من هذا الجوال، ولا يعيدها إلا ملف صدّرته.';
+
+  @override
+  String get transcriptsDeleteTitle => 'حذف كل النصوص؟';
+
+  @override
+  String transcriptsDisableBody(String size) {
+    return 'النصوص المحفوظة ($size) تبقى في هذا الجوال ما لم تحذفها.';
+  }
+
+  @override
+  String get transcriptsDisableTitle => 'إيقاف البحث داخل المقاطع؟';
+
+  @override
+  String get transcriptsEnable => 'تفعيل';
+
+  @override
+  String get transcriptsEnableBody =>
+      'قبل تنزيل كل مقطع يوتيوب تضيفه، يجلب التطبيق نصّه من سيرفرك بلغة التطبيق وبالإنجليزية (حتى 40 ثانية)، ويحفظه في هذا الجوال وحده. المقاطع الموجودة في مكتبتك الآن لا تُشمل. يمكنك إيقافه متى شئت.';
+
+  @override
+  String get transcriptsExport => 'تصدير';
+
+  @override
+  String transcriptsExported(Object path) {
+    return 'حُفظت النصوص في: $path';
+  }
+
+  @override
+  String get transcriptsHelp =>
+      'يحفظ التطبيق الكلام المقول في كل مقطع يوتيوب تضيفه، فيجد بحث المكتبة ما قيل داخل مقاطعك لا عناوينها وحدها. المواقع الأخرى غير مشمولة حالياً.\n\nيُجلب الكلام من سيرفرك قبيل التنزيل ويُحفظ على هذا الجوال وحده: السيرفر لا يحتفظ به، والنسخة الاحتياطية الكاملة لا تشمله. لنقله إلى جوال آخر استعمل «تصدير» هنا و«استيراد» هناك. والاستيراد يضيف إلى ما هنا ولا يحذف شيئاً.';
+
+  @override
+  String get transcriptsImport => 'استيراد';
+
+  @override
+  String get transcriptsImportInvalid => 'هذا الملف لا يحوي نصوصاً.';
+
+  @override
+  String transcriptsImported(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'استُورد $count نص',
+      many: 'استُورد $count نصاً',
+      few: 'استُورد $count نصوص',
+      two: 'استُورد نصّان',
+      one: 'استُورد نص واحد',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get transcriptsKeep => 'إيقاف مع الاحتفاظ';
+
+  @override
+  String get transcriptsSaidInside => 'قيل داخل المقاطع';
+
+  @override
+  String get transcriptsSearch => 'البحث داخل المقاطع';
+
+  @override
+  String get transcriptsSearchHelp =>
+      'يحفظ كلام كل مقطع يوتيوب تضيفه، لتبحث داخل ما قيل فيه.';
+
+  @override
+  String get transcriptsSection => 'النصوص';
+
+  @override
+  String get transcriptsStopAndDelete => 'إيقاف وحذف';
+
+  @override
   String get tryAgain => 'حاول مرة أخرى';
 
   @override
@@ -1560,6 +1695,24 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get waitingForWifi => 'بانتظار Wi‑Fi';
+
+  @override
+  String get whatsNewGotIt => 'حسناً';
+
+  @override
+  String get whatsNewReleasePage => 'صفحة الإصدار';
+
+  @override
+  String get whatsNewThisVersion => 'الجديد في هذا الإصدار';
+
+  @override
+  String whatsNewTitle(String version) {
+    return 'الجديد في الإصدار $version';
+  }
+
+  @override
+  String get whatsNewUnavailable =>
+      'ما تغيّر في هذا الإصدار تجده في صفحة الإصدار.';
 
   @override
   String get wifiOnly => 'التحميل عبر Wi‑Fi فقط';

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mt_ui/mt_ui.dart';
 
 import '../models/media_quality.dart';
+import '../stores/media_quality_index.dart';
 
 /// A details row as each app's sheet draws it: label, then value.
 typedef MTDetailsRowBuilder = Widget Function(String label, String value);
@@ -10,9 +11,11 @@ typedef MTDetailsRowBuilder = Widget Function(String label, String value);
 /// 2026-09-25), from the file's own header — see [MediaQuality].
 ///
 /// Read once per clip per run: the answer does not change, and a stream's
-/// header costs a request. Until it arrives the rows say so; if it never
-/// does (server down, a format the platform cannot parse) they say it is
-/// unavailable rather than vanish, so the sheet does not jump.
+/// header costs a request. Given a [store], it is read once per clip for
+/// good: the answer is saved there and shown straight from it afterwards.
+/// Until it arrives the rows say so; if it never does (server down, a
+/// format the platform cannot parse) they say it is unavailable rather than
+/// vanish, so the sheet does not jump.
 class MTQualityRows extends StatefulWidget {
   const MTQualityRows({
     super.key,
@@ -21,6 +24,7 @@ class MTQualityRows extends StatefulWidget {
     required this.row,
     this.sizeBytes,
     this.duration,
+    this.store,
   });
 
   /// The clip's canonical URL: what the answer is remembered under.
@@ -32,6 +36,10 @@ class MTQualityRows extends StatefulWidget {
   /// says how much quality a file carries, whatever its codec.
   final int? sizeBytes;
   final Duration? duration;
+
+  /// Where answers outlive the run. Without it they last until the app
+  /// closes.
+  final MediaQualityIndex? store;
 
   /// This run's answers. A failure is not remembered, so the next opening
   /// tries again.
@@ -61,14 +69,30 @@ class _MTQualityRowsState extends State<MTQualityRows> {
   }
 
   Future<void> _read() async {
+    final store = widget.store;
     MediaQuality? quality;
     try {
-      quality = await widget.load();
+      quality = await store?.valueOf(widget.cacheKey);
     } on Object {
-      quality = null;
+      quality = null; // an unreadable store falls back to the header
+    }
+    final fromStore = quality != null;
+    if (!fromStore) {
+      try {
+        quality = await widget.load();
+      } on Object {
+        quality = null;
+      }
     }
     if (quality != null && !quality.isEmpty) {
       MTQualityRows._known[widget.cacheKey] = quality;
+      if (!fromStore) {
+        try {
+          await store?.remember(widget.cacheKey, quality);
+        } on Object {
+          // Not saved: the next launch reads the header again.
+        }
+      }
     }
     if (mounted) {
       setState(() {

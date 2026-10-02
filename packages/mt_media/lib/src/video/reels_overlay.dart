@@ -200,10 +200,9 @@ class MTReelsInfo extends StatelessWidget {
             ),
           ),
         const SizedBox(height: MTSpace.xs),
-        Text(
+        MTForeignText(
           item.title,
           maxLines: 2,
-          overflow: TextOverflow.ellipsis,
           style: text.titleMedium!.copyWith(color: ink, fontSize: 14.5),
         ),
         if (subtitle != null && subtitle!.isNotEmpty) ...[

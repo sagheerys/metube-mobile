@@ -17,6 +17,19 @@ abstract interface class MeTubeApi {
   /// implementation for the measured reason.
   Future<void> add(String url, Quality quality, {bool compatibleVideo});
   Future<void> delete(List<String> canonicalUrls, {String where});
+
+  /// Asks the server for [url]'s subtitles alone, as SRT, with no media.
+  ///
+  /// **Never for a URL already in the history.** The server keys finished
+  /// jobs by URL alone, so the subtitles job replaces the video's entry:
+  /// the clip vanishes from the library and its file is orphaned
+  /// (SERVER-API.md §2.2, measured).
+  Future<void> addCaptions(String url, {required String language});
+
+  /// A small text file from the server, such as a subtitle file. Refused
+  /// above [maxBytes], so a mistaken media filename cannot be read into
+  /// memory.
+  Future<String> fetchText(String serverFilename, {int maxBytes});
   String downloadUrl(String serverFilename);
 
   /// **What the server says it is** (§2.6), or null when it will not say.

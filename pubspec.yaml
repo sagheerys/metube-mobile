@@ -6,6 +6,7 @@ environment:
 
 workspace:
   - packages/mt_core
+  - packages/mt_transcripts
   - packages/mt_media
   - packages/mt_ui
   - apps/metube_lite

@@ -98,3 +98,7 @@ docs/design/
 
 # The vendored plugin resolves through the workspace lock, not its own.
 third_party/*/pubspec.lock
+
+# Transcripts backfill tool: answers kept between runs, and its import file
+.mtf-transcripts/
+mtf-transcripts-library*.json

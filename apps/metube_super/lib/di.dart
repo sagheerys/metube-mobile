@@ -5,10 +5,12 @@ import 'package:mt_core/mt_core.dart';
 import 'package:mt_media/mt_media.dart';
 
 import 'features/batch/batch_offline_saver.dart';
+import 'features/library/quality_cache.dart';
 import 'features/settings/auto_backup.dart';
 import 'features/settings/settings_state.dart';
 import 'features/shared/error_report.dart';
 import 'features/shared/stores.dart';
+import 'features/transcripts/transcripts_state.dart';
 
 /// Riverpod injection (TRD §3.1): a settings change rebuilds the client and
 /// the engine automatically, with no Completers and no manual
@@ -133,11 +135,17 @@ final downloadEngineProvider = Provider<DownloadEngine?>((ref) {
       // When "save to device" was requested for this batch, applied to
       // every member.
       ref.read(batchOfflineSaverProvider).onFinished(task);
+      // Read now, while nobody waits, so the details sheet has it ready.
+      unawaited(ref.read(qualityReaderProvider).prewarm(task));
       ref.invalidate(historyProvider);
     },
     // Field report 2026-09-03: YouTube at "best" gives AV1 or VP9 and the
     // clip looks torn on phones. This asks for H.264/AAC instead.
     compatibleVideo: () => ref.read(settingsProvider).compatiblePlayback,
+    // A clip's transcript has to be fetched before the clip is on the
+    // server; see [TranscriptsService.fetchBeforeAdd].
+    beforeAdd: (task) =>
+        ref.read(transcriptsServiceProvider).fetchBeforeAdd(task, api),
     // **The first log wiring in Super at all**: the logs screen used to
     // read a file nobody wrote to, so it was always empty (field report
     // 2026-09-02).
@@ -198,7 +206,9 @@ final historyProvider = FutureProvider<HistoryResponse?>((ref) async {
   final api = ref.watch(apiClientProvider);
   if (api == null) return null;
   try {
-    final history = await api.fetchHistory();
+    // A transcript's own entry lives in the history for a few seconds
+    // while it is read; it is not a clip, so no screen ever sees it.
+    final history = (await api.fetchHistory()).withoutCaptions();
     clearErrorSignature('history');
     return history;
   } on MTApiException catch (e) {

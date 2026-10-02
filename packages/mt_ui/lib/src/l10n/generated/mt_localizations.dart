@@ -2534,6 +2534,168 @@ abstract class MTLocalizations {
   /// **'Total: {duration}'**
   String totalDuration(Object duration);
 
+  /// No description provided for @transcript.
+  ///
+  /// In en, this message translates to:
+  /// **'Transcript'**
+  String get transcript;
+
+  /// No description provided for @transcriptFind.
+  ///
+  /// In en, this message translates to:
+  /// **'Search the transcript'**
+  String get transcriptFind;
+
+  /// No description provided for @transcriptFull.
+  ///
+  /// In en, this message translates to:
+  /// **'Full transcript'**
+  String get transcriptFull;
+
+  /// No description provided for @transcriptMatches.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No matches} =1{1 match} other{{count} matches}}'**
+  String transcriptMatches(int count);
+
+  /// No description provided for @transcriptNextMatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Next match'**
+  String get transcriptNextMatch;
+
+  /// No description provided for @transcriptPreviousMatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous match'**
+  String get transcriptPreviousMatch;
+
+  /// No description provided for @transcriptSaidMore.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Said once more} other{Said {count} more times}}'**
+  String transcriptSaidMore(int count);
+
+  /// No description provided for @transcriptsClips.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No clips yet} =1{1 clip} other{{count} clips}}'**
+  String transcriptsClips(int count);
+
+  /// No description provided for @transcriptsDeleteAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete all'**
+  String get transcriptsDeleteAll;
+
+  /// No description provided for @transcriptsDeleteBody.
+  ///
+  /// In en, this message translates to:
+  /// **'They are removed from this phone. Only a file you exported can bring them back.'**
+  String get transcriptsDeleteBody;
+
+  /// No description provided for @transcriptsDeleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete every transcript?'**
+  String get transcriptsDeleteTitle;
+
+  /// No description provided for @transcriptsDisableBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The saved transcripts ({size}) stay on this phone unless you delete them.'**
+  String transcriptsDisableBody(String size);
+
+  /// No description provided for @transcriptsDisableTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop searching inside clips?'**
+  String get transcriptsDisableTitle;
+
+  /// No description provided for @transcriptsEnable.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn on'**
+  String get transcriptsEnable;
+
+  /// No description provided for @transcriptsEnableBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Before each YouTube clip you add is downloaded, the app fetches its words from your server, in the app\'s language and in English (up to 40 seconds), and keeps them on this phone only. Clips already in your library are not included. You can turn this off at any time.'**
+  String get transcriptsEnableBody;
+
+  /// No description provided for @transcriptsExport.
+  ///
+  /// In en, this message translates to:
+  /// **'Export'**
+  String get transcriptsExport;
+
+  /// No description provided for @transcriptsExported.
+  ///
+  /// In en, this message translates to:
+  /// **'Transcripts saved to: {path}'**
+  String transcriptsExported(Object path);
+
+  /// No description provided for @transcriptsHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'The app keeps the words said in each YouTube clip you add, so a library search also finds what was said inside your clips, not only their titles. Other sites are not covered yet.\n\nThe words are fetched from your server just before the download and kept on this phone only. The server does not keep them, and the full backup does not include them. To move them to another phone, use Export here and Import there. An import adds to what is already here and deletes nothing.'**
+  String get transcriptsHelp;
+
+  /// No description provided for @transcriptsImport.
+  ///
+  /// In en, this message translates to:
+  /// **'Import'**
+  String get transcriptsImport;
+
+  /// No description provided for @transcriptsImportInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'This file holds no transcripts.'**
+  String get transcriptsImportInvalid;
+
+  /// No description provided for @transcriptsImported.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Imported 1 transcript} other{Imported {count} transcripts}}'**
+  String transcriptsImported(int count);
+
+  /// No description provided for @transcriptsKeep.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop and keep'**
+  String get transcriptsKeep;
+
+  /// No description provided for @transcriptsSaidInside.
+  ///
+  /// In en, this message translates to:
+  /// **'Said inside clips'**
+  String get transcriptsSaidInside;
+
+  /// No description provided for @transcriptsSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Search inside clips'**
+  String get transcriptsSearch;
+
+  /// No description provided for @transcriptsSearchHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Keeps the words of every YouTube clip you add, so you can search what was said.'**
+  String get transcriptsSearchHelp;
+
+  /// No description provided for @transcriptsSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Transcripts'**
+  String get transcriptsSection;
+
+  /// No description provided for @transcriptsStopAndDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop and delete'**
+  String get transcriptsStopAndDelete;
+
   /// No description provided for @tryAgain.
   ///
   /// In en, this message translates to:
@@ -2779,6 +2941,36 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'Waiting for Wi-Fi'**
   String get waitingForWifi;
+
+  /// No description provided for @whatsNewGotIt.
+  ///
+  /// In en, this message translates to:
+  /// **'Got it'**
+  String get whatsNewGotIt;
+
+  /// No description provided for @whatsNewReleasePage.
+  ///
+  /// In en, this message translates to:
+  /// **'Release page'**
+  String get whatsNewReleasePage;
+
+  /// No description provided for @whatsNewThisVersion.
+  ///
+  /// In en, this message translates to:
+  /// **'What\'s new in this version'**
+  String get whatsNewThisVersion;
+
+  /// No description provided for @whatsNewTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'What\'s new in {version}'**
+  String whatsNewTitle(String version);
+
+  /// No description provided for @whatsNewUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'What changed in this version is on the release page.'**
+  String get whatsNewUnavailable;
 
   /// No description provided for @wifiOnly.
   ///

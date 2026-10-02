@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show HapticFeedback;
 
+import '../l10n/bidi.dart';
 import '../l10n/l10n.dart';
 import '../theme/mt_theme.dart';
 import '../tokens/tokens.dart';
@@ -9,6 +10,7 @@ import 'mt_highlight_surface.dart';
 import 'mt_platform_chip.dart';
 import 'mt_location_badge.dart';
 import 'mt_polish.dart';
+import 'mt_thumb_pill.dart';
 
 /// Where the item lives, which colours its badge: olive for "offline",
 /// soft ember for "on the server".
@@ -33,6 +35,7 @@ class MTMediaCard extends StatelessWidget {
     this.playing = false,
     this.paused = false,
     this.favorite = false,
+    this.audio = false,
     this.onTap,
     this.onLongPress,
     this.onFavoriteToggle,
@@ -70,6 +73,9 @@ class MTMediaCard extends StatelessWidget {
   /// that is not running.
   final bool paused;
   final bool favorite;
+
+  /// An audio file: its thumbnail carries a music-note mark.
+  final bool audio;
   final VoidCallback? onTap;
   final VoidCallback? onLongPress;
   final VoidCallback? onFavoriteToggle;
@@ -82,6 +88,7 @@ class MTMediaCard extends StatelessWidget {
     title,
     ?subtitle,
     ?locationLabel,
+    if (audio) l10n.filterAudio,
     if (favorite) l10n.favorites,
     if (playing) l10n.nowPlaying,
   ].join(l10n.listSeparator);
@@ -92,6 +99,7 @@ class MTMediaCard extends StatelessWidget {
     final p = x.palette;
     final l10n = context.mtl;
     final text = Theme.of(context).textTheme;
+    final (titleDirection, titleAlign) = mtForeignLine(context, title);
     final thumbW = compact ? 64.0 : 98.0;
     final thumbH = compact ? 40.0 : 62.0;
 
@@ -130,6 +138,7 @@ class MTMediaCard extends StatelessWidget {
                   height: thumbH,
                   duration: duration,
                   playing: playing,
+                  audio: audio,
                   child: thumbnail,
                 ),
                 const SizedBox(width: MTSpace.md - 1),
@@ -139,6 +148,8 @@ class MTMediaCard extends StatelessWidget {
                     children: [
                       Text(
                         title,
+                        textDirection: titleDirection,
+                        textAlign: titleAlign,
                         maxLines: compact ? 1 : 2,
                         overflow: TextOverflow.ellipsis,
                         style: text.bodyMedium!.copyWith(
@@ -233,6 +244,7 @@ class _Thumb extends StatelessWidget {
     required this.height,
     this.duration,
     this.playing = false,
+    this.audio = false,
     this.child,
   });
 
@@ -240,6 +252,7 @@ class _Thumb extends StatelessWidget {
   final double height;
   final String? duration;
   final bool playing;
+  final bool audio;
   final Widget? child;
 
   @override
@@ -262,21 +275,15 @@ class _Thumb extends StatelessWidget {
             PositionedDirectional(
               bottom: 5,
               start: 5,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(
-                  color: p.ink.withValues(alpha: 0.8),
-                  borderRadius: BorderRadius.circular(5),
-                ),
-                child: Text(
-                  duration!,
-                  style: TextStyle(
-                    fontSize: 9.5,
-                    fontWeight: FontWeight.w700,
-                    color: p.bg,
-                  ).tabular,
-                ),
-              ),
+              child: MTThumbPill.duration(duration!),
+            ),
+          // Without a cover the placeholder is already a music note, so a
+          // second one would only repeat it.
+          if (audio && child != null)
+            PositionedDirectional(
+              bottom: 5,
+              end: 5,
+              child: MTThumbPill.audio(),
             ),
         ],
       ),

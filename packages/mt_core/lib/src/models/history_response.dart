@@ -20,6 +20,25 @@ class HistoryResponse {
 
   bool get isEmpty => done.isEmpty && queue.isEmpty && pending.isEmpty;
 
+  /// The same history without subtitles-only jobs. Their file is a
+  /// transcript, not media: shown in a library it would be a clip that
+  /// cannot play, and counted by a watcher it would be an arrival that
+  /// never happened.
+  HistoryResponse withoutCaptions() => HistoryResponse(
+    done: [
+      for (final i in done)
+        if (!i.isCaptions) i,
+    ],
+    queue: [
+      for (final i in queue)
+        if (!i.isCaptions) i,
+    ],
+    pending: [
+      for (final i in pending)
+        if (!i.isCaptions) i,
+    ],
+  );
+
   /// The discovery check (§2.1): a map carrying both `done` and `queue`.
   /// Anything else is not a MeTube server, an HTML response for example.
   static bool looksLikeMeTube(dynamic decoded) =>

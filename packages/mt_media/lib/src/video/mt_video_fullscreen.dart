@@ -4,11 +4,13 @@ import 'package:mt_ui/mt_ui.dart';
 import 'package:video_player/video_player.dart';
 
 import '../models/playlist_item.dart';
+import '../widgets/mt_extra_button.dart';
 import '../widgets/mt_queue_panel.dart';
 import '../widgets/mt_up_next_list.dart';
 import 'mt_orientation.dart';
 import 'mt_video_controls.dart';
 import 'mt_video_session.dart';
+import 'video_side_panel.dart';
 
 /// Immersive landscape (Wahaj references C and D): the video fills the
 /// screen, the chrome appears on a touch and hides again, and the queue is
@@ -22,9 +24,14 @@ class MTVideoFullscreenPage extends StatefulWidget {
     this.playlistName,
     this.membershipLine,
     this.byRotation = false,
+    this.panel,
   });
 
   final MTVideoSession session;
+
+  /// Asked again for each item as the queue moves; null, or a null answer,
+  /// shows no button.
+  final MTVideoPanel? Function(PlaylistItem item)? panel;
   final MTArtworkBuilder? artwork;
   final VoidCallback? onShowPlaylist;
   final String? playlistName;
@@ -46,6 +53,12 @@ class MTVideoFullscreenPage extends StatefulWidget {
 
 class _MTVideoFullscreenPageState extends State<MTVideoFullscreenPage> {
   bool _queueOpen = false;
+
+  /// The item the panel was opened for. **It belongs to that item**: when
+  /// the queue moves on the panel closes, rather than show the previous
+  /// clip's transcript against the new clip's time, and it does not open
+  /// again by itself on a later item.
+  String? _panelFor;
 
   @override
   void initState() {
@@ -111,6 +124,13 @@ class _MTVideoFullscreenPageState extends State<MTVideoFullscreenPage> {
         listenable: session,
         builder: (context, _) {
           final controller = session.controller;
+          final panel = switch (session.current) {
+            final item? => widget.panel?.call(item),
+            null => null,
+          };
+          // Another clip is playing: the open panel was for the last one.
+          // Forgotten here, so going back to it does not reopen it either.
+          if (_panelFor != session.current?.canonicalUrl) _panelFor = null;
           return Stack(
             fit: StackFit.expand,
             children: [
@@ -131,7 +151,26 @@ class _MTVideoFullscreenPageState extends State<MTVideoFullscreenPage> {
                 onBack: () => Navigator.of(context).maybePop(),
                 onToggleFullscreen: () => Navigator.of(context).maybePop(),
                 onQueue: () => setState(() => _queueOpen = true),
+                extra: panel == null
+                    ? null
+                    : MTExtraAction(
+                        icon: panel.icon,
+                        label: panel.label,
+                        onTap: () => setState(
+                          () => _panelFor = session.current?.canonicalUrl,
+                        ),
+                      ),
               ),
+              if (panel != null &&
+                  _panelFor != null &&
+                  _panelFor == session.current?.canonicalUrl)
+                MTVideoEndPanel(
+                  key: ValueKey(_panelFor),
+                  child: panel.builder(
+                    context,
+                    () => setState(() => _panelFor = null),
+                  ),
+                ),
               if (_queueOpen)
                 _SidePanel(
                   session: session,

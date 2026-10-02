@@ -296,6 +296,48 @@
       }
     }
   },
+  "@transcriptMatches": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@transcriptSaidMore": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@transcriptsClips": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@transcriptsDisableBody": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "@transcriptsExported": {
+    "placeholders": {
+      "path": {
+        "type": "Object"
+      }
+    }
+  },
+  "@transcriptsImported": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "@unfollowConfirm": {
     "placeholders": {
       "name": {
@@ -730,6 +772,33 @@
   "titleFilterHint": "e.g. Episode",
   "titleLabel": "Title",
   "totalDuration": "Total: {duration}",
+  "transcript": "Transcript",
+  "transcriptFind": "Search the transcript",
+  "transcriptFull": "Full transcript",
+  "transcriptMatches": "{count, plural, =0{No matches} =1{1 match} other{{count} matches}}",
+  "transcriptNextMatch": "Next match",
+  "transcriptPreviousMatch": "Previous match",
+  "transcriptSaidMore": "{count, plural, =1{Said once more} other{Said {count} more times}}",
+  "transcriptsClips": "{count, plural, =0{No clips yet} =1{1 clip} other{{count} clips}}",
+  "transcriptsDeleteAll": "Delete all",
+  "transcriptsDeleteBody": "They are removed from this phone. Only a file you exported can bring them back.",
+  "transcriptsDeleteTitle": "Delete every transcript?",
+  "transcriptsDisableBody": "The saved transcripts ({size}) stay on this phone unless you delete them.",
+  "transcriptsDisableTitle": "Stop searching inside clips?",
+  "transcriptsEnable": "Turn on",
+  "transcriptsEnableBody": "Before each YouTube clip you add is downloaded, the app fetches its words from your server, in the app's language and in English (up to 40 seconds), and keeps them on this phone only. Clips already in your library are not included. You can turn this off at any time.",
+  "transcriptsExport": "Export",
+  "transcriptsExported": "Transcripts saved to: {path}",
+  "transcriptsHelp": "The app keeps the words said in each YouTube clip you add, so a library search also finds what was said inside your clips, not only their titles. Other sites are not covered yet.\n\nThe words are fetched from your server just before the download and kept on this phone only. The server does not keep them, and the full backup does not include them. To move them to another phone, use Export here and Import there. An import adds to what is already here and deletes nothing.",
+  "transcriptsImport": "Import",
+  "transcriptsImportInvalid": "This file holds no transcripts.",
+  "transcriptsImported": "{count, plural, =1{Imported 1 transcript} other{Imported {count} transcripts}}",
+  "transcriptsKeep": "Stop and keep",
+  "transcriptsSaidInside": "Said inside clips",
+  "transcriptsSearch": "Search inside clips",
+  "transcriptsSearchHelp": "Keeps the words of every YouTube clip you add, so you can search what was said.",
+  "transcriptsSection": "Transcripts",
+  "transcriptsStopAndDelete": "Stop and delete",
   "tryAgain": "Try again",
   "undo": "Undo",
   "unfollow": "Unfollow",
@@ -771,6 +840,18 @@
   "viewList": "List",
   "viewMode": "View",
   "waitingForWifi": "Waiting for Wi-Fi",
+  "whatsNewGotIt": "Got it",
+  "whatsNewReleasePage": "Release page",
+  "whatsNewThisVersion": "What's new in this version",
+  "whatsNewTitle": "What's new in {version}",
+  "@whatsNewTitle": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "whatsNewUnavailable": "What changed in this version is on the release page.",
   "wifiOnly": "Download over Wi-Fi only",
   "wifiOnlyHelp": "Stops pulling files to your device over mobile data. Tasks wait and resume automatically on Wi-Fi.",
   "yourPlaylists": "Your playlists",

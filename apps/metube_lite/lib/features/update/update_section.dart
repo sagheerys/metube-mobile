@@ -4,6 +4,7 @@ import 'package:mt_ui/mt_ui.dart';
 
 import 'update_sheet.dart';
 import 'update_state.dart';
+import 'whats_new_prompt.dart';
 
 /// The "updates" section in settings, added as one widget so the settings
 /// screen stays under the 400-line limit.
@@ -85,6 +86,15 @@ class UpdateSection extends ConsumerWidget {
                     );
                   }
                 },
+        ),
+        // What the running version brought, for whoever closed the sheet
+        // after the update, or never saw it.
+        ListTile(
+          contentPadding: EdgeInsets.zero,
+          leading: Icon(Icons.auto_awesome_rounded, color: p.ink2),
+          title: Text(l10n.whatsNewThisVersion),
+          trailing: const Icon(Icons.chevron_right_rounded),
+          onTap: () => showWhatsNewNow(context, ref),
         ),
         SwitchListTile(
           contentPadding: EdgeInsets.zero,

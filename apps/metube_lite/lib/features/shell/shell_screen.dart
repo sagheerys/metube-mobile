@@ -23,6 +23,7 @@ import '../settings/restore_prompt.dart';
 import '../settings/status_refresh.dart';
 import '../update/update_sheet.dart';
 import '../update/update_state.dart';
+import '../update/whats_new_prompt.dart';
 
 /// The shell: three bottom destinations plus the floating layer holding
 /// the smart add button, which appears in the library and the playlists
@@ -49,7 +50,16 @@ class _ShellScreenState extends ConsumerState<ShellScreen>
   /// accent colour for anyone who closed the sheet.
   bool _updatePrompted = false;
 
+  /// "What's new" comes first, and an update offer waits for the next
+  /// resume rather than stacking on top of it.
+  bool _whatsNewDone = false;
+
   Future<void> _maybeShowUpdate() async {
+    if (!_whatsNewDone) {
+      final outcome = await maybeShowWhatsNew(context, ref);
+      if (outcome != WhatsNewOutcome.later) _whatsNewDone = true;
+      if (outcome != WhatsNewOutcome.nothing || !mounted) return;
+    }
     if (_updatePrompted) return;
     await ref.read(updateControllerProvider.notifier).checkSilently();
     if (!mounted || _updatePrompted) return;

@@ -137,7 +137,10 @@ extension MTAudioHandlerRecovery on MTAudioHandler {
   }
 
   void _publishQueue() =>
-      queue.add([for (final item in _queue.ordered) item.toMediaItem()]);
+      queue.add([for (final item in _queue.ordered) _toMedia(item)]);
+
+  MediaItem _toMedia(PlaylistItem item) =>
+      item.toMediaItem(playlistName: _playlistName);
 
   Future<void> savePosition() async {
     final item = _queue.current;
@@ -159,6 +162,7 @@ extension MTAudioHandlerRecovery on MTAudioHandler {
         index: _queue.index,
         position: player.position,
         playlistId: _playlistId,
+        playlistName: _playlistName,
       ),
     );
   }
@@ -170,7 +174,7 @@ extension MTAudioHandlerRecovery on MTAudioHandler {
     final source = resolver.resolve(item);
     if (source == null) return _onError(autoPlay: autoPlay);
 
-    mediaItem.add(item.toMediaItem());
+    mediaItem.add(_toMedia(item));
     // A restored session ([startAt]) always continues exactly; a saved
     // position only for something long (see [resumeMinimumLength]). When
     // the length is not known yet, the position is taken and dropped
@@ -194,7 +198,7 @@ extension MTAudioHandlerRecovery on MTAudioHandler {
       // `_openRetryBudget` returns it for playing, not for loading.
       final duration = player.duration;
       if (duration != null) {
-        mediaItem.add(item.toMediaItem().copyWith(duration: duration));
+        mediaItem.add(_toMedia(item).copyWith(duration: duration));
       }
       if (known == null &&
           saved != null &&

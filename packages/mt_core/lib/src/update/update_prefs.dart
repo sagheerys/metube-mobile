@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import '../storage/key_value_store.dart';
 
 /// Self-update preferences, with keys from `05-DATA-SCHEMA.md` §5.1.
@@ -18,6 +20,14 @@ class UpdatePrefs {
   /// The version of the downloaded file sitting in the cache. Wiped once
   /// the app is that version.
   static const String downloadedVersionKey = 'update_downloaded_version';
+
+  /// The newest version whose "what's new" was shown, or recorded silently
+  /// on a fresh install.
+  static const String lastSeenVersionKey = 'update_last_seen_version';
+
+  /// The notes of the newest release the check found, kept so "what's new"
+  /// can show them after the update without a network.
+  static const String notesKey = 'update_notes';
 
   /// **On by default**: whoever never opens settings is exactly who needs
   /// updates most.
@@ -53,4 +63,32 @@ class UpdatePrefs {
 
   Future<void> clearDownloaded() =>
       mutex.run(() => store.remove(downloadedVersionKey));
+
+  Future<String?> lastSeenVersion() => store.getString(lastSeenVersionKey);
+
+  Future<void> setLastSeenVersion(String version) =>
+      mutex.run(() => store.setString(lastSeenVersionKey, version));
+
+  /// The saved notes as (version, notes), or `null`.
+  Future<(String, String)?> savedNotes() async {
+    final raw = await store.getString(notesKey);
+    if (raw == null) return null;
+    try {
+      final decoded = json.decode(raw);
+      if (decoded is! Map) return null;
+      final version = decoded['version'];
+      final notes = decoded['notes'];
+      if (version is! String || notes is! String) return null;
+      return (version, notes);
+    } on FormatException {
+      return null; // a broken entry only costs the offline copy
+    }
+  }
+
+  Future<void> saveNotes(String version, String notes) => mutex.run(
+    () => store.setString(
+      notesKey,
+      json.encode({'version': version, 'notes': notes}),
+    ),
+  );
 }

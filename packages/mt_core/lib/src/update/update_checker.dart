@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import '../constants/mt_constants.dart';
 import '../resolvers/http_fetch.dart';
 import 'app_version.dart';
@@ -32,6 +34,27 @@ class UpdateChecker {
 
   Uri get latestUri =>
       Uri.parse('https://api.github.com/repos/$repo/releases/latest');
+
+  /// The public page of the release tagged for [version].
+  String pageUrlOf(String version) =>
+      'https://github.com/$repo/releases/tag/v$version';
+
+  /// The notes of the release tagged for [version], or `null` on any
+  /// failure. For "what's new" after an update the app did not download
+  /// itself, from a browser or another device.
+  Future<String?> notesFor(String version) async {
+    try {
+      final body = await fetch(
+        Uri.parse('https://api.github.com/repos/$repo/releases/tags/v$version'),
+      );
+      final decoded = json.decode(body);
+      if (decoded is! Map<String, dynamic>) return null;
+      final notes = decoded['body'];
+      return notes is String && notes.trim().isNotEmpty ? notes : null;
+    } catch (_) {
+      return null;
+    }
+  }
 
   /// Fail-safe: swallows every error and returns `null`. **For the
   /// automatic check**, which runs without the user's knowledge and must

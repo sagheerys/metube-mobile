@@ -5,6 +5,7 @@ import '../download/pending_downloads.dart';
 import '../download/trashcan_probe.dart';
 import '../storage/key_value_store.dart';
 import '../storage/secret_store.dart';
+import '../update/update_prefs.dart';
 import 'backup_crypto.dart';
 
 part 'backup_legacy.dart';
@@ -53,10 +54,15 @@ class BackupService {
   /// restored on another phone it would have that phone pull the file and
   /// delete it from the server while the first is still pulling it. The
   /// trashcan flag is a fact about one container, and travels with the
-  /// backup to a server it was never measured on.
+  /// backup to a server it was never measured on. Which version's "what's
+  /// new" this install has seen is about the installed app: a restore from
+  /// an older backup would show a sheet already read, or show one on a
+  /// fresh install.
   static const _deviceOnlyKeys = {
     PendingDownloadsStore.prefsKey,
     TrashcanProbe.prefsKey,
+    UpdatePrefs.lastSeenVersionKey,
+    UpdatePrefs.notesKey,
   };
 
   /// **Strip credentials embedded in a URL before backing it up.**

@@ -1,3 +1,5 @@
+import 'package:flutter/widgets.dart';
+
 /// **Direction isolation for numbers inside Arabic text.**
 ///
 /// Arabic runs right to left, and neutral characters (`/`, `-`, `#`)
@@ -46,3 +48,37 @@ String mtMetaLine(List<String?> parts) => [
   for (final part in parts)
     if (part != null && part.isNotEmpty) mtName(part),
 ].join(' \u00b7 ');
+
+final _letter = RegExp(r'\p{L}', unicode: true);
+
+bool _isRightToLeft(int rune) =>
+    (rune >= 0x0590 && rune <= 0x08FF) ||
+    (rune >= 0xFB1D && rune <= 0xFDFF) ||
+    (rune >= 0xFE70 && rune <= 0xFEFF);
+
+/// The direction [text] reads in, from its first letter, as a browser's
+/// `dir="auto"` decides it; [fallback] when it has no letter at all.
+TextDirection mtTextDirectionOf(String text, TextDirection fallback) {
+  for (final rune in text.runes) {
+    if (_isRightToLeft(rune)) return TextDirection.rtl;
+    if (_letter.hasMatch(String.fromCharCode(rune))) return TextDirection.ltr;
+  }
+  return fallback;
+}
+
+/// A whole paragraph the app did not write (a title, a subtitle line),
+/// laid out in its own direction but aligned with the interface.
+///
+/// [mtName] isolates a name inside a sentence; a paragraph that is nothing
+/// but the name needs its own direction instead. Laid out in the
+/// interface's, an English title under the Arabic interface moved its
+/// closing "!" to the front and its ellipsis to the wrong end (seen on a
+/// real phone). Aligning it with the interface keeps it in line with its
+/// neighbours.
+(TextDirection, TextAlign) mtForeignLine(BuildContext context, String text) {
+  final ambient = Directionality.of(context);
+  return (
+    mtTextDirectionOf(text, ambient),
+    ambient == TextDirection.rtl ? TextAlign.right : TextAlign.left,
+  );
+}

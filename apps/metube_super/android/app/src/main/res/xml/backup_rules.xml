@@ -14,6 +14,12 @@
   not. Losing them is intended — the user re-enters the password once, and
   it never enters our own backups either (SERVER-API.md §5.4).
 -->
+<!--
+  Transcripts are excluded too: Google stops backing up an app whose data
+  passes 25MB, and a large library's transcripts would take every setting
+  down with them. They can be exported by hand, and fetched again.
+-->
 <full-backup-content>
     <exclude domain="sharedpref" path="FlutterSecureStorage.xml"/>
+    <exclude domain="file" path="transcripts/"/>
 </full-backup-content>

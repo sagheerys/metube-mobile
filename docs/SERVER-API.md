@@ -79,6 +79,53 @@ on an audio-only path changes the container that was asked for. (3) The
 `compatible_playback` preference is read **at the moment of adding**, not when
 the engine is constructed.
 
+#### Captions share the video's key — fetched only before the video (measured 2026-09-29)
+
+MeTube can fetch a clip's subtitles alone:
+
+```json
+{"url": "…", "download_type": "captions", "format": "srt", "quality": "best",
+ "subtitle_language": "en", "subtitle_mode": "prefer_manual"}
+```
+
+It works: the `done` entry carries `download_type:"captions"`, and its
+`filename` names the subtitle file (`<title> [<id>].en.srt`), a plain SRT with
+timestamps served by `/download` like any file. **But it cannot sit beside the
+video.** `done` is keyed by URL alone (`PersistentQueue.put`: `key =
+value.info.url`), and the duplicate check at `/add` looks at `queue` and
+`pending`, never at `done`. Measured on a real server (MeTube 2026.09.25 ·
+yt-dlp 2026.08.19) with a 19-second test clip:
+
+| Step | `/history` `done` |
+|---|---|
+| Download the video | 458 entries, the clip's is `download_type:video`, `….mp4` |
+| Ask for its captions, same URL | **still 458**: the video's entry is **replaced** by `download_type:captions`, `….en.srt` |
+| The video file | still on disk (HTTP 206), with no entry pointing at it |
+| Delete that URL | removes the `.srt` only; the video file stays, orphaned |
+
+So a captions request for a clip already in the library **makes the clip vanish
+from the library** and leaves its file unreachable by any delete. While the
+clip is still in `queue` or `pending`, the captions request is instead refused
+as "Already in queue", with `status:"ok"`. The test was cleaned up by deleting
+the captions entry, re-adding the video (which re-links the existing file), and
+deleting that.
+
+A captions-only job for a clip that is **not** in the library took **20
+seconds** on the same server; deleting its entry removes the `.srt` too.
+
+Super relies on exactly this, and only this way round: before a YouTube clip
+is added, it asks for the captions alone, reads the `.srt`, deletes that
+captions entry, and only then adds the video (`CaptionsFetcher` in
+`packages/mt_transcripts`). A clip already in the library is never asked for.
+
+**Do not turn subtitles on for every download through `YTDL_OPTIONS`**
+(`writeautomaticsub` and friends), though it looks like the way around the
+shared key. Read from yt-dlp 2026.08.19 and MeTube's source: subtitles are
+fetched **before** the media, and a subtitle HTTP error (a 429 from YouTube,
+say) raises unless `ignoreerrors` is `true`, which MeTube never sets — so the
+**whole download fails with no video**. The sidecar is also never tracked, so a
+delete leaves it behind, and it is written next to audio downloads as well.
+
 #### `playlist_item_limit` — what the app thinks is a single item stays single
 
 `PlaylistDetector` recognises **YouTube playlists** and **SoundCloud `/sets/`**,

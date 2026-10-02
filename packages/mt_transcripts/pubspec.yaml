@@ -1,0 +1,16 @@
+name: mt_transcripts
+description: "Transcripts for Super: subtitle parsing, Arabic-aware search, a file store, and fetching subtitles from MeTube without touching the library — pure Dart, no Flutter."
+version: 0.1.0
+publish_to: none
+resolution: workspace
+
+environment:
+  sdk: ^3.13.0
+
+dependencies:
+  mt_core:
+    path: ../mt_core
+
+dev_dependencies:
+  lints: ^6.0.0
+  test: ^1.25.6

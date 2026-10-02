@@ -188,6 +188,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
             ordered,
             startIndex: index < 0 ? 0 : index,
             playlistId: playlistId,
+            playlistName: _request?.playlistName,
           )
           .catchError(
             (Object error) => unawaited(

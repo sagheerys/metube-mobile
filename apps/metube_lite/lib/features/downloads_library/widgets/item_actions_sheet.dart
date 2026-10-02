@@ -18,6 +18,11 @@ void showItemActionsSheet(BuildContext context, WidgetRef ref, LocalItem item) {
   showModalBottomSheet<void>(
     context: context,
     useRootNavigator: true,
+    // As tall as its rows, not the default nine sixteenths of the screen,
+    // which hid Delete below a scroll once the menu grew a row. It still
+    // scrolls on a phone too short for all of them.
+    isScrollControlled: true,
+    useSafeArea: true,
     // The screen's context, not the sheet's, is passed for opening later
     // sheets: using a closed sheet's context trips the
     // `_dependents.isEmpty`
@@ -72,85 +77,89 @@ class _ItemActionsSheet extends ConsumerWidget {
       onTap: onTap,
     );
 
+    // Scrolls when it outgrows the sheet: a sheet stops at nine sixteenths
+    // of the screen, and on a short phone the last rows, delete among
+    // them, were cut off.
     return SafeArea(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(
-              MTSpace.xl,
-              MTSpace.lg,
-              MTSpace.xl,
-              MTSpace.sm,
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                MTSpace.xl,
+                MTSpace.lg,
+                MTSpace.xl,
+                MTSpace.sm,
+              ),
+              child: MTForeignText(
+                item.title,
+                maxLines: 1,
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
             ),
-            child: Text(
-              item.title,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-          ),
-          const Divider(),
-          tile(Icons.info_outline_rounded, l10n.details, () {
-            Navigator.pop(context);
-            showItemDetailsSheet(host, item);
-          }),
-          tile(
-            Icons.share_rounded,
-            l10n.share,
-            () => run(() => actions.share([item])),
-          ),
-          // **An external player, for a local file only** (requested
-          // 2026-09-05).
-          tile(
-            Icons.open_with_rounded,
-            l10n.openInExternalPlayer,
-            () => run(() async {
-              final opened = await const ExternalPlayer().open(
-                item.path,
-                audio: item.isAudio,
-              );
-              if (!opened && host.mounted) {
-                showMTSnack(
-                  host,
-                  l10n.noExternalPlayer,
-                  type: MTSnackType.error,
-                );
-              }
-            }),
-          ),
-          tile(Icons.playlist_add_rounded, l10n.addToPlaylist, () {
-            Navigator.pop(context);
-            showAddToPlaylistSheet(host, ref, [item]);
-          }),
-          // The original link is offered only where we know it; it is never
-          // invented (trap §6.3).
-          if (item.canonicalUrl != null)
-            tile(Icons.open_in_new_rounded, l10n.openOriginalLink, () {
+            const Divider(),
+            tile(Icons.info_outline_rounded, l10n.details, () {
               Navigator.pop(context);
-              launchUrl(
-                Uri.parse(item.canonicalUrl!),
-                mode: LaunchMode.externalApplication,
-              );
+              showItemDetailsSheet(host, item);
             }),
-          const Divider(),
-          tile(
-            Icons.delete_outline_rounded,
-            l10n.deleteVideo,
-            () => _confirm(
-              context,
-              l10n.deleteVideoConfirm(mtName(item.title)),
-              () {
-                run(
-                  () => actions.deleteFiles([item]),
-                  successText: l10n.deletedTitle(mtName(item.title)),
-                );
-              },
+            tile(
+              Icons.share_rounded,
+              l10n.share,
+              () => run(() => actions.share([item])),
             ),
-            color: p.err,
-          ),
-          const SizedBox(height: MTSpace.md),
-        ],
+            // An external player gets a file path: Lite has only local
+            // files, so no server URL ever leaves the app.
+            tile(
+              Icons.open_with_rounded,
+              l10n.openInExternalPlayer,
+              () => run(() async {
+                final opened = await const ExternalPlayer().open(
+                  item.path,
+                  audio: item.isAudio,
+                );
+                if (!opened && host.mounted) {
+                  showMTSnack(
+                    host,
+                    l10n.noExternalPlayer,
+                    type: MTSnackType.error,
+                  );
+                }
+              }),
+            ),
+            tile(Icons.playlist_add_rounded, l10n.addToPlaylist, () {
+              Navigator.pop(context);
+              showAddToPlaylistSheet(host, ref, [item]);
+            }),
+            // The original link is offered only where we know it; it is never
+            // rebuilt from a guess.
+            if (item.canonicalUrl != null)
+              tile(Icons.open_in_new_rounded, l10n.openOriginalLink, () {
+                Navigator.pop(context);
+                launchUrl(
+                  Uri.parse(item.canonicalUrl!),
+                  mode: LaunchMode.externalApplication,
+                );
+              }),
+            const Divider(),
+            tile(
+              Icons.delete_outline_rounded,
+              l10n.deleteVideo,
+              () => _confirm(
+                context,
+                l10n.deleteVideoConfirm(mtName(item.title)),
+                () {
+                  run(
+                    () => actions.deleteFiles([item]),
+                    successText: l10n.deletedTitle(mtName(item.title)),
+                  );
+                },
+              ),
+              color: p.err,
+            ),
+            const SizedBox(height: MTSpace.md),
+          ],
+        ),
       ),
     );
   }

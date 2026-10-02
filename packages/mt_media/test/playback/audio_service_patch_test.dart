@@ -50,4 +50,22 @@ void main() {
       contains('static AudioService.ServiceListener currentListener()'),
     );
   });
+
+  test('closing the player takes the service out of the foreground', () {
+    // Found 2026-09-30 on a real phone: the close button stopped the sound
+    // and emptied the mini player, and the notification stayed. With
+    // stop-foreground-on-pause off, only this call can remove it.
+    final service = read(
+      'third_party/audio_service/android/src/main/java/com/ryanheise/audioservice/AudioService.java',
+    );
+    final stop = RegExp(
+      r'public void stop\(\) \{(.*?)\n    \}',
+      dotAll: true,
+    ).firstMatch(service)!.group(1)!;
+    final leave = stop.indexOf(
+      'ServiceCompat.stopForeground(this, STOP_FOREGROUND_REMOVE);',
+    );
+    expect(leave, isNonNegative);
+    expect(leave, lessThan(stop.indexOf('stopSelf();')));
+  });
 }

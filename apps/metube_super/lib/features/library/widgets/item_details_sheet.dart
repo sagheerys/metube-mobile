@@ -1,16 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show Clipboard, ClipboardData;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mt_core/mt_core.dart';
 import 'package:mt_media/mt_media.dart';
 import 'package:mt_ui/mt_ui.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../../../di.dart';
 import '../../shared/external_player.dart';
 import '../../shared/membership.dart';
 import '../library_models.dart';
-import '../media_probe.dart';
+import '../quality_cache.dart';
 
 /// Item details, opened from the actions sheet and from the reels player
 /// alike.
@@ -26,28 +24,6 @@ class _DetailsSheet extends ConsumerWidget {
   const _DetailsSheet({required this.item});
 
   final LibraryItem item;
-
-  /// The local copy when there is one, otherwise the server's stream — the
-  /// same order the library's own probe uses.
-  Future<MediaQuality?> _readQuality(WidgetRef ref) async {
-    const probe = MediaProbe();
-    if (item.localPath case final String path) {
-      return probe.quality(path: path);
-    }
-    final filename = item.serverFilename;
-    if (filename == null) return null;
-    final String url;
-    try {
-      url = ref.read(playbackResolverProvider).endpoint.buildUrl(filename);
-    } on UnsafeFilenameException {
-      // Rule 9: a URL is never built for an unsafe filename.
-      return null;
-    }
-    return probe.quality(
-      url: url,
-      headers: ref.read(apiClientProvider)?.streamingHeaders ?? const {},
-    );
-  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -96,7 +72,13 @@ class _DetailsSheet extends ConsumerWidget {
               row: row,
               sizeBytes: item.sizeBytes,
               duration: item.duration,
-              load: () => _readQuality(ref),
+              store: ref.read(mediaQualityIndexProvider),
+              load: () => ref
+                  .read(qualityReaderProvider)
+                  .read(
+                    localPath: item.localPath,
+                    serverFilename: item.serverFilename,
+                  ),
             ),
             if (item.timestamp != null)
               row(l10n.downloadDate, mtTimeAgo(context, item.timestamp!)),

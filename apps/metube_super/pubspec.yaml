@@ -2,7 +2,7 @@ name: metube_super
 description: "MeTube Super — the server owner's edition: streaming, a merged library, tags, management."
 publish_to: none
 resolution: workspace
-version: 2.2.1+8
+version: 2.3.0+9
 
 environment:
   sdk: ^3.13.0
@@ -14,6 +14,10 @@ dependencies:
     path: ../../packages/mt_core
   mt_media:
     path: ../../packages/mt_media
+  # Transcripts are Super's alone: Lite does not list this package, so the
+  # family app cannot reach it.
+  mt_transcripts:
+    path: ../../packages/mt_transcripts
   mt_ui:
     path: ../../packages/mt_ui
   audio_service: ^0.18.15

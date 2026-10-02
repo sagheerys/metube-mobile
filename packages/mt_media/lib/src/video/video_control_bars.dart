@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mt_ui/mt_ui.dart';
 
 import '../widgets/media_time.dart';
+import '../widgets/mt_extra_button.dart';
 import '../widgets/mt_player_controls_row.dart';
 import '../widgets/mt_progress_slider.dart';
 import 'mt_video_session.dart';
@@ -62,10 +63,9 @@ class MTVideoTopBar extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
+              MTForeignText(
                 item?.title ?? '',
                 maxLines: 1,
-                overflow: TextOverflow.ellipsis,
                 style: text.titleMedium!.copyWith(
                   color: MTPalette.serverCardInk,
                   fontSize: 13.5,
@@ -184,11 +184,15 @@ class MTVideoBottomBar extends StatelessWidget {
     required this.session,
     required this.onQueue,
     this.compactModes = false,
+    this.extra,
   });
 
   final MTVideoSession session;
   final VoidCallback onQueue;
   final bool compactModes;
+
+  /// A button the app adds before the queue button.
+  final MTExtraAction? extra;
 
   @override
   Widget build(BuildContext context) {
@@ -237,6 +241,18 @@ class MTVideoBottomBar extends StatelessWidget {
                 size: 32,
                 active: session.shuffleEnabled,
               ),
+              if (extra case final extra?) ...[
+                const SizedBox(width: MTSpace.xxs + 2),
+                // In the style of its neighbours: beside repeat and shuffle,
+                // which light up when on, a filled button read as switched
+                // on (field report 2026-09-30).
+                MTVideoIconButton(
+                  icon: extra.icon,
+                  onTap: extra.onTap,
+                  tooltip: extra.label,
+                  size: 32,
+                ),
+              ],
               const SizedBox(width: MTSpace.xxs + 2),
               MTVideoIconButton(
                 icon: Icons.queue_music_rounded,

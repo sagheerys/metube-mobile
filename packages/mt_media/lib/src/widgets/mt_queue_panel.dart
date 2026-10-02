@@ -52,12 +52,59 @@ class MTQueuePanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        MTQueueHeader(
+          count: items.length,
+          playlistName: playlistName,
+          onShowAll: onShowAll,
+          dark: dark,
+        ),
+        const SizedBox(height: MTSpace.xs),
+        // Sized to its rows, and still lazy: the height here is bounded,
+        // so only the rows that fit are built.
+        Flexible(
+          child: MTUpNextList(
+            items: items,
+            currentIndex: currentIndex,
+            artwork: artwork,
+            dark: dark,
+            paused: paused,
+            shrinkWrap: true,
+            physics: nested ? const NeverScrollableScrollPhysics() : null,
+            revealCurrent: !nested,
+            onTap: onSelect,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// The queue's title, its size and the "show all" link, above its rows.
+class MTQueueHeader extends StatelessWidget {
+  const MTQueueHeader({
+    super.key,
+    required this.count,
+    this.playlistName,
+    this.onShowAll,
+    this.dark = false,
+  });
+
+  final int count;
+  final String? playlistName;
+  final VoidCallback? onShowAll;
+  final bool dark;
+
+  @override
+  Widget build(BuildContext context) {
     final p = MTThemeX.of(context).palette;
     final text = Theme.of(context).textTheme;
     final l10n = context.mtl;
     final ink = dark ? p.miniInk : p.ink;
     final muted = dark ? p.miniInkMuted : p.ink3;
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
@@ -86,22 +133,8 @@ class MTQueuePanel extends StatelessWidget {
           ],
         ),
         Text(
-          l10n.queueItemsCount(items.length),
+          l10n.queueItemsCount(count),
           style: text.labelSmall!.copyWith(color: muted),
-        ),
-        const SizedBox(height: MTSpace.xs),
-        Flexible(
-          child: MTUpNextList(
-            items: items,
-            currentIndex: currentIndex,
-            artwork: artwork,
-            dark: dark,
-            paused: paused,
-            shrinkWrap: true,
-            physics: nested ? const NeverScrollableScrollPhysics() : null,
-            revealCurrent: !nested,
-            onTap: onSelect,
-          ),
         ),
       ],
     );

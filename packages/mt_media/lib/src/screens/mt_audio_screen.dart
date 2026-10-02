@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
 import 'package:mt_ui/mt_ui.dart';
@@ -5,6 +7,7 @@ import 'package:mt_ui/mt_ui.dart';
 import '../models/playlist_item.dart';
 import '../playback/audio_handler.dart';
 import '../widgets/media_time.dart';
+import '../widgets/mt_extra_button.dart';
 import '../widgets/mt_breathing_glow.dart';
 import '../widgets/mt_player_controls_row.dart';
 import '../widgets/mt_progress_slider.dart';
@@ -24,6 +27,7 @@ class MTAudioScreen extends StatelessWidget {
     this.onDetails,
     this.playlistName,
     this.showSourceChip = true,
+    this.extra,
   });
 
   final MTAudioHandler handler;
@@ -42,6 +46,11 @@ class MTAudioScreen extends StatelessWidget {
   /// coexist, and means nothing in Lite, where everything in the library is
   /// already on the device (field report 2026-09-04).
   final bool showSourceChip;
+
+  /// Asked again for each item as the queue moves: an app feature this
+  /// package does not know, such as a transcript, that only some items
+  /// have. Null, or a null answer, shows nothing.
+  final MTExtraAction? Function(PlaylistItem item)? extra;
 
   @override
   Widget build(BuildContext context) => StreamBuilder<MediaItem?>(
@@ -70,17 +79,33 @@ class MTAudioScreen extends StatelessWidget {
               child: Column(
                 children: [
                   _Header(handler: handler, onDetails: onDetails),
-                  const Spacer(flex: 2),
-                  MTBreathingGlow(
-                    playing: handler.playingNotifier,
-                    size: _artSize(context),
-                    child: MTTiltedArtwork(
-                      item: item,
-                      artwork: artwork,
-                      size: _artSize(context),
+                  // The cover takes what the rest leaves, up to its usual
+                  // size: at Android's largest text on a small phone the
+                  // fixed-size cover pushed the controls past the bottom.
+                  // The spare room stays two parts above to one below.
+                  Expanded(
+                    child: LayoutBuilder(
+                      builder: (context, box) {
+                        final size = math.min(
+                          _artSize(context),
+                          box.maxHeight - MTSpace.lg * 2,
+                        );
+                        if (size < _smallestArt) return const SizedBox();
+                        return Align(
+                          alignment: const Alignment(0, 1 / 3),
+                          child: MTBreathingGlow(
+                            playing: handler.playingNotifier,
+                            size: size,
+                            child: MTTiltedArtwork(
+                              item: item,
+                              artwork: artwork,
+                              size: size,
+                            ),
+                          ),
+                        );
+                      },
                     ),
                   ),
-                  const Spacer(),
                   _Titles(
                     item: item,
                     media: media,
@@ -97,6 +122,7 @@ class MTAudioScreen extends StatelessWidget {
                   _SubControls(
                     handler: handler,
                     onQueue: () => _openQueue(context),
+                    extra: extra?.call(item),
                   ),
                   const SizedBox(height: MTSpace.lg),
                 ],
@@ -107,6 +133,9 @@ class MTAudioScreen extends StatelessWidget {
       );
     },
   );
+
+  /// Below this a cover says nothing; the controls get the room instead.
+  static const _smallestArt = 64.0;
 
   double _artSize(BuildContext context) {
     final size = MediaQuery.sizeOf(context);
@@ -216,11 +245,10 @@ class _Titles extends StatelessWidget {
           MTSourceChip(local: item.hasLocal),
           const SizedBox(height: MTSpace.sm),
         ],
-        Text(
+        MTForeignText(
           media.title,
-          textAlign: TextAlign.center,
+          center: true,
           maxLines: 2,
-          overflow: TextOverflow.ellipsis,
           style: text.titleLarge!.copyWith(fontSize: 19),
         ),
         if (parts.isNotEmpty) ...[
@@ -256,10 +284,15 @@ class _Slider extends StatelessWidget {
 }
 
 class _SubControls extends StatelessWidget {
-  const _SubControls({required this.handler, required this.onQueue});
+  const _SubControls({
+    required this.handler,
+    required this.onQueue,
+    this.extra,
+  });
 
   final MTAudioHandler handler;
   final VoidCallback onQueue;
+  final MTExtraAction? extra;
 
   @override
   Widget build(BuildContext context) {
@@ -268,22 +301,33 @@ class _SubControls extends StatelessWidget {
       stream: handler.playbackState,
       builder: (context, snapshot) {
         final speed = snapshot.data?.speed ?? 1.0;
-        return Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            _Pill(
-              onTap: () => handler.setSpeed(mtNextSpeed(speed)),
-              leading: '${mtFormatSpeed(speed)}×',
-              label: l10n.playbackSpeed,
-            ),
-            const SizedBox(width: MTSpace.md),
-            _Pill(
-              onTap: onQueue,
-              icon: Icons.queue_music_rounded,
-              label: l10n.queueLabel,
-              trailing: '${handler.items.length}',
-            ),
-          ],
+        // One line that shrinks when it must, never two: a second line of
+        // pills pushed the whole screen past the bottom of a 360-point
+        // phone at a larger text size. Where the pills fit, nothing
+        // changes.
+        return FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _Pill(
+                onTap: () => handler.setSpeed(mtNextSpeed(speed)),
+                leading: '${mtFormatSpeed(speed)}×',
+                label: l10n.playbackSpeed,
+              ),
+              const SizedBox(width: MTSpace.md),
+              _Pill(
+                onTap: onQueue,
+                icon: Icons.queue_music_rounded,
+                label: l10n.queueLabel,
+                trailing: '${handler.items.length}',
+              ),
+              if (extra case final extra?) ...[
+                const SizedBox(width: MTSpace.md),
+                MTExtraButton(extra: extra),
+              ],
+            ],
+          ),
         );
       },
     );

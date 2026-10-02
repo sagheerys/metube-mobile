@@ -126,6 +126,41 @@ class _MTUpNextListState extends State<MTUpNextList> {
   );
 }
 
+/// The same rows as a sliver, for a page that scrolls them together with
+/// what sits above them (under the portrait video). Only the rows on screen
+/// are built: a nested list sized to its content built every one of a
+/// 468-clip queue, covers included, on every tick of the video's clock,
+/// and the player stuttered (field report 2026-09-30).
+class MTUpNextSliver extends StatelessWidget {
+  const MTUpNextSliver({
+    super.key,
+    required this.items,
+    required this.currentIndex,
+    required this.onTap,
+    this.artwork,
+    this.paused = false,
+  });
+
+  final List<PlaylistItem> items;
+  final int currentIndex;
+  final ValueChanged<int> onTap;
+  final MTArtworkBuilder? artwork;
+  final bool paused;
+
+  @override
+  Widget build(BuildContext context) => SliverList.builder(
+    itemCount: items.length,
+    itemBuilder: (context, index) => _UpNextRow(
+      item: items[index],
+      playing: index == currentIndex,
+      paused: paused,
+      artwork: artwork,
+      dark: false,
+      onTap: () => onTap(index),
+    ),
+  );
+}
+
 class _UpNextRow extends StatelessWidget {
   const _UpNextRow({
     super.key,
@@ -197,10 +232,9 @@ class _UpNextRow extends StatelessWidget {
             ),
             const SizedBox(width: MTSpace.sm),
             Expanded(
-              child: Text(
+              child: MTForeignText(
                 item.title,
                 maxLines: 2,
-                overflow: TextOverflow.ellipsis,
                 style: text.bodySmall!.copyWith(
                   fontSize: dark ? 10.5 : 12,
                   color: playing ? p.accentInk : (dark ? p.miniInkMuted : ink),

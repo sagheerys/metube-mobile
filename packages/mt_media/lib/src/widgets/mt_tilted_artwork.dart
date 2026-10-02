@@ -118,10 +118,16 @@ class MTSourceChip extends StatelessWidget {
             color: fg,
           ),
           const SizedBox(width: MTSpace.xxs + 2),
-          Text(
-            local ? l10n.playingFromDevice : l10n.streamingFromServer,
-            style: Theme.of(context).textTheme.labelSmall!
-                .copyWith(color: fg, fontWeight: FontWeight.w700),
+          // Cut short rather than run past the screen, on a narrow phone
+          // with large text.
+          Flexible(
+            child: Text(
+              local ? l10n.playingFromDevice : l10n.streamingFromServer,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.labelSmall!
+                  .copyWith(color: fg, fontWeight: FontWeight.w700),
+            ),
           ),
         ],
       ),

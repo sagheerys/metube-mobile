@@ -96,6 +96,7 @@ class LibraryItemCard extends ConsumerWidget {
             ? null
             : mtFormatDuration(item.duration!),
         favorite: item.favorite,
+        audio: item.isAudio,
         selected: options.selection.contains(item.canonicalUrl),
         highlighted: highlighted,
         onFavoriteToggle: toggleFavorite,
@@ -113,6 +114,7 @@ class LibraryItemCard extends ConsumerWidget {
       locationLabel: locationLabel,
       compact: options.compact,
       favorite: item.favorite,
+      audio: item.isAudio,
       selected: options.selection.contains(item.canonicalUrl),
       highlighted: highlighted,
       onFavoriteToggle: toggleFavorite,

@@ -1413,6 +1413,129 @@ class MTLocalizationsEn extends MTLocalizations {
   }
 
   @override
+  String get transcript => 'Transcript';
+
+  @override
+  String get transcriptFind => 'Search the transcript';
+
+  @override
+  String get transcriptFull => 'Full transcript';
+
+  @override
+  String transcriptMatches(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count matches',
+      one: '1 match',
+      zero: 'No matches',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get transcriptNextMatch => 'Next match';
+
+  @override
+  String get transcriptPreviousMatch => 'Previous match';
+
+  @override
+  String transcriptSaidMore(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Said $count more times',
+      one: 'Said once more',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String transcriptsClips(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count clips',
+      one: '1 clip',
+      zero: 'No clips yet',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get transcriptsDeleteAll => 'Delete all';
+
+  @override
+  String get transcriptsDeleteBody =>
+      'They are removed from this phone. Only a file you exported can bring them back.';
+
+  @override
+  String get transcriptsDeleteTitle => 'Delete every transcript?';
+
+  @override
+  String transcriptsDisableBody(String size) {
+    return 'The saved transcripts ($size) stay on this phone unless you delete them.';
+  }
+
+  @override
+  String get transcriptsDisableTitle => 'Stop searching inside clips?';
+
+  @override
+  String get transcriptsEnable => 'Turn on';
+
+  @override
+  String get transcriptsEnableBody =>
+      'Before each YouTube clip you add is downloaded, the app fetches its words from your server, in the app\'s language and in English (up to 40 seconds), and keeps them on this phone only. Clips already in your library are not included. You can turn this off at any time.';
+
+  @override
+  String get transcriptsExport => 'Export';
+
+  @override
+  String transcriptsExported(Object path) {
+    return 'Transcripts saved to: $path';
+  }
+
+  @override
+  String get transcriptsHelp =>
+      'The app keeps the words said in each YouTube clip you add, so a library search also finds what was said inside your clips, not only their titles. Other sites are not covered yet.\n\nThe words are fetched from your server just before the download and kept on this phone only. The server does not keep them, and the full backup does not include them. To move them to another phone, use Export here and Import there. An import adds to what is already here and deletes nothing.';
+
+  @override
+  String get transcriptsImport => 'Import';
+
+  @override
+  String get transcriptsImportInvalid => 'This file holds no transcripts.';
+
+  @override
+  String transcriptsImported(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Imported $count transcripts',
+      one: 'Imported 1 transcript',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get transcriptsKeep => 'Stop and keep';
+
+  @override
+  String get transcriptsSaidInside => 'Said inside clips';
+
+  @override
+  String get transcriptsSearch => 'Search inside clips';
+
+  @override
+  String get transcriptsSearchHelp =>
+      'Keeps the words of every YouTube clip you add, so you can search what was said.';
+
+  @override
+  String get transcriptsSection => 'Transcripts';
+
+  @override
+  String get transcriptsStopAndDelete => 'Stop and delete';
+
+  @override
   String get tryAgain => 'Try again';
 
   @override
@@ -1544,6 +1667,24 @@ class MTLocalizationsEn extends MTLocalizations {
 
   @override
   String get waitingForWifi => 'Waiting for Wi-Fi';
+
+  @override
+  String get whatsNewGotIt => 'Got it';
+
+  @override
+  String get whatsNewReleasePage => 'Release page';
+
+  @override
+  String get whatsNewThisVersion => 'What\'s new in this version';
+
+  @override
+  String whatsNewTitle(String version) {
+    return 'What\'s new in $version';
+  }
+
+  @override
+  String get whatsNewUnavailable =>
+      'What changed in this version is on the release page.';
 
   @override
   String get wifiOnly => 'Download over Wi-Fi only';

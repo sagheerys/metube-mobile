@@ -29,8 +29,9 @@ the pull policy both run through the same engine.
 ```
 apps/metube_lite ─┐
                   ├─► packages/mt_media ─► packages/mt_core
-apps/metube_super ┘            │
-                               └─► packages/mt_ui
+apps/metube_super ┘            │                 ▲
+        │                      └─► packages/mt_ui│
+        └─► packages/mt_transcripts ─────────────┘
 ```
 
 | Package | Contains | Hard rule |
@@ -38,7 +39,8 @@ apps/metube_super ┘            │
 | `mt_core` | MeTube API client, models, download engine, storage, backup, URL tools | **Pure Dart. No Flutter import.** Tested with `dart test`. |
 | `mt_media` | Audio handler, video playback, playback stores | Knows the server only through `mt_core` |
 | `mt_ui` | Design tokens, themes, shared widgets, localisation | **Does not know the server exists** |
-| `apps/*` | Screens, routing, dependency injection | May depend on all three |
+| `mt_transcripts` | Subtitle parsing, Arabic-aware search, the transcript store, fetching subtitles without disturbing the library | **Pure Dart. Super only**: Lite does not depend on it, so the family app cannot reach it |
+| `apps/*` | Screens, routing, dependency injection | May depend on the packages above; only Super on `mt_transcripts` |
 
 Three consequences worth remembering:
 
@@ -102,13 +104,23 @@ faster one's write.
 flutter pub get                      # once, at the repository root
 flutter analyze --no-pub             # zero issues is the gate
 cd packages/mt_core && dart test     # pure Dart core
-flutter test --no-pub                # in each of the other four packages
+cd packages/mt_transcripts && dart test
+flutter test --no-pub                # in mt_media, mt_ui and both apps
 flutter build apk --debug            # in apps/metube_lite or apps/metube_super
 ```
 
 After editing an `.arb` file, run `cd packages/mt_ui && flutter gen-l10n`.
 Skipping it produces an `undefined_getter` at build time rather than at
 edit time.
+
+**Transcripts for clips downloaded earlier.** Super fetches a clip's
+subtitles only before downloading it: a subtitles job for a clip already on
+the server replaces the clip's record there. For the rest,
+`dart run packages/mt_transcripts/bin/backfill.dart --server URL --languages ar,en`
+reads the server's list, fetches subtitles with yt-dlp on your computer
+(needs `curl_cffi` and ffmpeg), and writes one file to import in Super
+(Settings, AI, Import). It resumes where it stopped, and a wrong option
+prints the list of options.
 
 The apps need a reachable [MeTube](https://github.com/alexta69/metube)
 server. Enter its address in Settings on first launch.
@@ -168,8 +180,9 @@ inferred from the server's own documentation.
 ```
 apps/metube_lite ─┐
                   ├─► packages/mt_media ─► packages/mt_core
-apps/metube_super ┘            │
-                               └─► packages/mt_ui
+apps/metube_super ┘            │                 ▲
+        │                      └─► packages/mt_ui│
+        └─► packages/mt_transcripts ─────────────┘
 ```
 
 | الحزمة | تحتوي | القاعدة الصارمة |
@@ -177,7 +190,8 @@ apps/metube_super ┘            │
 | `mt_core` | عميل API، النماذج، محرك التحميل، التخزين، النسخ، أدوات الروابط | **Dart خالص بلا Flutter**، ويُختبر بـ`dart test` |
 | `mt_media` | مشغّل الصوت والفيديو ومخازن التشغيل | لا يعرف الخادم إلا عبر `mt_core` |
 | `mt_ui` | الرموز التصميمية والثيمات والودجات والترجمة | **لا يعرف أن للخادم وجوداً** |
-| `apps/*` | الشاشات والتوجيه وحقن الاعتماديات | يعتمد على الثلاث |
+| `mt_transcripts` | قراءة الترجمات، والبحث المراعي للعربية، ومخزن النصوص، وجلب الترجمة دون المساس بالمكتبة | **Dart خالص، وSuper وحده**: Lite لا يعتمد عليه فلا يصل إليه تطبيق العائلة |
+| `apps/*` | الشاشات والتوجيه وحقن الاعتماديات | يعتمد على الحزم أعلاه، وSuper وحده على `mt_transcripts` |
 
 ثلاث نتائج تستحق الحفظ:
 
@@ -221,12 +235,20 @@ Riverpod يحقن الاعتماديات، وملف `di.dart` هو نقطة ال
 flutter pub get                      # مرة واحدة من الجذر
 flutter analyze --no-pub             # صفر مشاكل هي البوابة
 cd packages/mt_core && dart test     # النواة Dart خالص
-flutter test --no-pub                # في الحزم الأربع الأخرى
+cd packages/mt_transcripts && dart test
+flutter test --no-pub                # في mt_media وmt_ui والتطبيقين
 flutter build apk --debug            # داخل أحد التطبيقين
 ```
 
 بعد تعديل أي `.arb`: `cd packages/mt_ui && flutter gen-l10n`. تخطّيها
 يظهر `undefined_getter` عند البناء لا عند التحرير.
+
+**نصوص المقاطع المحمَّلة سابقاً.** يجلب Super نص المقطع قبل تنزيله فقط، لأن
+طلب الترجمة لمقطع موجود على السيرفر يستبدل سجلّه هناك. ولما سبق:
+`dart run packages/mt_transcripts/bin/backfill.dart --server URL --languages ar,en`
+يقرأ قائمة السيرفر، ويجلب الترجمات بـyt-dlp على حاسوبك (يحتاج `curl_cffi`
+وffmpeg)، ويكتب ملفاً واحداً تستورده في Super (الإعدادات، النصوص،
+استيراد). ويكمل من حيث توقف.
 
 ## ٦ · أعراف الاختبار
 

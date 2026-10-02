@@ -13,6 +13,11 @@ abstract final class MTConstants {
   /// A quick probe for endpoint switching (EndpointResolver).
   static const Duration probeTimeout = Duration(seconds: 4);
 
+  /// **A text file from the server** (a transcript): an hour of speech is
+  /// about 100KB of SRT, so the cap refuses only a file that is not one.
+  static const int maxTextFileBytes = 5 * 1024 * 1024;
+  static const Duration textFileTimeout = Duration(seconds: 15);
+
   /// **How long short-link resolution may hold up a routing decision**
   /// (field report 2026-09-08): deciding "playlist or single" waits on the
   /// network and the user waits with it, so past this limit the link is

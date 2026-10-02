@@ -12,10 +12,11 @@ import '../shared/error_text.dart';
 import '../player/playback_providers.dart';
 import '../playlists/add_to_playlist_sheet.dart';
 import '../tags/item_tags_sheet.dart';
+import '../transcripts/transcript_results.dart';
 import 'library_models.dart';
 import 'library_providers.dart';
 import 'widgets/downloads_sheet.dart';
-import 'widgets/item_actions_sheet.dart' show confirmBulkDelete;
+import 'widgets/confirm_bulk_delete.dart';
 import 'widgets/library_cards.dart';
 import 'widgets/library_chips.dart';
 import 'widgets/server_banner.dart';
@@ -112,7 +113,6 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
   }
 
   AppBar _mainAppBar(MTLocalizations l10n, int activeCount) {
-    final x = MTThemeX.of(context);
     return AppBar(
       title: Text(l10n.navLibrary),
       actions: [
@@ -120,13 +120,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
         IconButton(
           tooltip: l10n.activeDownloadsSheet,
           onPressed: () => showDownloadsSheet(context),
-          icon: Badge(
-            isLabelVisible: activeCount > 0,
-            label: Text('$activeCount'),
-            backgroundColor: x.palette.accent,
-            textColor: x.palette.onAccent,
-            child: const Icon(Icons.download_rounded),
-          ),
+          icon: MTDownloadsIcon(active: activeCount),
         ),
         // One button for sorting and the view mode.
         IconButton(
@@ -205,8 +199,9 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
           padding: const EdgeInsets.symmetric(horizontal: MTSpace.pagePad),
           sliver: SliverList.list(
             children: [
-              MTSearchField(
+              MTQuerySearchField(
                 hint: l10n.searchVideos,
+                query: options.query,
                 onChanged: ref.read(libraryViewProvider.notifier).setQuery,
               ),
               const SizedBox(height: MTSpace.sm),
@@ -218,7 +213,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                 Padding(
                   padding: const EdgeInsets.only(top: MTSpace.xs),
                   child: Text(
-                    l10n.resultsFound(itemsAsync.valueOrNull?.length ?? 0),
+                    l10n.resultsFound(ref.watch(libraryResultCountProvider)),
                     style: Theme.of(context).textTheme.labelSmall,
                   ),
                 ),
@@ -301,23 +296,29 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                     ),
             ),
           ],
-          AsyncValue(valueOrNull: final value?) when value.isEmpty => [
-            SliverToBoxAdapter(
-              child: MTEmptyState(
-                icon: options.query.isEmpty
-                    ? Icons.video_library_outlined
-                    : Icons.search_off_rounded,
-                title: options.query.isEmpty
-                    ? l10n.noVideosFound
-                    : l10n.noResults,
-                message: options.query.isEmpty
-                    ? l10n.emptyLibraryMessage
-                    : l10n.noResultsMessage,
+          // Words found only inside clips are still results: the
+          // transcript matches below stand in for the empty state.
+          AsyncValue(valueOrNull: final value?)
+              when value.isEmpty &&
+                  ref.watch(transcriptResultsProvider).isEmpty =>
+            [
+              SliverToBoxAdapter(
+                child: MTEmptyState(
+                  icon: options.query.isEmpty
+                      ? Icons.video_library_outlined
+                      : Icons.search_off_rounded,
+                  title: options.query.isEmpty
+                      ? l10n.noVideosFound
+                      : l10n.noResults,
+                  message: options.query.isEmpty
+                      ? l10n.emptyLibraryMessage
+                      : l10n.noResultsMessage,
+                ),
               ),
-            ),
-          ],
+            ],
           _ => const <Widget>[],
         },
+        const TranscriptResultsSliver(),
         const SliverToBoxAdapter(child: SizedBox(height: 140)),
       ],
     );

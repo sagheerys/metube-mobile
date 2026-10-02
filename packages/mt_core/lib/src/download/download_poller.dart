@@ -91,6 +91,10 @@ class DownloadPoller {
       }
 
       for (final item in [...history.done, ...history.active]) {
+        // A subtitles job shares its clip's URL but its file is a
+        // transcript: taken for the download, it would be pulled as the
+        // clip, and in Lite deleted from the server as one.
+        if (item.isCaptions) continue;
         if (key != null) {
           if (item.canonicalUrl != key) continue;
         } else if (!UrlKit.urlsMatch(item.canonicalUrl, url)) {

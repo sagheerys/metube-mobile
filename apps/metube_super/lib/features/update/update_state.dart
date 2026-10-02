@@ -139,6 +139,12 @@ class UpdateNotifier extends Notifier<UpdateState> {
     await prefs.clearDownloaded();
   }
 
+  /// The notes travel with the update, so "what's new" can show them after
+  /// it without a network.
+  Future<void> _keepNotes(UpdateRelease release) => ref
+      .read(updatePrefsProvider)
+      .saveNotes(release.version.toString(), release.notes);
+
   Future<String> _currentVersion() async =>
       (await PackageInfo.fromPlatform()).version;
 
@@ -161,6 +167,7 @@ class UpdateNotifier extends Notifier<UpdateState> {
           currentVersion: await _currentVersion(),
           skippedVersion: await prefs.skippedVersion(),
         );
+    if (release != null) await _keepNotes(release);
     state = release == null
         ? state.copyWith(checkedAt: now)
         : state.copyWith(
@@ -188,6 +195,7 @@ class UpdateNotifier extends Notifier<UpdateState> {
       final release = await ref
           .read(updateCheckerProvider)
           .checkOrThrow(currentVersion: await _currentVersion());
+      if (release != null) await _keepNotes(release);
       state = state.copyWith(
         phase: release == null ? UpdatePhase.idle : UpdatePhase.available,
         release: release,

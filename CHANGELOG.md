@@ -9,6 +9,95 @@ only one.
 
 ## [Unreleased]
 
+## [2.3.0] - 2026-10-02
+
+### Added
+
+- **Search inside your clips.** Settings has a new "Transcripts" section with
+  "Search inside clips", off until you turn it on. From then on, each
+  YouTube clip you add has its subtitles fetched from your server first —
+  in the app's language and in English, so English terms are found even in
+  an Arabic talk (up to 40 seconds before the download starts) — and kept
+  on the phone. A search in the library then also lists the clips in which
+  your words were said, with the moment for each: the words need not be
+  typed as said, only said within half a minute of each other, and the
+  exact phrase comes first. The words are lit where they appear, with the
+  line after for context; tap one to play from that second, or tap the
+  clip's title to read its whole transcript. Arabic is searched the way it
+  is typed: with or without hamza, vowel marks or tatweel. The transcripts
+  can be exported, imported and deleted from the same section, and its ?
+  button says where they live: on the phone only, not on the server and not
+  in the full backup. **YouTube clips only for now**; clips already in the
+  library, playlists and what subscriptions bring are not covered yet.
+  Super only.
+- **Read along while you listen or watch.** Any clip with a transcript
+  gets a transcript button: in the audio player, on the video page, and in
+  full screen, where it opens beside the video without stopping it. The
+  line being said is marked and kept in view as it plays, a tap on any line
+  jumps there, and the transcript can be searched on its own — handy in a
+  two-hour talk. Opened from a library search, it shows how many times the
+  words were said, with arrows from one to the next. A clip's menu in the
+  library offers its transcript too, to read without playing. Super only.
+- **Songs are marked in the library.** An audio file's thumbnail now carries
+  a small music note in its corner, so a song is told from a video at a
+  glance — even when its cover is the frame of the video it came from. Both
+  apps.
+- **What's new, once after an update.** The first time the app opens on a
+  newer version, a sheet shows what changed in it — in Arabic under the
+  Arabic interface and in English otherwise — with a link to the full
+  release page. Each app shows only its own news, leaving out what only the
+  other has. It works however the update was installed, and never appears
+  on a fresh install or twice for one version; Settings → Updates opens it
+  again at any time. Both apps.
+- **A "next" button on the mini player** while a list plays, so skipping a
+  song no longer means opening the full player. Both apps.
+
+### Changed
+
+- **The media notification closes with ✕** instead of a stop square, the
+  mark music players use; it does the same thing. And a clip with no artist
+  now shows the playlist it plays from, or its platform, under the title
+  instead of an empty line. Both apps.
+- **The downloads arrow moves while something downloads**: it drops
+  gently into the line beneath it and comes back, and stands still once
+  nothing is running, so a glance says whether work is going on. It keeps
+  still when the phone asks for less motion. Both apps.
+
+### Fixed
+
+- **Closing the player removes its notification.** Since 2.2.0, closing
+  from the notification or the mini player stopped the sound and emptied
+  the mini player, but left a dead notification behind for as long as the
+  app ran. Both apps.
+- **The details sheet shows a video's resolution at once.** Super read the
+  file's header from the server every time the app was reopened, and the
+  row said "reading" meanwhile. The answer is now kept on the phone. A new
+  download has it read as soon as it finishes, and the rest of the library —
+  older clips and what subscriptions bring — is read quietly in the
+  background, one clip at a time, before anyone opens its details. Super
+  only.
+- **The video player no longer stutters with a long queue.** Played from a
+  library of hundreds of clips, the video page built every "up next" row at
+  once, thumbnails and all, and again many times a second, so the picture
+  jerked and the controls were slow to appear. It now builds only the rows
+  on screen. Both apps.
+- **Transcripts keep time after a pause.** The first line spoken after a
+  silence showed a line late, which was most visible in songs. Super only.
+- **A clip's menu shows every row, "Delete" included.** It stopped at a
+  little over half the screen, so its last rows sat below a scroll; it now
+  grows to fit them, and scrolls only on a phone too short for all. Both
+  apps.
+- **The library search keeps its words.** Scrolled far down and back, the
+  search field came back empty while the library stayed filtered by what
+  had been typed. Both apps.
+- **Titles in another language read the right way round.** An English title
+  under the Arabic interface showed its closing "!" at the front and its
+  "…" at the wrong end, in the library, the players and the menus; the
+  same held for an Arabic title under English. Both apps.
+- **The audio player fits the smallest phones at the largest text size.**
+  The cover now gives up room to the controls instead of pushing them off
+  the screen. Both apps.
+
 ## [2.2.1] - 2026-09-26
 
 ### Fixed
@@ -397,7 +486,8 @@ each one left behind a test that fails on the old code.
 - An album pasted as one link expanding into twenty downloads on the server,
   with only one of them pulled.
 
-[Unreleased]: https://github.com/sagheerys/metube-mobile/compare/v2.2.1...HEAD
+[Unreleased]: https://github.com/sagheerys/metube-mobile/compare/v2.3.0...HEAD
+[2.3.0]: https://github.com/sagheerys/metube-mobile/compare/v2.2.1...v2.3.0
 [2.2.1]: https://github.com/sagheerys/metube-mobile/compare/v2.2.0...v2.2.1
 [2.2.0]: https://github.com/sagheerys/metube-mobile/compare/v2.1.0...v2.2.0
 [2.1.0]: https://github.com/sagheerys/metube-mobile/compare/v2.0.2...v2.1.0

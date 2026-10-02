@@ -55,6 +55,11 @@ class FakePlayerPort implements MediaPlayerPort {
     loaded.add(source);
     calls.add('setSource(${source.uri})');
     position = initialPosition;
+    // As just_audio does: a new source first resets the state to idle and
+    // broadcasts it at once, while still playing, before loading.
+    state = MediaPlaybackState.idle;
+    _events.add(null);
+    await Future<void>.delayed(Duration.zero);
     state = MediaPlaybackState.ready;
   }
 

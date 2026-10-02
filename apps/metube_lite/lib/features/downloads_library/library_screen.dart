@@ -117,7 +117,6 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
   }
 
   AppBar _mainAppBar(MTLocalizations l10n, int activeCount) {
-    final x = MTThemeX.of(context);
     return AppBar(
       title: Text(l10n.navMyDownloads),
       actions: [
@@ -125,13 +124,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
         IconButton(
           tooltip: l10n.activeDownloadsSheet,
           onPressed: () => showDownloadsSheet(context),
-          icon: Badge(
-            isLabelVisible: activeCount > 0,
-            label: Text('$activeCount'),
-            backgroundColor: x.palette.accent,
-            textColor: x.palette.onAccent,
-            child: const Icon(Icons.download_rounded),
-          ),
+          icon: MTDownloadsIcon(active: activeCount),
         ),
         IconButton(
           tooltip: l10n.sortBy,
@@ -213,8 +206,9 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
           padding: const EdgeInsets.symmetric(horizontal: MTSpace.pagePad),
           sliver: SliverList.list(
             children: [
-              MTSearchField(
+              MTQuerySearchField(
                 hint: l10n.searchVideos,
+                query: options.query,
                 onChanged: ref.read(libraryViewProvider.notifier).setQuery,
               ),
               const SizedBox(height: MTSpace.sm),

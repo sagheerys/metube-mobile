@@ -11,6 +11,7 @@ import '../settings/auto_backup.dart';
 import '../home/network_gate.dart';
 import 'library_models.dart';
 import 'library_providers.dart';
+import 'quality_cache.dart';
 
 /// Super's "offline" media folder (§5.3).
 const superMediaDir = '/storage/emulated/0/Download/MeTube_Super';
@@ -147,6 +148,7 @@ class LibraryActions {
     final tags = _ref.read(tagsIndexProvider);
     final artwork = _ref.read(artworkIndexProvider);
     final shapes = _ref.read(mediaShapeIndexProvider);
+    final qualities = _ref.read(mediaQualityIndexProvider);
     final positions = _ref.read(playbackPositionsProvider);
     final offline = _ref.read(offlineIndexProvider);
     final localCopies = await offline.readAll();
@@ -166,6 +168,7 @@ class LibraryActions {
     for (final url in gone) {
       await tags.removeKey(url);
       await shapes.removeKey(url);
+      await qualities.removeKey(url);
       await positions.clear(url);
       await offline.removeKey(url);
     }

@@ -45,6 +45,34 @@
       }
     }
   },
+  "@transcriptMatches": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@transcriptSaidMore": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@transcriptsClips": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@transcriptsImported": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "@upNextIn": {
     "placeholders": {
       "name": {
@@ -458,6 +486,33 @@
   "titleFilterHint": "مثال: الحلقة",
   "titleLabel": "العنوان",
   "totalDuration": "الإجمالي: {duration}",
+  "transcript": "النص",
+  "transcriptFind": "ابحث في النص",
+  "transcriptFull": "النص الكامل",
+  "transcriptMatches": "{count, plural, =0{لا مواضع} =1{موضع واحد} =2{موضعان} few{{count} مواضع} many{{count} موضعاً} other{{count} موضع}}",
+  "transcriptNextMatch": "الموضع التالي",
+  "transcriptPreviousMatch": "الموضع السابق",
+  "transcriptSaidMore": "{count, plural, =1{قيلت مرة أخرى} =2{قيلت مرتين أخريين} few{قيلت {count} مرات أخرى} many{قيلت {count} مرة أخرى} other{قيلت {count} مرة أخرى}}",
+  "transcriptsClips": "{count, plural, =0{لا مقاطع بعد} =1{مقطع واحد} =2{مقطعان} few{{count} مقاطع} many{{count} مقطعاً} other{{count} مقطع}}",
+  "transcriptsDeleteAll": "حذف الكل",
+  "transcriptsDeleteBody": "تُحذف من هذا الجوال، ولا يعيدها إلا ملف صدّرته.",
+  "transcriptsDeleteTitle": "حذف كل النصوص؟",
+  "transcriptsDisableBody": "النصوص المحفوظة ({size}) تبقى في هذا الجوال ما لم تحذفها.",
+  "transcriptsDisableTitle": "إيقاف البحث داخل المقاطع؟",
+  "transcriptsEnable": "تفعيل",
+  "transcriptsEnableBody": "قبل تنزيل كل مقطع يوتيوب تضيفه، يجلب التطبيق نصّه من سيرفرك بلغة التطبيق وبالإنجليزية (حتى 40 ثانية)، ويحفظه في هذا الجوال وحده. المقاطع الموجودة في مكتبتك الآن لا تُشمل. يمكنك إيقافه متى شئت.",
+  "transcriptsExport": "تصدير",
+  "transcriptsExported": "حُفظت النصوص في: {path}",
+  "transcriptsHelp": "يحفظ التطبيق الكلام المقول في كل مقطع يوتيوب تضيفه، فيجد بحث المكتبة ما قيل داخل مقاطعك لا عناوينها وحدها. المواقع الأخرى غير مشمولة حالياً.\n\nيُجلب الكلام من سيرفرك قبيل التنزيل ويُحفظ على هذا الجوال وحده: السيرفر لا يحتفظ به، والنسخة الاحتياطية الكاملة لا تشمله. لنقله إلى جوال آخر استعمل «تصدير» هنا و«استيراد» هناك. والاستيراد يضيف إلى ما هنا ولا يحذف شيئاً.",
+  "transcriptsImport": "استيراد",
+  "transcriptsImportInvalid": "هذا الملف لا يحوي نصوصاً.",
+  "transcriptsImported": "{count, plural, =1{استُورد نص واحد} =2{استُورد نصّان} few{استُورد {count} نصوص} many{استُورد {count} نصاً} other{استُورد {count} نص}}",
+  "transcriptsKeep": "إيقاف مع الاحتفاظ",
+  "transcriptsSaidInside": "قيل داخل المقاطع",
+  "transcriptsSearch": "البحث داخل المقاطع",
+  "transcriptsSearchHelp": "يحفظ كلام كل مقطع يوتيوب تضيفه، لتبحث داخل ما قيل فيه.",
+  "transcriptsSection": "النصوص",
+  "transcriptsStopAndDelete": "إيقاف وحذف",
   "tryAgain": "حاول مرة أخرى",
   "undo": "تراجع",
   "unfollow": "إلغاء المتابعة",
@@ -499,6 +554,11 @@
   "viewList": "قائمة",
   "viewMode": "العرض",
   "waitingForWifi": "بانتظار Wi‑Fi",
+  "whatsNewGotIt": "حسناً",
+  "whatsNewReleasePage": "صفحة الإصدار",
+  "whatsNewThisVersion": "الجديد في هذا الإصدار",
+  "whatsNewTitle": "الجديد في الإصدار {version}",
+  "whatsNewUnavailable": "ما تغيّر في هذا الإصدار تجده في صفحة الإصدار.",
   "wifiOnly": "التحميل عبر Wi‑Fi فقط",
   "wifiOnlyHelp": "يمنع سحب الملفات إلى جهازك على بيانات الجوّال. المهام تنتظر وتُستأنف تلقائياً عند اتصال Wi‑Fi.",
   "yourPlaylists": "قوائمك",

@@ -5,8 +5,12 @@
   device-to-device transfer.
 -->
 <data-extraction-rules>
+    <!-- Transcripts stay out of the cloud (its 25MB ceiling, see
+         backup_rules.xml) but travel in a phone-to-phone transfer, which
+         has no such limit. -->
     <cloud-backup>
         <exclude domain="sharedpref" path="FlutterSecureStorage.xml"/>
+        <exclude domain="file" path="transcripts/"/>
     </cloud-backup>
     <device-transfer>
         <exclude domain="sharedpref" path="FlutterSecureStorage.xml"/>

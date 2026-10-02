@@ -504,6 +504,54 @@ class MeTubeApiClient implements MeTubeApi {
     _throwIfBodyError(_decode(response));
   }
 
+  /// §2.2: subtitles alone. `prefer_manual` takes a creator's own track
+  /// when there is one and falls back to the automatic one, which most
+  /// YouTube videos have.
+  @override
+  Future<void> addCaptions(String url, {required String language}) async {
+    final response = await _request(
+      () => _dio.post<String>(
+        '${config.baseUrl}/add',
+        data: jsonEncode({
+          'url': url,
+          'download_type': 'captions',
+          'format': 'srt',
+          'quality': 'best',
+          'subtitle_language': language,
+          'subtitle_mode': 'prefer_manual',
+        }),
+        options: Options(contentType: 'application/json'),
+      ),
+    );
+    _throwIfBodyError(_decode(response));
+  }
+
+  @override
+  Future<String> fetchText(
+    String serverFilename, {
+    int maxBytes = MTConstants.maxTextFileBytes,
+  }) async {
+    final url = downloadUrl(serverFilename);
+    final Response<List<int>> response;
+    try {
+      response = await _dio.get<List<int>>(
+        url,
+        options: Options(
+          responseType: ResponseType.bytes,
+          receiveTimeout: MTConstants.textFileTimeout,
+        ),
+      );
+    } on DioException catch (e) {
+      throw NetworkException(e.message);
+    }
+    _throwIfDownloadRejected(response.statusCode ?? 0);
+    final bytes = response.data ?? const <int>[];
+    if (bytes.length > maxBytes) {
+      throw ServerErrorException('text file over $maxBytes bytes');
+    }
+    return utf8.decode(bytes, allowMalformed: true);
+  }
+
   /// §2.5: deletion uses the canonicalUrl that came from `/history`, and
   /// nothing else.
   @override

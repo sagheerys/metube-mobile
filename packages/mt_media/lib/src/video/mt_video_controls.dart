@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:mt_ui/mt_ui.dart';
 
+import '../widgets/mt_extra_button.dart';
 import 'mt_video_session.dart';
 import 'video_buttons.dart';
 import 'video_control_bars.dart';
@@ -20,12 +21,16 @@ class MTVideoControls extends StatefulWidget {
     this.fullscreen = false,
     this.playlistName,
     this.membershipLine,
+    this.extra,
   });
 
   final MTVideoSession session;
   final VoidCallback onBack;
   final VoidCallback onToggleFullscreen;
   final VoidCallback onQueue;
+
+  /// A button the app adds beside the queue button.
+  final MTExtraAction? extra;
   final bool fullscreen;
   final String? playlistName;
   final String? membershipLine;
@@ -138,6 +143,7 @@ class _MTVideoControlsState extends State<MTVideoControls> {
         child: MTVideoBottomBar(
           session: widget.session,
           onQueue: widget.onQueue,
+          extra: widget.extra,
         ),
       ),
     ],

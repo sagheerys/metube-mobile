@@ -34,7 +34,6 @@ class MTVideoInfoSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = MTThemeX.of(context).palette;
-    final text = Theme.of(context).textTheme;
     final item = session.current;
     if (item == null) return const SizedBox.shrink();
     final ordered = session.orderedItems;
@@ -57,60 +56,74 @@ class MTVideoInfoSheet extends StatelessWidget {
           MTSpace.pagePad,
           0,
         ),
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            Text(
-              item.title,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: text.titleMedium!.copyWith(fontSize: 16),
+        child: CustomScrollView(
+          slivers: [
+            SliverList.list(
+              children: [
+                ..._top(context, item),
+                const SizedBox(height: MTSpace.md),
+                MTQueueHeader(
+                  count: ordered.length,
+                  playlistName: playlistName,
+                  onShowAll: onShowPlaylist,
+                ),
+                const SizedBox(height: MTSpace.xs),
+              ],
             ),
-            if (subtitleBuilder != null) ...[
-              const SizedBox(height: MTSpace.xxs),
-              Text(
-                subtitleBuilder!(context, item),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: text.bodySmall!.copyWith(color: p.ink3),
-              ),
-            ],
-            if (actions.isNotEmpty) ...[
-              const SizedBox(height: MTSpace.md),
-              Row(
-                children: [
-                  for (final action in actions) ...[
-                    if (action != actions.first)
-                      const SizedBox(width: MTSpace.xs),
-                    Expanded(child: _ActionTile(action: action)),
-                  ],
-                ],
-              ),
-            ],
-            const SizedBox(height: MTSpace.md),
-            _ModeRow(session: session),
-            const SizedBox(height: MTSpace.md),
-            Divider(color: p.line, height: 1),
-            const SizedBox(height: MTSpace.md),
-            MTQueuePanel(
-              // Inside the `ListView` above; without this its inner scroll
-              // swallows the drag and the "up next" section never scrolls
-              // at all.
-              nested: true,
+            MTUpNextSliver(
               items: ordered,
               currentIndex: currentIndex,
               artwork: artwork,
-              playlistName: playlistName,
               paused: !session.isPlaying,
-              onShowAll: onShowPlaylist,
-              onSelect: (index) =>
+              onTap: (index) =>
                   session.jumpTo(session.items.indexOf(ordered[index])),
             ),
-            const SizedBox(height: MTSpace.xl),
+            const SliverToBoxAdapter(child: SizedBox(height: MTSpace.xl)),
           ],
         ),
       ),
     );
+  }
+
+  List<Widget> _top(BuildContext context, PlaylistItem item) {
+    final p = MTThemeX.of(context).palette;
+    final text = Theme.of(context).textTheme;
+    return [
+      MTForeignText(
+        item.title,
+        maxLines: 2,
+        style: text.titleMedium!.copyWith(fontSize: 16),
+      ),
+      if (subtitleBuilder != null) ...[
+        const SizedBox(height: MTSpace.xxs),
+        Text(
+          subtitleBuilder!(context, item),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: text.bodySmall!.copyWith(color: p.ink3),
+        ),
+      ],
+      if (actions.isNotEmpty) ...[
+        const SizedBox(height: MTSpace.md),
+        // One height for every tile: a label on two lines ("open
+        // the original link") made its tile taller than the rest.
+        IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              for (final action in actions) ...[
+                if (action != actions.first) const SizedBox(width: MTSpace.xs),
+                Expanded(child: _ActionTile(action: action)),
+              ],
+            ],
+          ),
+        ),
+      ],
+      const SizedBox(height: MTSpace.md),
+      _ModeRow(session: session),
+      const SizedBox(height: MTSpace.md),
+      Divider(color: p.line, height: 1),
+    ];
   }
 }
 
@@ -141,6 +154,7 @@ class _ActionTile extends StatelessWidget {
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(action.icon, size: 17, color: fg),
               const SizedBox(height: MTSpace.xxs + 2),

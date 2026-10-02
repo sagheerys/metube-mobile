@@ -7,6 +7,8 @@ import '../../playlists/add_to_playlist_sheet.dart';
 import '../../shared/error_report.dart';
 import '../../shared/external_player.dart';
 import '../../tags/item_tags_sheet.dart';
+import '../../transcripts/transcript_openers.dart';
+import '../../transcripts/transcripts_state.dart';
 import '../library_models.dart';
 import '../library_actions.dart';
 import '../library_providers.dart';
@@ -23,6 +25,11 @@ void showItemActionsSheet(
   showModalBottomSheet<void>(
     context: context,
     useRootNavigator: true,
+    // As tall as its rows, not the default nine sixteenths of the screen,
+    // which hid Delete below a scroll once the menu grew a row. It still
+    // scrolls on a phone too short for all of them.
+    isScrollControlled: true,
+    useSafeArea: true,
     // The screen's context, not the sheet's, is passed for opening later
     // sheets: using a closed sheet's context trips the
     // `_dependents.isEmpty`
@@ -78,141 +85,157 @@ class _ItemActionsSheet extends ConsumerWidget {
       onTap: onTap,
     );
 
+    // Scrolls when it outgrows the sheet: a sheet stops at nine sixteenths
+    // of the screen, and on a short phone the last rows, delete among
+    // them, were cut off.
     return SafeArea(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(
-              MTSpace.xl,
-              MTSpace.lg,
-              MTSpace.xl,
-              MTSpace.sm,
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    item.title,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.titleLarge,
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                MTSpace.xl,
+                MTSpace.lg,
+                MTSpace.xl,
+                MTSpace.sm,
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: MTForeignText(
+                      item.title,
+                      maxLines: 1,
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
                   ),
+                ],
+              ),
+            ),
+            const Divider(),
+            if (item.onServer && !item.isOffline)
+              tile(
+                Icons.download_for_offline_outlined,
+                l10n.makeOffline,
+                () => run(
+                  () => actions.makeOffline(item),
+                  successText: l10n.madeOffline,
                 ),
-              ],
-            ),
-          ),
-          const Divider(),
-          if (item.onServer && !item.isOffline)
-            tile(
-              Icons.download_for_offline_outlined,
-              l10n.makeOffline,
-              () => run(
-                () => actions.makeOffline(item),
-                successText: l10n.madeOffline,
               ),
-            ),
-          // **Everything from this channel**. The channel is a fact
-          // the server already knows, so it needs no tag and no setup: the
-          // row only appears when `/history` actually carried a name.
-          if (item.uploader case final channel? when channel.trim().isNotEmpty)
-            tile(
-              Icons.subscriptions_outlined,
-              l10n.showChannel(mtName(channel)),
-              () {
-                Navigator.pop(context);
-                ref.read(libraryViewProvider.notifier).toggleChannel(channel);
-              },
-            ),
-          tile(Icons.info_outline_rounded, l10n.details, () {
-            Navigator.pop(context);
-            showItemDetailsSheet(host, item);
-          }),
-          tile(
-            Icons.share_rounded,
-            l10n.share,
-            () => run(() => actions.smartShare(item)),
-          ),
-          // **The external player is offered for a local copy only**
-          // (decision 2026-09-05): a Super server runs without
-          // authentication, so handing a streaming URL to another app means
-          // open access for anyone who reads its logs. An item with no
-          // local copy sees "make available offline" above instead.
-          if (item.localPath case final String path)
-            tile(
-              Icons.open_with_rounded,
-              l10n.openInExternalPlayer,
-              () => run(() async {
-                final opened = await const ExternalPlayer().open(
-                  path,
-                  audio: item.isAudio,
-                );
-                if (!opened && host.mounted) {
-                  showMTSnack(
-                    host,
-                    l10n.noExternalPlayer,
-                    type: MTSnackType.error,
-                  );
-                }
-              }),
-            ),
-          // **It was missing in Super** (field report 2026-09-05); Lite has
-          // had it all along.
-          tile(Icons.open_in_new_rounded, l10n.openOriginalLink, () {
-            Navigator.pop(context);
-            launchUrl(
-              Uri.parse(item.canonicalUrl),
-              mode: LaunchMode.externalApplication,
-            );
-          }),
-          tile(Icons.playlist_add_rounded, l10n.addToPlaylist, () {
-            Navigator.pop(context);
-            showAddToPlaylistSheet(host, ref, [item]);
-          }),
-          tile(Icons.sell_outlined, l10n.tags, () {
-            Navigator.pop(context);
-            showItemTagsSheet(host, ref, [item.canonicalUrl]);
-          }),
-          if (item.isOffline && item.onServer)
-            tile(
-              Icons.phonelink_erase_rounded,
-              l10n.removeLocalCopy,
-              () => run(
-                () => actions.removeLocalCopy(item),
-                successText: l10n.localCopyRemoved,
-              ),
-            ),
-          const Divider(),
-          if (item.onServer)
-            tile(
-              Icons.delete_outline_rounded,
-              l10n.deleteFromServer,
-              () => _confirm(context, l10n.deleteFromServerConfirm, () {
-                run(
-                  () => actions.deleteFromServer([item.canonicalUrl]),
-                  successText: l10n.deletedFromServer,
-                );
-              }),
-              color: p.err,
-            ),
-          if (!item.onServer && item.isOffline)
-            tile(
-              Icons.delete_outline_rounded,
-              l10n.deleteVideo,
-              () => _confirm(
-                context,
-                l10n.deleteVideoConfirm(mtName(item.title)),
+            // **Everything from this channel**. The channel is a fact
+            // the server already knows, so it needs no tag and no setup: the
+            // row only appears when `/history` actually carried a name.
+            if (item.uploader case final channel?
+                when channel.trim().isNotEmpty)
+              tile(
+                Icons.subscriptions_outlined,
+                l10n.showChannel(mtName(channel)),
                 () {
-                  run(
-                    () => actions.deleteLocalOnly(item),
-                    successText: l10n.deletedTitle(mtName(item.title)),
-                  );
+                  Navigator.pop(context);
+                  ref.read(libraryViewProvider.notifier).toggleChannel(channel);
                 },
               ),
-              color: p.err,
+            tile(Icons.info_outline_rounded, l10n.details, () {
+              Navigator.pop(context);
+              showItemDetailsSheet(host, item);
+            }),
+            // Read without playing. Only for a clip that has one: the index
+            // stays empty while transcripts are off.
+            if (ref
+                    .watch(transcriptIndexProvider)
+                    .valueOrNull
+                    ?.contains(item.canonicalUrl) ??
+                false)
+              tile(Icons.subject_rounded, l10n.transcript, () {
+                Navigator.pop(context);
+                showTranscriptSheet(host, item, '');
+              }),
+            tile(
+              Icons.share_rounded,
+              l10n.share,
+              () => run(() => actions.smartShare(item)),
             ),
-          const SizedBox(height: MTSpace.md),
-        ],
+            // **The external player is offered for a local copy only**
+            // (decision 2026-09-05): a Super server runs without
+            // authentication, so handing a streaming URL to another app means
+            // open access for anyone who reads its logs. An item with no
+            // local copy sees "make available offline" above instead.
+            if (item.localPath case final String path)
+              tile(
+                Icons.open_with_rounded,
+                l10n.openInExternalPlayer,
+                () => run(() async {
+                  final opened = await const ExternalPlayer().open(
+                    path,
+                    audio: item.isAudio,
+                  );
+                  if (!opened && host.mounted) {
+                    showMTSnack(
+                      host,
+                      l10n.noExternalPlayer,
+                      type: MTSnackType.error,
+                    );
+                  }
+                }),
+              ),
+            // Every server item has a canonical URL, so the original link
+            // is always offered here; Lite offers it only when known.
+            tile(Icons.open_in_new_rounded, l10n.openOriginalLink, () {
+              Navigator.pop(context);
+              launchUrl(
+                Uri.parse(item.canonicalUrl),
+                mode: LaunchMode.externalApplication,
+              );
+            }),
+            tile(Icons.playlist_add_rounded, l10n.addToPlaylist, () {
+              Navigator.pop(context);
+              showAddToPlaylistSheet(host, ref, [item]);
+            }),
+            tile(Icons.sell_outlined, l10n.tags, () {
+              Navigator.pop(context);
+              showItemTagsSheet(host, ref, [item.canonicalUrl]);
+            }),
+            if (item.isOffline && item.onServer)
+              tile(
+                Icons.phonelink_erase_rounded,
+                l10n.removeLocalCopy,
+                () => run(
+                  () => actions.removeLocalCopy(item),
+                  successText: l10n.localCopyRemoved,
+                ),
+              ),
+            const Divider(),
+            if (item.onServer)
+              tile(
+                Icons.delete_outline_rounded,
+                l10n.deleteFromServer,
+                () => _confirm(context, l10n.deleteFromServerConfirm, () {
+                  run(
+                    () => actions.deleteFromServer([item.canonicalUrl]),
+                    successText: l10n.deletedFromServer,
+                  );
+                }),
+                color: p.err,
+              ),
+            if (!item.onServer && item.isOffline)
+              tile(
+                Icons.delete_outline_rounded,
+                l10n.deleteVideo,
+                () => _confirm(
+                  context,
+                  l10n.deleteVideoConfirm(mtName(item.title)),
+                  () {
+                    run(
+                      () => actions.deleteLocalOnly(item),
+                      successText: l10n.deletedTitle(mtName(item.title)),
+                    );
+                  },
+                ),
+                color: p.err,
+              ),
+            const SizedBox(height: MTSpace.md),
+          ],
+        ),
       ),
     );
   }
@@ -239,48 +262,4 @@ class _ItemActionsSheet extends ConsumerWidget {
       ),
     );
   }
-}
-
-/// Bulk delete confirmation (rule 6): deletes from the server by canonical
-/// URL.
-void confirmBulkDelete(
-  BuildContext context,
-  WidgetRef ref,
-  Set<String> selection,
-) {
-  final l10n = context.mtl;
-  showDialog<void>(
-    context: context,
-    builder: (dialogContext) => AlertDialog(
-      content: Text(l10n.deleteMultipleConfirm(selection.length)),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(dialogContext),
-          child: Text(l10n.cancel),
-        ),
-        FilledButton(
-          onPressed: () async {
-            Navigator.pop(dialogContext);
-            final actions = ref.read(libraryActionsProvider);
-            try {
-              await actions.deleteFromServer(selection.toList());
-              ref.read(libraryViewProvider.notifier).clearSelection();
-              if (context.mounted) {
-                showMTSnack(
-                  context,
-                  l10n.deletedFromServer,
-                  type: MTSnackType.success,
-                );
-              }
-            } catch (e) {
-              if (context.mounted) {
-                showErrorSnack(context, ref, e, tag: 'library');
-              }
-            }
-          },
-          child: Text(l10n.delete),
-        ),
-      ],
-    ),
-  );
 }

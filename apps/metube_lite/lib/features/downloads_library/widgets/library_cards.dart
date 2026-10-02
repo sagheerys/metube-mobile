@@ -88,6 +88,7 @@ class LibraryItemCard extends ConsumerWidget {
             ? null
             : mtFormatDuration(item.duration!),
         favorite: item.favorite,
+        audio: item.isAudio,
         selected: options.selection.contains(item.key),
         highlighted: highlighted,
         onFavoriteToggle: toggleFavorite,
@@ -109,6 +110,7 @@ class LibraryItemCard extends ConsumerWidget {
       // local and server items coexist.
       compact: options.compact,
       favorite: item.favorite,
+      audio: item.isAudio,
       selected: options.selection.contains(item.key),
       highlighted: highlighted,
       onFavoriteToggle: toggleFavorite,

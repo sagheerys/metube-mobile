@@ -98,6 +98,31 @@ void main() {
       expect(await fresh.getBool('library_compact_view'), isTrue);
     });
 
+    test('the "what is new" record stays with the installed app', () async {
+      // Restored from an older backup it would show a sheet already read,
+      // or show one on a fresh install.
+      await store.setString(UpdatePrefs.lastSeenVersionKey, '2.3.0');
+      await store.setString(UpdatePrefs.notesKey, '{"version":"2.3.0"}');
+      final exported = await service.exportToString();
+      expect(exported, isNot(contains(UpdatePrefs.lastSeenVersionKey)));
+      expect(exported, isNot(contains(UpdatePrefs.notesKey)));
+
+      final planted = json.decode(exported) as Map<String, dynamic>;
+      (planted['prefs']
+          as Map<String, dynamic>)[UpdatePrefs.lastSeenVersionKey] = {
+        't': 's',
+        'v': '2.2.0',
+      };
+      final fresh = MemoryKeyValueStore();
+      await BackupService(
+        store: fresh,
+        secrets: MemorySecretStore(),
+        mutex: PrefsMutex(),
+        variant: 'lite',
+      ).importFromString(json.encode(planted));
+      expect(await fresh.getString(UpdatePrefs.lastSeenVersionKey), isNull);
+    });
+
     test('credentials embedded in the URL are stripped', () async {
       await store.setString('server_url', 'https://u:pw@host/path');
       final exported = await service.exportToString();
