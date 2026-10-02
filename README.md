@@ -13,9 +13,10 @@ server** — the yt-dlp web downloader you already run on your NAS or homelab.
 Queue a link from your phone, watch the download happen, then keep the file on
 the server and stream it, or pull it to the device and let the server clean
 itself up. MeTube Super can also **follow a channel**: your server downloads
-each new video by itself, and the app tells you when it arrives. Written in
-Flutter as one monorepo, in Arabic and English, and free software under the
-GPL.
+each new video by itself, and the app tells you when it arrives. It can also
+**search inside your clips**, finding what was said in them and not only their
+titles. Written in Flutter as one monorepo, in Arabic and English, and free
+software under the GPL.
 
 <p align="center">
   <img src="docs/screenshots/hero.jpg" alt="MeTube Super: the library, the video player with its queue, the audio player at night, and playlists">
@@ -38,7 +39,7 @@ GPL.
 | After a download completes | pulls it to the device, then **deletes it from the server** | **keeps it on the server** |
 | Library | a scan of the local folder | `/history` + the local index, merged into one list |
 | Playback | local files | streaming from the server **and** local files |
-| Exclusive | an optional Wi-Fi-only rule, server cleanup | channel subscriptions, tags, batch downloads, "make available offline", server switching |
+| Exclusive | an optional Wi-Fi-only rule, server cleanup | channel subscriptions, search inside clips, tags, batch downloads, "make available offline", server switching |
 
 Both apps share the same core, media and design packages, and both ship in
 **Arabic and English** with a right-to-left-first layout.
@@ -101,7 +102,9 @@ stripped out.
 
 **Updating itself.** Each app checks this repository for its own newer
 release, downloads the APK, and hands it to the system installer. Nothing
-installs without your confirmation, and a version can be skipped.
+installs without your confirmation, and a version can be skipped. The first
+launch after an update shows what is new in it, and Settings → Updates opens
+that again at any time.
 
 ### MeTube Lite only
 
@@ -123,6 +126,14 @@ installs without your confirmation, and a version can be skipped.
   notice for each batch that arrives, shown when the app next reaches the
   server. Needs a MeTube recent enough to have subscriptions; an older one
   says so.
+- **Search inside your clips** (off until you turn it on, in Settings →
+  Transcripts): each YouTube clip you add has its subtitles fetched from your
+  server and kept on the phone, so a library search also lists the clips in
+  which your words were said, with the moment for each. Tap one to play from
+  that second.
+- **Read along**: a clip with a transcript opens it beside the audio or video
+  player, with the line being said marked as it plays and a tap on any line
+  to jump there.
 - **Cookies from the phone** for the sites that want a login: pick the files
   exported from your browser, several platforms at once, and they are merged
   into the single file the server keeps.
@@ -190,7 +201,7 @@ family and friends, `MeTube-Super-<version>.apk` for the server owner's. They
 are separate apps and install side by side, and since 2.0.0 each one checks
 for its own successor and can install it for you.
 
-Both apps can update themselves: **Settings → About → check for updates**
+Both apps can update themselves: **Settings → Updates → Check for updates**
 fetches the newest release and hands the APK to the system installer. Nothing
 is installed without you confirming it.
 
