@@ -94,14 +94,24 @@ a{color:var(--superDeep)}
       is the first thing to break on a phone. ── */
 .apps{display:grid;gap:16px;margin-top:20px}
 @media (min-width:720px){.apps{grid-template-columns:1fr 1fr}}
-.app{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:22px 22px 12px}
-.app h3{font-size:1.25rem;margin-bottom:2px}
-.app .for{color:var(--muted);font-size:.95rem;margin-bottom:12px}
-.app dl{margin:0}
-.app dt{font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:12px}
-.app dd{margin:2px 0 0}
-.lite h3{color:var(--lite)} .super h3{color:var(--super)}
-.lite{border-top:4px solid var(--lite)} .super{border-top:4px solid var(--super)}
+/* Each card is a spec sheet: a head washed in the app's own colour, then
+   rows split by hairlines, so the two read side by side, row against row. */
+.lite{--accent:var(--lite)} .super{--accent:var(--super)}
+.app{background:var(--card);border:1px solid var(--line);border-radius:20px;overflow:hidden}
+.app-head{padding:20px 22px 16px;border-bottom:1px solid var(--line);
+  background:var(--card);background:color-mix(in srgb,var(--accent) 9%,var(--card))}
+.app h3{font-size:1.25rem;margin-bottom:2px;color:var(--accent)}
+.app .for{color:var(--muted);font-size:.95rem;margin:0}
+.app dl{margin:0;padding:0 22px;display:grid;grid-template-columns:minmax(7.5rem,auto) 1fr}
+.app dt,.app dd{padding:14px 0;border-top:1px solid var(--line)}
+.app dt:first-of-type,.app dd:first-of-type{border-top:0}
+.app dt{font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);line-height:1.5;padding-top:19px;padding-inline-end:18px}
+.app dd{margin:0}
+@media (max-width:480px){
+  .app dl{display:block}
+  .app dt{padding:14px 0 0}
+  .app dd{padding:2px 0 14px;border-top:0}
+}
 
 .split{display:grid;gap:clamp(20px,5vw,48px);align-items:center;margin-top:12px}
 @media (min-width:760px){.split{grid-template-columns:1fr minmax(220px,280px)}}
@@ -215,8 +225,10 @@ footer{margin-top:56px;border-top:1px solid var(--line);padding-top:22px;font-si
   <h2>Which app is for you</h2>
   <div class="apps">
     <section class="app lite">
-      <h3>MeTube Lite</h3>
-      <p class="for">For family and friends who just want the file.</p>
+      <div class="app-head">
+        <h3>MeTube Lite</h3>
+        <p class="for">For family and friends who just want the file.</p>
+      </div>
       <dl>
         <dt>After a download</dt><dd>Pulls the file to the phone, then removes it from the server.</dd>
         <dt>Library</dt><dd>What is on the phone.</dd>
@@ -225,8 +237,10 @@ footer{margin-top:56px;border-top:1px solid var(--line);padding-top:22px;font-si
       </dl>
     </section>
     <section class="app super">
-      <h3>MeTube Super</h3>
-      <p class="for">For the person who runs the server.</p>
+      <div class="app-head">
+        <h3>MeTube Super</h3>
+        <p class="for">For the person who runs the server.</p>
+      </div>
       <dl>
         <dt>After a download</dt><dd>Keeps everything on the server.</dd>
         <dt>Library</dt><dd>The server's history and the phone's files, merged into one.</dd>
@@ -302,8 +316,10 @@ footer{margin-top:56px;border-top:1px solid var(--line);padding-top:22px;font-si
 
     <div class="apps">
       <section class="app lite">
-        <h3>MeTube Lite</h3>
-        <p class="for">للعائلة والأصدقاء: يريدون الملف فقط.</p>
+        <div class="app-head">
+          <h3>MeTube Lite</h3>
+          <p class="for">للعائلة والأصدقاء: يريدون الملف فقط.</p>
+        </div>
         <dl>
           <dt>بعد التنزيل</dt><dd>يسحب الملف إلى الجوال ثم يحذفه من السيرفر.</dd>
           <dt>المكتبة</dt><dd>ما هو على الجوال.</dd>
@@ -312,8 +328,10 @@ footer{margin-top:56px;border-top:1px solid var(--line);padding-top:22px;font-si
         </dl>
       </section>
       <section class="app super">
-        <h3>MeTube Super</h3>
-        <p class="for">لمالك السيرفر.</p>
+        <div class="app-head">
+          <h3>MeTube Super</h3>
+          <p class="for">لمالك السيرفر.</p>
+        </div>
         <dl>
           <dt>بعد التنزيل</dt><dd>يُبقي كل شيء على السيرفر.</dd>
           <dt>المكتبة</dt><dd>سجلّ السيرفر وملفات الجوال في مكتبة واحدة.</dd>
