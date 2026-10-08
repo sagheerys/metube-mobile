@@ -60,6 +60,10 @@ class _MTVideoFullscreenPageState extends State<MTVideoFullscreenPage> {
   /// again by itself on a later item.
   String? _panelFor;
 
+  /// The shape the button locked the screen for: portrait for a portrait
+  /// clip, landscape otherwise. Null until decided.
+  bool? _lockedPortrait;
+
   @override
   void initState() {
     super.initState();
@@ -67,12 +71,37 @@ class _MTVideoFullscreenPageState extends State<MTVideoFullscreenPage> {
     if (widget.byRotation) {
       MTOrientation.allow();
     } else {
-      MTOrientation.lockLandscape();
+      _lockForShape();
+      widget.session.addListener(_lockForShape);
     }
+  }
+
+  /// **A portrait clip fills the screen standing up** (field report
+  /// 2026-10-04). Turned sideways, a portrait clip too long for the shorts
+  /// player sits small in the middle, and in a hand that holds it upright,
+  /// the way a portrait clip is held, it lies on its side.
+  /// Decided again as the queue moves, since the next clip may be the
+  /// other shape. Entering by a tilt keeps the tilt: that user chose
+  /// landscape.
+  void _lockForShape() {
+    final portrait = _isPortrait();
+    if (portrait == _lockedPortrait) return;
+    _lockedPortrait = portrait;
+    portrait ? MTOrientation.lockPortrait() : MTOrientation.lockLandscape();
+  }
+
+  bool _isPortrait() {
+    final controller = widget.session.controller;
+    if (controller != null && controller.value.isInitialized) {
+      return controller.value.aspectRatio < 1;
+    }
+    final ratio = widget.session.current?.aspectRatio;
+    return ratio != null && ratio < 1;
   }
 
   @override
   void dispose() {
+    widget.session.removeListener(_lockForShape);
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     // **We do not lock portrait here**: the portrait player beneath us is
     // still alive and owns the policy. Locking from here pinned the whole

@@ -85,6 +85,12 @@ class _MTRotationScopeState extends State<MTRotationScope> {
       await widget.open(byRotation);
     } finally {
       _open = false;
+      // A portrait clip's full screen stays upright, so no rotation comes
+      // back to rearm the tilt: rearm here when the phone is upright.
+      if (mounted &&
+          MediaQuery.orientationOf(context) == Orientation.portrait) {
+        _armed = true;
+      }
     }
   }
 

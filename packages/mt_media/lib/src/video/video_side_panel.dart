@@ -32,7 +32,12 @@ class MTVideoEndPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = MTThemeX.of(context).palette;
-    final width = math.min(_widest, MediaQuery.sizeOf(context).width * 0.45);
+    final size = MediaQuery.sizeOf(context);
+    // Beside a landscape picture it takes under half; over a portrait one,
+    // full screen standing up, half would leave lines of two words.
+    final width = size.width < size.height
+        ? size.width * 0.85
+        : math.min(_widest, size.width * 0.45);
     return PositionedDirectional(
       end: 0,
       top: 0,

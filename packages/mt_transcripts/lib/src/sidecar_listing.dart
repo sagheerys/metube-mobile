@@ -16,7 +16,10 @@ class SidecarListing {
   /// Every file name in the folder, decoded.
   final Set<String> names;
 
-  static final _href = RegExp(r'href="/download/([^"]+)"');
+  /// Whatever comes before `download/`: a server behind a path prefix
+  /// (`URL_PREFIX`, as in `https://host/metube/`) links its files as
+  /// `/metube/download/…`. Folders end in `/` and are left out.
+  static final _href = RegExp(r'href="(?:[^"]*/)?download/([^"/]+)"');
 
   static SidecarListing parse(String html) => SidecarListing({
     for (final match in _href.allMatches(html)) ?_decode(match.group(1)!),

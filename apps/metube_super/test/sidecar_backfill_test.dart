@@ -201,6 +201,43 @@ void main() {
     expect((await c.read(transcriptIndexProvider.future)).length, 1);
   });
 
+  // Found in the pre-release review of 2.4.0: aiohttp refuses a folder it
+  // does not index with 403, which the client reads as a refusal, and the
+  // run used to end there, so such a server never got the plain names.
+  test('a server that refuses its folder still gets the plain names, and '
+      'is not asked for the folder again', () async {
+    server.indexFailure = const AuthFailureException();
+    server.texts['a.ar.vtt'] = vtt;
+    final c = await container();
+    final backfill = c.read(sidecarBackfillProvider);
+    await backfill.run([onServer('a')]);
+    expect((await c.read(transcriptIndexProvider.future)).length, 1);
+
+    await backfill.run([onServer('b')]);
+    expect(server.indexReads, 1);
+  });
+
+  test('GUARD: turning the feature off stops a run under way', () async {
+    server.texts['a.ar.vtt'] = vtt;
+    server.texts['b.ar.vtt'] = vtt;
+    final c = await container();
+    server.onFetch = (name) async {
+      if (name.startsWith('a.')) {
+        await c.read(transcriptsEnabledProvider.notifier).set(false);
+      }
+    };
+    await c.read(sidecarBackfillProvider).run([
+      onServer('a', at: DateTime.utc(2026, 9)),
+      onServer('b', at: DateTime.utc(2026, 1)),
+    ]);
+    expect(server.asked, isNot(contains('b.ar.vtt')));
+    expect(
+      (await c.read(transcriptIndexProvider.future)).length,
+      0,
+      reason: 'nothing saved once the switch was turned off',
+    );
+  });
+
   test('the newest clip is asked first', () async {
     server.texts['old.ar.vtt'] = vtt;
     server.texts['new.ar.vtt'] = vtt;
@@ -217,6 +254,11 @@ class _FakeServer implements MeTubeApi {
   final texts = <String, String>{};
   final asked = <String>[];
   MTApiException? failure;
+
+  /// A refusal for the folder index alone, as aiohttp gives without
+  /// `show_index`.
+  MTApiException? indexFailure;
+  Future<void> Function(String name)? onFetch;
   int indexReads = 0;
 
   /// The folder index as the real server serves it, or none at all.
@@ -226,6 +268,7 @@ class _FakeServer implements MeTubeApi {
   Future<String> fetchDownloadIndex() async {
     indexReads++;
     if (failure case final e?) throw e;
+    if (indexFailure case final e?) throw e;
     if (!listsFolder) throw const NoApiException();
     return [
       for (final name in texts.keys)
@@ -236,6 +279,7 @@ class _FakeServer implements MeTubeApi {
   @override
   Future<String> fetchText(String serverFilename, {int maxBytes = 0}) async {
     asked.add(serverFilename);
+    await onFetch?.call(serverFilename);
     if (failure case final e?) throw e;
     return texts[serverFilename] ?? (throw const NoApiException());
   }

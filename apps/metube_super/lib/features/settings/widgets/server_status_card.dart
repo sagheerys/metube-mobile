@@ -147,7 +147,13 @@ class ServerStatusCard extends ConsumerWidget {
       ),
       child: Row(
         children: [
-          Icon(icon, color: tint, size: 26),
+          MTConnectionIcon(
+            icon: icon,
+            color: tint,
+            // A refresh keeps the last answer and sets `isLoading`; it
+            // never goes back to a bare loading state.
+            checking: status.isLoading,
+          ),
           const SizedBox(width: MTSpace.md),
           Expanded(
             child: Column(

@@ -174,6 +174,36 @@ void main() {
     });
   });
 
+  // Found in the pre-release review of 2.4.0: a portrait clip's full
+  // screen stays upright, so nothing rearmed the tilt after it, and the
+  // first tilt afterwards opened nothing.
+  testWidgets('after a full screen that stayed upright, a tilt opens it '
+      'again', (tester) async {
+    var byTilt = 0;
+    late VoidCallback press;
+    Widget scope(Size size) => host(
+      size: size,
+      child: MTRotationScope(
+        open: (byRotation) async {
+          if (byRotation) byTilt++;
+        },
+        builder: (_, openFullscreen) {
+          press = openFullscreen;
+          return const SizedBox.shrink();
+        },
+      ),
+    );
+
+    await tester.pumpWidget(scope(portrait));
+    press();
+    await tester.pump();
+    await tester.pump();
+
+    await tester.pumpWidget(scope(landscape));
+    await tester.pump();
+    expect(byTilt, 1);
+  });
+
   group('MTOrientation', () {
     test('portrait alone does not include upside down', () {
       expect(MTOrientation.portrait, [DeviceOrientation.portraitUp]);
@@ -214,9 +244,108 @@ void main() {
       }
     }
 
+    /// Opens the player on one clip of [frame] in a portrait app and
+    /// presses the full-screen button.
+    Future<(GlobalKey<NavigatorState>, MTVideoSession)> openFullscreen(
+      WidgetTester tester,
+      Size frame,
+    ) async {
+      VideoPlayerPlatform.instance = FakeVideoPlatform(size: frame);
+      tester.view.physicalSize = const Size(1200, 2400);
+      tester.view.devicePixelRatio = 3;
+      addTearDown(tester.view.reset);
+      final session = newSession();
+      await tester.runAsync(
+        () => session.open(const [
+          PlaylistItem(
+            canonicalUrl: 'https://x/a',
+            title: 'a',
+            localPath: '/media/a.mp4',
+          ),
+        ]),
+      );
+      final navKey = GlobalKey<NavigatorState>();
+      await tester.pumpWidget(
+        MaterialApp(
+          navigatorKey: navKey,
+          localizationsDelegates: MTLocalizations.localizationsDelegates,
+          supportedLocales: MTLocalizations.supportedLocales,
+          theme: mtTheme(MTVariant.superApp, Brightness.light),
+          home: const Scaffold(body: Center(child: Text('BASE'))),
+        ),
+      );
+      unawaited(
+        navKey.currentState!.push(
+          MaterialPageRoute<void>(
+            builder: (_) => MTVideoScreen(session: session),
+          ),
+        ),
+      );
+      await settle(tester);
+      tester
+          .widget<MTVideoTopBar>(find.byType(MTVideoTopBar).first)
+          .onToggleFullscreen();
+      await settle(tester);
+      return (navKey, session);
+    }
+
+    /// Back to the base page, letting the chrome's hide timer run out.
+    Future<void> closeAll(
+      WidgetTester tester,
+      (GlobalKey<NavigatorState>, MTVideoSession) opened,
+    ) async {
+      opened.$1.currentState!.popUntil((route) => route.isFirst);
+      await settle(tester);
+      await tester.pump(const Duration(seconds: 10));
+      await tester.runAsync(opened.$2.dispose);
+    }
+
+    // Field report 2026-10-04: an Arabic line read "3:02 / 1:20". The
+    // isolation does not depend on the language, so it is checked where the
+    // test font fits the page.
+    testWidgets('the time is isolated, position then length', (tester) async {
+      final opened = await openFullscreen(tester, const Size(1920, 1080));
+      final times = tester
+          .widgetList<Text>(find.textContaining(' / 0:30'))
+          .map((text) => text.data!)
+          .toList();
+      expect(times, isNotEmpty);
+      for (final time in times) {
+        expect(time, startsWith(mtLtrIsolate));
+        expect(time, endsWith(mtPopIsolate));
+      }
+      await closeAll(tester, opened);
+    });
+
+    testWidgets('a landscape clip turns the phone sideways', (tester) async {
+      final opened = await openFullscreen(tester, const Size(1920, 1080));
+      expect(locks.last, predicate<List<String>>(isLandscapeLock));
+      await closeAll(tester, opened);
+    });
+
+    // Field report 2026-10-04: a portrait clip too long for the shorts
+    // player was turned sideways too, and lay on its side in the hand.
+    testWidgets('a portrait clip stays standing and fills the screen', (
+      tester,
+    ) async {
+      final opened = await openFullscreen(tester, const Size(1080, 1920));
+      expect(locks.last, predicate<List<String>>(isPortraitLock));
+      expect(locks.any(isLandscapeLock), isFalse);
+
+      opened.$1.currentState!.pop();
+      await settle(tester);
+      // Leaving gives rotation back to the player, as for landscape.
+      expect(locks.last, predicate<List<String>>(isFree));
+      await closeAll(tester, opened);
+    });
+
     testWidgets('leaving fullscreen does not pin the app to portrait', (
       tester,
     ) async {
+      // A landscape clip: this guards the sideways path the button takes.
+      VideoPlayerPlatform.instance = FakeVideoPlatform(
+        size: const Size(1920, 1080),
+      );
       // **A portrait test surface**: the default 800x600 is landscape, so
       // full screen opens on the tilt before we press the button, while it
       // is the button's path we are guarding.

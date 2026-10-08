@@ -175,7 +175,11 @@ void main() {
 
       await tester.tap(find.byIcon(Icons.help_outline_rounded));
       await tester.pumpAndSettle();
-      expect(find.textContaining('Other sites are not covered'), findsOne);
+      // Since 2.4.0 a server writing subtitle files covers every site; the
+      // help says so, and which languages are read.
+      expect(find.textContaining('Other sites are not covered'), findsNothing);
+      expect(find.textContaining('other sites included'), findsOne);
+      expect(find.textContaining("app's language and in English"), findsOne);
       expect(find.textContaining('does not include them'), findsOne);
       expect(find.textContaining('deletes nothing'), findsOne);
     });

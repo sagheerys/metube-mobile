@@ -7,10 +7,17 @@ import 'package:video_player_platform_interface/video_player_platform_interface.
 /// the race window that used to leave orphaned players running in the
 /// background, and it counts how many are actually playing.
 class FakeVideoPlatform extends VideoPlayerPlatform {
-  FakeVideoPlatform({this.createDelay = Duration.zero});
+  FakeVideoPlatform({
+    this.createDelay = Duration.zero,
+    this.size = const Size(1080, 1920),
+  });
 
   /// The "preparation" time; on a real network it ran to seconds per clip.
   Duration createDelay;
+
+  /// The frame every clip reports. Portrait by default, which enters the
+  /// shorts lane.
+  final Size size;
 
   int _next = 0;
   final Map<int, StreamController<VideoEvent>> _events = {};
@@ -48,10 +55,7 @@ class FakeVideoPlatform extends VideoPlayerPlatform {
             VideoEvent(
               eventType: VideoEventType.initialized,
               duration: const Duration(seconds: 30),
-              size: const Size(
-                1080,
-                1920,
-              ), // portrait: it enters the shorts lane
+              size: size,
             ),
           );
         });

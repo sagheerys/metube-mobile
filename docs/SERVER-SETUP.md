@@ -154,11 +154,12 @@ without it. So this is optional: you lose the fix, not the download.
 
 **Without it, Super has transcripts only for the clips added from the app.**
 
-Super's "Search inside clips" fetches a YouTube clip's subtitles through the
-server before the clip itself is added. It cannot do that afterwards: MeTube
-keeps one record per URL, and asking for an existing clip's subtitles replaces
-the clip's own record. So what a subscription brings, what the web page or a
-batch downloads, has no transcript.
+Super's "Search inside clips" (Settings → Transcripts) fetches a YouTube
+clip's subtitles through the server before the clip itself is added. It
+cannot do that afterwards: MeTube keeps one record per URL, and asking for an
+existing clip's subtitles replaces the clip's own record. So what a
+subscription brings, what the web page or a batch downloads, has no
+transcript.
 
 The way around it is to have the server write the subtitles **beside every
 file it downloads**, and let Super read them from there. Extend the
@@ -173,35 +174,62 @@ file it downloads**, and let Super read them from there. Extend the
          "subtitlesformat":"vtt/srt/best","ignoreerrors":true}
 ```
 
-`subtitleslangs` looks the way it does because YouTube no longer names every
-track by its language alone. On a clip with several audio tracks (music
-videos from the big labels, dubbed films) the tracks carry a suffix:
-`en-nP7-2PuUl7o` is the English subtitles, `en-en-nP7-2PuUl7o` the English
-automatic captions, `ar-en-nP7-2PuUl7o` a machine translation into Arabic.
-Each pair above takes a language's own tracks, plain or suffixed, and leaves
-the machine translations out, which YouTube refuses with a 429 far sooner
-than the rest. Swap `ar` for the languages you use, and keep the pairs as
-they are. Measured on a real server for a video and an audio download
-alike: `Me at the zoo [jNQXAC9IVRw].en.vtt` appears beside the clip, and the
-clip completes; Super reads the folder's index once per pass, so a suffixed
-name is found too.
+On TrueNAS, or any panel with one field per environment variable, the name
+is `YTDL_OPTIONS` and the value is the same, on one line:
 
-Three things to know before adding it:
+```
+{"outtmpl":"/downloads/%(title)s.%(id)s.%(ext)s","writesubtitles":true,"writeautomaticsub":true,"subtitleslangs":["ar(-(?![a-z][a-z][a-z]?(-|$)).*)?","ar-ar-.*","en(-(?![a-z][a-z][a-z]?(-|$)).*)?","en-en-.*"],"subtitlesformat":"vtt/srt/best","ignoreerrors":true}
+```
+
+**Which languages.** Super reads the app's language and English, nothing
+else, so the server needs to write those two. Keep the `ar` pair for an
+Arabic interface; with the app in English, the `en` pair alone is enough.
+Another code costs the server requests and is never read.
+
+**Why the patterns look this way.** YouTube no longer names every track by
+its language alone. On a clip with several audio tracks (music videos from
+the big labels, dubbed films) the tracks carry a suffix: `en-nP7-2PuUl7o` is
+the English subtitles, `en-en-nP7-2PuUl7o` the English automatic captions,
+`ar-en-nP7-2PuUl7o` a machine translation into Arabic. Each pair takes a
+language's own tracks, plain or suffixed, and leaves the suffixed
+translations out. A plain `ar` on an English clip is itself YouTube's machine
+translation: it is fetched when YouTube allows it and sometimes refused with
+a 429, and the clip downloads either way. So an English clip gives English,
+and usually Arabic as well; an Arabic clip gives Arabic and English.
+
+**How to check it works.** Download one YouTube clip from MeTube's web page.
+Beside its file a subtitle appears under the same name, with `.en.vtt` (or
+`.ar.vtt`) in place of the extension: `Me at the zoo.jNQXAC9IVRw.en.vtt`
+beside `Me at the zoo.jNQXAC9IVRw.webm` with the template above. You can see
+it in the download folder, or at `http://your-server:8081/download/`. Then,
+in Super, turn on Settings → Transcripts → "Search inside clips", pull the
+library down to refresh, and within a minute search for a word said in the
+clip.
+
+Before adding it, know these:
 
 - **`ignoreerrors` must stay `true`.** Without it, a subtitle that YouTube
   refuses (a 429) fails the **whole download**, with no video. With it, the
   refusal is a warning and the video arrives; a download that really fails
-  is still reported as failed.
+  is still reported as failed. The option applies to every job the server
+  runs, not only to subtitles: inside a playlist or channel, an entry that
+  fails may be skipped with a warning rather than stopping the rest.
+- **Subtitles add requests to YouTube.** Each clip now asks for its
+  subtitles too, and a server that YouTube already rate-limits may meet 429s
+  sooner, on subtitles first.
+- **`DOWNLOAD_DIRS_INDEXABLE=true` is needed** (it is above, for other
+  reasons too). Super reads the folder's index to find the suffixed tracks;
+  without it, only the plain names (`.en.vtt`) are tried.
 - **The subtitle file outlives its clip.** MeTube deletes the clip's own file
   on a trashcan delete and leaves the subtitle beside it, a few kilobytes
   each.
 - **It covers new downloads only.** Clips downloaded before the line was
-  added have no file to read; for those there is the backfill tool in
-  `packages/mt_transcripts/bin`.
-
-A machine translation into a language the clip was not spoken in is not
-fetched by the plain codes, so an English talk gives an English transcript,
-and an Arabic one an Arabic transcript. Both are searchable.
+  added have no file to read. For those there is a tool for a computer,
+  `packages/mt_transcripts/bin/backfill.dart`: it needs a clone of this
+  repository, the Dart SDK, yt-dlp (with `curl_cffi`) and ffmpeg, reads the
+  server's list, fetches the subtitles on the computer, and writes one file
+  that Super imports from Settings → Transcripts → Import. Running it with no
+  arguments prints its usage.
 
 ### `COOKIES_FILE`
 

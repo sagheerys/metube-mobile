@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -173,6 +175,47 @@ void main() {
       // would only repeat it.
       expect(find.textContaining('على الخادم'), findsNothing);
     });
+  });
+
+  // Found in the pre-release review of 2.4.0: a refresh keeps the last
+  // answer while it asks again, so the card never looked like it was
+  // checking, and the turning arrows never showed on the button press
+  // they were added for.
+  testWidgets('a refresh turns the arrows until the answer comes', (
+    tester,
+  ) async {
+    final answers = <Completer<MTEndpointStatus?>>[];
+    final c = ProviderContainer(
+      overrides: [
+        keyValueStoreProvider.overrideWithValue(MemoryKeyValueStore()),
+        secretStoreProvider.overrideWithValue(MemorySecretStore()),
+        prefsMutexProvider.overrideWithValue(PrefsMutex()),
+        initialSettingsProvider.overrideWithValue(
+          const SuperSettings(activeUrl: 'https://mt.example.com'),
+        ),
+        serverStatusProvider.overrideWith((ref) {
+          final answer = Completer<MTEndpointStatus?>();
+          answers.add(answer);
+          return answer.future;
+        }),
+        serverDetailsProvider.overrideWith((ref) async => null),
+      ],
+    );
+    addTearDown(c.dispose);
+    await tester.pumpWidget(host(c));
+    answers.last.complete(MTEndpointStatus.ok);
+    await tester.pumpAndSettle();
+    expect(find.byIcon(Icons.cloud_done_rounded), findsOneWidget);
+
+    await tester.tap(find.byIcon(Icons.refresh_rounded));
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.byIcon(Icons.sync_rounded), findsOneWidget);
+
+    answers.last.complete(MTEndpointStatus.ok);
+    await tester.pump(MTConnectionIcon.shortestTurn);
+    await tester.pumpAndSettle();
+    expect(find.byIcon(Icons.sync_rounded), findsNothing);
+    expect(find.byIcon(Icons.cloud_done_rounded), findsOneWidget);
   });
 
   testWidgets('**device matrix**: the added lines overflow nothing', (

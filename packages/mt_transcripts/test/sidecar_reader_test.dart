@@ -2,10 +2,11 @@ import 'package:mt_core/mt_core.dart';
 import 'package:mt_transcripts/mt_transcripts.dart';
 import 'package:test/test.dart';
 
-/// **The subtitle file a server writes beside a clip is found by name**,
-/// never by listing a folder: yt-dlp names it after the media file with the
-/// extension swapped (measured 2026-10-02 on a real server, for a video and
-/// an audio download alike).
+/// **The subtitle file a server writes beside a clip.** yt-dlp names it
+/// after the media file with the extension swapped (measured on a real
+/// server, for a video and an audio download alike). It is found among the
+/// names of the folder's index when the server lists its folder, which
+/// catches tracks with a suffix, and by the computed name otherwise.
 void main() {
   const watch = 'https://www.youtube.com/watch?v=jNQXAC9IVRw';
   const media = 'Me at the zoo [jNQXAC9IVRw].webm';
@@ -53,6 +54,19 @@ void main() {
         '<li><a href="/download/Other%20%5Bx%5D.en.vtt">x</a></li>'
         '<li><a href="/download/bad%E0%A4%A">x</a></li>'
         '</ul></html>';
+
+    // Found in the pre-release review of 2.4.0: behind a path prefix the
+    // index links `/metube/download/…`, and nothing at all was read.
+    test('a server behind a path prefix is listed the same', () {
+      const prefixed =
+          '<li><a href="/metube/download/.metube">.metube/</a></li>'
+          '<li><a href="/metube/download/sub/">sub/</a></li>'
+          '<li><a href="/metube/download/clip%20%5Bx%5D.en.vtt">x</a></li>';
+      expect(SidecarListing.parse(prefixed).names, {
+        '.metube',
+        'clip [x].en.vtt',
+      });
+    });
 
     test('the names are decoded, and only the files beside the clip count', () {
       final listing = SidecarListing.parse(html);

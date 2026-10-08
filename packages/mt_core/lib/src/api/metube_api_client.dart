@@ -567,7 +567,12 @@ class MeTubeApiClient implements MeTubeApi {
       throw NetworkException(e.message);
     }
     _throwIfDownloadRejected(response.statusCode ?? 0);
-    return response.data ?? '';
+    final html = response.data ?? '';
+    // The same ceiling as any text read from the folder.
+    if (html.length > MTConstants.maxTextFileBytes) {
+      throw const ServerErrorException('folder index too large');
+    }
+    return html;
   }
 
   /// §2.5: deletion uses the canonicalUrl that came from `/history`, and

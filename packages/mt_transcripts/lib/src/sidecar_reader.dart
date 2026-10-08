@@ -27,7 +27,7 @@ class SidecarResult {
 
 /// Subtitles the server wrote **beside** a clip, read back from `/download`.
 ///
-/// A MeTube whose `YTDL_OPTIONS` carries `writesubtitles` (the setup guide
+/// A MeTube whose `YTDL_OPTIONS` carries `writesubtitles` (docs/SERVER-SETUP.md
 /// shows the line) has yt-dlp save each clip's subtitles next to its file,
 /// whoever asked for the clip: the app, a subscription, the web page. That
 /// covers what [CaptionsFetcher] cannot: it only acts before a clip the app
@@ -52,7 +52,7 @@ class SidecarReader {
   final SidecarListing? listing;
 
   /// The names the file can have when the track is the plain language,
-  /// most likely first: `vtt` is what YouTube serves and what the guide
+  /// most likely first: `vtt` is what YouTube serves and what docs/SERVER-SETUP.md
   /// asks for, `srt` what a converter leaves.
   static List<String> namesFor(String filename, String language) {
     final stem = SidecarListing.stemOf(filename);

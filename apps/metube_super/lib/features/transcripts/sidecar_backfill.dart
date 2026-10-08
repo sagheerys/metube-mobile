@@ -38,11 +38,20 @@ class SidecarBackfill {
   bool _running = false;
   bool _cancelled = false;
 
+  /// The server would not list its folder this session: plain names only,
+  /// rather than asking for the index again on every library change.
+  bool _noListing = false;
+
   void cancel() => _cancelled = true;
 
+  /// Asked again between clips: turning the feature off mid-run stops it,
+  /// and nothing more is saved after "stop and delete" emptied the store.
+  bool get _stopped =>
+      _cancelled ||
+      !(_ref.read(transcriptsEnabledProvider).valueOrNull ?? false);
+
   Future<void> run(List<LibraryItem> items) async {
-    if (_running || _cancelled) return;
-    if (!(_ref.read(transcriptsEnabledProvider).valueOrNull ?? false)) return;
+    if (_running || _stopped) return;
     final api = _ref.read(sidecarApiProvider);
     if (api == null || _ref.read(libraryServerErrorProvider) != null) return;
     _running = true;
@@ -65,13 +74,13 @@ class SidecarBackfill {
       final SidecarListing? listing;
       try {
         listing = await _listing(api);
-      } on MTApiException {
+      } on NetworkException {
         return; // unreachable: nothing is asked, nothing marked missing
       }
-      if (_cancelled) return;
+      if (_stopped) return;
       final reader = SidecarReader(api, listing: listing);
       for (final item in candidates) {
-        if (_cancelled) return;
+        if (_stopped) return;
         _tried.add(item.canonicalUrl);
         var found = false;
         for (final language in service.languages) {
@@ -80,7 +89,7 @@ class SidecarBackfill {
             filename: item.serverFilename!,
             language: language,
           );
-          if (_cancelled) return;
+          if (_stopped) return;
           switch (result.outcome) {
             case SidecarOutcome.found:
               found = true;
@@ -102,13 +111,18 @@ class SidecarBackfill {
   }
 
   /// The folder's names, read once per run so each clip's files are found
-  /// whatever their track suffix. A server that does not list its folder
-  /// leaves the reader to the plain names; any other failure is the
-  /// caller's to end the run on.
+  /// whatever their track suffix. Without them the reader tries the plain
+  /// names, which is all a server that does not list its folder allows:
+  /// it answers 403 (aiohttp without `show_index`), 404 or an error page.
+  /// A network failure is left to the caller, which ends the run.
   Future<SidecarListing?> _listing(MeTubeApi api) async {
+    if (_noListing) return null;
     try {
       return SidecarListing.parse(await api.fetchDownloadIndex());
-    } on NoApiException {
+    } on NetworkException {
+      rethrow;
+    } on MTApiException {
+      _noListing = true;
       return null;
     }
   }

@@ -110,19 +110,27 @@ class SubscriptionsScreen extends ConsumerWidget {
           MTSpace.xxl * 2,
         ),
         children: [
-          for (final sub in subs)
-            SubscriptionCard(
-              subscription: sub,
-              onToggle: (enabled) =>
-                  _run(context, ref, (c) => c.setEnabled(sub, enabled)),
-              onOpen: () => launchUrl(
-                Uri.parse(sub.url),
-                mode: LaunchMode.externalApplication,
-              ),
-              onEdit: () => showSubscriptionSheet(context, ref, editing: sub),
-              onCheckNow: () => _checkAll(context, ref, only: sub),
-              onUnfollow: () => _confirmUnfollow(context, ref, sub),
-            ),
+          // Pausing sends a card to the end of the list: it travels there
+          // rather than vanishing from under the finger.
+          MTReorderMotion(
+            children: [
+              for (final sub in subs)
+                SubscriptionCard(
+                  key: ValueKey(sub.id),
+                  subscription: sub,
+                  onToggle: (enabled) =>
+                      _run(context, ref, (c) => c.setEnabled(sub, enabled)),
+                  onOpen: () => launchUrl(
+                    Uri.parse(sub.url),
+                    mode: LaunchMode.externalApplication,
+                  ),
+                  onEdit: () =>
+                      showSubscriptionSheet(context, ref, editing: sub),
+                  onCheckNow: () => _checkAll(context, ref, only: sub),
+                  onUnfollow: () => _confirmUnfollow(context, ref, sub),
+                ),
+            ],
+          ),
         ],
       ),
     );

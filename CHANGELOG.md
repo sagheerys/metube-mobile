@@ -9,6 +9,8 @@ only one.
 
 ## [Unreleased]
 
+## [2.4.0] - 2026-10-09
+
 ### Added
 
 - **Transcripts for the clips your server downloads by itself.** Until now
@@ -17,9 +19,33 @@ only one.
   downloaded. A server set to write subtitles beside each clip (one line in
   its configuration, shown in the setup guide) now has those read in the
   background, newest first, and they join the search within a minute of the
-  library refreshing. Nothing is asked twice, nothing runs while the
-  feature is off, and a server that cannot write them changes nothing.
-  Super only.
+  library refreshing. It reads the app's language and English, works while
+  "Search inside clips" is on, and asks for each file once; a server that
+  cannot write them changes nothing. Super only.
+
+### Changed
+
+- **A paused subscription travels to its place.** Pausing a channel sends
+  it to the end of the list; it used to vanish from under the finger and
+  reappear further down. It now slides there, so the eye follows it. Super
+  only.
+- **The server card shows that it is trying.** While the connection is
+  being checked, the arrows inside the cloud turn, and the cloud then
+  settles into connected or offline instead of snapping. On a fast home
+  network, where the answer comes in a tenth of a second, the arrows still
+  turn for a moment, so a refresh is seen to happen. Both apps.
+
+### Fixed
+
+- **A portrait clip fills the screen standing up.** Full screen always
+  turned the phone sideways, so a portrait clip too long for the shorts
+  player (many from X run past three minutes) sat small in the middle, and
+  held upright it lay on its side. Full screen now stays upright for a
+  portrait clip and fills the screen; a landscape clip still turns. Both
+  apps. Upright, the transcript beside the video opens wider, so its lines
+  are not two words long (Super).
+- **The video time reads position then length in Arabic.** The line under
+  the video showed "3:02 / 1:20", the length first. Both apps.
 
 ## [2.3.0] - 2026-10-02
 
@@ -498,7 +524,8 @@ each one left behind a test that fails on the old code.
 - An album pasted as one link expanding into twenty downloads on the server,
   with only one of them pulled.
 
-[Unreleased]: https://github.com/sagheerys/metube-mobile/compare/v2.3.0...HEAD
+[Unreleased]: https://github.com/sagheerys/metube-mobile/compare/v2.4.0...HEAD
+[2.4.0]: https://github.com/sagheerys/metube-mobile/compare/v2.3.0...v2.4.0
 [2.3.0]: https://github.com/sagheerys/metube-mobile/compare/v2.2.1...v2.3.0
 [2.2.1]: https://github.com/sagheerys/metube-mobile/compare/v2.2.0...v2.2.1
 [2.2.0]: https://github.com/sagheerys/metube-mobile/compare/v2.1.0...v2.2.0

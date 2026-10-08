@@ -29,7 +29,11 @@ void main() {
 
   setUp(() {
     locks = [];
-    VideoPlayerPlatform.instance = FakeVideoPlatform();
+    // A landscape clip: the defect lived in the sideways lock, which a
+    // portrait clip no longer takes.
+    VideoPlayerPlatform.instance = FakeVideoPlatform(
+      size: const Size(1920, 1080),
+    );
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(SystemChannels.platform, (call) async {
           if (call.method == 'SystemChrome.setPreferredOrientations') {

@@ -1485,7 +1485,7 @@ class MTLocalizationsEn extends MTLocalizations {
 
   @override
   String get transcriptsEnableBody =>
-      'Before each YouTube clip you add is downloaded, the app fetches its words from your server, in the app\'s language and in English (up to 40 seconds), and keeps them on this phone only. Clips already in your library are not included. You can turn this off at any time.';
+      'Before each YouTube clip you add is downloaded, the app fetches its words from your server, in the app\'s language and in English (up to 40 seconds), and keeps them on this phone only. Clips already in your library are included only if your server saved their subtitles beside them (the setup guide shows how). You can turn this off at any time.';
 
   @override
   String get transcriptsExport => 'Export';
@@ -1497,7 +1497,7 @@ class MTLocalizationsEn extends MTLocalizations {
 
   @override
   String get transcriptsHelp =>
-      'The app keeps the words said in each YouTube clip you add, so a library search also finds what was said inside your clips, not only their titles. Other sites are not covered yet.\n\nThe words are fetched from your server just before the download and kept on this phone only. The server does not keep them, and the full backup does not include them. To move them to another phone, use Export here and Import there. An import adds to what is already here and deletes nothing.\n\nA server set to write subtitles beside each clip (one line in its configuration; the setup guide shows it) covers everything it downloads, subscriptions included: the app reads those files on its own.';
+      'The app keeps the words said in each YouTube clip you add, so a library search also finds what was said inside your clips, not only their titles.\n\nThe words are fetched from your server just before the download and kept on this phone; the full backup does not include them. To move them to another phone, use Export here and Import there. An import adds to what is already here and deletes nothing.\n\nA server set to write subtitles beside each clip (one line in its configuration; the setup guide shows it) covers everything it downloads from then on, subscriptions and other sites included: the app reads those files on its own, in the app\'s language and in English.';
 
   @override
   String get transcriptsImport => 'Import';

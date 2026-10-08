@@ -131,7 +131,7 @@ server (MeTube 2026.09.25, template `%(title)s [%(id)s].%(ext)s`):
 |---|---|
 | A video download | `Me at the zoo [jNQXAC9IVRw].en.vtt` beside the `.webm` |
 | An audio download (m4a) | the same file beside the `.m4a` |
-| The file's name | the media filename with its extension replaced by `<lang>.vtt` (yt-dlp's `subtitles_filename`), so it is computed, never listed |
+| The file's name | the media filename with its extension replaced by `<lang>.vtt` (yt-dlp's `subtitles_filename`); a suffixed track's name cannot be computed, see below |
 | Deleting the clip | **leaves the subtitle file behind**: MeTube records `subtitle_files` for captions jobs only |
 | A captions job for the same URL and language, `format: vtt` | adopts the existing file ("already present"), and deleting that job deletes it — the only way to remove an orphan through the API |
 
@@ -162,8 +162,9 @@ language is not accepted as a pattern (`^[A-Za-z0-9][A-Za-z0-9-]{0,34}$`).
 Because the suffix cannot be computed, Super reads the folder's index
 (`GET /download/`, the HTML `DOWNLOAD_DIRS_INDEXABLE` serves, 79 KB for 500
 files) once per backfill pass and picks the files beside each clip by
-prefix (`SidecarListing`); a server without the index falls back to the
-plain names.
+prefix (`SidecarListing`). A server without the index (aiohttp answers 403
+when `show_index` is off) falls back to the plain names, and is not asked for
+the index again until the app restarts.
 
 #### `playlist_item_limit` — what the app thinks is a single item stays single
 
