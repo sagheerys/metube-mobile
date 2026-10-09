@@ -156,6 +156,11 @@ that again at any time.
 
 ## Screenshots
 
+**Search inside clips** (MeTube Super): a word found inside three clips, the
+transcript following playback, and the same search at night:
+
+![A search for "backup" found inside three clips, the transcript following playback, and the results at night](docs/screenshots/search.jpg)
+
 **Subscriptions** — the channels your server follows, following a new one,
 and the notice when their videos arrive:
 
@@ -166,14 +171,14 @@ lane for portrait clips:
 
 ![The audio player by day, the queue at night, and the shorts player](docs/screenshots/players.jpg)
 
+<details>
+<summary><strong>More screens</strong> — the libraries, playlists, batch selection, the video player</summary>
+<br>
+
 **The libraries** — MeTube Lite by day and by night, and MeTube Super at night
 with the mini player:
 
 ![MeTube Lite by day and night, MeTube Super at night](docs/screenshots/libraries.jpg)
-
-<details>
-<summary><strong>More screens</strong> — playlists, batch selection, the video player</summary>
-<br>
 
 | Playlists | A playlist | Batch selection |
 |---|---|---|
@@ -187,7 +192,8 @@ with the mini player:
 
 The library shown is invented for these screenshots — the titles, the channels
 and the covers are all generated, and no real server or account appears in
-them.
+them. Every screen, one by one, is on the
+[project page](https://sagheerys.github.io/metube-mobile/).
 
 ## Download
 
