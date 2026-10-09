@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>MeTube Mobile — Android clients for a self-hosted MeTube server</title>
-<meta name="description" content="Two open-source Android apps for a self-hosted MeTube (yt-dlp) server. MeTube Lite pulls each download to your phone and clears the server; MeTube Super keeps files on the server and streams them. Arabic and English, GPL-3.0.">
+<meta name="description" content="Two open-source Android apps for a self-hosted MeTube (yt-dlp) server. MeTube Lite pulls each download to your phone and clears the server; MeTube Super keeps files on the server, streams them, and searches inside your clips by what was said. Arabic and English, GPL-3.0.">
 <link rel="canonical" href="https://sagheerys.github.io/metube-mobile/">
 <meta property="og:type" content="website">
 <meta property="og:title" content="MeTube Mobile — Android clients for MeTube">
@@ -182,6 +182,17 @@ footer{margin-top:56px;border-top:1px solid var(--line);padding-top:22px;font-si
   <p class="note">Every title, channel and cover below is invented for these screenshots; no real server or account appears in them.</p>
   <div class="rail wrap" aria-label="Screenshots of MeTube Super">
     <figure class="phone">
+      <picture>
+        <source srcset="screenshots/super-search-night.png" media="(prefers-color-scheme: dark)">
+        <img loading="lazy" src="screenshots/super-search.png" width="540" height="1200" alt="A library search for the word backup: one title match, then the lines inside three clips where the word was said, each with its timestamp and the word highlighted">
+      </picture>
+      <figcaption><strong>Search what was said</strong>Find a word inside your clips, not just in titles, and tap to play from that moment.</figcaption>
+    </figure>
+    <figure class="phone">
+      <img loading="lazy" src="screenshots/super-transcript.png" width="540" height="1200" alt="The full transcript of an audio episode beneath the player, with the line being spoken marked">
+      <figcaption><strong>Read along</strong>The transcript follows playback; tap any line to jump there.</figcaption>
+    </figure>
+    <figure class="phone">
       <img loading="lazy" src="screenshots/super-subscriptions.png" width="540" height="1200" alt="Subscriptions: four followed channels, each with how often it is checked, its quality and when it was last checked, one of them paused">
       <figcaption><strong>Follow a channel</strong>Your server fetches each new video by itself; one notice says what arrived.</figcaption>
     </figure>
@@ -245,6 +256,7 @@ footer{margin-top:56px;border-top:1px solid var(--line);padding-top:22px;font-si
         <dt>After a download</dt><dd>Keeps everything on the server.</dd>
         <dt>Library</dt><dd>The server's history and the phone's files, merged into one.</dd>
         <dt>Playback</dt><dd>Streams from the server, and plays local files.</dd>
+        <dt>Search</dt><dd>Inside your clips, by what was said in them: from YouTube's subtitles when you add a clip, and from the subtitle files your server can write beside every download, subscriptions and other sites included.</dd>
         <dt>Also has</dt><dd>Channel subscriptions — the server fetches each new video by itself and the app tells you when it arrives — plus tags, batch downloads, make available offline, a server card that says what the server holds and runs, and two addresses it switches between.</dd>
       </dl>
     </section>
@@ -336,6 +348,7 @@ footer{margin-top:56px;border-top:1px solid var(--line);padding-top:22px;font-si
           <dt>بعد التنزيل</dt><dd>يُبقي كل شيء على السيرفر.</dd>
           <dt>المكتبة</dt><dd>سجلّ السيرفر وملفات الجوال في مكتبة واحدة.</dd>
           <dt>التشغيل</dt><dd>بثّ من السيرفر، وتشغيل محلي.</dd>
+          <dt>البحث</dt><dd>داخل مقاطعك بما قيل فيها: من ترجمات يوتيوب عند إضافة المقطع، ومن ملفات الترجمة التي يكتبها سيرفرك بجانب كل تنزيل، ومنها الاشتراكات والمواقع الأخرى.</dd>
           <dt>وفيه أيضاً</dt><dd>اشتراكات القنوات: ينزّل السيرفر كل مقطع جديد وحده ويخبرك التطبيق حين يصل. ومعها وسوم، وتنزيل دفعات، و«إتاحة دون اتصال»، وبطاقة تعرض ما على السيرفر ونسخته، وعنوانان بتبديل تلقائي.</dd>
         </dl>
       </section>
@@ -345,6 +358,7 @@ footer{margin-top:56px;border-top:1px solid var(--line);padding-top:22px;font-si
       <li>استقبال الروابط من قائمة المشاركة، ولو كان التطبيق مغلقاً، وعدة روابط معاً.</li>
       <li>تشغيل الصوت في الخلفية مع إشعار وسائط وأزرار في شاشة القفل، ومشغل مصغّر، ومسار للمقاطع الطولية.</li>
       <li>قوائم تشغيل ومفضلة وبحث، ونسخ احتياطية بصيغة JSON لا تحمل أي سرّ.</li>
+      <li>في Super: البحث داخل المقاطع بما قيل فيها، والضغط على النتيجة يشغّل المقطع من تلك اللحظة، والنص يتبع التشغيل سطراً سطراً.</li>
       <li>تحديث ذاتي من صفحة الإصدارات.</li>
       <li>واجهة عربية كاملة من اليمين إلى اليسار، بوضعين نهاري وليلي.</li>
     </ul>
