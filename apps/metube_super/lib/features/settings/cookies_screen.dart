@@ -101,109 +101,111 @@ class _CookiesScreenState extends ConsumerState<CookiesScreen> {
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.cookies)),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(
-          MTSpace.pagePad,
-          MTSpace.md,
-          MTSpace.pagePad,
-          MTSpace.xxl,
-        ),
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  l10n.cookiesWhat,
-                  style: Theme.of(context).textTheme.bodyMedium,
+      body: MTReadableWidth(
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(
+            MTSpace.pagePad,
+            MTSpace.md,
+            MTSpace.pagePad,
+            MTSpace.xxl,
+          ),
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    l10n.cookiesWhat,
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                ),
+                HelpButton(title: l10n.cookies, body: l10n.cookiesHelp),
+              ],
+            ),
+            const SizedBox(height: MTSpace.lg),
+            Container(
+              padding: const EdgeInsets.all(MTSpace.md),
+              decoration: BoxDecoration(
+                color: p.card,
+                borderRadius: BorderRadius.circular(MTRadius.card),
+                border: Border.all(color: p.line),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    has == true
+                        ? Icons.verified_user_rounded
+                        : Icons.cookie_outlined,
+                    color: has == true ? p.ok : p.ink3,
+                  ),
+                  const SizedBox(width: MTSpace.md),
+                  Expanded(
+                    child: Text(switch (has) {
+                      true => l10n.cookiesPresent,
+                      false => l10n.cookiesAbsent,
+                      // A MeTube too old to answer, or one that has not
+                      // answered yet. "Unknown" is shown rather than
+                      // guessed at, exactly as with the version (§2.6).
+                      null => l10n.cookiesUnknown,
+                    }, style: Theme.of(context).textTheme.bodyMedium),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: MTSpace.lg),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                onPressed: _busy || api == null ? null : _pickAndUpload,
+                icon: _busy
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.upload_file_rounded),
+                label: Text(
+                  has == true ? l10n.cookiesReplace : l10n.cookiesUpload,
                 ),
               ),
-              HelpButton(title: l10n.cookies, body: l10n.cookiesHelp),
-            ],
-          ),
-          const SizedBox(height: MTSpace.lg),
-          Container(
-            padding: const EdgeInsets.all(MTSpace.md),
-            decoration: BoxDecoration(
-              color: p.card,
-              borderRadius: BorderRadius.circular(MTRadius.card),
-              border: Border.all(color: p.line),
             ),
-            child: Row(
-              children: [
-                Icon(
-                  has == true
-                      ? Icons.verified_user_rounded
-                      : Icons.cookie_outlined,
-                  color: has == true ? p.ok : p.ink3,
+            const SizedBox(height: MTSpace.sm),
+            Text(
+              l10n.cookiesReplaceNote,
+              style: Theme.of(context).textTheme.bodySmall
+                  ?.copyWith(color: p.ink2),
+            ),
+            // **Offered only when there is something to remove.** A delete
+            // button on a server with no cookies answers 400 and teaches the
+            // user that the app guesses.
+            if (has == true) ...[
+              const SizedBox(height: MTSpace.sm),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: _busy || api == null ? null : _confirmDelete,
+                  icon: const Icon(Icons.delete_outline_rounded),
+                  label: Text(l10n.cookiesDelete),
+                  style: OutlinedButton.styleFrom(foregroundColor: p.err),
                 ),
-                const SizedBox(width: MTSpace.md),
+              ),
+            ],
+            const SizedBox(height: MTSpace.lg),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(Icons.privacy_tip_outlined, size: 16, color: p.ink3),
+                const SizedBox(width: MTSpace.xs),
                 Expanded(
-                  child: Text(switch (has) {
-                    true => l10n.cookiesPresent,
-                    false => l10n.cookiesAbsent,
-                    // A MeTube too old to answer, or one that has not
-                    // answered yet. "Unknown" is shown rather than
-                    // guessed at, exactly as with the version (§2.6).
-                    null => l10n.cookiesUnknown,
-                  }, style: Theme.of(context).textTheme.bodyMedium),
+                  child: Text(
+                    l10n.cookiesPrivacy,
+                    style: Theme.of(context).textTheme.bodySmall
+                        ?.copyWith(color: p.ink3),
+                  ),
                 ),
               ],
             ),
-          ),
-          const SizedBox(height: MTSpace.lg),
-          SizedBox(
-            width: double.infinity,
-            child: FilledButton.icon(
-              onPressed: _busy || api == null ? null : _pickAndUpload,
-              icon: _busy
-                  ? const SizedBox(
-                      width: 16,
-                      height: 16,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const Icon(Icons.upload_file_rounded),
-              label: Text(
-                has == true ? l10n.cookiesReplace : l10n.cookiesUpload,
-              ),
-            ),
-          ),
-          const SizedBox(height: MTSpace.sm),
-          Text(
-            l10n.cookiesReplaceNote,
-            style: Theme.of(context).textTheme.bodySmall
-                ?.copyWith(color: p.ink2),
-          ),
-          // **Offered only when there is something to remove.** A delete
-          // button on a server with no cookies answers 400 and teaches the
-          // user that the app guesses.
-          if (has == true) ...[
-            const SizedBox(height: MTSpace.sm),
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton.icon(
-                onPressed: _busy || api == null ? null : _confirmDelete,
-                icon: const Icon(Icons.delete_outline_rounded),
-                label: Text(l10n.cookiesDelete),
-                style: OutlinedButton.styleFrom(foregroundColor: p.err),
-              ),
-            ),
           ],
-          const SizedBox(height: MTSpace.lg),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Icon(Icons.privacy_tip_outlined, size: 16, color: p.ink3),
-              const SizedBox(width: MTSpace.xs),
-              Expanded(
-                child: Text(
-                  l10n.cookiesPrivacy,
-                  style: Theme.of(context).textTheme.bodySmall
-                      ?.copyWith(color: p.ink3),
-                ),
-              ),
-            ],
-          ),
-        ],
+        ),
       ),
     );
   }

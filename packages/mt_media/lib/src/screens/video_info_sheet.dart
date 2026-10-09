@@ -194,9 +194,15 @@ class _ModeRow extends StatelessWidget {
 
     return Row(
       children: [
-        Text(
-          '${l10n.playModeLabel}:',
-          style: text.labelSmall!.copyWith(color: p.ink3),
+        // The label gives way first when the row is short of room (a side
+        // panel, a large system font): the chips are what the user taps.
+        Flexible(
+          child: Text(
+            '${l10n.playModeLabel}:',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: text.labelSmall!.copyWith(color: p.ink3),
+          ),
         ),
         const SizedBox(width: MTSpace.xs),
         _Chip(

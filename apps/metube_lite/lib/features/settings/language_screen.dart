@@ -48,23 +48,25 @@ class LanguageScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.language)),
-      body: ListView(
-        padding: const EdgeInsets.only(bottom: MTSpace.xxl),
-        children: [
-          tile(
-            title: l10n.languageSystem,
-            subtitle: l10n.languageSystemHint,
-            checked: selected == null,
-            onTap: () => notifier.setLocale(null),
-          ),
-          const Divider(height: 1),
-          for (final code in codes)
+      body: MTReadableWidth(
+        child: ListView(
+          padding: const EdgeInsets.only(bottom: MTSpace.xxl),
+          children: [
             tile(
-              title: mtLanguageName(code),
-              checked: selected == code,
-              onTap: () => notifier.setLocale(code),
+              title: l10n.languageSystem,
+              subtitle: l10n.languageSystemHint,
+              checked: selected == null,
+              onTap: () => notifier.setLocale(null),
             ),
-        ],
+            const Divider(height: 1),
+            for (final code in codes)
+              tile(
+                title: mtLanguageName(code),
+                checked: selected == code,
+                onTap: () => notifier.setLocale(code),
+              ),
+          ],
+        ),
       ),
     );
   }

@@ -137,8 +137,8 @@ class _MTReelsPlayerState extends State<MTReelsPlayer> {
     // 2026-09-05): the content is 9:16, and rotating it gives two black
     // bars and a small clip in the middle. TikTok and Shorts both ignore
     // rotation here. And pausing on a tilt punishes a movement nobody
-    // intended.
-    MTOrientation.lockPortrait();
+    // intended. A large screen is left free: it is not turned by hand.
+    MTOrientation.home();
     _notifyLive(_pauseForAudioFocus);
     WidgetsBinding.instance.addPostFrameCallback((_) => _load(_index));
   }

@@ -258,7 +258,10 @@ class _ShellScreenState extends ConsumerState<ShellScreen>
     // without this.
     ref.watch(resumeRefreshProvider);
 
-    return Scaffold(
+    return MTAdaptiveScaffold(
+      items: _navItems(l10n),
+      selectedIndex: branch,
+      onSelected: widget.navigationShell.goBranch,
       body: widget.navigationShell,
       // The mini player is a permanent bar **above** the bottom bar, inside
       // the
@@ -282,75 +285,66 @@ class _ShellScreenState extends ConsumerState<ShellScreen>
       // The mini player is a permanent bar **above** the bottom bar, inside
       // the same slot so Scaffold accounts for its height and lifts the add
       // button over it (log §4).
-      bottomNavigationBar: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // **The clipboard bar**: changing the floating button's label
-          // alone was too faint a signal, the link itself was never
-          // visible, and there was no way to open the options instead of
-          // downloading immediately. The bar shows the link and offers both
-          // actions.
-          if (branch != 2 &&
-              clipboardUrl != null &&
-              clipboardUrl != _dismissedClipboardUrl)
-            MTClipboardBanner(
-              url: clipboardUrl,
-              title: l10n.clipboardFound,
-              downloadLabel: l10n.downloadNow,
-              optionsLabel: l10n.chooseOptions,
-              onDownload: () {
-                // An explicit button labelled "download now" with "choose
-                // options" beside it; it does not pass through the
-                // setting's gate.
-                if (startQuickDownload(
-                  context,
-                  ref,
-                  clipboardUrl,
-                  explicit: true,
-                )) {
-                  ref.read(clipboardUrlProvider.notifier).state = null;
-                } else {
-                  openAddSheet(context, ref, initialUrl: clipboardUrl);
-                }
-              },
-              onOptions: () =>
-                  openAddSheet(context, ref, initialUrl: clipboardUrl),
-              onDismiss: _dismissClipboard,
-            ),
-          if (branch != 2)
-            MTMiniPlayer(
-              handler: ref.watch(audioHandlerProvider),
-              artwork: artworkBuilderFor(ref),
-              onOpen: () => GoRouter.of(context).push('/audio'),
-            ),
-          _navigationBar(l10n, branch),
-        ],
-      ),
+      bottomAccessories: [
+        // **The clipboard bar**: changing the floating button's label
+        // alone was too faint a signal, the link itself was never
+        // visible, and there was no way to open the options instead of
+        // downloading immediately. The bar shows the link and offers both
+        // actions.
+        if (branch != 2 &&
+            clipboardUrl != null &&
+            clipboardUrl != _dismissedClipboardUrl)
+          MTClipboardBanner(
+            url: clipboardUrl,
+            title: l10n.clipboardFound,
+            downloadLabel: l10n.downloadNow,
+            optionsLabel: l10n.chooseOptions,
+            onDownload: () {
+              // An explicit button labelled "download now" with "choose
+              // options" beside it; it does not pass through the
+              // setting's gate.
+              if (startQuickDownload(
+                context,
+                ref,
+                clipboardUrl,
+                explicit: true,
+              )) {
+                ref.read(clipboardUrlProvider.notifier).state = null;
+              } else {
+                openAddSheet(context, ref, initialUrl: clipboardUrl);
+              }
+            },
+            onOptions: () =>
+                openAddSheet(context, ref, initialUrl: clipboardUrl),
+            onDismiss: _dismissClipboard,
+          ),
+        if (branch != 2)
+          MTMiniPlayer(
+            handler: ref.watch(audioHandlerProvider),
+            artwork: artworkBuilderFor(ref),
+            onOpen: () => GoRouter.of(context).push('/audio'),
+          ),
+      ],
     );
   }
 
-  NavigationBar _navigationBar(MTLocalizations l10n, int branch) =>
-      NavigationBar(
-        selectedIndex: branch,
-        onDestinationSelected: widget.navigationShell.goBranch,
-        destinations: [
-          NavigationDestination(
-            icon: const Icon(Icons.video_library_outlined),
-            selectedIcon: const Icon(Icons.video_library_rounded),
-            label: l10n.navLibrary,
-          ),
-          NavigationDestination(
-            icon: const Icon(Icons.queue_music_outlined),
-            selectedIcon: const Icon(Icons.queue_music_rounded),
-            label: l10n.navPlaylists,
-          ),
-          NavigationDestination(
-            icon: const Icon(Icons.settings_outlined),
-            selectedIcon: const Icon(Icons.settings_rounded),
-            label: l10n.navSettings,
-          ),
-        ],
-      );
+  List<MTNavItem> _navItems(MTLocalizations l10n) => [
+    MTNavItem(
+      icon: Icons.video_library_outlined,
+      selectedIcon: Icons.video_library_rounded,
+      label: l10n.navLibrary,
+    ),
+    MTNavItem(
+      icon: Icons.queue_music_outlined,
+      selectedIcon: Icons.queue_music_rounded,
+      label: l10n.navPlaylists,
+    ),
+    MTNavItem(
+      icon: Icons.settings_outlined,
+      selectedIcon: Icons.settings_rounded,
+      label: l10n.navSettings,
+    ),
+  ];
 }
 
 /// The clipboard check, callable from the shell.

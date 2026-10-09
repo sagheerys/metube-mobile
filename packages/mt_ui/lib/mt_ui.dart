@@ -12,6 +12,7 @@ export 'src/l10n/language_names.dart';
 export 'src/theme/mt_theme.dart';
 export 'src/tokens/tokens.dart';
 export 'src/widgets/mt_active_downloads_bar.dart';
+export 'src/widgets/mt_adaptive.dart';
 export 'src/widgets/mt_clipboard_banner.dart';
 export 'src/widgets/mt_connection_icon.dart';
 export 'src/widgets/mt_download_progress_card.dart';

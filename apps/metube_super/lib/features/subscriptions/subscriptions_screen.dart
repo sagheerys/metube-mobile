@@ -46,21 +46,23 @@ class SubscriptionsScreen extends ConsumerWidget {
               onPressed: () => showSubscriptionSheet(context, ref),
             )
           : null,
-      body: state.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Padding(
-          padding: const EdgeInsets.all(MTSpace.pagePad),
-          child: MTEmptyState(
-            icon: Icons.error_outline_rounded,
-            title: l10n.failed,
-            message: errorText(l10n, e),
-            actionLabel: l10n.retry,
-            onAction: () => ref.invalidate(subscriptionsProvider),
+      body: MTReadableWidth(
+        child: state.when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (e, _) => Padding(
+            padding: const EdgeInsets.all(MTSpace.pagePad),
+            child: MTEmptyState(
+              icon: Icons.error_outline_rounded,
+              title: l10n.failed,
+              message: errorText(l10n, e),
+              actionLabel: l10n.retry,
+              onAction: () => ref.invalidate(subscriptionsProvider),
+            ),
           ),
+          data: (data) => data.supported
+              ? _list(context, ref, data.sorted)
+              : _unsupported(context),
         ),
-        data: (data) => data.supported
-            ? _list(context, ref, data.sorted)
-            : _unsupported(context),
       ),
     );
   }

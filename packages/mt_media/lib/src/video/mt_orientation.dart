@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -7,10 +9,53 @@ import 'package:flutter/services.dart';
 ///
 /// The reason is not laziness: the library in landscape on a phone gives
 /// two and a half rows with a top bar eating a third of the height, while
-/// for video, landscape is its natural shape. (A tablet is a question of
-/// **width**, not orientation. That is a separate batch, and this lock
-/// will be lifted for large screens then.)
+/// for video, landscape is its natural shape.
+///
+/// **A large screen is free** (tablets, 2026-10-10): a tablet stands on a
+/// table sideways as often as it is held upright, and a library on its side
+/// has room to spare. Android 16 already ignores a portrait request there,
+/// so the lock only ever bit older tablets.
 abstract final class MTOrientation {
+  /// Whether the device is a large screen: its display's shorter side is
+  /// at least 600 points. Phones keep every lock
+  /// below exactly as before. Set by [start].
+  static bool largeScreen = false;
+
+  /// Decides the device class and applies the resting orientation: once at
+  /// launch and again after the first frame. Before that frame the window
+  /// has no size yet, and a tablet read as a phone opened every video in
+  /// full screen (seen on the emulator 2026-10-10).
+  static void start() {
+    largeScreen = detectLargeScreen();
+    unawaited(home());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final large = detectLargeScreen();
+      if (large == largeScreen) return;
+      largeScreen = large;
+      unawaited(home());
+    });
+  }
+
+  /// Reads the first display, or the window where the platform does not
+  /// report the display. False while neither size is known.
+  static bool detectLargeScreen() {
+    final views = WidgetsBinding.instance.platformDispatcher.views;
+    if (views.isEmpty) return false;
+    final view = views.first;
+    final display = view.display;
+    // Android reports no display size (-1 by -1, measured 2026-10-10), so
+    // the app's own window stands in for it there. At launch the window
+    // fills the screen; it is empty until the first frame.
+    final size = display.size.isEmpty
+        ? view.physicalSize / view.devicePixelRatio
+        : display.size / display.devicePixelRatio;
+    return !size.isEmpty && size.shortestSide >= 600;
+  }
+
+  /// The orientation the app rests in when no player owns it: portrait on
+  /// a phone, free on a large screen.
+  static Future<void> home() => largeScreen ? allow() : lockPortrait();
+
   /// `portraitDown` is excluded on purpose: nobody holds a phone upside
   /// down.
   static const portrait = <DeviceOrientation>[DeviceOrientation.portraitUp];
@@ -73,7 +118,7 @@ class _MTRotationScopeState extends State<MTRotationScope> {
 
   @override
   void dispose() {
-    MTOrientation.lockPortrait();
+    MTOrientation.home();
     super.dispose();
   }
 
@@ -98,6 +143,11 @@ class _MTRotationScopeState extends State<MTRotationScope> {
   Widget build(BuildContext context) {
     final landscape =
         MediaQuery.orientationOf(context) == Orientation.landscape;
+    // On a large screen landscape is a way of holding the device, not a
+    // request for full screen: the player has a wide form of its own there.
+    if (MTOrientation.largeScreen) {
+      return widget.builder(context, () => _openFullscreen(false));
+    }
     if (!landscape) {
       _armed = true;
     } else if (_armed && !_open) {

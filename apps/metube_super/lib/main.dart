@@ -20,10 +20,10 @@ import 'features/shared/stores.dart';
 /// player, runApp.
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // **The app is portrait and only the player rotates** (decision
-  // 2026-09-05). `MTRotationScope` releases this lock while the video
-  // player is open.
-  unawaited(MTOrientation.lockPortrait());
+  // **On a phone the app is portrait and only the player rotates**
+  // (decision 2026-09-05); `MTRotationScope` releases this lock while the
+  // video player is open. A tablet is left free.
+  MTOrientation.start();
   initMTL10n();
 
   final prefs = await SharedPreferences.getInstance();

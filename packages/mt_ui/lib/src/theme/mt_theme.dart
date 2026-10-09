@@ -237,6 +237,16 @@ ThemeData mtTheme(MTVariant variant, Brightness brightness) {
         ),
       ),
     ),
+    // The rail is the bottom bar turned on its side for wide windows, so it
+    // takes the bar's colours and type rather than Material's defaults.
+    navigationRailTheme: NavigationRailThemeData(
+      backgroundColor: p.bg,
+      indicatorColor: Colors.transparent,
+      selectedIconTheme: IconThemeData(color: p.accent),
+      unselectedIconTheme: IconThemeData(color: p.ink3),
+      selectedLabelTextStyle: body(11.5, FontWeight.w500, color: p.ink2),
+      unselectedLabelTextStyle: body(11.5, FontWeight.w500, color: p.ink2),
+    ),
     bottomSheetTheme: BottomSheetThemeData(
       backgroundColor: p.card,
       surfaceTintColor: Colors.transparent,

@@ -84,6 +84,8 @@ class _MTVideoFullscreenPageState extends State<MTVideoFullscreenPage> {
   /// other shape. Entering by a tilt keeps the tilt: that user chose
   /// landscape.
   void _lockForShape() {
+    // A tablet is not turned to fit a clip: it stands where it was put.
+    if (MTOrientation.largeScreen) return;
     final portrait = _isPortrait();
     if (portrait == _lockedPortrait) return;
     _lockedPortrait = portrait;

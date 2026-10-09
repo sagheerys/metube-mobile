@@ -35,6 +35,12 @@ abstract final class MTSpace {
   static const double gap = 13;
 }
 
+/// The side rail that replaces the bottom bar from medium width.
+abstract final class MTRail {
+  /// Wide enough for the longest label in either language under its icon.
+  static const double width = 88;
+}
+
 /// Motion: the single Wahaj curve.
 abstract final class MTMotion {
   static const Curve ease = Cubic(0.32, 0.72, 0, 1);

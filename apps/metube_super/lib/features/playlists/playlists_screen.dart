@@ -37,57 +37,60 @@ class PlaylistsScreen extends ConsumerWidget {
           ),
         ],
       ),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(
-          MTSpace.pagePad,
-          0,
-          MTSpace.pagePad,
-          140,
-        ),
-        children: [
-          MTSectionHeader(title: l10n.smartPlaylists),
-          const SizedBox(height: MTSpace.sm),
-          Row(
-            children: [
-              for (final list in smart) ...[
-                if (list != smart.first) const SizedBox(width: MTSpace.xs + 2),
-                Expanded(
-                  child: SmartPlaylistCard(
-                    kind: list.kind,
-                    count: list.count,
-                    onTap: () => _playSmart(context, ref, list),
+      body: MTReadableWidth(
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(
+            MTSpace.pagePad,
+            0,
+            MTSpace.pagePad,
+            140,
+          ),
+          children: [
+            MTSectionHeader(title: l10n.smartPlaylists),
+            const SizedBox(height: MTSpace.sm),
+            Row(
+              children: [
+                for (final list in smart) ...[
+                  if (list != smart.first)
+                    const SizedBox(width: MTSpace.xs + 2),
+                  Expanded(
+                    child: SmartPlaylistCard(
+                      kind: list.kind,
+                      count: list.count,
+                      onTap: () => _playSmart(context, ref, list),
+                    ),
                   ),
-                ),
+                ],
               ],
-            ],
-          ),
-          const SizedBox(height: MTSpace.xl),
-          MTSectionHeader(
-            title: l10n.yourPlaylists,
-            trailing: '${l10n.sortedByLastPlayed} ↓',
-          ),
-          const SizedBox(height: MTSpace.sm),
-          playlists.when(
-            loading: () => const Center(child: CircularProgressIndicator()),
-            error: (_, _) => MTEmptyState(
-              icon: Icons.error_outline_rounded,
-              title: l10n.errorGeneric(''),
-              message: l10n.tryAgain,
             ),
-            data: (all) => _Grid(playlists: all),
-          ),
-          const SizedBox(height: MTSpace.xl),
-          MTSectionHeader(
-            title: l10n.yourTags,
-            trailing: l10n.tagsOpenFiltered,
-          ),
-          const SizedBox(height: MTSpace.sm),
-          tags.when(
-            loading: () => const SizedBox.shrink(),
-            error: (_, _) => const SizedBox.shrink(),
-            data: (counts) => _TagChips(counts: counts),
-          ),
-        ],
+            const SizedBox(height: MTSpace.xl),
+            MTSectionHeader(
+              title: l10n.yourPlaylists,
+              trailing: '${l10n.sortedByLastPlayed} ↓',
+            ),
+            const SizedBox(height: MTSpace.sm),
+            playlists.when(
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (_, _) => MTEmptyState(
+                icon: Icons.error_outline_rounded,
+                title: l10n.errorGeneric(''),
+                message: l10n.tryAgain,
+              ),
+              data: (all) => _Grid(playlists: all),
+            ),
+            const SizedBox(height: MTSpace.xl),
+            MTSectionHeader(
+              title: l10n.yourTags,
+              trailing: l10n.tagsOpenFiltered,
+            ),
+            const SizedBox(height: MTSpace.sm),
+            tags.when(
+              loading: () => const SizedBox.shrink(),
+              error: (_, _) => const SizedBox.shrink(),
+              data: (counts) => _TagChips(counts: counts),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -149,8 +152,9 @@ class _Grid extends ConsumerWidget {
       );
     }
 
-    return GridView.count(
-      crossAxisCount: 2,
+    return GridView.extent(
+      // Two up on every phone; a wide window adds columns.
+      maxCrossAxisExtent: MTBreakpoint.gridTile,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       mainAxisSpacing: MTSpace.md - 1,

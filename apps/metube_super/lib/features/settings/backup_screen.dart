@@ -142,79 +142,81 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.backupSettings)),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(
-          MTSpace.pagePad,
-          0,
-          MTSpace.pagePad,
-          MTSpace.xxl,
+      body: MTReadableWidth(
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(
+            MTSpace.pagePad,
+            0,
+            MTSpace.pagePad,
+            MTSpace.xxl,
+          ),
+          children: [
+            // **No section header repeating the screen title** (review
+            // 2026-09-05): the app bar says "back up all data" and directly
+            // beneath it sat "backup and restore", two lines with one
+            // meaning.
+            const SizedBox(height: MTSpace.md),
+            BackupStatusLine(backups: _backups),
+            const SizedBox(height: MTSpace.md),
+            tile(
+              Icons.ios_share_rounded,
+              l10n.exportShare,
+              l10n.exportShareSubtitle,
+              () => _run(_exportAndShare),
+            ),
+            tile(
+              Icons.folder_open_rounded,
+              l10n.pickAnotherFile,
+              l10n.pickAnotherFileSubtitle,
+              () => _run(_importPicked),
+            ),
+            const SizedBox(height: MTSpace.lg),
+            // **The copies are shown rather than hidden behind a button**
+            // (review 2026-09-05): two thirds of the screen was empty and the
+            // only useful information, when each copy was made and how large
+            // it is, sat behind a sheet with nothing to hint at it.
+            MTSectionHeader(title: l10n.restoreData),
+            const SizedBox(height: MTSpace.sm),
+            if (_backups.isEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: MTSpace.md),
+                child: Text(
+                  l10n.noBackupsYet,
+                  style: Theme.of(context).textTheme.bodySmall!
+                      .copyWith(color: p.ink3),
+                ),
+              )
+            else
+              for (final (index, file) in _backups.indexed)
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  enabled: !_busy,
+                  leading: Icon(
+                    index == 0
+                        ? Icons.history_toggle_off_rounded
+                        : Icons.history_rounded,
+                    color: index == 0 ? p.accent : p.ink3,
+                  ),
+                  title: Text(mtTimeAgo(context, file.at)),
+                  subtitle: Text(
+                    '${(file.sizeBytes / 1024).toStringAsFixed(1)} KB',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                  trailing: TextButton(
+                    onPressed: _busy
+                        ? null
+                        : () => _run((l10n) => _restoreFrom(l10n, file)),
+                    child: Text(l10n.restoreData),
+                  ),
+                ),
+            const SizedBox(height: MTSpace.lg),
+            Text(
+              l10n.backupNote,
+              style: Theme.of(context).textTheme.bodySmall!
+                  .copyWith(color: p.ink3),
+            ),
+          ],
         ),
-        children: [
-          // **No section header repeating the screen title** (review
-          // 2026-09-05): the app bar says "back up all data" and directly
-          // beneath it sat "backup and restore", two lines with one
-          // meaning.
-          const SizedBox(height: MTSpace.md),
-          BackupStatusLine(backups: _backups),
-          const SizedBox(height: MTSpace.md),
-          tile(
-            Icons.ios_share_rounded,
-            l10n.exportShare,
-            l10n.exportShareSubtitle,
-            () => _run(_exportAndShare),
-          ),
-          tile(
-            Icons.folder_open_rounded,
-            l10n.pickAnotherFile,
-            l10n.pickAnotherFileSubtitle,
-            () => _run(_importPicked),
-          ),
-          const SizedBox(height: MTSpace.lg),
-          // **The copies are shown rather than hidden behind a button**
-          // (review 2026-09-05): two thirds of the screen was empty and the
-          // only useful information, when each copy was made and how large
-          // it is, sat behind a sheet with nothing to hint at it.
-          MTSectionHeader(title: l10n.restoreData),
-          const SizedBox(height: MTSpace.sm),
-          if (_backups.isEmpty)
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: MTSpace.md),
-              child: Text(
-                l10n.noBackupsYet,
-                style: Theme.of(context).textTheme.bodySmall!
-                    .copyWith(color: p.ink3),
-              ),
-            )
-          else
-            for (final (index, file) in _backups.indexed)
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                enabled: !_busy,
-                leading: Icon(
-                  index == 0
-                      ? Icons.history_toggle_off_rounded
-                      : Icons.history_rounded,
-                  color: index == 0 ? p.accent : p.ink3,
-                ),
-                title: Text(mtTimeAgo(context, file.at)),
-                subtitle: Text(
-                  '${(file.sizeBytes / 1024).toStringAsFixed(1)} KB',
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-                trailing: TextButton(
-                  onPressed: _busy
-                      ? null
-                      : () => _run((l10n) => _restoreFrom(l10n, file)),
-                  child: Text(l10n.restoreData),
-                ),
-              ),
-          const SizedBox(height: MTSpace.lg),
-          Text(
-            l10n.backupNote,
-            style: Theme.of(context).textTheme.bodySmall!
-                .copyWith(color: p.ink3),
-          ),
-        ],
       ),
     );
   }

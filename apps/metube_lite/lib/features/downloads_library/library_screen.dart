@@ -111,7 +111,12 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
               // One calm appearance of the content on the first build,
               // rather than motion per card, which made the list bounce
               // throughout the scroll.
-              child: MTRevealOnce(child: _body(l10n, options, active)),
+              // A wide grid gains columns; rows and cards keep their width.
+              child: MTRevealOnce(
+                child: options.mode == LibraryViewMode.grid
+                    ? _body(l10n, options, active)
+                    : MTReadableWidth(child: _body(l10n, options, active)),
+              ),
             ),
     );
   }

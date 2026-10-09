@@ -74,58 +74,61 @@ class MTAudioScreen extends StatelessWidget {
       return MTDragToDismiss(
         child: Scaffold(
           body: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: MTSpace.xl),
-              child: Column(
-                children: [
-                  _Header(handler: handler, onDetails: onDetails),
-                  // The cover takes what the rest leaves, up to its usual
-                  // size: at Android's largest text on a small phone the
-                  // fixed-size cover pushed the controls past the bottom.
-                  // The spare room stays two parts above to one below.
-                  Expanded(
-                    child: LayoutBuilder(
-                      builder: (context, box) {
-                        final size = math.min(
-                          _artSize(context),
-                          box.maxHeight - MTSpace.lg * 2,
-                        );
-                        if (size < _smallestArt) return const SizedBox();
-                        return Align(
-                          alignment: const Alignment(0, 1 / 3),
-                          child: MTBreathingGlow(
-                            playing: handler.playingNotifier,
-                            size: size,
-                            child: MTTiltedArtwork(
-                              item: item,
-                              artwork: artwork,
+            child: MTReadableWidth(
+              maxWidth: MTBreakpoint.player,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: MTSpace.xl),
+                child: Column(
+                  children: [
+                    _Header(handler: handler, onDetails: onDetails),
+                    // The cover takes what the rest leaves, up to its usual
+                    // size: at Android's largest text on a small phone the
+                    // fixed-size cover pushed the controls past the bottom.
+                    // The spare room stays two parts above to one below.
+                    Expanded(
+                      child: LayoutBuilder(
+                        builder: (context, box) {
+                          final size = math.min(
+                            _artSize(context),
+                            box.maxHeight - MTSpace.lg * 2,
+                          );
+                          if (size < _smallestArt) return const SizedBox();
+                          return Align(
+                            alignment: const Alignment(0, 1 / 3),
+                            child: MTBreathingGlow(
+                              playing: handler.playingNotifier,
                               size: size,
+                              child: MTTiltedArtwork(
+                                item: item,
+                                artwork: artwork,
+                                size: size,
+                              ),
                             ),
-                          ),
-                        );
-                      },
+                          );
+                        },
+                      ),
                     ),
-                  ),
-                  _Titles(
-                    item: item,
-                    media: media,
-                    playlistName: playlistName,
-                    index: handler.currentIndex,
-                    total: handler.items.length,
-                    showSourceChip: showSourceChip,
-                  ),
-                  const SizedBox(height: MTSpace.xl),
-                  _Slider(handler: handler, media: media),
-                  const SizedBox(height: MTSpace.md),
-                  MTPlayerControlsRow(handler: handler),
-                  const SizedBox(height: MTSpace.lg),
-                  _SubControls(
-                    handler: handler,
-                    onQueue: () => _openQueue(context),
-                    extra: extra?.call(item),
-                  ),
-                  const SizedBox(height: MTSpace.lg),
-                ],
+                    _Titles(
+                      item: item,
+                      media: media,
+                      playlistName: playlistName,
+                      index: handler.currentIndex,
+                      total: handler.items.length,
+                      showSourceChip: showSourceChip,
+                    ),
+                    const SizedBox(height: MTSpace.xl),
+                    _Slider(handler: handler, media: media),
+                    const SizedBox(height: MTSpace.md),
+                    MTPlayerControlsRow(handler: handler),
+                    const SizedBox(height: MTSpace.lg),
+                    _SubControls(
+                      handler: handler,
+                      onQueue: () => _openQueue(context),
+                      extra: extra?.call(item),
+                    ),
+                    const SizedBox(height: MTSpace.lg),
+                  ],
+                ),
               ),
             ),
           ),

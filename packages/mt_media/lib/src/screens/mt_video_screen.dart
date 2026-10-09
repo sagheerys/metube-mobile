@@ -99,6 +99,50 @@ class MTVideoScreen extends StatelessWidget {
     builder: (context, openFullscreen) => _body(context, openFullscreen),
   );
 
+  /// **A tablet on its side shows the video and its details together**:
+  /// a phone on its side has too little height for both, so there the video
+  /// fills the screen, but a tablet has room for the queue beside it. The
+  /// shorter side tells them apart, so a phone held sideways never gets it.
+  static bool _isWide(BuildContext context) {
+    final size = MediaQuery.sizeOf(context);
+    return size.width >= MTBreakpoint.expanded &&
+        size.shortestSide >= MTBreakpoint.medium;
+  }
+
+  Widget _wide(BuildContext context, VoidCallback openFullscreen) => Row(
+    children: [
+      Expanded(
+        child: _VideoArea(
+          session: session,
+          fill: true,
+          playlistName: playlistName,
+          membershipLine: membershipLine,
+          onBack: () => Navigator.of(context).maybePop(),
+          onFullscreen: openFullscreen,
+          onQueue: () => _openQueue(context),
+        ),
+      ),
+      SizedBox(
+        width: MTBreakpoint.sidePanel,
+        child: SafeArea(
+          left: false,
+          right: false,
+          child: Padding(
+            padding: const EdgeInsets.only(top: MTSpace.lg),
+            child: MTVideoInfoSheet(
+              session: session,
+              actions: actions,
+              artwork: artwork,
+              subtitleBuilder: subtitleBuilder,
+              playlistName: playlistName,
+              onShowPlaylist: onShowPlaylist,
+            ),
+          ),
+        ),
+      ),
+    ],
+  );
+
   Widget _body(BuildContext context, VoidCallback openFullscreen) => PopScope(
     canPop: !_offersAudio,
     onPopInvokedWithResult: (didPop, _) {
@@ -125,8 +169,9 @@ class MTVideoScreen extends StatelessWidget {
         // was a cream sheet with a squeezed video on a wide screen.
         // Landscape is now **a form** of this screen rather than a
         // fault in it.
-        builder: (context, _) =>
-            MediaQuery.orientationOf(context) == Orientation.landscape
+        builder: (context, _) => _isWide(context)
+            ? _wide(context, openFullscreen)
+            : MediaQuery.orientationOf(context) == Orientation.landscape
             ? _VideoArea(
                 session: session,
                 fill: true,

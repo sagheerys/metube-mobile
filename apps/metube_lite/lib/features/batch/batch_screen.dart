@@ -78,35 +78,37 @@ class _BatchScreenState extends ConsumerState<BatchScreen> {
               icon: const Icon(Icons.download_rounded),
               label: Text(l10n.batchDownloadSelected),
             ),
-      body: preview.when(
-        loading: () => Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const CircularProgressIndicator(),
-              const SizedBox(height: MTSpace.md),
-              Text(
-                l10n.batchLoading,
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-            ],
+      body: MTReadableWidth(
+        child: preview.when(
+          loading: () => Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const CircularProgressIndicator(),
+                const SizedBox(height: MTSpace.md),
+                Text(
+                  l10n.batchLoading,
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ],
+            ),
           ),
+          error: (e, _) => MTEmptyState(
+            icon: Icons.error_outline_rounded,
+            title: l10n.failedToLoadPlaylist,
+            message: errorText(l10n, e),
+            actionLabel: l10n.retry,
+            onAction: () =>
+                ref.invalidate(playlistPreviewProvider(widget.playlistUrl)),
+          ),
+          data: (data) => data == null || data.tracks.isEmpty
+              ? MTEmptyState(
+                  icon: Icons.playlist_remove_rounded,
+                  title: l10n.failedToLoadPlaylist,
+                  message: l10n.couldNotLoadPlaylist,
+                )
+              : _content(data, kind),
         ),
-        error: (e, _) => MTEmptyState(
-          icon: Icons.error_outline_rounded,
-          title: l10n.failedToLoadPlaylist,
-          message: errorText(l10n, e),
-          actionLabel: l10n.retry,
-          onAction: () =>
-              ref.invalidate(playlistPreviewProvider(widget.playlistUrl)),
-        ),
-        data: (data) => data == null || data.tracks.isEmpty
-            ? MTEmptyState(
-                icon: Icons.playlist_remove_rounded,
-                title: l10n.failedToLoadPlaylist,
-                message: l10n.couldNotLoadPlaylist,
-              )
-            : _content(data, kind),
       ),
     );
   }

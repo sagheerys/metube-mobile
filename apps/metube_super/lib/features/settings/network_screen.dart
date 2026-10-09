@@ -97,126 +97,128 @@ class NetworkScreen extends ConsumerWidget {
           ),
         ],
       ),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(
-          MTSpace.pagePad,
-          0,
-          MTSpace.pagePad,
-          MTSpace.xxl,
-        ),
-        children: [
-          SwitchListTile(
-            contentPadding: EdgeInsets.zero,
-            title: Row(
-              children: [
-                Expanded(child: Text(l10n.autoUrlSwitching)),
-                HelpButton(
-                  title: l10n.autoUrlSwitching,
-                  body: l10n.autoUrlSwitchingDesc,
-                ),
-              ],
-            ),
-            subtitle: settings.autoSwitch
-                ? null
-                : Text(
-                    l10n.autoSwitchDisabledHint,
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-            value: settings.autoSwitch,
-            onChanged: notifier.setAutoSwitch,
+      body: MTReadableWidth(
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(
+            MTSpace.pagePad,
+            0,
+            MTSpace.pagePad,
+            MTSpace.xxl,
           ),
-          const SizedBox(height: MTSpace.md),
-
-          MTSectionHeader(title: l10n.localNetworkSection),
-          const SizedBox(height: MTSpace.xs),
-          Text(
-            l10n.localNetworkDesc,
-            style: Theme.of(context).textTheme.bodySmall,
-          ),
-          const SizedBox(height: MTSpace.md),
-          Row(
-            children: [
-              if (settings.localUrl.isNotEmpty) ...[
-                statusDot(settings.localUrl),
-                const SizedBox(width: MTSpace.sm),
-              ],
-              Expanded(
-                child: TextFormField(
-                  initialValue: settings.localUrl,
-                  textDirection: TextDirection.ltr,
-                  decoration: InputDecoration(labelText: l10n.localUrlLabel),
-                  onFieldSubmitted: (value) async {
-                    await notifier.setLocalUrl(value);
-                    ref.invalidate(endpointsStatusProvider);
-                  },
-                ),
-              ),
-            ],
-          ),
-          if (statusHint(settings.localUrl) case final Widget hint) hint,
-          const SizedBox(height: MTSpace.xl),
-
-          MTSectionHeader(
-            title: l10n.externalNetworkSection,
-            trailing: '${settings.externalUrls.length}',
-          ),
-          const SizedBox(height: MTSpace.xs),
-          Text(
-            l10n.externalNetworkDesc,
-            style: Theme.of(context).textTheme.bodySmall,
-          ),
-          const SizedBox(height: MTSpace.md),
-          for (final (index, url) in settings.externalUrls.indexed)
-            ListTile(
+          children: [
+            SwitchListTile(
               contentPadding: EdgeInsets.zero,
-              leading: statusDot(url),
-              title: Text(
-                url,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                textDirection: TextDirection.ltr,
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-              subtitle: statusHint(url),
-              trailing: Row(
-                mainAxisSize: MainAxisSize.min,
+              title: Row(
                 children: [
-                  if (index > 0)
-                    IconButton(
-                      visualDensity: VisualDensity.compact,
-                      icon: const Icon(Icons.arrow_upward_rounded, size: 18),
-                      onPressed: () async {
-                        await notifier.reorderExternalUrl(index, index - 1);
-                        ref.invalidate(endpointsStatusProvider);
-                      },
-                    ),
-                  IconButton(
-                    visualDensity: VisualDensity.compact,
-                    icon: Icon(
-                      Icons.delete_outline_rounded,
-                      size: 18,
-                      color: p.err,
-                    ),
-                    onPressed: () async {
-                      await notifier.removeExternalUrl(url);
-                      ref.invalidate(endpointsStatusProvider);
-                    },
+                  Expanded(child: Text(l10n.autoUrlSwitching)),
+                  HelpButton(
+                    title: l10n.autoUrlSwitching,
+                    body: l10n.autoUrlSwitchingDesc,
                   ),
                 ],
               ),
-              onTap: settings.activeUrl == url
+              subtitle: settings.autoSwitch
                   ? null
-                  : () => notifier.adoptActiveUrl(url),
+                  : Text(
+                      l10n.autoSwitchDisabledHint,
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+              value: settings.autoSwitch,
+              onChanged: notifier.setAutoSwitch,
             ),
-          const SizedBox(height: MTSpace.sm),
-          OutlinedButton.icon(
-            onPressed: () => _addExternalDialog(context, ref),
-            icon: const Icon(Icons.add_rounded, size: 18),
-            label: Text(l10n.addEndpoint),
-          ),
-          const SizedBox(height: MTSpace.xl),
-          const ServerStatusCard(),
-        ],
+            const SizedBox(height: MTSpace.md),
+
+            MTSectionHeader(title: l10n.localNetworkSection),
+            const SizedBox(height: MTSpace.xs),
+            Text(
+              l10n.localNetworkDesc,
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+            const SizedBox(height: MTSpace.md),
+            Row(
+              children: [
+                if (settings.localUrl.isNotEmpty) ...[
+                  statusDot(settings.localUrl),
+                  const SizedBox(width: MTSpace.sm),
+                ],
+                Expanded(
+                  child: TextFormField(
+                    initialValue: settings.localUrl,
+                    textDirection: TextDirection.ltr,
+                    decoration: InputDecoration(labelText: l10n.localUrlLabel),
+                    onFieldSubmitted: (value) async {
+                      await notifier.setLocalUrl(value);
+                      ref.invalidate(endpointsStatusProvider);
+                    },
+                  ),
+                ),
+              ],
+            ),
+            if (statusHint(settings.localUrl) case final Widget hint) hint,
+            const SizedBox(height: MTSpace.xl),
+
+            MTSectionHeader(
+              title: l10n.externalNetworkSection,
+              trailing: '${settings.externalUrls.length}',
+            ),
+            const SizedBox(height: MTSpace.xs),
+            Text(
+              l10n.externalNetworkDesc,
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+            const SizedBox(height: MTSpace.md),
+            for (final (index, url) in settings.externalUrls.indexed)
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: statusDot(url),
+                title: Text(
+                  url,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textDirection: TextDirection.ltr,
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+                subtitle: statusHint(url),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (index > 0)
+                      IconButton(
+                        visualDensity: VisualDensity.compact,
+                        icon: const Icon(Icons.arrow_upward_rounded, size: 18),
+                        onPressed: () async {
+                          await notifier.reorderExternalUrl(index, index - 1);
+                          ref.invalidate(endpointsStatusProvider);
+                        },
+                      ),
+                    IconButton(
+                      visualDensity: VisualDensity.compact,
+                      icon: Icon(
+                        Icons.delete_outline_rounded,
+                        size: 18,
+                        color: p.err,
+                      ),
+                      onPressed: () async {
+                        await notifier.removeExternalUrl(url);
+                        ref.invalidate(endpointsStatusProvider);
+                      },
+                    ),
+                  ],
+                ),
+                onTap: settings.activeUrl == url
+                    ? null
+                    : () => notifier.adoptActiveUrl(url),
+              ),
+            const SizedBox(height: MTSpace.sm),
+            OutlinedButton.icon(
+              onPressed: () => _addExternalDialog(context, ref),
+              icon: const Icon(Icons.add_rounded, size: 18),
+              label: Text(l10n.addEndpoint),
+            ),
+            const SizedBox(height: MTSpace.xl),
+            const ServerStatusCard(),
+          ],
+        ),
       ),
     );
   }

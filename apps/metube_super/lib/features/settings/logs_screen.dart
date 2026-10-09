@@ -90,71 +90,74 @@ class _LogsScreenState extends ConsumerState<LogsScreen> {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(
-              MTSpace.pagePad,
-              MTSpace.sm,
-              MTSpace.pagePad,
-              MTSpace.xs,
+      body: MTReadableWidth(
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                MTSpace.pagePad,
+                MTSpace.sm,
+                MTSpace.pagePad,
+                MTSpace.xs,
+              ),
+              child: MTSearchField(
+                hint: l10n.searchLogs,
+                onChanged: (value) => setState(() => _search.text = value),
+              ),
             ),
-            child: MTSearchField(
-              hint: l10n.searchLogs,
-              onChanged: (value) => setState(() => _search.text = value),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: MTSpace.pagePad),
-            child: Row(
-              children: [
-                Icon(Icons.privacy_tip_outlined, size: 14, color: p.ink3),
-                const SizedBox(width: MTSpace.xs),
-                Expanded(
-                  child: Text(
-                    l10n.logsSanitizedNote,
-                    style: Theme.of(context).textTheme.labelSmall!
-                        .copyWith(color: p.ink3),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: MTSpace.sm),
-          Expanded(
-            child: _loading
-                ? const Center(child: CircularProgressIndicator())
-                : visible.isEmpty
-                ? MTEmptyState(
-                    icon: Icons.article_outlined,
-                    title: query.isEmpty ? l10n.logsEmpty : l10n.noResults,
-                    message: query.isEmpty
-                        ? l10n.noLogsFound
-                        : l10n.noResultsMessage,
-                  )
-                : ListView.builder(
-                    padding: const EdgeInsets.fromLTRB(
-                      MTSpace.pagePad,
-                      0,
-                      MTSpace.pagePad,
-                      MTSpace.xxl,
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: MTSpace.pagePad),
+              child: Row(
+                children: [
+                  Icon(Icons.privacy_tip_outlined, size: 14, color: p.ink3),
+                  const SizedBox(width: MTSpace.xs),
+                  Expanded(
+                    child: Text(
+                      l10n.logsSanitizedNote,
+                      style: Theme.of(context).textTheme.labelSmall!
+                          .copyWith(color: p.ink3),
                     ),
-                    itemCount: visible.length,
-                    itemBuilder: (context, index) => Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 3),
-                      child: Text(
-                        visible[index],
-                        style: Theme.of(context).textTheme.labelSmall!.copyWith(
-                          color: visible[index].contains('ERROR')
-                              ? p.err
-                              : p.ink2,
-                          fontFamily: 'monospace',
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: MTSpace.sm),
+            Expanded(
+              child: _loading
+                  ? const Center(child: CircularProgressIndicator())
+                  : visible.isEmpty
+                  ? MTEmptyState(
+                      icon: Icons.article_outlined,
+                      title: query.isEmpty ? l10n.logsEmpty : l10n.noResults,
+                      message: query.isEmpty
+                          ? l10n.noLogsFound
+                          : l10n.noResultsMessage,
+                    )
+                  : ListView.builder(
+                      padding: const EdgeInsets.fromLTRB(
+                        MTSpace.pagePad,
+                        0,
+                        MTSpace.pagePad,
+                        MTSpace.xxl,
+                      ),
+                      itemCount: visible.length,
+                      itemBuilder: (context, index) => Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 3),
+                        child: Text(
+                          visible[index],
+                          style: Theme.of(context).textTheme.labelSmall!
+                              .copyWith(
+                                color: visible[index].contains('ERROR')
+                                    ? p.err
+                                    : p.ink2,
+                                fontFamily: 'monospace',
+                              ),
                         ),
                       ),
                     ),
-                  ),
-          ),
-        ],
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -27,7 +27,12 @@ class MTDevice {
     // The maintainer's actual device.
     MTDevice('جلاكسي S22 ألترا 384×823', Size(384, 823)),
     MTDevice('محاكي المشروع 411×914', Size(411, 914)),
+    // Tablets (2026-10-10), upright and on their side: the small one sits
+    // on the 600-point line where a layout switches from phone to rail.
+    MTDevice('لوحي صغير 600×960', Size(600, 960)),
+    MTDevice('لوحي صغير أفقي 960×600', Size(960, 600)),
     MTDevice('لوحي 800×1280', Size(800, 1280)),
+    MTDevice('لوحي أفقي 1280×800', Size(1280, 800)),
   ];
 }
 
