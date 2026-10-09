@@ -45,7 +45,9 @@ services:
 ```
 
 Then, in the app: **Settings → the server URL**, plus a username and password
-if the server sits behind basic auth.
+if the server sits behind basic auth. To put a password on it at home and
+over Tailscale as well, see
+[Locking your home network and Tailscale too](#locking-your-home-network-and-tailscale-too).
 
 ---
 
@@ -360,6 +362,79 @@ travels in the clear, and a first request that arrives as `http://` has
 already sent it before any redirect can help. Lite refuses cleartext to a
 public address on its own, so the app side is covered; a browser is not.
 
+### Locking your home network and Tailscale too
+
+A lock on the public hostname leaves MeTube's own port open on your network:
+anyone on your Wi-Fi, or any device in your tailnet, reaches it at
+`http://server-ip:8081` without a password, around the lock. To close every
+road, put the proxy in front of **all** of them and do not publish MeTube's
+port at all. This is the setup MeTube's own wiki points to
+([reverse proxy configurations](https://github.com/alexta69/metube/wiki/Reverse-proxy-configurations)):
+basic auth in the proxy, MeTube behind it.
+
+```yaml
+# docker-compose.yml
+services:
+  metube:
+    image: ghcr.io/alexta69/metube
+    restart: unless-stopped
+    # No "ports:" on purpose: only Caddy can reach MeTube.
+    volumes:
+      - /path/on/your/disk/downloads:/downloads
+    environment:
+      DELETE_FILE_ON_TRASHCAN: "true"
+      DOWNLOAD_DIRS_INDEXABLE: "true"
+      # ...the rest of your settings from the starting point above
+
+  caddy:
+    image: caddy:latest
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+```
+
+```
+# Caddyfile
+:8081 {
+	basic_auth {
+		family $2a$14$...
+	}
+	reverse_proxy metube:8081
+}
+```
+
+The hash comes from Caddy itself:
+`docker compose exec caddy caddy hash-password --plaintext 'your password'`.
+
+In the app nothing changes but the two credential fields: the server URL is
+still `http://server-ip:8081`, and a Tailscale address such as
+`http://100.x.y.z:8081` reaches the same Caddy and the same lock. A tunnel
+running in the same file points at `http://caddy:8081` instead of
+`http://metube:8081`.
+
+**One username and one password for every lock.** The apps keep a single
+pair and send it to every address they know: Super's local URL and each of
+its external URLs alike. If the tunnel passes a Worker and then this Caddy,
+the one `Authorization` header has to satisfy both, so two different
+passwords mean the external address answers 401 for good, and so does a
+Worker that drops the header before forwarding. The simplest arrangement is
+one lock: point the tunnel at Caddy and leave the Worker out.
+
+Check it from another machine on your network:
+
+```bash
+curl -si http://server-ip:8081/history | head -1                 # 401
+curl -si -u family:password http://server-ip:8081/history | head -1   # 200
+```
+
+Measured on 2026-10-08 against a real server on TrueNAS with Caddy in front:
+Super connected, listed the library and streamed over the home network and
+over Tailscale with the password, and both addresses answered 401 without
+it. Over plain HTTP at home the password crosses your own network in the
+clear; over Tailscale the traffic is already encrypted.
+
 ### The way that does not work: Cloudflare Access
 
 Cloudflare Access (Zero Trust policies, the e-mail/OTP login page) cannot
@@ -417,6 +492,19 @@ MeTube reachable only by your own devices, with no hostname to find and no
 login page to protect. The apps do not care: give them the mesh address as
 the server URL, and Super can hold that as its external URL with the LAN
 address as `local_url`.
+
+A Tailscale address (`100.x.y.z`) is not an internet address. Only devices
+signed in to **your** tailnet can reach it; someone who learns it and runs
+Tailscale on their own account lands in their own tailnet, not yours. So
+Tailscale on its own is safe without a password. The lock above adds what
+Tailscale does not cover: guests on your home Wi-Fi, and a device of yours
+that ends up in someone else's hands.
+
+You can also keep both roads: Super holds a tunnel hostname and a Tailscale
+address side by side under **Settings → Network**, and adopts whichever
+answers, so a slow or unreachable tunnel falls back to Tailscale on its own.
+With one lock and one password, both work the same way. The phone needs
+Tailscale switched on for that address, and Android runs one VPN at a time.
 
 ## Checking it before you blame the app
 
