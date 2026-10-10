@@ -37,6 +37,15 @@ class MTDevice {
     MTDevice('لوحي المالك أفقي 948×544', Size(948, 544)),
     MTDevice('لوحي 800×1280', Size(800, 1280)),
     MTDevice('لوحي أفقي 1280×800', Size(1280, 800)),
+    // More tablet shapes nobody here owns (2026-10-10): a 7-inch tablet on
+    // its side above three buttons, an unfolded foldable both ways, a
+    // 12-inch tablet both ways, and half a tablet in split screen.
+    MTDevice('لوحي 7 بوصات أفقي بأزرار 1024×552', Size(1024, 552)),
+    MTDevice('قابل للطي مفتوحاً 673×841', Size(673, 841)),
+    MTDevice('قابل للطي مفتوحاً أفقياً 841×673', Size(841, 673)),
+    MTDevice('لوحي 12 بوصة 854×1366', Size(854, 1366)),
+    MTDevice('لوحي 12 بوصة أفقي 1366×854', Size(1366, 854)),
+    MTDevice('نصف شاشة لوحي 640×800', Size(640, 800)),
   ];
 }
 
