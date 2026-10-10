@@ -9,6 +9,11 @@ import 'mt_up_next_list.dart';
 /// The audio screen cover: a plate tilted **-1.5°** inside a frame tilted
 /// **+1°**. An approved identity element in log §4 ("the audio player
 /// cover is tilted inside a frame").
+///
+/// **The plate is always square**, the shape of an album cover. A YouTube
+/// thumbnail is 16:9, and the plate used to take the image's own shape, a
+/// wide strip in a square frame, where a music app shows the square middle
+/// of the same picture. The picture now fills the plate from its centre.
 class MTTiltedArtwork extends StatelessWidget {
   const MTTiltedArtwork({
     super.key,
@@ -37,6 +42,8 @@ class MTTiltedArtwork extends StatelessWidget {
           Transform.rotate(
             angle: _tilt,
             child: Container(
+              width: size,
+              height: size,
               clipBehavior: Clip.antiAlias,
               decoration: BoxDecoration(
                 color: p.cardAlt,

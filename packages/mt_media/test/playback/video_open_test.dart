@@ -1,8 +1,10 @@
+import 'dart:io';
 import 'dart:async';
 
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mt_media/src/models/playback_source.dart';
+import 'package:mt_media/src/video/mt_video_codec.dart';
 import 'package:mt_media/src/video/mt_video_open.dart';
 import 'package:video_player_platform_interface/video_player_platform_interface.dart';
 
@@ -17,10 +19,15 @@ void main() {
 
   setUp(() {
     MTVideoOpen.platformView = false;
+    MTVideoCodec.reset();
+    MTVideoCodec.readHead = (_) async => _head('avc1', 'avcC');
     platform = _RefusingPlatform();
     VideoPlayerPlatform.instance = platform;
   });
-  tearDown(() => MTVideoOpen.platformView = false);
+  tearDown(() {
+    MTVideoOpen.platformView = false;
+    MTVideoCodec.reset();
+  });
 
   final source = PlaybackSource(
     origin: PlaybackOrigin.stream,
@@ -82,6 +89,64 @@ void main() {
     });
   });
 
+  group('AV1 opens in the platform view', () {
+    // A flagship without AV1 in hardware drew these clips covered in green
+    // dashes on the texture, with no error to catch.
+    test('a WebM AV1 clip goes straight there, one attempt', () async {
+      MTVideoCodec.readHead = (_) async => _head('V_AV1');
+      final controller = await MTVideoOpen.prepare(source);
+      expect(platform.views, [VideoViewType.platformView]);
+      expect(
+        MTVideoOpen.platformView,
+        isFalse,
+        reason: 'the next H.264 clip still gets the texture',
+      );
+      await controller.dispose();
+    });
+
+    test('an MP4 AV1 clip too', () async {
+      MTVideoCodec.readHead = (_) async => _head('av01', 'av1C');
+      await (await MTVideoOpen.prepare(source)).dispose();
+      expect(platform.views, [VideoViewType.platformView]);
+    });
+
+    test('H.264 and VP9 keep the texture', () async {
+      for (final head in [_head('avc1', 'avcC'), _head('V_VP9')]) {
+        MTVideoCodec.reset();
+        MTVideoCodec.readHead = (_) async => head;
+        await (await MTVideoOpen.prepare(source)).dispose();
+      }
+      expect(platform.views, [
+        VideoViewType.textureView,
+        VideoViewType.textureView,
+      ]);
+    });
+
+    test('a head that cannot be read opens as before', () async {
+      MTVideoCodec.readHead = (_) async => throw const SocketException('down');
+      await (await MTVideoOpen.prepare(source)).dispose();
+      expect(platform.views, [VideoViewType.textureView]);
+    });
+
+    test('the answer is read once per clip', () async {
+      var reads = 0;
+      MTVideoCodec.readHead = (_) async {
+        reads++;
+        return _head('V_AV1');
+      };
+      await (await MTVideoOpen.prepare(source)).dispose();
+      await (await MTVideoOpen.prepare(source)).dispose();
+      expect(reads, 1);
+    });
+
+    test('four stray bytes in the picture do not pass for AV1', () {
+      expect(MTVideoCodec.av1InHead(_head('av01')), isFalse);
+      expect(MTVideoCodec.av1InHead(_head('av1C')), isFalse);
+      expect(MTVideoCodec.av1InHead(_head('av01', 'av1C')), isTrue);
+      expect(MTVideoCodec.av1InHead(const []), isFalse);
+    });
+  });
+
   test('the message the tablet logged is recognised', () {
     final logged = PlatformException(
       code: 'VideoError',
@@ -98,6 +163,15 @@ void main() {
     );
   });
 }
+
+/// A file head with [markers] somewhere among filler bytes.
+List<int> _head(String first, [String? second]) => [
+  ...List.filled(40, 0),
+  ...first.codeUnits,
+  ...List.filled(40, 7),
+  ...?second?.codeUnits,
+  ...List.filled(40, 0),
+];
 
 /// Fails preparation the way the tablet did: the texture is refused with
 /// the decoder's error, a platform view prepares normally.

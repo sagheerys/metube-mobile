@@ -155,6 +155,30 @@ void main() {
       expect(find.byIcon(Icons.star), findsOneWidget);
     });
 
+    testWidgets('a phone on its side sets the cover beside the controls', (
+      tester,
+    ) async {
+      // Field report 2026-10-10: held sideways, the player had no cover.
+      await tester.runAsync(() => handler.playItems([clip('a'), clip('b')]));
+      addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+      for (final size in const [
+        Size(823, 360),
+        Size(915, 390),
+        Size(640, 320),
+      ]) {
+        for (final scale in const [1.0, 1.3, 2.0]) {
+          tester.platformDispatcher.textScaleFactorTestValue = scale;
+          await pump(tester, size, screen());
+          expect(tester.takeException(), isNull, reason: '$size at $scale');
+          final cover = tester.getRect(find.byType(MTTiltedArtwork));
+          final controls = tester.getRect(find.byType(MTPlayerControlsRow));
+          expect(cover.height, greaterThan(size.height / 2), reason: '$size');
+          expect(cover.overlaps(controls), isFalse, reason: '$size');
+        }
+      }
+      expect(find.byType(MTNowPlayingTabs), findsNothing);
+    });
+
     testWidgets('a tablet on its side puts the tabs in a second column', (
       tester,
     ) async {

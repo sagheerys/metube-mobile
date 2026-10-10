@@ -79,15 +79,18 @@ class MTAudioScreen extends StatelessWidget {
       // dragged away. That is why its route is non-opaque in the router.
       final size = MediaQuery.sizeOf(context);
       final tablet = size.shortestSide >= MTBreakpoint.tabletSide;
+      final sideways = size.width > size.height;
       return MTDragToDismiss(
         child: Scaffold(
           body: SafeArea(
             child: !tablet
-                ? _player(context, item, media)
+                ? sideways
+                      ? _sideways(context, item, media)
+                      : _player(context, item, media)
                 // **A tablet keeps the queue and the transcript in view**
                 // (2026-10-10): beside the player when held sideways,
                 // under it when upright, instead of a sheet over it.
-                : size.width > size.height
+                : sideways
                 ? Row(
                     children: [
                       Expanded(child: _player(context, item, media)),
@@ -183,6 +186,81 @@ class MTAudioScreen extends StatelessWidget {
       ),
     ),
   );
+
+  /// **A phone held sideways** (field report 2026-10-10: no cover at all).
+  /// Stacked in a column, the controls left the cover less height than its
+  /// smallest size, so it was dropped. Beside the controls it gets the
+  /// screen's full height. The controls scroll rather than overflow at the
+  /// largest text.
+  Widget _sideways(BuildContext context, PlaylistItem item, MediaItem media) =>
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: MTSpace.xl),
+        child: Column(
+          children: [
+            _Header(handler: handler, onDetails: onDetails),
+            Expanded(
+              child: Row(
+                children: [
+                  Expanded(
+                    child: LayoutBuilder(
+                      builder: (context, box) {
+                        final size =
+                            math.min(box.maxWidth, box.maxHeight) -
+                            MTSpace.lg * 2;
+                        if (size < _smallestArt) return const SizedBox();
+                        return Center(
+                          child: MTBreathingGlow(
+                            playing: handler.playingNotifier,
+                            size: size,
+                            child: MTTiltedArtwork(
+                              item: item,
+                              artwork: artwork,
+                              size: size,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: MTSpace.xl),
+                  Expanded(
+                    child: LayoutBuilder(
+                      builder: (context, box) => SingleChildScrollView(
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(minHeight: box.maxHeight),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              MTAudioTitles(
+                                item: item,
+                                media: media,
+                                playlistName: playlistName,
+                                index: handler.currentIndex,
+                                total: handler.items.length,
+                                showSourceChip: showSourceChip,
+                              ),
+                              const SizedBox(height: MTSpace.md),
+                              MTAudioSlider(handler: handler, media: media),
+                              MTPlayerControlsRow(handler: handler),
+                              const SizedBox(height: MTSpace.sm),
+                              MTAudioSubControls(
+                                handler: handler,
+                                onQueue: () => _openQueue(context),
+                                extra: extra?.call(item),
+                              ),
+                              const SizedBox(height: MTSpace.sm),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
 
   static bool _onTablet(BuildContext context) =>
       MediaQuery.sizeOf(context).shortestSide >= MTBreakpoint.tabletSide;

@@ -5,6 +5,7 @@ import 'package:flutter/widgets.dart';
 import 'package:video_player/video_player.dart';
 
 import '../models/playback_source.dart';
+import 'mt_video_codec.dart';
 
 /// Opens and prepares a clip's player.
 ///
@@ -19,22 +20,28 @@ import '../models/playback_source.dart';
 /// every device that works today keeps exactly what it had. A device whose
 /// decoder refuses it, and then plays in the platform view, switches for
 /// the rest of the run, so only its first clip pays for the second attempt.
+///
+/// **AV1 always opens in the platform view**, on every device: see
+/// [MTVideoCodec] for the picture it draws on the texture. H.264 and VP9,
+/// which most clips are, keep the texture.
 abstract final class MTVideoOpen {
   /// Whether this device has shown that it needs the platform view.
   static bool platformView = false;
 
   /// A prepared controller, or the error of the last attempt.
   static Future<VideoPlayerController> prepare(PlaybackSource source) async {
-    final controller = _create(
-      source,
-      platformView ? VideoViewType.platformView : VideoViewType.textureView,
-    );
+    final surface = platformView || await MTVideoCodec.isAv1(source)
+        ? VideoViewType.platformView
+        : VideoViewType.textureView;
+    final controller = _create(source, surface);
     try {
       await controller.initialize();
       return controller;
     } on PlatformException catch (error) {
       await controller.dispose();
-      if (platformView || !refusedSurface(error)) rethrow;
+      if (surface == VideoViewType.platformView || !refusedSurface(error)) {
+        rethrow;
+      }
     }
     final retry = _create(source, VideoViewType.platformView);
     try {

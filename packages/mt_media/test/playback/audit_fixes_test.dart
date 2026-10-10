@@ -85,6 +85,30 @@ void main() {
       );
       expect(find.byIcon(Icons.graphic_eq_rounded), findsNothing);
     });
+
+    testWidgets('a wide YouTube thumbnail fills a square plate', (
+      tester,
+    ) async {
+      // Field report 2026-10-10: a song from YouTube showed as a wide strip
+      // in the audio player, where a music app shows a square cover.
+      const picture = Key('picture');
+      await tester.pumpWidget(
+        host(
+          Center(
+            child: MTTiltedArtwork(
+              item: item,
+              size: 200,
+              artwork: (_, _) => const AspectRatio(
+                key: picture,
+                aspectRatio: 16 / 9,
+                child: ColoredBox(color: Color(0xFF123456)),
+              ),
+            ),
+          ),
+        ),
+      );
+      expect(tester.getSize(find.byKey(picture)), const Size(200, 200));
+    });
   });
 
   group('the player in landscape', () {
