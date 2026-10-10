@@ -224,6 +224,10 @@ class _ShellScreenState extends ConsumerState<ShellScreen>
   /// link during this session.
   String? _dismissedClipboardUrl;
 
+  /// The player panel folded away by hand, for this run. The mini player
+  /// stands in for it until it is unfolded.
+  bool _panelFolded = false;
+
   void _dismissClipboard() =>
       setState(() => _dismissedClipboardUrl = ref.read(clipboardUrlProvider));
 
@@ -255,72 +259,94 @@ class _ShellScreenState extends ConsumerState<ShellScreen>
     ref.watch(statusRefreshProvider);
     _watchEnrichment();
 
-    return MTAdaptiveScaffold(
-      items: _navItems(l10n),
-      selectedIndex: branch,
-      onSelected: widget.navigationShell.goBranch,
-      body: widget.navigationShell,
-      // The mini player is a permanent bar **above** the bottom bar, inside
-      // the
-      // same slot so Scaffold accounts for its height and lifts the add
-      // button
-      // over it (log §4).
-      floatingActionButtonAnimator: FloatingActionButtonAnimator.noAnimation,
-      floatingActionButton: MTHiddenUnderRoutes(
-        // It hides under any sheet or dialog: it used to cover the "about
-        // this clip" link and crowd the bottom sheets' actions (field
-        // report 2026-09-02).
-        visible: branch != 2,
-        child: MTFab(
-          label: clipboardUrl == null
-              ? l10n.addLinkFab
-              : l10n.clipboardLinkReady,
-          highlighted: clipboardUrl != null,
-          onPressed: _onFabPressed,
-        ),
-      ),
-      // The mini player is a permanent bar **above** the bottom bar, inside
-      // the same slot so Scaffold accounts for its height and lifts the add
-      // button over it (log §4).
-      bottomAccessories: [
-        // **The clipboard bar**: changing the floating button's label
-        // alone was a faint signal, the link itself was never visible,
-        // and there was no way to open the options instead of downloading
-        // immediately. The bar shows the link and offers both actions.
-        if (branch != 2 &&
-            clipboardUrl != null &&
-            clipboardUrl != _dismissedClipboardUrl)
-          MTClipboardBanner(
-            url: clipboardUrl,
-            title: l10n.clipboardFound,
-            downloadLabel: l10n.downloadNow,
-            optionsLabel: l10n.chooseOptions,
-            onDownload: () {
-              // An explicit button labelled "download now" with "choose
-              // options" beside it; it does not pass through the
-              // setting's gate.
-              if (startQuickDownload(
-                context,
-                ref,
-                clipboardUrl,
-                explicit: true,
-              )) {
-                ref.read(clipboardUrlProvider.notifier).state = null;
-              } else {
-                openAddSheet(context, ref, initialUrl: clipboardUrl);
-              }
-            },
-            onOptions: () =>
-                openAddSheet(context, ref, initialUrl: clipboardUrl),
-            onDismiss: _dismissClipboard,
+    final handler = ref.watch(audioHandlerProvider);
+    final roomForPanel = MTAdaptiveScaffold.hasEndPane(context);
+    return StreamBuilder(
+      stream: handler.mediaItem,
+      builder: (context, playing) {
+        // **The player panel** takes the mini player's place beside the
+        // content on a tablet held sideways; settings has neither.
+        final panel =
+            branch != 2 &&
+            playing.data != null &&
+            !_panelFolded &&
+            roomForPanel;
+        return MTAdaptiveScaffold(
+          endPane: panel
+              ? MTNowPlayingPanel(
+                  handler: handler,
+                  artwork: artworkBuilderFor(ref),
+                  showSourceChip: false,
+                  onOpen: () => GoRouter.of(context).push('/audio'),
+                  onCollapse: () => setState(() => _panelFolded = true),
+                )
+              : null,
+          items: _navItems(l10n),
+          selectedIndex: branch,
+          onSelected: widget.navigationShell.goBranch,
+          body: widget.navigationShell,
+          floatingActionButtonAnimator:
+              FloatingActionButtonAnimator.noAnimation,
+          floatingActionButton: MTHiddenUnderRoutes(
+            // It hides under any sheet or dialog: it used to cover the "about
+            // this clip" link and crowd the bottom sheets' actions (field
+            // report 2026-09-02).
+            visible: branch != 2,
+            child: MTFab(
+              label: clipboardUrl == null
+                  ? l10n.addLinkFab
+                  : l10n.clipboardLinkReady,
+              highlighted: clipboardUrl != null,
+              onPressed: _onFabPressed,
+            ),
           ),
-        if (branch != 2)
-          MTMiniPlayer(
-            handler: ref.watch(audioHandlerProvider),
-            artwork: artworkBuilderFor(ref),
-            onOpen: () => GoRouter.of(context).push('/audio'),
-          ),
-      ],
+          // The mini player is a permanent bar **above** the bottom bar, inside
+          // the same slot so Scaffold accounts for its height and lifts the add
+          // button over it (log §4).
+          bottomAccessories: [
+            // **The clipboard bar**: changing the floating button's label
+            // alone was a faint signal, the link itself was never visible,
+            // and there was no way to open the options instead of downloading
+            // immediately. The bar shows the link and offers both actions.
+            if (branch != 2 &&
+                clipboardUrl != null &&
+                clipboardUrl != _dismissedClipboardUrl)
+              MTClipboardBanner(
+                url: clipboardUrl,
+                title: l10n.clipboardFound,
+                downloadLabel: l10n.downloadNow,
+                optionsLabel: l10n.chooseOptions,
+                onDownload: () {
+                  // An explicit button labelled "download now" with "choose
+                  // options" beside it; it does not pass through the
+                  // setting's gate.
+                  if (startQuickDownload(
+                    context,
+                    ref,
+                    clipboardUrl,
+                    explicit: true,
+                  )) {
+                    ref.read(clipboardUrlProvider.notifier).state = null;
+                  } else {
+                    openAddSheet(context, ref, initialUrl: clipboardUrl);
+                  }
+                },
+                onOptions: () =>
+                    openAddSheet(context, ref, initialUrl: clipboardUrl),
+                onDismiss: _dismissClipboard,
+              ),
+            if (branch != 2 && !panel)
+              MTMiniPlayer(
+                handler: handler,
+                artwork: artworkBuilderFor(ref),
+                onOpen: () => GoRouter.of(context).push('/audio'),
+                onExpand: roomForPanel
+                    ? () => setState(() => _panelFolded = false)
+                    : null,
+              ),
+          ],
+        );
+      },
     );
   }
 

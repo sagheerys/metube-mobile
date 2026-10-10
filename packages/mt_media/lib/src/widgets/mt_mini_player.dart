@@ -19,6 +19,7 @@ class MTMiniPlayer extends StatelessWidget {
     required this.handler,
     required this.onOpen,
     this.artwork,
+    this.onExpand,
     this.margin = const EdgeInsets.fromLTRB(
       MTSpace.md,
       0,
@@ -30,6 +31,9 @@ class MTMiniPlayer extends StatelessWidget {
   final MTAudioHandler handler;
   final VoidCallback onOpen;
   final MTArtworkBuilder? artwork;
+
+  /// Brings back the tablet's player panel; null, as on a phone, hides it.
+  final VoidCallback? onExpand;
   final EdgeInsetsGeometry margin;
 
   @override
@@ -38,10 +42,7 @@ class MTMiniPlayer extends StatelessWidget {
     builder: (context, snapshot) {
       final item = snapshot.data;
       // **It appears and disappears with motion rather than a jump**
-      // (polish
-      // 2026-09-04): it used to pop into place, shoving the bottom bar in
-      // one
-      // step.
+      // (polish 2026-09-04): it used to pop into place in one step.
       return AnimatedSwitcher(
         duration: mtMotionDuration(context, MTMotion.reveal),
         switchInCurve: MTMotion.entrance,
@@ -62,6 +63,7 @@ class MTMiniPlayer extends StatelessWidget {
                 child: _Bar(
                   handler: handler,
                   onOpen: onOpen,
+                  onExpand: onExpand,
                   artwork: artwork,
                   title: item.title,
                   subtitle: item.artist,
@@ -77,6 +79,7 @@ class _Bar extends StatelessWidget {
   const _Bar({
     required this.handler,
     required this.onOpen,
+    this.onExpand,
     required this.title,
     this.subtitle,
     this.artwork,
@@ -85,6 +88,7 @@ class _Bar extends StatelessWidget {
 
   final MTAudioHandler handler;
   final VoidCallback onOpen;
+  final VoidCallback? onExpand;
   final String title;
   final String? subtitle;
   final MTArtworkBuilder? artwork;
@@ -179,9 +183,7 @@ class _Bar extends StatelessWidget {
                               label: l10n.play,
                             ),
                             // The second thing people do from the bar while
-                            // a list plays (design review 2026-09-25);
-                            // previous stays in the full player, where it
-                            // is rare enough.
+                            // a list plays (design review 2026-09-25).
                             if (handler.items.length > 1)
                               IconButton(
                                 onPressed: handler.skipToNext,
@@ -196,6 +198,17 @@ class _Bar extends StatelessWidget {
                           ],
                         ),
                       ),
+                      if (onExpand case final expand?)
+                        IconButton(
+                          onPressed: expand,
+                          tooltip: l10n.nowPlayingExpand,
+                          visualDensity: VisualDensity.compact,
+                          icon: Icon(
+                            Icons.open_in_full_rounded,
+                            size: 18,
+                            color: p.miniInk,
+                          ),
+                        ),
                       IconButton(
                         onPressed: handler.stop,
                         tooltip: l10n.closePlayer,

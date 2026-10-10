@@ -236,6 +236,18 @@ abstract class MTLocalizations {
   /// **'MeTube Super'**
   String get appTitle;
 
+  /// No description provided for @appearanceAndLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Appearance & language'**
+  String get appearanceAndLanguage;
+
+  /// No description provided for @appearanceSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Theme and language'**
+  String get appearanceSubtitle;
+
   /// No description provided for @audioChannels.
   ///
   /// In en, this message translates to:
@@ -1598,6 +1610,18 @@ abstract class MTLocalizations {
   /// **'Now playing'**
   String get nowPlaying;
 
+  /// No description provided for @nowPlayingCollapse.
+  ///
+  /// In en, this message translates to:
+  /// **'Fold the player panel'**
+  String get nowPlayingCollapse;
+
+  /// No description provided for @nowPlayingExpand.
+  ///
+  /// In en, this message translates to:
+  /// **'Show the player panel'**
+  String get nowPlayingExpand;
+
   /// No description provided for @offlineSmartList.
   ///
   /// In en, this message translates to:
@@ -1801,6 +1825,12 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'Preferences'**
   String get preferences;
+
+  /// No description provided for @preferencesSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Quality, quick download, Wi‑Fi'**
+  String get preferencesSubtitle;
 
   /// No description provided for @previous.
   ///
@@ -2120,6 +2150,12 @@ abstract class MTLocalizations {
   /// **'Server Configuration'**
   String get serverConfiguration;
 
+  /// No description provided for @serverConfigurationSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Server URL and sign-in'**
+  String get serverConfigurationSubtitle;
+
   /// No description provided for @serverFilesCount.
   ///
   /// In en, this message translates to:
@@ -2227,6 +2263,24 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'Settings'**
   String get settings;
+
+  /// No description provided for @settingsGroupApp.
+  ///
+  /// In en, this message translates to:
+  /// **'App'**
+  String get settingsGroupApp;
+
+  /// No description provided for @settingsGroupData.
+  ///
+  /// In en, this message translates to:
+  /// **'Data'**
+  String get settingsGroupData;
+
+  /// No description provided for @settingsGroupServer.
+  ///
+  /// In en, this message translates to:
+  /// **'Server'**
+  String get settingsGroupServer;
 
   /// No description provided for @settingsSaved.
   ///

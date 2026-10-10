@@ -37,6 +37,7 @@ class AudioScreen extends ConsumerWidget {
               onTap: () => showPlayingTranscript(context, handler, item),
             )
           : null,
+      companion: audioTranscriptPanels(context, handler),
     );
   }
 

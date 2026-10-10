@@ -95,6 +95,12 @@ class MTLocalizationsAr extends MTLocalizations {
   String get appTitle => 'MeTube Super';
 
   @override
+  String get appearanceAndLanguage => 'المظهر واللغة';
+
+  @override
+  String get appearanceSubtitle => 'السمة واللغة';
+
+  @override
   String audioChannels(int count) {
     return '$count قنوات';
   }
@@ -878,6 +884,12 @@ class MTLocalizationsAr extends MTLocalizations {
   String get nowPlaying => 'قيد التشغيل';
 
   @override
+  String get nowPlayingCollapse => 'طيّ لوحة التشغيل';
+
+  @override
+  String get nowPlayingExpand => 'إظهار لوحة التشغيل';
+
+  @override
   String get offlineSmartList => 'دون اتصال';
 
   @override
@@ -987,6 +999,9 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get preferences => 'التفضيلات';
+
+  @override
+  String get preferencesSubtitle => 'الجودة، التحميل السريع، Wi‑Fi';
 
   @override
   String get previous => 'السابق';
@@ -1181,6 +1196,9 @@ class MTLocalizationsAr extends MTLocalizations {
   String get serverConfiguration => 'إعداد الخادم';
 
   @override
+  String get serverConfigurationSubtitle => 'رابط السيرفر وتسجيل الدخول';
+
+  @override
   String serverFilesCount(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
@@ -1262,6 +1280,15 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get settings => 'الإعدادات';
+
+  @override
+  String get settingsGroupApp => 'التطبيق';
+
+  @override
+  String get settingsGroupData => 'البيانات';
+
+  @override
+  String get settingsGroupServer => 'السيرفر';
 
   @override
   String get settingsSaved => 'تم حفظ الإعدادات بنجاح';

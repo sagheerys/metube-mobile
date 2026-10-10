@@ -6,14 +6,15 @@ import 'package:mt_ui/mt_ui.dart';
 
 import '../models/playlist_item.dart';
 import '../playback/audio_handler.dart';
-import '../widgets/media_time.dart';
 import '../widgets/mt_extra_button.dart';
 import '../widgets/mt_breathing_glow.dart';
 import '../widgets/mt_player_controls_row.dart';
-import '../widgets/mt_progress_slider.dart';
 import '../widgets/mt_queue_panel.dart';
 import '../widgets/mt_tilted_artwork.dart';
 import '../widgets/mt_drag_to_dismiss.dart';
+import '../video/video_side_panel.dart';
+import '../widgets/mt_audio_parts.dart';
+import '../widgets/mt_now_playing_tabs.dart';
 import '../widgets/mt_up_next_list.dart';
 
 /// The full audio screen: a tilted cover, a draggable progress bar,
@@ -28,6 +29,7 @@ class MTAudioScreen extends StatelessWidget {
     this.playlistName,
     this.showSourceChip = true,
     this.extra,
+    this.companion,
   });
 
   final MTAudioHandler handler;
@@ -52,6 +54,10 @@ class MTAudioScreen extends StatelessWidget {
   /// have. Null, or a null answer, shows nothing.
   final MTExtraAction? Function(PlaylistItem item)? extra;
 
+  /// Read along beside the player on a tablet, as a tab next to the queue
+  /// (a transcript, in Super). On a phone it is reached through [extra].
+  final MTVideoPanel? Function(PlaylistItem item)? companion;
+
   @override
   Widget build(BuildContext context) => StreamBuilder<MediaItem?>(
     stream: handler.mediaItem,
@@ -71,71 +77,115 @@ class MTAudioScreen extends StatelessWidget {
       // place, showing a dark void above it, whereas what is wanted is the
       // cover and the mini player showing behind it like a sheet being
       // dragged away. That is why its route is non-opaque in the router.
+      final size = MediaQuery.sizeOf(context);
+      final tablet = size.shortestSide >= MTBreakpoint.medium;
       return MTDragToDismiss(
         child: Scaffold(
           body: SafeArea(
-            child: MTReadableWidth(
-              maxWidth: MTBreakpoint.player,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: MTSpace.xl),
-                child: Column(
-                  children: [
-                    _Header(handler: handler, onDetails: onDetails),
-                    // The cover takes what the rest leaves, up to its usual
-                    // size: at Android's largest text on a small phone the
-                    // fixed-size cover pushed the controls past the bottom.
-                    // The spare room stays two parts above to one below.
-                    Expanded(
-                      child: LayoutBuilder(
-                        builder: (context, box) {
-                          final size = math.min(
-                            _artSize(context),
-                            box.maxHeight - MTSpace.lg * 2,
-                          );
-                          if (size < _smallestArt) return const SizedBox();
-                          return Align(
-                            alignment: const Alignment(0, 1 / 3),
-                            child: MTBreathingGlow(
-                              playing: handler.playingNotifier,
-                              size: size,
-                              child: MTTiltedArtwork(
-                                item: item,
-                                artwork: artwork,
-                                size: size,
-                              ),
-                            ),
-                          );
-                        },
+            child: !tablet
+                ? _player(context, item, media)
+                // **A tablet keeps the queue and the transcript in view**
+                // (2026-10-10): beside the player when held sideways,
+                // under it when upright, instead of a sheet over it.
+                : size.width > size.height
+                ? Row(
+                    children: [
+                      Expanded(child: _player(context, item, media)),
+                      VerticalDivider(
+                        width: 1,
+                        color: MTThemeX.of(context).palette.line,
                       ),
-                    ),
-                    _Titles(
-                      item: item,
-                      media: media,
-                      playlistName: playlistName,
-                      index: handler.currentIndex,
-                      total: handler.items.length,
-                      showSourceChip: showSourceChip,
-                    ),
-                    const SizedBox(height: MTSpace.xl),
-                    _Slider(handler: handler, media: media),
-                    const SizedBox(height: MTSpace.md),
-                    MTPlayerControlsRow(handler: handler),
-                    const SizedBox(height: MTSpace.lg),
-                    _SubControls(
-                      handler: handler,
-                      onQueue: () => _openQueue(context),
-                      extra: extra?.call(item),
-                    ),
-                    const SizedBox(height: MTSpace.lg),
-                  ],
-                ),
-              ),
-            ),
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.all(MTSpace.xl),
+                          child: _tabs(),
+                        ),
+                      ),
+                    ],
+                  )
+                : _player(context, item, media, below: _tabs()),
           ),
         ),
       );
     },
   );
+
+  Widget _tabs() => MTNowPlayingTabs(
+    handler: handler,
+    artwork: artwork,
+    companion: companion,
+  );
+
+  /// The player column. With [below], a tablet held upright, the cover
+  /// gives up part of its height to the tabs, and the pills drop the queue
+  /// and the extra, which the tabs already show.
+  Widget _player(
+    BuildContext context,
+    PlaylistItem item,
+    MediaItem media, {
+    Widget? below,
+  }) => MTReadableWidth(
+    maxWidth: below == null ? MTBreakpoint.player : MTBreakpoint.readable,
+    child: Padding(
+      padding: const EdgeInsets.symmetric(horizontal: MTSpace.xl),
+      child: Column(
+        children: [
+          _Header(handler: handler, onDetails: onDetails),
+          // The cover takes what the rest leaves, up to its usual size: at
+          // Android's largest text on a small phone the fixed-size cover
+          // pushed the controls past the bottom. The spare room stays two
+          // parts above to one below.
+          Expanded(
+            flex: 5,
+            child: LayoutBuilder(
+              builder: (context, box) {
+                final size = math.min(
+                  _artSize(context),
+                  box.maxHeight - MTSpace.lg * 2,
+                );
+                if (size < _smallestArt) return const SizedBox();
+                return Align(
+                  alignment: const Alignment(0, 1 / 3),
+                  child: MTBreathingGlow(
+                    playing: handler.playingNotifier,
+                    size: size,
+                    child: MTTiltedArtwork(
+                      item: item,
+                      artwork: artwork,
+                      size: size,
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+          MTAudioTitles(
+            item: item,
+            media: media,
+            playlistName: playlistName,
+            index: handler.currentIndex,
+            total: handler.items.length,
+            showSourceChip: showSourceChip,
+          ),
+          const SizedBox(height: MTSpace.xl),
+          MTAudioSlider(handler: handler, media: media),
+          const SizedBox(height: MTSpace.md),
+          MTPlayerControlsRow(handler: handler),
+          const SizedBox(height: MTSpace.lg),
+          MTAudioSubControls(
+            handler: handler,
+            onQueue: _onTablet(context) ? null : () => _openQueue(context),
+            extra: _onTablet(context) ? null : extra?.call(item),
+          ),
+          const SizedBox(height: MTSpace.lg),
+          if (below != null) Expanded(flex: 4, child: below),
+        ],
+      ),
+    ),
+  );
+
+  static bool _onTablet(BuildContext context) =>
+      MediaQuery.sizeOf(context).shortestSide >= MTBreakpoint.medium;
 
   /// Below this a cover says nothing; the controls get the room instead.
   static const _smallestArt = 64.0;
@@ -211,190 +261,6 @@ class _Header extends StatelessWidget {
         else
           const SizedBox(width: 48),
       ],
-    );
-  }
-}
-
-class _Titles extends StatelessWidget {
-  const _Titles({
-    required this.item,
-    required this.media,
-    required this.index,
-    required this.total,
-    this.playlistName,
-    this.showSourceChip = true,
-  });
-
-  final PlaylistItem item;
-  final MediaItem media;
-  final int index;
-  final int total;
-  final String? playlistName;
-  final bool showSourceChip;
-
-  @override
-  Widget build(BuildContext context) {
-    final p = MTThemeX.of(context).palette;
-    final text = Theme.of(context).textTheme;
-    final l10n = context.mtl;
-    final parts = [
-      if (media.artist != null && media.artist!.isNotEmpty) media.artist!,
-      if (playlistName != null) '«$playlistName»',
-      if (total > 1) mtLtrRun(l10n.playlistOf(index + 1, total)),
-    ];
-    return Column(
-      children: [
-        if (showSourceChip) ...[
-          MTSourceChip(local: item.hasLocal),
-          const SizedBox(height: MTSpace.sm),
-        ],
-        MTForeignText(
-          media.title,
-          center: true,
-          maxLines: 2,
-          style: text.titleLarge!.copyWith(fontSize: 19),
-        ),
-        if (parts.isNotEmpty) ...[
-          const SizedBox(height: MTSpace.xxs),
-          Text(
-            parts.join(' · '),
-            textAlign: TextAlign.center,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: text.bodySmall!.copyWith(color: p.ink3),
-          ),
-        ],
-      ],
-    );
-  }
-}
-
-class _Slider extends StatelessWidget {
-  const _Slider({required this.handler, required this.media});
-
-  final MTAudioHandler handler;
-  final MediaItem media;
-
-  @override
-  Widget build(BuildContext context) => StreamBuilder<Duration>(
-    stream: handler.positionStream,
-    builder: (context, snapshot) => MTProgressSlider(
-      position: snapshot.data ?? Duration.zero,
-      duration: media.duration,
-      onSeek: handler.seek,
-    ),
-  );
-}
-
-class _SubControls extends StatelessWidget {
-  const _SubControls({
-    required this.handler,
-    required this.onQueue,
-    this.extra,
-  });
-
-  final MTAudioHandler handler;
-  final VoidCallback onQueue;
-  final MTExtraAction? extra;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.mtl;
-    return StreamBuilder<PlaybackState>(
-      stream: handler.playbackState,
-      builder: (context, snapshot) {
-        final speed = snapshot.data?.speed ?? 1.0;
-        // One line that shrinks when it must, never two: a second line of
-        // pills pushed the whole screen past the bottom of a 360-point
-        // phone at a larger text size. Where the pills fit, nothing
-        // changes.
-        return FittedBox(
-          fit: BoxFit.scaleDown,
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _Pill(
-                onTap: () => handler.setSpeed(mtNextSpeed(speed)),
-                leading: '${mtFormatSpeed(speed)}×',
-                label: l10n.playbackSpeed,
-              ),
-              const SizedBox(width: MTSpace.md),
-              _Pill(
-                onTap: onQueue,
-                icon: Icons.queue_music_rounded,
-                label: l10n.queueLabel,
-                trailing: '${handler.items.length}',
-              ),
-              if (extra case final extra?) ...[
-                const SizedBox(width: MTSpace.md),
-                MTExtraButton(extra: extra),
-              ],
-            ],
-          ),
-        );
-      },
-    );
-  }
-}
-
-class _Pill extends StatelessWidget {
-  const _Pill({
-    required this.onTap,
-    required this.label,
-    this.leading,
-    this.trailing,
-    this.icon,
-  });
-
-  final VoidCallback onTap;
-  final String label;
-  final String? leading;
-  final String? trailing;
-  final IconData? icon;
-
-  @override
-  Widget build(BuildContext context) {
-    final p = MTThemeX.of(context).palette;
-    final text = Theme.of(context).textTheme;
-    final strong = text.labelSmall!.copyWith(
-      color: p.accentInk,
-      fontWeight: FontWeight.w700,
-    );
-    return Material(
-      color: p.card,
-      borderRadius: BorderRadius.circular(MTRadius.field - 1),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(MTRadius.field - 1),
-        child: Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: MTSpace.lg,
-            vertical: MTSpace.xs + 2,
-          ),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(MTRadius.field - 1),
-            border: Border.all(color: p.line2),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (icon != null) ...[
-                Icon(icon, size: 13, color: p.ink2),
-                const SizedBox(width: MTSpace.xs),
-              ],
-              if (leading != null) ...[
-                Text(leading!, style: strong),
-                const SizedBox(width: MTSpace.xs),
-              ],
-              Text(label, style: text.labelSmall!.copyWith(color: p.ink2)),
-              if (trailing != null) ...[
-                const SizedBox(width: MTSpace.xs),
-                Text(trailing!, style: strong),
-              ],
-            ],
-          ),
-        ),
-      ),
     );
   }
 }

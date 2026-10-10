@@ -16,6 +16,8 @@ void main() {
     Size size, {
     TextDirection direction = TextDirection.rtl,
     List<Widget> accessories = const [],
+    Widget? endPane,
+    Widget? fab,
   }) async {
     tester.view.devicePixelRatio = 1;
     tester.view.physicalSize = size;
@@ -31,6 +33,8 @@ void main() {
             onSelected: (_) {},
             body: const SizedBox.expand(key: Key('body')),
             bottomAccessories: accessories,
+            endPane: endPane,
+            floatingActionButton: fab,
           ),
         ),
       ),
@@ -94,10 +98,14 @@ void main() {
         lessThan(tester.getRect(find.byType(NavigationBar)).top),
       );
 
+      // The approved mock-up (2026-10-10): the mini player spans the
+      // content beside the rail, not a centred column of the screen.
       await pump(tester, const Size(1280, 800), accessories: const [mini]);
       final wide = tester.getRect(find.byKey(const Key('mini')));
+      final rail = tester.getRect(find.byType(NavigationRail));
       expect(wide.bottom, 800);
-      expect(wide.width, MTBreakpoint.readable);
+      expect(wide.right, lessThanOrEqualTo(rail.left));
+      expect(wide.left, 0);
     });
   });
 
@@ -122,6 +130,41 @@ void main() {
       final rect = tester.getRect(find.byKey(const Key('c')));
       expect(rect.width, MTBreakpoint.readable);
       expect(rect.left, (1280 - MTBreakpoint.readable) / 2);
+    });
+  });
+
+  group('the end pane', () {
+    const pane = SizedBox.expand(key: Key('pane'));
+    const fab = SizedBox(key: Key('fab'), width: 100, height: 50);
+
+    testWidgets('stands at the far side of a tablet held sideways', (
+      tester,
+    ) async {
+      await pump(tester, const Size(1280, 800), endPane: pane, fab: fab);
+      final rect = tester.getRect(find.byKey(const Key('pane')));
+      final body = tester.getRect(find.byKey(const Key('body')));
+      expect(rect.width, MTBreakpoint.sidePanel);
+      expect(rect.left, 0, reason: 'Arabic: the end side is the left');
+      expect(body.left, greaterThan(rect.right));
+      // The add button moves off the pane, to the content's own corner.
+      final button = tester.getRect(find.byKey(const Key('fab')));
+      expect(button.left, greaterThan(rect.right));
+    });
+
+    testWidgets('gives way on a tablet held upright', (tester) async {
+      await pump(tester, const Size(800, 1280), endPane: pane);
+      expect(find.byKey(const Key('pane')), findsNothing);
+    });
+
+    testWidgets('a phone on its side keeps the bottom bar and no pane', (
+      tester,
+    ) async {
+      // Wider than 840, as inside the video player: the shell beneath must
+      // not change shape.
+      await pump(tester, const Size(914, 411), endPane: pane);
+      expect(find.byType(NavigationBar), findsOneWidget);
+      expect(find.byType(NavigationRail), findsNothing);
+      expect(find.byKey(const Key('pane')), findsNothing);
     });
   });
 }

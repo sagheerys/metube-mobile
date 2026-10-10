@@ -93,6 +93,12 @@ class MTLocalizationsEn extends MTLocalizations {
   String get appTitle => 'MeTube Super';
 
   @override
+  String get appearanceAndLanguage => 'Appearance & language';
+
+  @override
+  String get appearanceSubtitle => 'Theme and language';
+
+  @override
   String audioChannels(int count) {
     return '$count channels';
   }
@@ -869,6 +875,12 @@ class MTLocalizationsEn extends MTLocalizations {
   String get nowPlaying => 'Now playing';
 
   @override
+  String get nowPlayingCollapse => 'Fold the player panel';
+
+  @override
+  String get nowPlayingExpand => 'Show the player panel';
+
+  @override
   String get offlineSmartList => 'Offline';
 
   @override
@@ -979,6 +991,9 @@ class MTLocalizationsEn extends MTLocalizations {
 
   @override
   String get preferences => 'Preferences';
+
+  @override
+  String get preferencesSubtitle => 'Quality, quick download, Wi‑Fi';
 
   @override
   String get previous => 'Previous';
@@ -1168,6 +1183,9 @@ class MTLocalizationsEn extends MTLocalizations {
   String get serverConfiguration => 'Server Configuration';
 
   @override
+  String get serverConfigurationSubtitle => 'Server URL and sign-in';
+
+  @override
   String serverFilesCount(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
@@ -1245,6 +1263,15 @@ class MTLocalizationsEn extends MTLocalizations {
 
   @override
   String get settings => 'Settings';
+
+  @override
+  String get settingsGroupApp => 'App';
+
+  @override
+  String get settingsGroupData => 'Data';
+
+  @override
+  String get settingsGroupServer => 'Server';
 
   @override
   String get settingsSaved => 'Settings saved successfully';

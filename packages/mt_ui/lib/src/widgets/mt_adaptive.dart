@@ -101,8 +101,9 @@ class MTNavItem {
 /// follows the text direction) and gives the height back to the content.
 ///
 /// [bottomAccessories] (the clipboard bar, the mini player) stay at the
-/// bottom in both shapes. In the wide shape they are centred in the
-/// readable width rather than stretched under the rail.
+/// bottom in both shapes, under the content and not under the rail.
+/// [endPane] (the player panel) stands on the far side of the content on a
+/// tablet held sideways; the app passes it only when it should show.
 class MTAdaptiveScaffold extends StatelessWidget {
   const MTAdaptiveScaffold({
     super.key,
@@ -113,6 +114,7 @@ class MTAdaptiveScaffold extends StatelessWidget {
     this.floatingActionButton,
     this.floatingActionButtonAnimator,
     this.bottomAccessories = const [],
+    this.endPane,
   });
 
   final List<MTNavItem> items;
@@ -122,10 +124,25 @@ class MTAdaptiveScaffold extends StatelessWidget {
   final Widget? floatingActionButton;
   final FloatingActionButtonAnimator? floatingActionButtonAnimator;
   final List<Widget> bottomAccessories;
+  final Widget? endPane;
+
+  /// Whether the rail replaces the bar. **The shorter side decides too**: a
+  /// phone turned sideways inside the video player is wider than 600 but
+  /// still a phone, and the shell under the player must not switch shape.
+  static bool hasRail(BuildContext context) {
+    final size = MediaQuery.sizeOf(context);
+    return size.width >= MTBreakpoint.medium &&
+        size.shortestSide >= MTBreakpoint.medium;
+  }
+
+  /// Whether there is room for [endPane] beside the content.
+  static bool hasEndPane(BuildContext context) =>
+      hasRail(context) &&
+      MediaQuery.sizeOf(context).width >= MTBreakpoint.expanded;
 
   @override
   Widget build(BuildContext context) {
-    if (context.windowClass == MTWindowClass.compact) {
+    if (!hasRail(context)) {
       return Scaffold(
         body: body,
         floatingActionButton: floatingActionButton,
@@ -139,32 +156,50 @@ class MTAdaptiveScaffold extends StatelessWidget {
       );
     }
     final palette = MTThemeX.of(context).palette;
+    final rtl = Directionality.of(context) == TextDirection.rtl;
+    final pane = hasEndPane(context) ? endPane : null;
+    Widget railSide(Widget child) => SafeArea(
+      top: false,
+      bottom: false,
+      right: rtl,
+      left: !rtl,
+      child: child,
+    );
     return Scaffold(
       body: Row(
         children: [
-          SafeArea(
-            top: false,
-            bottom: false,
-            right: Directionality.of(context) == TextDirection.rtl,
-            left: Directionality.of(context) == TextDirection.ltr,
-            child: _rail(),
-          ),
+          railSide(_rail()),
           VerticalDivider(width: 1, thickness: 1, color: palette.line),
           Expanded(child: body),
+          if (pane != null) ...[
+            VerticalDivider(width: 1, thickness: 1, color: palette.line),
+            SizedBox(width: MTBreakpoint.sidePanel, child: pane),
+          ],
         ],
       ),
       floatingActionButton: floatingActionButton,
       floatingActionButtonAnimator: floatingActionButtonAnimator,
+      // The add button belongs to the content: with the panel showing it
+      // moves off the panel, to the content's own corner.
+      floatingActionButtonLocation: pane == null
+          ? null
+          : const _BesidePaneFab(MTBreakpoint.sidePanel + 1),
       // Without the bottom bar nothing else keeps the content clear of the
       // system's gesture area, so this slot does it even when empty.
       bottomNavigationBar: SafeArea(
         top: false,
-        child: MTReadableWidth(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: bottomAccessories,
-          ),
+        child: Row(
+          children: [
+            railSide(const SizedBox(width: MTRail.width + 1)),
+            Expanded(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: bottomAccessories,
+              ),
+            ),
+            if (pane != null) const SizedBox(width: MTBreakpoint.sidePanel + 1),
+          ],
         ),
       ),
     );
@@ -199,4 +234,21 @@ class MTAdaptiveScaffold extends StatelessWidget {
         ),
     ],
   );
+}
+
+/// The end corner of the content rather than of the screen: shifted past a
+/// pane standing at the end edge.
+class _BesidePaneFab extends FloatingActionButtonLocation {
+  const _BesidePaneFab(this.shift);
+
+  final double shift;
+
+  @override
+  Offset getOffset(ScaffoldPrelayoutGeometry scaffoldGeometry) {
+    final base = FloatingActionButtonLocation.endFloat.getOffset(
+      scaffoldGeometry,
+    );
+    final rtl = scaffoldGeometry.textDirection == TextDirection.rtl;
+    return base.translate(rtl ? shift : -shift, 0);
+  }
 }

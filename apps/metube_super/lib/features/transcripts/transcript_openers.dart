@@ -88,6 +88,33 @@ MTVideoPanel? Function(PlaylistItem item) transcriptPanels(
   };
 }
 
+/// The transcript as a tab beside the audio player on a tablet, for the
+/// items that have one. It never closes itself when the queue moves: the
+/// tab is rebuilt for the next item instead.
+MTVideoPanel? Function(PlaylistItem item) audioTranscriptPanels(
+  BuildContext context,
+  MTAudioHandler handler,
+) {
+  final container = ProviderScope.containerOf(context, listen: false);
+  final label = context.mtl.transcript;
+  return (item) {
+    final transcripts = _transcriptsOf(container, item.canonicalUrl);
+    if (transcripts.isEmpty) return null;
+    return MTVideoPanel(
+      icon: Icons.subject_rounded,
+      label: label,
+      builder: (context, close) => TranscriptSheet(
+        title: item.title,
+        query: '',
+        transcripts: transcripts,
+        position: handler.positionStream,
+        onMoment: handler.seek,
+        onClose: close,
+      ),
+    );
+  };
+}
+
 /// A video's position, sampled: the session tells its listeners of much
 /// more than the time, and a quarter second is finer than any caption.
 Stream<Duration> videoPositions(MTVideoSession session) =>
