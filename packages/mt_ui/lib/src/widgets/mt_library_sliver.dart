@@ -50,19 +50,9 @@ class MTLibrarySliver extends StatelessWidget {
   Widget build(BuildContext context) {
     final tablet = MTAdaptiveScaffold.hasRail(context);
     return switch (layout) {
-      // **The ratio is measured, not estimated** (verified with an
-      // emulator screenshot): 0.82 left about 50 points of dead space under
-      // every card. The real content is a 16:9 cover plus two title lines
-      // plus a meta line. A wide window simply gains columns.
-      MTLibraryLayout.grid => SliverGrid.builder(
-        gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-          maxCrossAxisExtent: 210,
-          mainAxisSpacing: MTSpace.md,
-          crossAxisSpacing: MTSpace.md,
-          childAspectRatio: 1.02,
-        ),
+      MTLibraryLayout.grid => _MTGridSliver(
         itemCount: itemCount,
-        itemBuilder: (context, index) => itemBuilder(context, index, null),
+        itemBuilder: itemBuilder,
       ),
       MTLibraryLayout.cards when tablet => _MTColumnsSliver(
         minWidth: MTBreakpoint.cardColumn,
@@ -116,6 +106,78 @@ class MTLibrarySliver extends StatelessWidget {
     itemCount: itemCount,
     itemBuilder: (context, index) => itemBuilder(context, index, null),
   );
+}
+
+/// The grid: as many columns as fit at 210 points at most, each cell
+/// exactly as tall as its card.
+///
+/// **The height is measured, not a ratio.** A fixed 1.02 ratio was tuned on
+/// a 411-point phone, where it fit a 16:9 cover, two title lines and a meta
+/// line. But the cover grows with the cell and the text with the font, not
+/// together: a 320-point phone or a font at 1.3 left the text short of room
+/// and every cell overflowed (the device matrix, 2026-10-10). The cell is
+/// now the cover for its width plus the text for the user's font.
+class _MTGridSliver extends StatelessWidget {
+  const _MTGridSliver({required this.itemCount, required this.itemBuilder});
+
+  final int itemCount;
+  final MTLibraryItemBuilder itemBuilder;
+
+  static const double _maxCell = 210;
+  static const double _gap = MTSpace.md;
+
+  @override
+  Widget build(BuildContext context) => SliverLayoutBuilder(
+    builder: (context, constraints) {
+      final width = constraints.crossAxisExtent;
+      // The same column count as Flutter's max-extent grid.
+      final columns = math.max(1, (width / (_maxCell + _gap)).ceil());
+      final cell = (width - _gap * (columns - 1)) / columns;
+      return SliverGrid.builder(
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: columns,
+          mainAxisSpacing: _gap,
+          crossAxisSpacing: _gap,
+          mainAxisExtent: _cellHeight(context, cell),
+        ),
+        itemCount: itemCount,
+        itemBuilder: (context, index) => itemBuilder(context, index, null),
+      );
+    },
+  );
+
+  /// What [MTMediaGridCard] stacks in grid mode: its padding, a 16:9
+  /// cover, a gap, two title lines, a gap and the meta line.
+  static double _cellHeight(BuildContext context, double width) {
+    final text = Theme.of(context).textTheme;
+    final scaler = MediaQuery.textScalerOf(context);
+    double lines(TextStyle style, int count) {
+      final painter = TextPainter(
+        text: TextSpan(text: List.filled(count, 'Ag').join('\n'), style: style),
+        textDirection: TextDirection.ltr,
+        textScaler: scaler,
+        maxLines: count,
+      )..layout();
+      final height = painter.height;
+      painter.dispose();
+      return height;
+    }
+
+    const pad = MTSpace.xxs;
+    final title = text.bodySmall!.copyWith(
+      fontWeight: FontWeight.w700,
+      height: 1.35,
+    );
+    return pad +
+        (width - pad * 2) * 9 / 16 +
+        MTSpace.xs +
+        lines(title, 2) +
+        3 +
+        lines(text.labelSmall!, 1) +
+        pad +
+        // Rounding in the cover's layout, so the last pixel never spills.
+        1;
+  }
 }
 
 /// Items in as many equal columns as fit at [minWidth] each, built a row

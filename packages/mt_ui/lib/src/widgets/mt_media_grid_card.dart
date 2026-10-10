@@ -166,9 +166,11 @@ class MTMediaGridCard extends StatelessWidget {
                         location != MTMediaLocation.none &&
                         locationLabel != null) ...[
                       const SizedBox(width: MTSpace.xs),
-                      MTLocationBadge(
-                        location: location,
-                        label: locationLabel!,
+                      Flexible(
+                        child: MTLocationBadge(
+                          location: location,
+                          label: locationLabel!,
+                        ),
                       ),
                     ],
                   ],

@@ -211,15 +211,13 @@ void main() {
       (Size(960, 600), 434.0),
       (Size(960, 600), 835.0),
       (Size(600, 960), 475.0),
+      // The grid used to overflow on a phone too, from a fixed cell ratio.
+      (Size(320, 534), 320.0),
+      (Size(411, 914), 411.0),
     ];
     for (final (window, library) in shapes) {
       for (final scale in const [1.0, 1.3, 2.0]) {
-        // The grid is left out: its cells have a fixed shape, and at the
-        // largest font it overflows on a phone as well. That predates the
-        // tablet layouts and is tracked on its own.
-        for (final layout in MTLibraryLayout.values.where(
-          (l) => l != MTLibraryLayout.grid,
-        )) {
+        for (final layout in MTLibraryLayout.values) {
           await pump(
             tester,
             layout,

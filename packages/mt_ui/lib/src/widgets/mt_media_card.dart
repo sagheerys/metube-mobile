@@ -165,27 +165,28 @@ class MTMediaCard extends StatelessWidget {
                           // minutes ago" is visual noise (audit 8.1).
                           if (platform != MTPlatformKind.other)
                             MTPlatformChip(kind: platform),
-                          if (subtitle != null) ...[
-                            if (platform != MTPlatformKind.other)
-                              Text(
-                                ' · ',
-                                style: text.bodySmall!.copyWith(color: p.ink3),
-                              ),
+                          // The separator travels with the text it
+                          // introduces, so on a narrow card or a large font
+                          // it gives way with it instead of overflowing.
+                          if (subtitle != null)
                             Flexible(
                               child: Text(
-                                subtitle!,
+                                platform == MTPlatformKind.other
+                                    ? subtitle!
+                                    : ' · $subtitle',
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: text.bodySmall!.copyWith(color: p.ink3),
                               ),
                             ),
-                          ],
                           if (location != MTMediaLocation.none &&
                               locationLabel != null) ...[
                             const SizedBox(width: MTSpace.xs),
-                            MTLocationBadge(
-                              location: location,
-                              label: locationLabel!,
+                            Flexible(
+                              child: MTLocationBadge(
+                                location: location,
+                                label: locationLabel!,
+                              ),
                             ),
                           ],
                         ],

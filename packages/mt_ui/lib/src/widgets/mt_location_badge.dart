@@ -29,8 +29,13 @@ class MTLocationBadge extends StatelessWidget {
         color: bg,
         borderRadius: BorderRadius.circular(MTRadius.badge),
       ),
+      // Shrinks with an ellipsis rather than pushing its row past the edge
+      // on a narrow card or a large font.
       child: Text(
         label,
+        maxLines: 1,
+        softWrap: false,
+        overflow: TextOverflow.ellipsis,
         style: TextStyle(
           fontFamily: MTType.body,
           package: MTType.package,
