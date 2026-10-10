@@ -141,6 +141,11 @@ class MTAudioHandler extends BaseAudioHandler with SeekHandler {
   /// produced **two sources at once**.
   Future<void> Function()? onTakeVideoFocus;
 
+  /// A square cover for the notification and the lock screen, which draw
+  /// one at its own shape; made by the app, which owns the image cache.
+  Future<Uri?> Function(PlaylistItem item)? squareArt;
+  final Map<String, Uri> _squareArts = {};
+
   PlayMode get playMode => _playMode;
   bool get shuffleEnabled => _queue.shuffle;
   PlaylistItem? get currentItem => _queue.current;

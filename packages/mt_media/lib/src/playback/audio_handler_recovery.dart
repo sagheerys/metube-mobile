@@ -139,8 +139,32 @@ extension MTAudioHandlerRecovery on MTAudioHandler {
   void _publishQueue() =>
       queue.add([for (final item in _queue.ordered) _toMedia(item)]);
 
-  MediaItem _toMedia(PlaylistItem item) =>
-      item.toMediaItem(playlistName: _playlistName);
+  MediaItem _toMedia(PlaylistItem item) {
+    final media = item.toMediaItem(playlistName: _playlistName);
+    final square = _squareArts[item.canonicalUrl];
+    return square == null ? media : media.copyWith(artUri: square);
+  }
+
+  /// **A square cover in the notification** (field report 2026-10-10: a
+  /// YouTube song showed as a strip there and on the lock screen). The item
+  /// is shown at once with its own cover, and the square one replaces it
+  /// when ready, if that item is still the one playing. Made once a clip.
+  Future<void> _prepareSquareArt(PlaylistItem item) async {
+    final make = squareArt;
+    if (make == null || _squareArts.containsKey(item.canonicalUrl)) return;
+    Uri? square;
+    try {
+      square = await make(item);
+    } on Object {
+      return;
+    }
+    if (square == null) return;
+    _squareArts[item.canonicalUrl] = square;
+    final shown = mediaItem.value;
+    if (shown?.id == item.canonicalUrl) {
+      mediaItem.add(shown!.copyWith(artUri: square));
+    }
+  }
 
   Future<void> savePosition() async {
     final item = _queue.current;
@@ -175,6 +199,7 @@ extension MTAudioHandlerRecovery on MTAudioHandler {
     if (source == null) return _onError(autoPlay: autoPlay);
 
     mediaItem.add(_toMedia(item));
+    unawaited(_prepareSquareArt(item));
     // A restored session ([startAt]) always continues exactly; a saved
     // position only for something long (see [resumeMinimumLength]). When
     // the length is not known yet, the position is taken and dropped

@@ -28,6 +28,7 @@ export 'src/widgets/mt_markdown_text.dart';
 export 'src/widgets/mt_media_card.dart';
 export 'src/widgets/mt_media_grid_card.dart';
 export 'src/widgets/mt_media_row.dart';
+export 'src/widgets/mt_square_png.dart';
 export 'src/widgets/mt_motion.dart';
 export 'src/widgets/mt_platform_chip.dart';
 export 'src/widgets/mt_polish.dart';

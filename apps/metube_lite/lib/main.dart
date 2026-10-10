@@ -14,6 +14,7 @@ import 'di.dart';
 import 'features/downloads_library/local_item.dart';
 import 'features/settings/settings_state.dart';
 import 'features/shared/stores.dart';
+import 'features/player/square_art.dart';
 
 /// Bootstrap only: storage, the settings snapshot, the background audio
 /// player, runApp.
@@ -77,6 +78,7 @@ Future<void> main() async {
       androidStopForegroundOnPause: false,
     ),
   );
+  handler.squareArt = squareArtFor;
   await handler.loadPreferences();
 
   // **Sweeping orphaned partials:** killing the app mid-way
