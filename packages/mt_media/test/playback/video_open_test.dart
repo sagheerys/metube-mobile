@@ -65,6 +65,23 @@ void main() {
     expect(platform.alive, isEmpty);
   });
 
+  test('a clip no surface can play leaves a healthy device as it was', () {
+    // A flagship meeting a file its decoder does not support: both
+    // attempts fail, and the next clip must still open on the texture.
+    platform.failWith = 'MediaCodecVideoRenderer error, format unsupported';
+    return expectLater(
+      MTVideoOpen.prepare(source),
+      throwsA(isA<PlatformException>()),
+    ).then((_) {
+      expect(platform.views, [
+        VideoViewType.textureView,
+        VideoViewType.platformView,
+      ]);
+      expect(MTVideoOpen.platformView, isFalse);
+      expect(platform.alive, isEmpty);
+    });
+  });
+
   test('the message the tablet logged is recognised', () {
     final logged = PlatformException(
       code: 'VideoError',

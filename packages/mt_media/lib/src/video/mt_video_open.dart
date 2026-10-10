@@ -17,18 +17,18 @@ import '../models/playback_source.dart';
 ///
 /// The texture stays the first choice, because it composes for less and
 /// every device that works today keeps exactly what it had. A device whose
-/// decoder refuses it once switches for the rest of the run, so only its
-/// first clip pays for the second attempt.
+/// decoder refuses it, and then plays in the platform view, switches for
+/// the rest of the run, so only its first clip pays for the second attempt.
 abstract final class MTVideoOpen {
   /// Whether this device has shown that it needs the platform view.
   static bool platformView = false;
 
-  static VideoViewType get _viewType =>
-      platformView ? VideoViewType.platformView : VideoViewType.textureView;
-
   /// A prepared controller, or the error of the last attempt.
   static Future<VideoPlayerController> prepare(PlaybackSource source) async {
-    final controller = _create(source);
+    final controller = _create(
+      source,
+      platformView ? VideoViewType.platformView : VideoViewType.textureView,
+    );
     try {
       await controller.initialize();
       return controller;
@@ -36,10 +36,12 @@ abstract final class MTVideoOpen {
       await controller.dispose();
       if (platformView || !refusedSurface(error)) rethrow;
     }
-    platformView = true;
-    final retry = _create(source);
+    final retry = _create(source, VideoViewType.platformView);
     try {
       await retry.initialize();
+      // Remembered only once it has worked: a file no decoder can play
+      // fails both ways, and must not move a healthy device off the texture.
+      platformView = true;
       return retry;
     } on Object {
       await retry.dispose();
@@ -53,15 +55,18 @@ abstract final class MTVideoOpen {
   static bool refusedSurface(PlatformException error) =>
       '${error.message} ${error.details}'.contains('MediaCodecVideoRenderer');
 
-  static VideoPlayerController _create(PlaybackSource source) => source.isLocal
+  static VideoPlayerController _create(
+    PlaybackSource source,
+    VideoViewType viewType,
+  ) => source.isLocal
       ? VideoPlayerController.file(
           File(source.uri.toFilePath()),
-          viewType: _viewType,
+          viewType: viewType,
         )
       : VideoPlayerController.networkUrl(
           source.uri,
           httpHeaders: source.headers,
-          viewType: _viewType,
+          viewType: viewType,
         );
 }
 
