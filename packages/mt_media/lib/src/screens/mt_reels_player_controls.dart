@@ -66,16 +66,10 @@ extension _ReelsPlayback on _MTReelsPlayerState {
       if (!_stale(generation)) applyState(() => _failed = true);
       return;
     }
-    final controller = source.origin == PlaybackOrigin.local
-        ? VideoPlayerController.file(File(source.uri.toFilePath()))
-        : VideoPlayerController.networkUrl(
-            source.uri,
-            httpHeaders: source.headers,
-          );
+    final VideoPlayerController controller;
     try {
-      await controller.initialize();
+      controller = await MTVideoOpen.prepare(source);
     } on Object {
-      await controller.dispose();
       if (!_stale(generation)) applyState(() => _failed = true);
       return;
     }

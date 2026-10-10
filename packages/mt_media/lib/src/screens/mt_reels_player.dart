@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -10,6 +9,7 @@ import 'package:wakelock_plus/wakelock_plus.dart';
 import '../models/playback_source.dart';
 import '../models/playlist_item.dart';
 import '../video/mt_orientation.dart';
+import '../video/mt_video_open.dart';
 import '../video/reels_overlay.dart';
 import '../video/reels_progress.dart';
 import '../video/reels_stage.dart';

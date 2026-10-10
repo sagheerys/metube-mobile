@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:video_player/video_player.dart';
@@ -11,6 +10,7 @@ import '../models/playlist_item.dart';
 import '../playback/playback_queue.dart';
 import '../stores/playback_position_store.dart';
 import '../stores/playback_prefs.dart';
+import 'mt_video_open.dart';
 
 part 'mt_video_session_commands.dart';
 
@@ -111,16 +111,10 @@ class MTVideoSession extends ChangeNotifier {
     final source = resolver.resolve(item);
     if (source == null) return _failCurrent();
 
-    final controller = source.isLocal
-        ? VideoPlayerController.file(File(source.uri.toFilePath()))
-        : VideoPlayerController.networkUrl(
-            source.uri,
-            httpHeaders: source.headers,
-          );
+    final VideoPlayerController controller;
     try {
-      await controller.initialize();
+      controller = await MTVideoOpen.prepare(source);
     } on Object {
-      await controller.dispose();
       // **Publish after initialisation completes, not before.**
       // `_controller` was published and then three awaits followed
       // (position, seek, speed) with no guard between them: a second quick

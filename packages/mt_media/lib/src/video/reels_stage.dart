@@ -4,6 +4,7 @@ import 'package:video_player/video_player.dart';
 
 import '../models/playlist_item.dart';
 import '../screens/mt_video_screen.dart';
+import 'mt_video_open.dart';
 import 'reels_overlay.dart';
 
 /// The layers of the reels stage: the picture, and the information layer
@@ -50,7 +51,7 @@ class ReelsVideoLayer extends StatelessWidget {
         : Center(
             child: AspectRatio(
               aspectRatio: controller!.value.aspectRatio,
-              child: VideoPlayer(controller!),
+              child: MTVideoView(controller!),
             ),
           ),
   );

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mt_ui/mt_ui.dart';
-import 'package:video_player/video_player.dart';
 
 import '../models/playlist_item.dart';
 import '../widgets/mt_extra_button.dart';
@@ -9,6 +8,7 @@ import '../widgets/mt_queue_panel.dart';
 import '../widgets/mt_up_next_list.dart';
 import 'mt_orientation.dart';
 import 'mt_video_controls.dart';
+import 'mt_video_open.dart';
 import 'mt_video_session.dart';
 import 'video_side_panel.dart';
 
@@ -169,7 +169,7 @@ class _MTVideoFullscreenPageState extends State<MTVideoFullscreenPage> {
                 Center(
                   child: AspectRatio(
                     aspectRatio: controller.value.aspectRatio,
-                    child: VideoPlayer(controller),
+                    child: MTVideoView(controller),
                   ),
                 )
               else

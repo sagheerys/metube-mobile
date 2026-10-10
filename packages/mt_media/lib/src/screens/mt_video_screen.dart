@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:mt_ui/mt_ui.dart';
-import 'package:video_player/video_player.dart';
 
 import '../models/playlist_item.dart';
 import '../video/mt_orientation.dart';
 import '../video/mt_video_controls.dart';
 import '../video/mt_video_fullscreen.dart';
+import '../video/mt_video_open.dart';
 import '../video/mt_video_session.dart';
 import '../video/video_side_panel.dart';
 import '../widgets/mt_queue_panel.dart';
@@ -331,7 +331,7 @@ class _VideoArea extends StatelessWidget {
               Center(
                 child: AspectRatio(
                   aspectRatio: controller.value.aspectRatio,
-                  child: VideoPlayer(controller),
+                  child: MTVideoView(controller),
                 ),
               )
             else
