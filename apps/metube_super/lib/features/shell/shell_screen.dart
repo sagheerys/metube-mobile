@@ -348,7 +348,9 @@ class _ShellScreenState extends ConsumerState<ShellScreen>
             if (branch != 2 && !panel)
               MTMiniPlayer(
                 handler: handler,
-                artwork: artworkBuilderFor(ref),
+                // A square thumbnail, so the wide YouTube picture: the
+                // letterboxed one shows its black bands.
+                artwork: coverBuilderFor(ref),
                 onOpen: () => GoRouter.of(context).push('/audio'),
                 onExpand: roomForPanel
                     ? () => setState(() => _panelFolded = false)

@@ -1,3 +1,5 @@
+import 'package:cached_network_image/cached_network_image.dart';
+
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -81,6 +83,29 @@ void main() {
       find.byIcon(Icons.close_rounded),
       findsNothing,
       reason: 'لا شريط ظاهر ما دام mediaItem == null',
+    );
+  });
+
+  testWidgets('the square mini player thumbnail asks for the wide one', (
+    tester,
+  ) async {
+    // Owner's report 2026-10-10: still a letterboxed strip in the mini
+    // player after the full player became square.
+    await tester.pumpWidget(app());
+    await tester.pump(const Duration(milliseconds: 100));
+    final mini = tester.widget<MTMiniPlayer>(find.byType(MTMiniPlayer));
+    final thumb = mini.artwork!(
+      tester.element(find.byType(MTMiniPlayer)),
+      const PlaylistItem(
+        canonicalUrl: 'https://www.youtube.com/watch?v=MfDROnE8FG8',
+        title: 'Across The Emerald Sea',
+        artworkUrl: 'https://i.ytimg.com/vi/MfDROnE8FG8/hqdefault.jpg',
+        isAudio: true,
+      ),
+    );
+    expect(
+      (thumb! as CachedNetworkImage).imageUrl,
+      'https://i.ytimg.com/vi/MfDROnE8FG8/maxresdefault.jpg',
     );
   });
 
