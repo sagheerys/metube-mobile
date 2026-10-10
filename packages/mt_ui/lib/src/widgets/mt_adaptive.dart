@@ -23,6 +23,12 @@ abstract final class MTBreakpoint {
   static const double medium = 600;
   static const double expanded = 840;
 
+  /// The shorter side from which a device is a tablet rather than a phone.
+  /// Below Android's 600 on purpose: common 8-inch tablets measure about
+  /// 593 points (800x1280 pixels at 216 dpi), while the largest phones stop
+  /// near 480, so the line still never reaches a phone.
+  static const double tabletSide = 550;
+
   /// The widest a column of rows or settings may grow. Past it a row's
   /// title sits far from its trailing button and lines get too long to
   /// scan.
@@ -140,7 +146,7 @@ class MTAdaptiveScaffold extends StatelessWidget {
   static bool hasRail(BuildContext context) {
     final size = MediaQuery.sizeOf(context);
     return size.width >= MTBreakpoint.medium &&
-        size.shortestSide >= MTBreakpoint.medium;
+        size.shortestSide >= MTBreakpoint.tabletSide;
   }
 
   /// Whether there is room for [endPane] beside the content.

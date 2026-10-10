@@ -78,7 +78,7 @@ class MTAudioScreen extends StatelessWidget {
       // cover and the mini player showing behind it like a sheet being
       // dragged away. That is why its route is non-opaque in the router.
       final size = MediaQuery.sizeOf(context);
-      final tablet = size.shortestSide >= MTBreakpoint.medium;
+      final tablet = size.shortestSide >= MTBreakpoint.tabletSide;
       return MTDragToDismiss(
         child: Scaffold(
           body: SafeArea(
@@ -185,7 +185,7 @@ class MTAudioScreen extends StatelessWidget {
   );
 
   static bool _onTablet(BuildContext context) =>
-      MediaQuery.sizeOf(context).shortestSide >= MTBreakpoint.medium;
+      MediaQuery.sizeOf(context).shortestSide >= MTBreakpoint.tabletSide;
 
   /// Below this a cover says nothing; the controls get the room instead.
   static const _smallestArt = 64.0;

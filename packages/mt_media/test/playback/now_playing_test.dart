@@ -166,6 +166,15 @@ void main() {
       expect(find.byIcon(Icons.star), findsNothing);
     });
 
+    testWidgets('an 8-inch tablet of 593 points on its side counts too', (
+      tester,
+    ) async {
+      await tester.runAsync(() => handler.playItems([clip('a'), clip('b')]));
+      await pump(tester, const Size(948, 593), screen());
+      expect(find.byType(MTNowPlayingTabs), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
     testWidgets('a tablet upright puts the tabs under the controls', (
       tester,
     ) async {

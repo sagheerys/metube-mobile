@@ -106,7 +106,7 @@ class MTVideoScreen extends StatelessWidget {
   static bool _isWide(BuildContext context) {
     final size = MediaQuery.sizeOf(context);
     return size.width >= MTBreakpoint.expanded &&
-        size.shortestSide >= MTBreakpoint.medium;
+        size.shortestSide >= MTBreakpoint.tabletSide;
   }
 
   Widget _wide(BuildContext context, VoidCallback openFullscreen) => Row(

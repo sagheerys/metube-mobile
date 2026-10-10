@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:mt_ui/mt_ui.dart' show MTBreakpoint;
 
 /// **The orientation policy (decision 2026-09-05): the app is portrait and
 /// only the player rotates**, which is what YouTube itself does on a
@@ -16,8 +17,8 @@ import 'package:flutter/services.dart';
 /// has room to spare. Android 16 already ignores a portrait request there,
 /// so the lock only ever bit older tablets.
 abstract final class MTOrientation {
-  /// Whether the device is a large screen: its display's shorter side is
-  /// at least 600 points. Phones keep every lock
+  /// Whether the device is a large screen: its display's shorter side
+  /// reaches [MTBreakpoint.tabletSide]. Phones keep every lock
   /// below exactly as before. Set by [start].
   static bool largeScreen = false;
 
@@ -49,7 +50,7 @@ abstract final class MTOrientation {
     final size = display.size.isEmpty
         ? view.physicalSize / view.devicePixelRatio
         : display.size / display.devicePixelRatio;
-    return !size.isEmpty && size.shortestSide >= 600;
+    return !size.isEmpty && size.shortestSide >= MTBreakpoint.tabletSide;
   }
 
   /// The orientation the app rests in when no player owns it: portrait on

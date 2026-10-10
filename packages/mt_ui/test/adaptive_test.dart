@@ -64,6 +64,26 @@ void main() {
       expect(find.byType(NavigationBar), findsOneWidget);
     });
 
+    // The owner's 8-inch tablet (2026-10-10): 800x1280 pixels at 216 dpi
+    // is 593 points on its shorter side, below Android's 600.
+    testWidgets('an 8-inch tablet of 593 points gets the rail on its side', (
+      tester,
+    ) async {
+      await pump(tester, const Size(948, 593));
+      expect(find.byType(NavigationRail), findsOneWidget);
+      await pump(tester, const Size(593, 948));
+      expect(find.byType(NavigationBar), findsOneWidget);
+    });
+
+    testWidgets('the largest phones on their side keep the bar', (
+      tester,
+    ) async {
+      for (final size in const [Size(1000, 480), Size(932, 430)]) {
+        await pump(tester, size);
+        expect(find.byType(NavigationBar), findsOneWidget, reason: '$size');
+      }
+    });
+
     testWidgets('a small tablet upright gets the rail instead of the bar', (
       tester,
     ) async {
