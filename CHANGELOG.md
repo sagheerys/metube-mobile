@@ -9,6 +9,47 @@ only one.
 
 ## [Unreleased]
 
+### Added
+
+- **Tablets.** On a tablet, upright or on its side, both apps now use the
+  room instead of stretching the phone layout. Navigation moves to a side
+  rail, lists and settings keep a readable width, and settings open in two
+  panes. Held sideways, a "Now playing" panel sits beside the library with
+  the cover, the controls and the up-next list (and the transcript in
+  Super); it folds back into the mini player. The full player shows two
+  columns sideways, and the queue under the controls upright. A video on
+  a tablet held sideways plays beside its details. The library's modes
+  each get a tablet shape: cards and compact rows in columns, and the list
+  as a table with length, size and date added (and source in Super). A
+  tablet turns freely; a phone keeps its portrait lock. Small tablets
+  count too: 8-inch models whose window is narrower than 600 points.
+  Phones are unchanged.
+
+### Changed
+
+- **Square covers for music.** The audio player, the mini player, the
+  media notification and the lock screen now show a song's cover as a
+  square, like a music app, instead of a wide YouTube strip with black
+  bands. The library keeps its pictures as they were. Both apps.
+- **Additional protection for your server's sign-in details.** Super only.
+
+### Fixed
+
+- **Videos that would not start on some older devices.** On some older
+  chips (seen on an Android 10 tablet), every H.264 clip failed to open, in
+  the shorts and in the player. The app now notices and plays them another
+  way. Devices that worked are unchanged. Both apps.
+- **AV1 clips drawn with green lines.** On phones without an AV1 decoder in
+  hardware, including recent flagships, many YouTube clips (and Facebook's)
+  showed green dashes and stray lines over the picture. They are now drawn
+  cleanly. Other formats play exactly as before. Both apps.
+- **A song in a mixed playlist showed a black frame.** A playlist with
+  videos and songs plays them all in the video player, and a song there
+  was an empty black square. It now shows its cover. Both apps.
+- **The library at large text sizes.** With Android's text enlarged, or on a
+  small phone, some cards and rows overflowed with yellow-and-black
+  stripes. They now fit, in every view mode. Both apps.
+
 ## [2.4.0] - 2026-10-09
 
 ### Added
