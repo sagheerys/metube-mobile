@@ -8,7 +8,7 @@ import '../widgets/mt_queue_panel.dart';
 import '../widgets/mt_up_next_list.dart';
 import 'mt_orientation.dart';
 import 'mt_video_controls.dart';
-import 'mt_video_open.dart';
+import 'mt_video_frame.dart';
 import 'mt_video_session.dart';
 import 'video_side_panel.dart';
 
@@ -167,9 +167,10 @@ class _MTVideoFullscreenPageState extends State<MTVideoFullscreenPage> {
             children: [
               if (controller != null && controller.value.isInitialized)
                 Center(
-                  child: AspectRatio(
-                    aspectRatio: controller.value.aspectRatio,
-                    child: MTVideoView(controller),
+                  child: MTVideoFrame(
+                    controller: controller,
+                    item: session.current,
+                    artwork: widget.artwork,
                   ),
                 )
               else

@@ -4,8 +4,8 @@ import 'package:mt_ui/mt_ui.dart';
 import '../models/playlist_item.dart';
 import '../video/mt_orientation.dart';
 import '../video/mt_video_controls.dart';
+import '../video/mt_video_frame.dart';
 import '../video/mt_video_fullscreen.dart';
-import '../video/mt_video_open.dart';
 import '../video/mt_video_session.dart';
 import '../video/video_side_panel.dart';
 import '../widgets/mt_queue_panel.dart';
@@ -114,6 +114,7 @@ class MTVideoScreen extends StatelessWidget {
       Expanded(
         child: _VideoArea(
           session: session,
+          artwork: artwork,
           fill: true,
           playlistName: playlistName,
           membershipLine: membershipLine,
@@ -174,6 +175,7 @@ class MTVideoScreen extends StatelessWidget {
             : MediaQuery.orientationOf(context) == Orientation.landscape
             ? _VideoArea(
                 session: session,
+                artwork: artwork,
                 fill: true,
                 playlistName: playlistName,
                 membershipLine: membershipLine,
@@ -185,6 +187,7 @@ class MTVideoScreen extends StatelessWidget {
                 children: [
                   _VideoArea(
                     session: session,
+                    artwork: artwork,
                     playlistName: playlistName,
                     membershipLine: membershipLine,
                     onBack: () => Navigator.of(context).maybePop(),
@@ -298,6 +301,7 @@ class _VideoArea extends StatelessWidget {
     required this.onBack,
     required this.onFullscreen,
     required this.onQueue,
+    this.artwork,
     this.playlistName,
     this.membershipLine,
     this.fill = false,
@@ -305,6 +309,7 @@ class _VideoArea extends StatelessWidget {
 
   /// Fills the screen in landscape instead of 32% of its height.
   final bool fill;
+  final MTArtworkBuilder? artwork;
 
   final MTVideoSession session;
   final VoidCallback onBack;
@@ -329,9 +334,10 @@ class _VideoArea extends StatelessWidget {
             ColoredBox(color: MTPalette.serverCardBg),
             if (ready)
               Center(
-                child: AspectRatio(
-                  aspectRatio: controller.value.aspectRatio,
-                  child: MTVideoView(controller),
+                child: MTVideoFrame(
+                  controller: controller,
+                  item: session.current,
+                  artwork: artwork,
                 ),
               )
             else
