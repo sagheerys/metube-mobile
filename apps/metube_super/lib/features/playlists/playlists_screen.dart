@@ -117,13 +117,13 @@ class _Grid extends ConsumerWidget {
     final l10n = context.mtl;
     final library = ref.watch(libraryItemsProvider).valueOrNull ?? const [];
     final byUrl = {for (final item in library) item.canonicalUrl: item};
-    final headers = ref.read(apiClientProvider)?.streamingHeaders;
+    final api = ref.read(apiClientProvider);
 
     List<Widget> coversOf(SavedPlaylist playlist) => [
       for (final entry in playlist.items.take(4))
         if ((byUrl[entry.canonicalUrl]?.thumbnail ?? entry.cachedThumb)
             case final String url)
-          ?artworkFor(url, headers: headers),
+          ?artworkFor(url, headers: api?.imageHeadersFor(url)),
     ];
 
     // An explicit empty state (audit 8.1): a bare "+" tile explains

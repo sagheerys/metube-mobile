@@ -25,6 +25,7 @@ class AudioScreen extends ConsumerWidget {
     return MTAudioScreen(
       handler: handler,
       artwork: artworkBuilderFor(ref),
+      cover: coverBuilderFor(ref),
       // **A details button instead of a queue button** (field report
       // 2026-09-05): the queue already has its visible button at the bottom
       // of

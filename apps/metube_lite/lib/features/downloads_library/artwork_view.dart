@@ -3,6 +3,7 @@ import 'dart:math' show max;
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:mt_core/mt_core.dart' show UrlKit;
 
 /// In Lite an artwork index value may be a **generated local file path**, a
 /// frame capture or an embedded audio cover (see `MediaProbe.kt`), or a
@@ -39,6 +40,27 @@ Widget? artworkFor(
     // The cache was cleared or the file deleted, so the card shows no cover
     // rather than a red error box.
     errorBuilder: (_, _, _) => const SizedBox.shrink(),
+  );
+}
+
+/// The audio player's square cover, wanting a wider picture than a card.
+///
+/// YouTube's `hqdefault` is 4:3 with the 16:9 picture between black bands.
+/// A card's 16:9 box crops them away, but a square one shows them, so the
+/// player asks for the wide thumbnail, which has none. Where an upload has
+/// no wide one, the 4:3 picture is enlarged by 4/3 so the bands fall
+/// outside the square. Anything that is not a YouTube thumbnail is drawn
+/// as [artworkFor] draws it.
+Widget? coverArtworkFor(String? value) {
+  final wide = UrlKit.youtubeWideThumbnail(value);
+  if (wide == null) return artworkFor(value);
+  return CachedNetworkImage(
+    imageUrl: wide,
+    fit: BoxFit.cover,
+    errorWidget: (_, _, _) => Transform.scale(
+      scale: 4 / 3,
+      child: artworkFor(value) ?? const SizedBox.shrink(),
+    ),
   );
 }
 

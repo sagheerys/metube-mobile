@@ -155,6 +155,29 @@ void main() {
       expect(find.byIcon(Icons.star), findsOneWidget);
     });
 
+    testWidgets('the square cover draws its own picture', (tester) async {
+      // The wide YouTube thumbnail goes to the big square only; list rows
+      // keep theirs.
+      await tester.runAsync(() => handler.playItems([clip('a'), clip('b')]));
+      await pump(
+        tester,
+        const Size(411, 914),
+        MTAudioScreen(
+          handler: handler,
+          artwork: (_, _) => const SizedBox(key: Key('row')),
+          cover: (_, _) => const SizedBox(key: Key('cover')),
+        ),
+      );
+      expect(
+        find.descendant(
+          of: find.byType(MTTiltedArtwork),
+          matching: find.byKey(const Key('cover')),
+        ),
+        findsOneWidget,
+      );
+      expect(find.byKey(const Key('row')), findsNothing);
+    });
+
     testWidgets('a phone on its side sets the cover beside the controls', (
       tester,
     ) async {

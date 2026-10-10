@@ -77,7 +77,10 @@ class LibraryItemCard extends ConsumerWidget {
         : _thumbBox(context, options.mode);
     final thumbnail = artworkFor(
       item.thumbnail,
-      headers: ref.read(apiClientProvider)?.streamingHeaders,
+      headers: switch (item.thumbnail) {
+        final url? => ref.read(apiClientProvider)?.imageHeadersFor(url),
+        null => null,
+      },
       decodeWidth: mtDecodeWidth(context, thumbWidth, thumbHeight),
     );
     final platform = platformKindOf(MediaPlatform.detect(item.canonicalUrl));

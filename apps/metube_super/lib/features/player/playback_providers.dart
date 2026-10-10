@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mt_core/mt_core.dart' show ImageHeaders;
 import 'package:mt_media/mt_media.dart';
 
 import '../../di.dart';
@@ -92,5 +93,18 @@ PlaylistItem toPlaylistItem(LibraryItem item) => PlaylistItem(
 MTArtworkBuilder artworkBuilderFor(WidgetRef ref) =>
     (context, item) => artworkFor(
       item.artworkUrl,
-      headers: ref.read(apiClientProvider)?.streamingHeaders,
+      headers: switch (item.artworkUrl) {
+        final url? => ref.read(apiClientProvider)?.imageHeadersFor(url),
+        null => null,
+      },
+    );
+
+/// The audio player's square cover; see [coverArtworkFor].
+MTArtworkBuilder coverBuilderFor(WidgetRef ref) =>
+    (context, item) => coverArtworkFor(
+      item.artworkUrl,
+      headers: switch (item.artworkUrl) {
+        final url? => ref.read(apiClientProvider)?.imageHeadersFor(url),
+        null => null,
+      },
     );

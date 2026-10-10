@@ -24,6 +24,7 @@ class MTAudioScreen extends StatelessWidget {
     super.key,
     required this.handler,
     this.artwork,
+    this.cover,
     this.onShowPlaylist,
     this.onDetails,
     this.playlistName,
@@ -34,6 +35,10 @@ class MTAudioScreen extends StatelessWidget {
 
   final MTAudioHandler handler;
   final MTArtworkBuilder? artwork;
+
+  /// The picture for the big square cover, which may want a better one
+  /// than a list row; [artwork] when null.
+  final MTArtworkBuilder? cover;
   final VoidCallback? onShowPlaylist;
 
   /// **Clip details**, which replaced the queue button in the header (field
@@ -154,7 +159,7 @@ class MTAudioScreen extends StatelessWidget {
                     size: size,
                     child: MTTiltedArtwork(
                       item: item,
-                      artwork: artwork,
+                      artwork: cover ?? artwork,
                       size: size,
                     ),
                   ),
@@ -214,7 +219,7 @@ class MTAudioScreen extends StatelessWidget {
                             size: size,
                             child: MTTiltedArtwork(
                               item: item,
-                              artwork: artwork,
+                              artwork: cover ?? artwork,
                               size: size,
                             ),
                           ),

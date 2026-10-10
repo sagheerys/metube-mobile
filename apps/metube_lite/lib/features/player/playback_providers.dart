@@ -85,6 +85,10 @@ PlaylistItem toPlaylistItem(LocalItem item) => PlaylistItem(
 MTArtworkBuilder artworkBuilderFor(WidgetRef ref) =>
     (context, item) => artworkFor(item.artworkUrl);
 
+/// The audio player's square cover; see [coverArtworkFor].
+MTArtworkBuilder coverBuilderFor(WidgetRef ref) =>
+    (context, item) => coverArtworkFor(item.artworkUrl);
+
 /// The platform shown for a playback item, whose key may be a path rather
 /// than a URL.
 MediaPlatform platformOfKey(String key) =>

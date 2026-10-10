@@ -17,6 +17,19 @@ abstract final class UrlKit {
   static final RegExp _youtubeQueryIdPattern = RegExp(
     r'[?&]v=([a-zA-Z0-9_-]{11})',
   );
+  static final RegExp _youtubeThumbPattern = RegExp(
+    r'^https://i\.ytimg\.com/vi/([a-zA-Z0-9_-]{11})/hqdefault\.jpg$',
+  );
+
+  /// The wide YouTube thumbnail (1280x720) standing in for `hqdefault`,
+  /// which is 4:3 with the 16:9 picture letterboxed between black bands:
+  /// cropped square for an album-like cover, the bands show. A few
+  /// low-resolution uploads have no wide one, so the caller keeps the
+  /// original to fall back on. Null for any other address.
+  static String? youtubeWideThumbnail(String? url) {
+    final id = _youtubeThumbPattern.firstMatch(url ?? '')?.group(1);
+    return id == null ? null : 'https://i.ytimg.com/vi/$id/maxresdefault.jpg';
+  }
 
   /// Strips the URL out of the text wrapped around it, such as a SoundCloud
   /// share that is a whole sentence plus the link. Returns the input

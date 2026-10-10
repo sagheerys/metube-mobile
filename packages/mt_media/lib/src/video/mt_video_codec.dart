@@ -37,10 +37,7 @@ abstract final class MTVideoCodec {
 
   /// Forgets what was learned, for tests.
   @visibleForTesting
-  static void reset() {
-    _known.clear();
-    readHead = _readHead;
-  }
+  static void reset() => _known.clear();
 
   static Future<bool> isAv1(PlaybackSource source) async {
     final key = source.uri.toString();

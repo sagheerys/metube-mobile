@@ -23,6 +23,7 @@ class MTNowPlayingPanel extends StatelessWidget {
     required this.onOpen,
     required this.onCollapse,
     this.artwork,
+    this.cover,
     this.companion,
     this.showSourceChip = true,
   });
@@ -35,6 +36,9 @@ class MTNowPlayingPanel extends StatelessWidget {
   /// Folds the panel away; the mini player comes back in its place.
   final VoidCallback onCollapse;
   final MTArtworkBuilder? artwork;
+
+  /// The picture for the square cover; [artwork] when null.
+  final MTArtworkBuilder? cover;
   final MTVideoPanel? Function(PlaylistItem item)? companion;
   final bool showSourceChip;
 
@@ -90,7 +94,7 @@ class MTNowPlayingPanel extends StatelessWidget {
                       onTap: onOpen,
                       child: MTTiltedArtwork(
                         item: item,
-                        artwork: artwork,
+                        artwork: cover ?? artwork,
                         size: art,
                       ),
                     ),

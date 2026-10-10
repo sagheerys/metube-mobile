@@ -276,6 +276,7 @@ class _ShellScreenState extends ConsumerState<ShellScreen>
               ? MTNowPlayingPanel(
                   handler: handler,
                   artwork: artworkBuilderFor(ref),
+                  cover: coverBuilderFor(ref),
                   showSourceChip: false,
                   onOpen: () => GoRouter.of(context).push('/audio'),
                   onCollapse: () => setState(() => _panelFolded = true),

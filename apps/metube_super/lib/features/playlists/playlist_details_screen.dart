@@ -159,7 +159,7 @@ class _ReorderableItems extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final headers = ref.read(apiClientProvider)?.streamingHeaders;
+    final api = ref.read(apiClientProvider);
     // **The indicator used to stick on the first clip** (screenshot
     // 2026-09-02): `ref.watch(audioHandlerProvider)` watches a
     // provider pinned by an override that **never emits**, and
@@ -179,7 +179,7 @@ class _ReorderableItems extends ConsumerWidget {
         builder: (context, playingSnapshot) => _list(
           context,
           ref,
-          headers,
+          api,
           keySnapshot.data,
           playingSnapshot.data ?? true,
         ),
@@ -190,7 +190,7 @@ class _ReorderableItems extends ConsumerWidget {
   Widget _list(
     BuildContext context,
     WidgetRef ref,
-    Map<String, String>? headers,
+    MeTubeApiClient? api,
     String? playingUrl,
     bool isPlaying,
   ) {
@@ -225,7 +225,13 @@ class _ReorderableItems extends ConsumerWidget {
             subtitle: missing ? context.mtl.itemUnavailable : item.uploader,
             playing: !missing && item.canonicalUrl == playingUrl,
             paused: !isPlaying,
-            thumbnail: artworkFor(item.artworkUrl, headers: headers),
+            thumbnail: artworkFor(
+              item.artworkUrl,
+              headers: switch (item.artworkUrl) {
+                final url? => api?.imageHeadersFor(url),
+                null => null,
+              },
+            ),
             platform: platformKindOf(MediaPlatform.detect(item.canonicalUrl)),
             compact: true,
             onTap: () => missing

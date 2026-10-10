@@ -42,6 +42,32 @@ void main() {
     });
   });
 
+  group('UrlKit.youtubeWideThumbnail', () {
+    // The audio player's square cover (2026-10-10): hqdefault is 4:3 with
+    // black bands, the wide one has none.
+    test('hqdefault becomes the wide thumbnail', () {
+      expect(
+        UrlKit.youtubeWideThumbnail(
+          'https://i.ytimg.com/vi/MfDROnE8FG8/hqdefault.jpg',
+        ),
+        'https://i.ytimg.com/vi/MfDROnE8FG8/maxresdefault.jpg',
+      );
+    });
+
+    test('anything else is left alone', () {
+      for (final url in [
+        null,
+        '',
+        'https://i.ytimg.com/vi/MfDROnE8FG8/mqdefault.jpg',
+        'https://i1.sndcdn.com/artworks-abc-t500x500.jpg',
+        '/data/user/0/app/covers/a.jpg',
+        'https://evil.example/vi/MfDROnE8FG8/hqdefault.jpg',
+      ]) {
+        expect(UrlKit.youtubeWideThumbnail(url), isNull, reason: '$url');
+      }
+    });
+  });
+
   group('UrlKit.youtubeVideoId', () {
     const id = 'dQw4w9WgXcQ';
     for (final url in [
