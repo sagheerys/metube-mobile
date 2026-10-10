@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mt_core/mt_core.dart';
@@ -23,10 +25,18 @@ import 'item_actions_sheet.dart';
 /// parameter: the screen used to pass `grid: true` while the card read
 /// `compact` from the provider, two sources for one decision.
 class LibraryItemCard extends ConsumerWidget {
-  const LibraryItemCard({super.key, required this.item, required this.onPlay});
+  const LibraryItemCard({
+    super.key,
+    required this.item,
+    required this.onPlay,
+    this.columns,
+  });
 
   final LibraryItem item;
   final VoidCallback onPlay;
+
+  /// Set for a row in a tablet's table ([MTLibrarySliver]).
+  final MTMediaColumns? columns;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -48,7 +58,9 @@ class LibraryItemCard extends ConsumerWidget {
         // defined place for the separator between them.
         : mtMetaLine([
             item.uploader,
-            if (item.timestamp != null) mtTimeAgo(context, item.timestamp!),
+            // A table with a date column shows it there instead.
+            if (item.timestamp != null && columns?.added != true)
+              mtTimeAgo(context, item.timestamp!),
           ]);
     final locationLabel = switch (item.location) {
       MTMediaLocation.offline ||
@@ -60,7 +72,9 @@ class LibraryItemCard extends ConsumerWidget {
     // thumbnail
     // in a 98-point box reserved about 3.5MB per visible card in the image
     // cache.
-    final (thumbWidth, thumbHeight) = _thumbBox(context, options.mode);
+    final (thumbWidth, thumbHeight) = columns != null
+        ? (MTMediaColumns.thumbWidth, MTMediaColumns.thumbHeight)
+        : _thumbBox(context, options.mode);
     final thumbnail = artworkFor(
       item.thumbnail,
       headers: ref.read(apiClientProvider)?.streamingHeaders,
@@ -83,6 +97,34 @@ class LibraryItemCard extends ConsumerWidget {
     void onLongPress() => controller.toggleSelected(item.canonicalUrl);
     void onMore() => showItemActionsSheet(context, ref, item);
 
+    final duration = item.duration == null
+        ? null
+        : mtFormatDuration(item.duration!);
+    if (columns case final columns?) {
+      return MTMediaRow(
+        columns: columns,
+        title: item.title,
+        subtitle: subtitle,
+        thumbnail: thumbnail,
+        platform: platform,
+        duration: duration,
+        size: item.sizeBytes == null ? null : mtFormatSize(item.sizeBytes!),
+        added: item.timestamp == null
+            ? null
+            : mtTimeAgo(context, item.timestamp!),
+        tags: item.tags,
+        location: item.location,
+        locationLabel: locationLabel,
+        favorite: item.favorite,
+        audio: item.isAudio,
+        selected: options.selection.contains(item.canonicalUrl),
+        highlighted: highlighted,
+        onFavoriteToggle: toggleFavorite,
+        onTap: onTap,
+        onLongPress: onLongPress,
+        onMore: onMore,
+      );
+    }
     if (options.grid || options.cards) {
       return MTMediaGridCard(
         feed: options.cards,
@@ -92,9 +134,7 @@ class LibraryItemCard extends ConsumerWidget {
         platform: platform,
         location: item.location,
         locationLabel: locationLabel,
-        duration: item.duration == null
-            ? null
-            : mtFormatDuration(item.duration!),
+        duration: duration,
         favorite: item.favorite,
         audio: item.isAudio,
         selected: options.selection.contains(item.canonicalUrl),
@@ -134,8 +174,22 @@ class LibraryItemCard extends ConsumerWidget {
       LibraryViewMode.compact => (64, 40),
       LibraryViewMode.list => (98, 62),
       LibraryViewMode.grid => (210, null),
+      // A tablet lays cards in columns, so none is ever wider than two of
+      // the narrowest; a phone's card is the screen's width.
       LibraryViewMode.cards => (
-        MediaQuery.sizeOf(context).width - MTSpace.pagePad * 2,
+        math.min(
+          MediaQuery.sizeOf(context).width - MTSpace.pagePad * 2,
+          MTBreakpoint.cardColumn * 2,
+        ),
         null,
       ),
     };
+
+extension LibraryLayoutOf on LibraryViewMode {
+  MTLibraryLayout get layout => switch (this) {
+    LibraryViewMode.list => MTLibraryLayout.list,
+    LibraryViewMode.compact => MTLibraryLayout.compact,
+    LibraryViewMode.grid => MTLibraryLayout.grid,
+    LibraryViewMode.cards => MTLibraryLayout.cards,
+  };
+}

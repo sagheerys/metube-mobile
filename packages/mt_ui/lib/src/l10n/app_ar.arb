@@ -156,6 +156,8 @@
   "clipboardFound": "رابط جاهز في الحافظة",
   "clipboardLinkReady": "لصق الرابط",
   "closePlayer": "إغلاق المشغل",
+  "columnAdded": "أُضيف",
+  "columnLength": "المدة",
   "compactView": "عرض مدمج",
   "compatiblePlayback": "أفضل توافق للتشغيل",
   "compatiblePlaybackHelp": "يطلب من الخادم صيغة H.264/AAC التي تفكّها كل الهواتف عتادياً. بدونها قد يعطي يوتيوب صيغة AV1 فيظهر المقطع مشوشاً على أجهزة كثيرة. إطفاؤها يتيح أعلى دقة ممكنة على حساب التوافق.",

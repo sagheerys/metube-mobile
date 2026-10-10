@@ -554,6 +554,18 @@ abstract class MTLocalizations {
   /// **'Close player'**
   String get closePlayer;
 
+  /// No description provided for @columnAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Added'**
+  String get columnAdded;
+
+  /// No description provided for @columnLength.
+  ///
+  /// In en, this message translates to:
+  /// **'Length'**
+  String get columnLength;
+
   /// No description provided for @compactView.
   ///
   /// In en, this message translates to:

@@ -273,6 +273,12 @@ class MTLocalizationsAr extends MTLocalizations {
   String get closePlayer => 'إغلاق المشغل';
 
   @override
+  String get columnAdded => 'أُضيف';
+
+  @override
+  String get columnLength => 'المدة';
+
+  @override
   String get compactView => 'عرض مدمج';
 
   @override

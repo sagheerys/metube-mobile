@@ -271,6 +271,12 @@ class MTLocalizationsEn extends MTLocalizations {
   String get closePlayer => 'Close player';
 
   @override
+  String get columnAdded => 'Added';
+
+  @override
+  String get columnLength => 'Length';
+
+  @override
   String get compactView => 'Compact view';
 
   @override

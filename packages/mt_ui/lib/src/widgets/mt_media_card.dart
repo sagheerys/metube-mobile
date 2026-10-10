@@ -9,8 +9,8 @@ import 'mt_equalizer.dart';
 import 'mt_highlight_surface.dart';
 import 'mt_platform_chip.dart';
 import 'mt_location_badge.dart';
+import 'mt_media_thumb.dart';
 import 'mt_polish.dart';
-import 'mt_thumb_pill.dart';
 
 /// Where the item lives, which colours its badge: olive for "offline",
 /// soft ember for "on the server".
@@ -133,7 +133,7 @@ class MTMediaCard extends StatelessWidget {
             ),
             child: Row(
               children: [
-                _Thumb(
+                MTMediaThumb(
                   width: thumbW,
                   height: thumbH,
                   duration: duration,
@@ -233,59 +233,6 @@ class MTMediaCard extends StatelessWidget {
             ),
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _Thumb extends StatelessWidget {
-  const _Thumb({
-    required this.width,
-    required this.height,
-    this.duration,
-    this.playing = false,
-    this.audio = false,
-    this.child,
-  });
-
-  final double width;
-  final double height;
-  final String? duration;
-  final bool playing;
-  final bool audio;
-  final Widget? child;
-
-  @override
-  Widget build(BuildContext context) {
-    final p = MTThemeX.of(context).palette;
-    return Container(
-      width: width,
-      height: height,
-      clipBehavior: Clip.antiAlias,
-      decoration: BoxDecoration(
-        color: p.cardAlt,
-        borderRadius: BorderRadius.circular(MTRadius.thumb),
-        border: Border.all(color: p.line),
-      ),
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          child ?? Icon(Icons.music_note_rounded, size: 20, color: p.ink3),
-          if (duration != null)
-            PositionedDirectional(
-              bottom: 5,
-              start: 5,
-              child: MTThumbPill.duration(duration!),
-            ),
-          // Without a cover the placeholder is already a music note, so a
-          // second one would only repeat it.
-          if (audio && child != null)
-            PositionedDirectional(
-              bottom: 5,
-              end: 5,
-              child: MTThumbPill.audio(),
-            ),
-        ],
       ),
     );
   }

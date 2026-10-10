@@ -107,9 +107,12 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
               // One calm appearance of the content on the first build,
               // rather than motion per card, which made the list bounce
               // throughout the scroll.
-              // A wide grid gains columns; rows and cards keep their width.
+              // A wide grid gains columns, and a tablet spreads every mode
+              // across its width; a phone's rows and cards keep theirs.
               child: MTRevealOnce(
-                child: options.mode == LibraryViewMode.grid
+                child:
+                    options.mode == LibraryViewMode.grid ||
+                        MTAdaptiveScaffold.hasRail(context)
                     ? _body(l10n, options, active)
                     : MTReadableWidth(child: _body(l10n, options, active)),
               ),
@@ -229,44 +232,17 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
             ],
           ),
         ),
-        // **The ratio is measured, not estimated** (verified with an
-        // emulator screenshot): 0.82 left about 50 points of dead space under
-        // every card and the grid looked disjointed. The real content is a
-        // 16:9 cover plus two title lines plus a meta line.
         ...switch (itemsAsync) {
           AsyncValue(valueOrNull: final value?) when value.isNotEmpty => [
             SliverPadding(
               padding: const EdgeInsets.symmetric(horizontal: MTSpace.pagePad),
-              // Every mode is lazy: `builder` builds only what is
-              // visible, which is the condition for 251 items without
-              // freezing. The fourth mode, cards, is the heaviest because
-              // every cover is the width of the screen, and laziness is
-              // what makes it possible at all: only three cards are ever
-              // visible.
-              sliver: switch (options.mode) {
-                LibraryViewMode.grid => SliverGrid.builder(
-                  gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                    maxCrossAxisExtent: 210,
-                    mainAxisSpacing: MTSpace.md,
-                    crossAxisSpacing: MTSpace.md,
-                    childAspectRatio: 1.02,
-                  ),
-                  itemCount: value.length,
-                  itemBuilder: (context, index) => _card(value[index]),
-                ),
-                LibraryViewMode.cards => SliverList.builder(
-                  itemCount: value.length,
-                  itemBuilder: (context, index) => Padding(
-                    // Cards carry no divider; the space is the divider.
-                    padding: const EdgeInsets.only(bottom: MTSpace.lg),
-                    child: _card(value[index]),
-                  ),
-                ),
-                _ => SliverList.builder(
-                  itemCount: value.length,
-                  itemBuilder: (context, index) => _card(value[index]),
-                ),
-              },
+              sliver: MTLibrarySliver(
+                layout: options.mode.layout,
+                itemCount: value.length,
+                showLocation: true,
+                itemBuilder: (context, index, columns) =>
+                    _card(value[index], columns),
+              ),
             ),
           ],
           AsyncLoading() => [
@@ -395,6 +371,6 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
 
   /// The card reads the mode from the options itself; it is not passed
   /// twice.
-  Widget _card(LibraryItem item) =>
-      LibraryItemCard(item: item, onPlay: () => _play(item));
+  Widget _card(LibraryItem item, MTMediaColumns? columns) =>
+      LibraryItemCard(item: item, columns: columns, onPlay: () => _play(item));
 }

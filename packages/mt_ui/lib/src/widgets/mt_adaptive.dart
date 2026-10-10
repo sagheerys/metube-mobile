@@ -39,6 +39,14 @@ abstract final class MTBreakpoint {
   /// video on a tablet held sideways.
   static const double sidePanel = 400;
 
+  /// The narrowest a column of large cards may get on a tablet. A wider
+  /// library gains columns rather than wider cards, so a cover never fills
+  /// the screen on its own.
+  static const double cardColumn = 300;
+
+  /// The same for compact rows, which need a little more room for a title.
+  static const double compactColumn = 320;
+
   static MTWindowClass classOf(double width) => width >= expanded
       ? MTWindowClass.expanded
       : width >= medium

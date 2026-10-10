@@ -442,6 +442,8 @@
   "clipboardFound": "A link is ready in your clipboard",
   "clipboardLinkReady": "Paste link",
   "closePlayer": "Close player",
+  "columnAdded": "Added",
+  "columnLength": "Length",
   "compactView": "Compact view",
   "compatiblePlayback": "Best playback compatibility",
   "compatiblePlaybackHelp": "Asks the server for H.264/AAC, which every phone decodes in hardware. Without it YouTube may deliver AV1, which many devices render as a garbled picture. Turning it off allows the highest resolution at the cost of compatibility.",

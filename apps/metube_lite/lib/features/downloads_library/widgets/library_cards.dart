@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mt_media/mt_media.dart' show mtFormatDuration;
@@ -23,10 +25,14 @@ class LibraryItemCard extends ConsumerWidget {
     required this.item,
     required this.onPlay,
     required this.onClearHighlight,
+    this.columns,
   });
 
   final LocalItem item;
   final VoidCallback onPlay;
+
+  /// Set for a row in a tablet's table ([MTLibrarySliver]).
+  final MTMediaColumns? columns;
 
   /// The highlight is temporary by nature: any tap extinguishes it at once,
   /// or the item stays looking "selected" forever (field report
@@ -45,7 +51,9 @@ class LibraryItemCard extends ConsumerWidget {
     // thumbnail
     // in a 98-point box reserved about 3.5MB per visible card in the image
     // cache.
-    final (thumbWidth, thumbHeight) = _thumbBox(context, options.mode);
+    final (thumbWidth, thumbHeight) = columns != null
+        ? (MTMediaColumns.thumbWidth, MTMediaColumns.thumbHeight)
+        : _thumbBox(context, options.mode);
     final thumbnail = artworkFor(
       item.thumbnail,
       decodeWidth: mtDecodeWidth(context, thumbWidth, thumbHeight),
@@ -77,6 +85,35 @@ class LibraryItemCard extends ConsumerWidget {
     void onLongPress() => controller.toggleSelected(item.key);
     void onMore() => showItemActionsSheet(context, ref, item);
 
+    final duration = item.duration == null
+        ? null
+        : mtFormatDuration(item.duration!);
+    if (columns case final columns?) {
+      final size = mtFormatSize(item.sizeBytes);
+      final added = mtTimeAgo(context, item.modified);
+      return MTMediaRow(
+        columns: columns,
+        title: item.title,
+        // What has no column of its own stays under the title.
+        subtitle: mtMetaLine([
+          if (!columns.added) added,
+          if (!columns.size) size,
+        ]),
+        thumbnail: thumbnail,
+        platform: platformKindOf(item.platform),
+        duration: duration,
+        size: size,
+        added: added,
+        favorite: item.favorite,
+        audio: item.isAudio,
+        selected: options.selection.contains(item.key),
+        highlighted: highlighted,
+        onFavoriteToggle: toggleFavorite,
+        onTap: onTap,
+        onLongPress: onLongPress,
+        onMore: onMore,
+      );
+    }
     if (options.grid || options.cards) {
       return MTMediaGridCard(
         feed: options.cards,
@@ -84,9 +121,7 @@ class LibraryItemCard extends ConsumerWidget {
         subtitle: subtitle,
         thumbnail: thumbnail,
         platform: platformKindOf(item.platform),
-        duration: item.duration == null
-            ? null
-            : mtFormatDuration(item.duration!),
+        duration: duration,
         favorite: item.favorite,
         audio: item.isAudio,
         selected: options.selection.contains(item.key),
@@ -130,8 +165,22 @@ class LibraryItemCard extends ConsumerWidget {
       LibraryViewMode.compact => (64, 40),
       LibraryViewMode.list => (98, 62),
       LibraryViewMode.grid => (210, null),
+      // A tablet lays cards in columns, so none is ever wider than two of
+      // the narrowest; a phone's card is the screen's width.
       LibraryViewMode.cards => (
-        MediaQuery.sizeOf(context).width - MTSpace.pagePad * 2,
+        math.min(
+          MediaQuery.sizeOf(context).width - MTSpace.pagePad * 2,
+          MTBreakpoint.cardColumn * 2,
+        ),
         null,
       ),
     };
+
+extension LibraryLayoutOf on LibraryViewMode {
+  MTLibraryLayout get layout => switch (this) {
+    LibraryViewMode.list => MTLibraryLayout.list,
+    LibraryViewMode.compact => MTLibraryLayout.compact,
+    LibraryViewMode.grid => MTLibraryLayout.grid,
+    LibraryViewMode.cards => MTLibraryLayout.cards,
+  };
+}
