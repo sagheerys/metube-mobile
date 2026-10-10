@@ -170,7 +170,7 @@ void main() {
       tester,
     ) async {
       await tester.runAsync(() => handler.playItems([clip('a'), clip('b')]));
-      await pump(tester, const Size(948, 593), screen());
+      await pump(tester, const Size(948, 544), screen());
       expect(find.byType(MTNowPlayingTabs), findsOneWidget);
       expect(tester.takeException(), isNull);
     });

@@ -23,11 +23,13 @@ abstract final class MTBreakpoint {
   static const double medium = 600;
   static const double expanded = 840;
 
-  /// The shorter side from which a device is a tablet rather than a phone.
-  /// Below Android's 600 on purpose: common 8-inch tablets measure about
-  /// 593 points (800x1280 pixels at 216 dpi), while the largest phones stop
-  /// near 480, so the line still never reaches a phone.
-  static const double tabletSide = 550;
+  /// The shorter side from which a window is a tablet's rather than a
+  /// phone's. Well below Android's 600 on purpose: a common 8-inch tablet
+  /// (800x1280 pixels at 216 dpi) is 593 points across, and on its side
+  /// the three-button bar leaves the app a window only 544 points high
+  /// (measured 2026-10-10). The largest phones stop near 480, so the line
+  /// still never reaches a phone.
+  static const double tabletSide = 520;
 
   /// The widest a column of rows or settings may grow. Past it a row's
   /// title sits far from its trailing button and lines get too long to

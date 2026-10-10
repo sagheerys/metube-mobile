@@ -31,9 +31,10 @@ class MTDevice {
     // on the 600-point line where a layout switches from phone to rail.
     MTDevice('لوحي صغير 600×960', Size(600, 960)),
     MTDevice('لوحي صغير أفقي 960×600', Size(960, 600)),
-    // The owner's 8-inch tablet: 593 points, under Android's 600 line.
-    MTDevice('لوحي المالك 8 بوصات 593×948', Size(593, 948)),
-    MTDevice('لوحي المالك أفقي 948×593', Size(948, 593)),
+    // The owner's 8-inch tablet: the app's window as measured on it, above
+    // the three-button bar, under Android's 600 line on both sides.
+    MTDevice('لوحي المالك 8 بوصات 593×900', Size(593, 900)),
+    MTDevice('لوحي المالك أفقي 948×544', Size(948, 544)),
     MTDevice('لوحي 800×1280', Size(800, 1280)),
     MTDevice('لوحي أفقي 1280×800', Size(1280, 800)),
   ];

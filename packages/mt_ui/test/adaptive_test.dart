@@ -64,14 +64,14 @@ void main() {
       expect(find.byType(NavigationBar), findsOneWidget);
     });
 
-    // The owner's 8-inch tablet (2026-10-10): 800x1280 pixels at 216 dpi
-    // is 593 points on its shorter side, below Android's 600.
+    // The owner's 8-inch tablet (2026-10-10): 800x1280 pixels at 216 dpi,
+    // and the app's window as measured on it, above the three-button bar.
     testWidgets('an 8-inch tablet of 593 points gets the rail on its side', (
       tester,
     ) async {
-      await pump(tester, const Size(948, 593));
+      await pump(tester, const Size(948, 544));
       expect(find.byType(NavigationRail), findsOneWidget);
-      await pump(tester, const Size(593, 948));
+      await pump(tester, const Size(593, 900));
       expect(find.byType(NavigationBar), findsOneWidget);
     });
 
