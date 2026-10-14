@@ -9,6 +9,8 @@ import 'mt_caption_blocks.dart';
 
 export 'mt_caption_blocks.dart' show MTCaptionBlock;
 
+part 'mt_caption_sentence.dart';
+
 /// One word of a caption line, from the moment it is said.
 class MTCaptionWord {
   const MTCaptionWord(this.start, this.text);
@@ -36,14 +38,57 @@ class MTCaptionLine {
   final List<MTCaptionWord>? words;
 }
 
-/// Captions for the clip on screen: its lines, whether they are shown, and
-/// how large. [shown] belongs to the app, which keeps the choice.
-class MTCaptions {
-  const MTCaptions({required this.lines, required this.shown, this.scale = 1});
+/// What sits behind the words: a dark capsule, a faint one, or nothing but
+/// a shadow around the letters, which keeps them legible over a bright
+/// picture.
+enum MTCaptionBackground { solid, faint, none }
 
+/// Captions for the clip on screen: its lines, whether they are shown, how
+/// large, and over what. [shown] and [language] belong to the app, which
+/// keeps the choices.
+class MTCaptions {
+  const MTCaptions({
+    required this.lines,
+    required this.shown,
+    this.scale = 1,
+    this.background = MTCaptionBackground.solid,
+    this.tracks = const {},
+    this.language,
+  });
+
+  /// The lines shown when no other language is chosen.
   final List<MTCaptionLine> lines;
   final ValueNotifier<bool> shown;
   final double scale;
+  final MTCaptionBackground background;
+
+  /// Every language the clip has, by code, in the order the switch walks
+  /// them, the first being [lines]. Empty for a clip with one.
+  final Map<String, List<MTCaptionLine>> tracks;
+
+  /// The language chosen with the switch, kept by the app from clip to
+  /// clip. Null, or a language this clip lacks, shows [lines].
+  final ValueNotifier<String?>? language;
+
+  /// The language on screen, for the switch's label.
+  String? get current {
+    final chosen = language?.value;
+    if (chosen != null && tracks.containsKey(chosen)) return chosen;
+    return tracks.isEmpty ? null : tracks.keys.first;
+  }
+
+  /// The lines on screen.
+  List<MTCaptionLine> get onScreen => tracks[current] ?? lines;
+
+  /// Whether the switch has anything to switch to.
+  bool get switchable => language != null && tracks.length > 1;
+
+  /// The next language round the clip's list.
+  void nextLanguage() {
+    if (!switchable) return;
+    final codes = tracks.keys.toList();
+    language!.value = codes[(codes.indexOf(current!) + 1) % codes.length];
+  }
 }
 
 /// The captions over a playing video, above its controls when they show.
@@ -78,7 +123,7 @@ class MTCaptionsLayer extends StatefulWidget {
 class _MTCaptionsLayerState extends State<MTCaptionsLayer>
     with SingleTickerProviderStateMixin {
   late List<MTCaptionBlock> _blocks = MTCaptionBlock.group(
-    widget.captions.lines,
+    widget.captions.onScreen,
   );
   late final Ticker _ticker = createTicker((_) => _update());
   final _clock = Stopwatch()..start();
@@ -100,14 +145,26 @@ class _MTCaptionsLayerState extends State<MTCaptionsLayer>
     super.initState();
     widget.controller.addListener(_onPlayer);
     widget.captions.shown.addListener(_onPlayer);
+    widget.captions.language?.addListener(_onLanguage);
     _onPlayer();
+  }
+
+  /// Another language: its sentences, from the same moment.
+  void _onLanguage() {
+    _blocks = MTCaptionBlock.group(widget.captions.onScreen);
+    _block = -1;
+    _update();
   }
 
   @override
   void didUpdateWidget(MTCaptionsLayer old) {
     super.didUpdateWidget(old);
-    if (!identical(old.captions.lines, widget.captions.lines)) {
-      _blocks = MTCaptionBlock.group(widget.captions.lines);
+    if (!identical(old.captions.onScreen, widget.captions.onScreen)) {
+      _blocks = MTCaptionBlock.group(widget.captions.onScreen);
+    }
+    if (old.captions.language != widget.captions.language) {
+      old.captions.language?.removeListener(_onLanguage);
+      widget.captions.language?.addListener(_onLanguage);
     }
     if (old.controller != widget.controller) {
       old.controller.removeListener(_onPlayer);
@@ -124,6 +181,7 @@ class _MTCaptionsLayerState extends State<MTCaptionsLayer>
   void dispose() {
     widget.controller.removeListener(_onPlayer);
     widget.captions.shown.removeListener(_onPlayer);
+    widget.captions.language?.removeListener(_onLanguage);
     _ticker.dispose();
     super.dispose();
   }
@@ -198,6 +256,7 @@ class _MTCaptionsLayerState extends State<MTCaptionsLayer>
                         width: box.maxWidth,
                         size: size,
                         lines: lines,
+                        background: widget.captions.background,
                       ),
               ),
             ),
@@ -206,75 +265,4 @@ class _MTCaptionsLayerState extends State<MTCaptionsLayer>
       ),
     ),
   );
-}
-
-/// One sentence in its capsule, the word being said at full white and the
-/// rest a step dimmer.
-class _Sentence extends StatelessWidget {
-  const _Sentence({
-    super.key,
-    required this.block,
-    required this.word,
-    required this.width,
-    required this.size,
-    required this.lines,
-  });
-
-  final MTCaptionBlock block;
-  final int word;
-  final double width;
-  final double size;
-  final int lines;
-
-  static const height = 1.35;
-  static const maxLines = 3;
-
-  /// The words not being said, against the one that is.
-  static const _rest = 0.72;
-
-  @override
-  Widget build(BuildContext context) {
-    final ink = MTPalette.serverCardInk;
-    final (direction, _) = mtForeignLine(context, block.text);
-    final style = Theme.of(context).textTheme.bodyLarge!.copyWith(
-      fontSize: size,
-      height: height,
-      fontWeight: FontWeight.w500,
-      color: ink,
-    );
-    final words = block.words;
-    return Container(
-      constraints: BoxConstraints(maxWidth: math.max(0, width * 0.88)),
-      padding: const EdgeInsets.symmetric(
-        horizontal: MTSpace.md,
-        vertical: MTSpace.xs,
-      ),
-      decoration: BoxDecoration(
-        color: MTPalette.serverCardBg.withValues(alpha: 0.78),
-        borderRadius: BorderRadius.circular(MTRadius.thumb + 4),
-      ),
-      child: Text.rich(
-        words == null
-            ? TextSpan(text: block.text)
-            : TextSpan(
-                children: [
-                  for (var i = 0; i < words.length; i++)
-                    TextSpan(
-                      text: i == 0 ? words[i].text : ' ${words[i].text}',
-                      style: TextStyle(
-                        color: ink.withValues(
-                          alpha: i == word || word < 0 ? 1 : _rest,
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-        style: style,
-        textAlign: TextAlign.center,
-        textDirection: direction,
-        maxLines: lines,
-        overflow: TextOverflow.ellipsis,
-      ),
-    );
-  }
 }

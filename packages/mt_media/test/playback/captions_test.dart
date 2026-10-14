@@ -204,6 +204,50 @@ void main() {
       expect(rect.bottom, lessThanOrEqualTo(wide.height - 80));
     });
 
+    // Owner's request 2026-10-14: the dark box behind the words can go,
+    // and the letters then carry an edge of their own.
+    testWidgets('dark, light, or no background, with an edge when none', (
+      tester,
+    ) async {
+      controller.value = controller.value.copyWith(position: ms(1500));
+      Future<(Decoration?, List<Shadow>?)> drawn(MTCaptionBackground b) async {
+        await tester.pumpWidget(
+          host(
+            MTCaptions(
+              lines: [line(1000, 2000, 'only words')],
+              shown: ValueNotifier(true),
+              background: b,
+            ),
+          ),
+        );
+        await tester.pump(const Duration(milliseconds: 300));
+        final box = tester.widget<Container>(
+          find
+              .ancestor(
+                of: find.byType(RichText),
+                matching: find.byType(Container),
+              )
+              .first,
+        );
+        final text = tester.widget<RichText>(
+          find.descendant(
+            of: find.byType(MTCaptionsLayer),
+            matching: find.byType(RichText),
+          ),
+        );
+        return (box.decoration, text.text.style?.shadows);
+      }
+
+      final (solid, solidEdge) = await drawn(MTCaptionBackground.solid);
+      final (faint, _) = await drawn(MTCaptionBackground.faint);
+      final (none, noneEdge) = await drawn(MTCaptionBackground.none);
+      double alpha(Decoration? d) => (d! as BoxDecoration).color!.a;
+      expect(alpha(faint), lessThan(alpha(solid)));
+      expect(solidEdge, isNull);
+      expect(none, isNull);
+      expect(noneEdge, isNotEmpty);
+    });
+
     for (final locale in const [Locale('en'), Locale('ar')]) {
       testWidgets(
         'a long sentence fits at any text size (${locale.languageCode})',
@@ -309,6 +353,68 @@ void main() {
       expect(shown.value, isTrue);
       expect(find.byIcon(Icons.closed_caption_rounded), findsOneWidget);
       await leave(tester, session);
+    });
+
+    // Owner's request 2026-10-14: a switch between the clip's languages,
+    // beside CC.
+    testWidgets('the language switch walks the clip\'s languages', (
+      tester,
+    ) async {
+      final language = ValueNotifier<String?>(null);
+      final arabic = [line(0, 9000, 'مرحبا')];
+      final session = await show(
+        tester,
+        (_) => MTCaptions(
+          lines: arabic,
+          tracks: {
+            'ar': arabic,
+            'en': [line(0, 9000, 'hello')],
+          },
+          language: language,
+          shown: ValueNotifier(true),
+        ),
+      );
+      expect(find.text('AR'), findsOneWidget);
+      expect(find.textContaining('مرحبا'), findsOneWidget);
+
+      await tester.tap(find.text('AR'));
+      await tester.pump(kDoubleTapTimeout + const Duration(milliseconds: 50));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(language.value, 'en');
+      expect(find.text('EN'), findsOneWidget);
+      expect(find.textContaining('hello'), findsOneWidget);
+      expect(find.textContaining('مرحبا'), findsNothing);
+      await leave(tester, session);
+    });
+
+    testWidgets('no language switch for one language, or while hidden', (
+      tester,
+    ) async {
+      final one = await show(
+        tester,
+        (_) => MTCaptions(
+          lines: [line(0, 9000, 'hello')],
+          language: ValueNotifier(null),
+          shown: ValueNotifier(true),
+        ),
+      );
+      expect(find.text('EN'), findsNothing);
+      await leave(tester, one);
+
+      final hidden = await show(
+        tester,
+        (_) => MTCaptions(
+          lines: [line(0, 9000, 'hello')],
+          tracks: {
+            'en': [line(0, 9000, 'hello')],
+            'ar': [line(0, 9000, 'مرحبا')],
+          },
+          language: ValueNotifier(null),
+          shown: ValueNotifier(false),
+        ),
+      );
+      expect(find.text('EN'), findsNothing);
+      await leave(tester, hidden);
     });
 
     testWidgets('a clip without subtitles has no button', (tester) async {

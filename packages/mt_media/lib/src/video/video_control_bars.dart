@@ -7,6 +7,7 @@ import '../widgets/mt_player_controls_row.dart';
 import '../widgets/mt_progress_slider.dart';
 import 'mt_video_session.dart';
 import 'video_buttons.dart';
+import 'caption_buttons.dart';
 import 'mt_captions.dart';
 
 /// The top bar: back, the title and its position in the list, speed, lock,
@@ -91,17 +92,7 @@ class MTVideoTopBar extends StatelessWidget {
         ),
         if (captions case final captions?) ...[
           const SizedBox(width: MTSpace.xs),
-          ValueListenableBuilder<bool>(
-            valueListenable: captions.shown,
-            builder: (context, shown, _) => MTVideoIconButton(
-              icon: shown
-                  ? Icons.closed_caption_rounded
-                  : Icons.closed_caption_off_rounded,
-              onTap: () => captions.shown.value = !shown,
-              tooltip: shown ? l10n.subtitlesHide : l10n.subtitlesShow,
-              active: shown,
-            ),
-          ),
+          MTCaptionButtons(captions: captions),
         ],
         const SizedBox(width: MTSpace.xs),
         MTVideoSpeedButton(session: session),

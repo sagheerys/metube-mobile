@@ -1460,6 +1460,22 @@ class MTLocalizationsEn extends MTLocalizations {
   String get subtitles => 'Subtitles';
 
   @override
+  String get subtitlesBackground => 'Background';
+
+  @override
+  String get subtitlesBackgroundFaint => 'Light';
+
+  @override
+  String get subtitlesBackgroundHelp =>
+      'What sits behind the words. With none, each letter keeps a dark edge so it still reads over a bright picture.';
+
+  @override
+  String get subtitlesBackgroundNone => 'None';
+
+  @override
+  String get subtitlesBackgroundSolid => 'Dark';
+
+  @override
   String get subtitlesHide => 'Hide subtitles';
 
   @override
@@ -1468,6 +1484,9 @@ class MTLocalizationsEn extends MTLocalizations {
   @override
   String get subtitlesInShortsHelp =>
       'Off unless you turn it on: many shorts already carry their words in the picture.';
+
+  @override
+  String get subtitlesLanguage => 'Subtitle language';
 
   @override
   String get subtitlesShow => 'Show subtitles';

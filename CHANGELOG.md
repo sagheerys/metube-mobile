@@ -28,9 +28,13 @@ only one.
 - **Subtitles over the video, with the spoken word lit.** For clips that
   have a transcript, a CC button in the player shows the words as they are
   said: a whole sentence that stays put, the word being spoken brighter
-  than the rest, lifted above the controls when they show. Settings has
-  the switch, three sizes, and an option for the shorts (off by default,
-  since many shorts carry their words in the picture). Transcripts kept
+  than the rest, lifted above the controls when they show. A clip with
+  subtitles in two languages gets a button beside CC that switches between
+  them, and the choice is kept for the next clip. Settings has the switch,
+  three sizes, the background behind the words (dark, light, or none,
+  with a dark edge round each letter instead), and an option for the
+  shorts (off by default, since many shorts carry their words in the
+  picture). Transcripts kept
   before this are read again once, quietly, to learn when each word is
   said. Super only.
 - **The transcript in the shorts.** A button in the side column opens the

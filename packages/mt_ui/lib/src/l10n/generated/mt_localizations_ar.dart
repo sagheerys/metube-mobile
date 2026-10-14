@@ -1479,6 +1479,22 @@ class MTLocalizationsAr extends MTLocalizations {
   String get subtitles => 'الترجمة على الفيديو';
 
   @override
+  String get subtitlesBackground => 'الخلفية';
+
+  @override
+  String get subtitlesBackgroundFaint => 'خفيفة';
+
+  @override
+  String get subtitlesBackgroundHelp =>
+      'ما خلف الكلمات. بلا خلفية يبقى حول كل حرف حدٌّ داكن ليُقرأ فوق الصورة الفاتحة.';
+
+  @override
+  String get subtitlesBackgroundNone => 'بلا خلفية';
+
+  @override
+  String get subtitlesBackgroundSolid => 'داكنة';
+
+  @override
   String get subtitlesHide => 'إخفاء الترجمة';
 
   @override
@@ -1487,6 +1503,9 @@ class MTLocalizationsAr extends MTLocalizations {
   @override
   String get subtitlesInShortsHelp =>
       'مطفأة ما لم تفعّلها: كثير من الشورتس فيها الكلام مكتوب على الصورة أصلاً.';
+
+  @override
+  String get subtitlesLanguage => 'لغة الترجمة';
 
   @override
   String get subtitlesShow => 'إظهار الترجمة';

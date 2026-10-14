@@ -2618,6 +2618,36 @@ abstract class MTLocalizations {
   /// **'Subtitles'**
   String get subtitles;
 
+  /// No description provided for @subtitlesBackground.
+  ///
+  /// In en, this message translates to:
+  /// **'Background'**
+  String get subtitlesBackground;
+
+  /// No description provided for @subtitlesBackgroundFaint.
+  ///
+  /// In en, this message translates to:
+  /// **'Light'**
+  String get subtitlesBackgroundFaint;
+
+  /// No description provided for @subtitlesBackgroundHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'What sits behind the words. With none, each letter keeps a dark edge so it still reads over a bright picture.'**
+  String get subtitlesBackgroundHelp;
+
+  /// No description provided for @subtitlesBackgroundNone.
+  ///
+  /// In en, this message translates to:
+  /// **'None'**
+  String get subtitlesBackgroundNone;
+
+  /// No description provided for @subtitlesBackgroundSolid.
+  ///
+  /// In en, this message translates to:
+  /// **'Dark'**
+  String get subtitlesBackgroundSolid;
+
   /// No description provided for @subtitlesHide.
   ///
   /// In en, this message translates to:
@@ -2635,6 +2665,12 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'Off unless you turn it on: many shorts already carry their words in the picture.'**
   String get subtitlesInShortsHelp;
+
+  /// No description provided for @subtitlesLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Subtitle language'**
+  String get subtitlesLanguage;
 
   /// No description provided for @subtitlesShow.
   ///

@@ -28,27 +28,56 @@ class SubtitlePrefs {
   /// alone unless asked.
   final inShorts = ValueNotifier(false);
 
+  /// The language picked with the player's switch, kept from clip to clip;
+  /// null is the app's language first.
+  final language = ValueNotifier<String?>(null);
+
+  /// Dark, light or no background: an index into
+  /// [MTCaptionBackground.values].
+  final background = ValueNotifier(0);
+
   static const scales = [0.85, 1.0, 1.25];
   static const _shownKey = 'subtitles_shown';
   static const _sizeKey = 'subtitles_size';
   static const _shortsKey = 'subtitles_in_shorts';
+  static const _languageKey = 'subtitles_language';
+  static const _backgroundKey = 'subtitles_background';
 
   double get scale => scales[size.value.clamp(0, scales.length - 1)];
+
+  MTCaptionBackground get backdrop =>
+      MTCaptionBackground.values[background.value.clamp(
+        0,
+        MTCaptionBackground.values.length - 1,
+      )];
 
   Future<void> _load() async {
     shown.value = await _store.getBool(_shownKey) ?? false;
     size.value = await _store.getInt(_sizeKey) ?? 1;
     inShorts.value = await _store.getBool(_shortsKey) ?? false;
+    language.value = await _store.getString(_languageKey);
+    background.value = await _store.getInt(_backgroundKey) ?? 0;
     // Saved from here on; what was just read is not written back.
     shown.addListener(() => _store.setBool(_shownKey, shown.value));
     size.addListener(() => _store.setInt(_sizeKey, size.value));
     inShorts.addListener(() => _store.setBool(_shortsKey, inShorts.value));
+    language.addListener(
+      () => switch (language.value) {
+        final code? => _store.setString(_languageKey, code),
+        null => _store.remove(_languageKey),
+      },
+    );
+    background.addListener(
+      () => _store.setInt(_backgroundKey, background.value),
+    );
   }
 
   void dispose() {
     shown.dispose();
     size.dispose();
     inShorts.dispose();
+    language.dispose();
+    background.dispose();
   }
 }
 
@@ -58,62 +87,71 @@ final subtitlePrefsProvider = Provider<SubtitlePrefs>((ref) {
   return prefs;
 });
 
-/// A clip's subtitle lines, in the app's language where kept, else the
-/// first other language kept (English, as the app keeps it). Null for a
-/// clip without a transcript, or while transcripts are off. The same list
-/// comes back until the transcripts change, so a player does not regroup
-/// its sentences on every rebuild.
-final subtitleLinesProvider = Provider.family<List<MTCaptionLine>?, String>((
-  ref,
-  url,
-) {
-  if (!(ref.watch(transcriptsEnabledProvider).valueOrNull ?? false)) {
-    return null;
-  }
-  ref.watch(transcriptsRevisionProvider);
-  final kept = ref
-      .watch(transcriptIndexProvider)
-      .valueOrNull
-      ?.transcriptsFor(url);
-  if (kept == null || kept.isEmpty) return null;
-  final order = ref.read(transcriptsServiceProvider).languages;
-  int rank(String language) {
-    final at = order.indexOf(language);
-    return at < 0 ? order.length : at;
-  }
+/// Every language a clip's subtitles come in, by code, the app's language
+/// first and then the order the app keeps them in (English after). Null
+/// for a clip without a transcript, or while transcripts are off. The same
+/// map comes back until the transcripts change, so a player does not
+/// regroup its sentences on every rebuild.
+final subtitleTracksProvider =
+    Provider.family<Map<String, List<MTCaptionLine>>?, String>((ref, url) {
+      if (!(ref.watch(transcriptsEnabledProvider).valueOrNull ?? false)) {
+        return null;
+      }
+      ref.watch(transcriptsRevisionProvider);
+      final kept = ref
+          .watch(transcriptIndexProvider)
+          .valueOrNull
+          ?.transcriptsFor(url);
+      if (kept == null || kept.isEmpty) return null;
+      final order = ref.read(transcriptsServiceProvider).languages;
+      int rank(String language) {
+        final at = order.indexOf(language);
+        return at < 0 ? order.length : at;
+      }
 
-  final best =
-      (kept.toList()..sort((a, b) => rank(a.language) - rank(b.language)))
-          .first;
-  return [
-    for (final s in best.segments)
-      MTCaptionLine(
-        start: s.start,
-        end: s.end,
-        text: s.text,
-        words: switch (s.words) {
-          final words? => [
-            for (final w in words) MTCaptionWord(w.start, w.text),
+      return {
+        for (final t
+            in kept.toList()
+              ..sort((a, b) => rank(a.language) - rank(b.language)))
+          t.language: [
+            for (final s in t.segments)
+              MTCaptionLine(
+                start: s.start,
+                end: s.end,
+                text: s.text,
+                words: switch (s.words) {
+                  final words? => [
+                    for (final w in words) MTCaptionWord(w.start, w.text),
+                  ],
+                  null => null,
+                },
+              ),
           ],
-          null => null,
-        },
-      ),
-  ];
-});
+      };
+    });
 
-/// What a player draws for [item]: its lines, shown as [shown] says.
+/// A clip's subtitle lines in the language shown first.
+final subtitleLinesProvider = Provider.family<List<MTCaptionLine>?, String>(
+  (ref, url) => ref.watch(subtitleTracksProvider(url))?.values.first,
+);
+
+/// What a player draws for [item]: its lines in every language it has,
+/// shown as [shown] says.
 MTCaptions? subtitlesFor(
   WidgetRef ref,
   PlaylistItem item, {
   ValueNotifier<bool>? shown,
 }) {
-  final lines = ref.read(subtitleLinesProvider(item.canonicalUrl));
-  if (lines == null) return null;
+  final tracks = ref.read(subtitleTracksProvider(item.canonicalUrl));
+  if (tracks == null) return null;
   final prefs = ref.read(subtitlePrefsProvider);
   return MTCaptions(
-    lines: lines,
+    lines: tracks.values.first,
+    tracks: tracks,
+    language: prefs.language,
     shown: shown ?? prefs.shown,
     scale: prefs.scale,
+    background: prefs.backdrop,
   );
 }
 
@@ -127,7 +165,12 @@ class SubtitleSettings extends ConsumerWidget {
     final text = Theme.of(context).textTheme;
     final prefs = ref.watch(subtitlePrefsProvider);
     return ListenableBuilder(
-      listenable: Listenable.merge([prefs.shown, prefs.size, prefs.inShorts]),
+      listenable: Listenable.merge([
+        prefs.shown,
+        prefs.size,
+        prefs.background,
+        prefs.inShorts,
+      ]),
       builder: (context, _) => Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -152,6 +195,30 @@ class SubtitleSettings extends ConsumerWidget {
             onSelectionChanged: (selection) =>
                 prefs.size.value = selection.first,
           ),
+          const SizedBox(height: MTSpace.lg),
+          Text(l10n.subtitlesBackground, style: text.bodyMedium),
+          const SizedBox(height: MTSpace.xs),
+          SegmentedButton<int>(
+            segments: [
+              ButtonSegment(
+                value: 0,
+                label: Text(l10n.subtitlesBackgroundSolid),
+              ),
+              ButtonSegment(
+                value: 1,
+                label: Text(l10n.subtitlesBackgroundFaint),
+              ),
+              ButtonSegment(
+                value: 2,
+                label: Text(l10n.subtitlesBackgroundNone),
+              ),
+            ],
+            selected: {prefs.background.value},
+            onSelectionChanged: (selection) =>
+                prefs.background.value = selection.first,
+          ),
+          const SizedBox(height: MTSpace.xs),
+          Text(l10n.subtitlesBackgroundHelp, style: text.bodySmall),
           SwitchListTile(
             contentPadding: EdgeInsets.zero,
             title: Text(l10n.subtitlesInShorts, style: text.bodyMedium),

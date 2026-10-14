@@ -6,6 +6,7 @@ import 'package:metube_super/features/settings/settings_state.dart';
 import 'package:metube_super/features/transcripts/subtitles.dart';
 import 'package:metube_super/features/transcripts/transcripts_state.dart';
 import 'package:mt_core/mt_core.dart';
+import 'package:mt_media/mt_media.dart';
 import 'package:mt_transcripts/mt_transcripts.dart';
 import 'package:mt_ui/mt_ui.dart';
 
@@ -72,6 +73,25 @@ void main() {
     expect(line.words!.last.start, const Duration(milliseconds: 1500));
   });
 
+  test('every language the clip has, the app\'s own first', () async {
+    final (ar, _) = await container();
+    expect(ar.read(subtitleTracksProvider(url))!.keys, ['ar', 'en']);
+    final (en, _) = await container(locale: 'en');
+    expect(en.read(subtitleTracksProvider(url))!.keys, ['en', 'ar']);
+  });
+
+  test('the language picked with the switch is kept', () async {
+    final (c, store) = await container();
+    final prefs = c.read(subtitlePrefsProvider);
+    await pumpEventQueue();
+    prefs.language.value = 'en';
+    await pumpEventQueue();
+    expect(await store.getString('subtitles_language'), 'en');
+    prefs.language.value = null;
+    await pumpEventQueue();
+    expect(await store.getString('subtitles_language'), isNull);
+  });
+
   test('no subtitles while transcripts are off', () async {
     final (c, _) = await container(enabled: false);
     expect(c.read(subtitleLinesProvider(url)), isNull);
@@ -99,15 +119,18 @@ void main() {
     expect(prefs.shown.value, isFalse);
     expect(prefs.inShorts.value, isFalse);
     expect(prefs.size.value, 1);
+    expect(prefs.backdrop, MTCaptionBackground.solid);
 
     await tester.tap(find.text('Show subtitles'));
     await tester.tap(find.text('Large'));
+    await tester.tap(find.text('None'));
     await tester.tap(find.text('Subtitles in shorts'));
     await tester.pumpAndSettle();
     await tester.runAsync(() async {
       expect(await store.getBool('subtitles_shown'), isTrue);
       expect(await store.getInt('subtitles_size'), 2);
       expect(await store.getBool('subtitles_in_shorts'), isTrue);
+      expect(await store.getInt('subtitles_background'), 2);
     });
     expect(prefs.scale, greaterThan(1));
   });
