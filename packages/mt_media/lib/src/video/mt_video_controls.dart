@@ -85,10 +85,11 @@ class _MTVideoControlsState extends State<MTVideoControls> {
     _restartTimer();
   }
 
-  /// Clear of the bottom bar while it shows, near the edge when it hides.
+  /// Clear of the bottom bar while it shows, near the edge when it hides:
+  /// above the cream sheet, which overlaps the small player by 14px.
   double get _captionLift => _visible && !_locked
       ? (widget.fullscreen ? MTSpace.xs : MTSpace.xl) + 76
-      : (widget.fullscreen ? MTSpace.lg : MTSpace.md);
+      : (widget.fullscreen ? MTSpace.lg : MTSpace.xxl);
 
   @override
   Widget build(BuildContext context) => Stack(
