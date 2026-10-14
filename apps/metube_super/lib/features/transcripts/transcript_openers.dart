@@ -61,6 +61,23 @@ void showVideoTranscript(
   seek: session.seek,
 );
 
+/// The same, for the reel on screen (owner's request 2026-10-14: the
+/// shorts had no way to the transcript the other players offer).
+void showReelTranscript(
+  BuildContext context,
+  MTReelsHandle reel,
+  PlaylistItem playing,
+) => _openFollowing(
+  context,
+  playing,
+  position: Stream.periodic(
+    const Duration(milliseconds: 250),
+    (_) => reel.position,
+  ),
+  stillPlaying: () => reel.current?.canonicalUrl == playing.canonicalUrl,
+  seek: reel.seek,
+);
+
 /// The transcript as a panel beside a full-screen video, for the items
 /// that have one.
 MTVideoPanel? Function(PlaylistItem item) transcriptPanels(

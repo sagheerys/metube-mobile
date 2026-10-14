@@ -63,7 +63,7 @@ class SidecarBackfill {
         for (final item in items)
           if (item.serverFilename case final filename?)
             if (item.onServer &&
-                !index.contains(item.canonicalUrl) &&
+                _unread(index.transcriptsFor(item.canonicalUrl)) &&
                 !_tried.contains(item.canonicalUrl) &&
                 !SidecarMissIndex.covers(missed, item.canonicalUrl, filename))
               item,
@@ -115,6 +115,14 @@ class SidecarBackfill {
   /// names, which is all a server that does not list its folder allows:
   /// it answers 403 (aiohttp without `show_index`), 404 or an error page.
   /// A network failure is left to the caller, which ends the run.
+  /// No transcript yet, or only ones read before the reader kept when each
+  /// word is said (owner's request 2026-10-14, for the word lit in the
+  /// subtitles): those are read again, once, from the server's file. A
+  /// clip whose file is gone is marked missing like any other, and not
+  /// asked about again.
+  static bool _unread(List<Transcript> kept) =>
+      kept.isEmpty || kept.every((t) => t.reader < SubtitleParser.version);
+
   Future<SidecarListing?> _listing(MeTubeApi api) async {
     if (_noListing) return null;
     try {

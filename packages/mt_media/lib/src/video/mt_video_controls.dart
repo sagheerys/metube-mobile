@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:mt_ui/mt_ui.dart';
 
 import '../widgets/mt_extra_button.dart';
+import 'mt_captions.dart';
 import 'mt_video_session.dart';
 import 'video_buttons.dart';
 import 'video_control_bars.dart';
@@ -22,6 +23,7 @@ class MTVideoControls extends StatefulWidget {
     this.playlistName,
     this.membershipLine,
     this.extra,
+    this.captions,
   });
 
   final MTVideoSession session;
@@ -32,6 +34,10 @@ class MTVideoControls extends StatefulWidget {
   /// A button the app adds beside the queue button.
   final MTExtraAction? extra;
   final bool fullscreen;
+
+  /// The clip's subtitles, drawn under the controls and above them when
+  /// they show; null for a clip without any.
+  final MTCaptions? captions;
   final String? playlistName;
   final String? membershipLine;
 
@@ -79,8 +85,29 @@ class _MTVideoControlsState extends State<MTVideoControls> {
     _restartTimer();
   }
 
+  /// Clear of the bottom bar while it shows, near the edge when it hides.
+  double get _captionLift => _visible && !_locked
+      ? (widget.fullscreen ? MTSpace.xs : MTSpace.xl) + 76
+      : (widget.fullscreen ? MTSpace.lg : MTSpace.md);
+
   @override
-  Widget build(BuildContext context) => LayoutBuilder(
+  Widget build(BuildContext context) => Stack(
+    fit: StackFit.expand,
+    children: [
+      if ((widget.captions, widget.session.controller) case (
+        final captions?,
+        final controller?,
+      ))
+        MTCaptionsLayer(
+          controller: controller,
+          captions: captions,
+          lift: _captionLift,
+        ),
+      _controls(),
+    ],
+  );
+
+  Widget _controls() => LayoutBuilder(
     builder: (context, constraints) => GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: _toggleVisible,
@@ -123,6 +150,7 @@ class _MTVideoControlsState extends State<MTVideoControls> {
           fullscreen: widget.fullscreen,
           playlistName: widget.playlistName,
           membershipLine: widget.membershipLine,
+          captions: widget.captions,
           onLock: widget.fullscreen
               ? () {
                   _hideTimer?.cancel();

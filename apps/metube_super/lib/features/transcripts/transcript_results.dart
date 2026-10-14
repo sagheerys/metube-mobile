@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mt_core/mt_core.dart' show UrlKit;
+import 'package:mt_core/mt_core.dart' show ImageHeaders, UrlKit;
 import 'package:mt_transcripts/mt_transcripts.dart';
 import 'package:mt_ui/mt_ui.dart';
 
+import '../../di.dart';
+import '../library/artwork_view.dart';
 import '../library/library_models.dart';
 import '../library/library_providers.dart';
 import 'transcript_moment.dart';
@@ -126,6 +128,12 @@ class _ClipMoments extends ConsumerWidget {
             onTap: openAll,
             child: Row(
               children: [
+                // **Which clip, at a glance** (owner's request 2026-10-14):
+                // titles alone read alike in a long list of results. Beside
+                // the title rather than above it, so the moments below keep
+                // their place.
+                _Thumb(item: item),
+                const SizedBox(width: MTSpace.sm),
                 Expanded(
                   child: Text(
                     item.title,
@@ -165,6 +173,40 @@ class _ClipMoments extends ConsumerWidget {
             ),
         ],
       ),
+    );
+  }
+}
+
+/// The clip's picture beside its title, the size of a line of text.
+class _Thumb extends ConsumerWidget {
+  const _Thumb({required this.item});
+
+  final LibraryItem item;
+
+  static const width = 64.0;
+  static const height = 36.0;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final p = MTThemeX.of(context).palette;
+    final picture = artworkFor(
+      item.thumbnail,
+      headers: switch (item.thumbnail) {
+        final url? => ref.read(apiClientProvider)?.imageHeadersFor(url),
+        null => null,
+      },
+      decodeWidth: mtDecodeWidth(context, width, height),
+    );
+    return MTMediaThumb(
+      width: width,
+      height: height,
+      child:
+          picture ??
+          Icon(
+            item.isAudio ? Icons.music_note_rounded : Icons.movie_rounded,
+            size: 16,
+            color: p.ink3,
+          ),
     );
   }
 }

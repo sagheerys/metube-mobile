@@ -17,6 +17,7 @@ import '../shared/platform_label.dart';
 import '../transcripts/transcript_openers.dart';
 import '../transcripts/transcripts_state.dart';
 import 'playback_providers.dart';
+import '../transcripts/subtitles.dart';
 
 /// Super's video player (rule 4): it feeds `MTVideoScreen` with the app's
 /// actions, available offline, continue as audio, share, and open the
@@ -95,6 +96,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
           ? null
           : () => context.push('/playlists/${request.playlistId}'),
       fullscreenPanel: transcriptPanels(context, session),
+      captions: (item) => subtitlesFor(ref, item),
     );
   }
 

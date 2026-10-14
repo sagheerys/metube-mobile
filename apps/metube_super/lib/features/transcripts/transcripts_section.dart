@@ -13,6 +13,7 @@ import '../settings/auto_backup.dart';
 import '../settings/widgets/help_button.dart';
 import '../shared/error_report.dart';
 import 'transcripts_state.dart';
+import 'subtitles.dart';
 
 /// The settings section for searching inside clips: the switch, and once
 /// it is on, what it holds and what can be done with it.
@@ -81,6 +82,7 @@ class TranscriptsSection extends ConsumerWidget {
               ),
             ],
           ),
+          const SubtitleSettings(),
         ],
       ],
     );

@@ -129,6 +129,7 @@ class SidecarReader {
           source: 'captions',
           fetchedAt: DateTime.now(),
           segments: segments,
+          reader: SubtitleParser.version,
         ),
       );
     }

@@ -2516,6 +2516,66 @@ abstract class MTLocalizations {
   /// **'Update the MeTube container to a release that has channel subscriptions, then come back here. Nothing else in the app is affected.'**
   String get subscriptionsUnsupportedBody;
 
+  /// No description provided for @subtitles.
+  ///
+  /// In en, this message translates to:
+  /// **'Subtitles'**
+  String get subtitles;
+
+  /// No description provided for @subtitlesHide.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide subtitles'**
+  String get subtitlesHide;
+
+  /// No description provided for @subtitlesInShorts.
+  ///
+  /// In en, this message translates to:
+  /// **'Subtitles in shorts'**
+  String get subtitlesInShorts;
+
+  /// No description provided for @subtitlesInShortsHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Off unless you turn it on: many shorts already carry their words in the picture.'**
+  String get subtitlesInShortsHelp;
+
+  /// No description provided for @subtitlesShow.
+  ///
+  /// In en, this message translates to:
+  /// **'Show subtitles'**
+  String get subtitlesShow;
+
+  /// No description provided for @subtitlesShowHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Over the video, for clips that have a transcript. The CC button in the player does the same.'**
+  String get subtitlesShowHelp;
+
+  /// No description provided for @subtitlesSize.
+  ///
+  /// In en, this message translates to:
+  /// **'Text size'**
+  String get subtitlesSize;
+
+  /// No description provided for @subtitlesSizeLarge.
+  ///
+  /// In en, this message translates to:
+  /// **'Large'**
+  String get subtitlesSizeLarge;
+
+  /// No description provided for @subtitlesSizeMedium.
+  ///
+  /// In en, this message translates to:
+  /// **'Medium'**
+  String get subtitlesSizeMedium;
+
+  /// No description provided for @subtitlesSizeSmall.
+  ///
+  /// In en, this message translates to:
+  /// **'Small'**
+  String get subtitlesSizeSmall;
+
   /// No description provided for @tagActionsHint.
   ///
   /// In en, this message translates to:

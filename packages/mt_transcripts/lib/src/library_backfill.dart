@@ -223,6 +223,7 @@ class LibraryBackfill {
       source: 'captions',
       fetchedAt: _clock().toUtc(),
       segments: segments,
+      reader: SubtitleParser.version,
     );
     final id = UrlKit.youtubeVideoId(clip.canonicalUrl)!;
     await _file('$id.$language.json')

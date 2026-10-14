@@ -1416,6 +1416,38 @@ class MTLocalizationsAr extends MTLocalizations {
       'حدّث حاوية MeTube إلى إصدار فيه اشتراكات القنوات ثم عد إلى هنا. لا شيء آخر في التطبيق يتأثر.';
 
   @override
+  String get subtitles => 'الترجمة على الفيديو';
+
+  @override
+  String get subtitlesHide => 'إخفاء الترجمة';
+
+  @override
+  String get subtitlesInShorts => 'الترجمة في الشورتس';
+
+  @override
+  String get subtitlesInShortsHelp =>
+      'مطفأة ما لم تفعّلها: كثير من الشورتس فيها الكلام مكتوب على الصورة أصلاً.';
+
+  @override
+  String get subtitlesShow => 'إظهار الترجمة';
+
+  @override
+  String get subtitlesShowHelp =>
+      'فوق الفيديو، للمقاطع التي لها نص. زر CC في المشغّل يفعل الشيء نفسه.';
+
+  @override
+  String get subtitlesSize => 'حجم الخط';
+
+  @override
+  String get subtitlesSizeLarge => 'كبير';
+
+  @override
+  String get subtitlesSizeMedium => 'متوسط';
+
+  @override
+  String get subtitlesSizeSmall => 'صغير';
+
+  @override
   String get tagActionsHint => 'اضغط مطوّلاً على وسم لإعادة تسميته أو حذفه.';
 
   @override

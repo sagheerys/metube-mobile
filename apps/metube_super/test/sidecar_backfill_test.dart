@@ -123,28 +123,55 @@ void main() {
     },
   );
 
-  test('a clip that already has a transcript is left alone', () async {
-    final c = await container();
-    await c
-        .read(transcriptsServiceProvider)
-        .save(
-          Transcript(
-            canonicalUrl: 'https://www.youtube.com/watch?v=a',
-            language: 'ar',
-            source: 'captions',
-            fetchedAt: DateTime.utc(2026),
-            segments: const [
-              TranscriptSegment(
-                start: Duration.zero,
-                end: Duration(seconds: 1),
-                text: 'x',
-              ),
-            ],
-          ),
-        );
-    await c.read(sidecarBackfillProvider).run([onServer('a')]);
-    expect(server.asked, isEmpty);
-  });
+  Transcript kept({int reader = SubtitleParser.version}) => Transcript(
+    canonicalUrl: 'https://www.youtube.com/watch?v=a',
+    language: 'ar',
+    source: 'captions',
+    fetchedAt: DateTime.utc(2026),
+    reader: reader,
+    segments: const [
+      TranscriptSegment(
+        start: Duration.zero,
+        end: Duration(seconds: 1),
+        text: 'x',
+      ),
+    ],
+  );
+
+  test(
+    'a clip whose transcript is read by the current reader is left alone',
+    () async {
+      final c = await container();
+      await c.read(transcriptsServiceProvider).save(kept());
+      await c.read(sidecarBackfillProvider).run([onServer('a')]);
+      expect(server.asked, isEmpty);
+    },
+  );
+
+  // Owner's request 2026-10-14: the spoken word lit in the subtitles needs
+  // word timing, which transcripts read before it lack.
+  test(
+    'a transcript read before words were kept is read again, once',
+    () async {
+      server.texts['a.ar.vtt'] =
+          'WEBVTT\n\n00:00:01.000 --> 00:00:02.000\n'
+          'here <00:00:01.500><c>we</c>\n';
+      final c = await container();
+      await c.read(transcriptsServiceProvider).save(kept(reader: 1));
+      await c.read(sidecarBackfillProvider).run([onServer('a')]);
+      expect(server.asked, ['a.ar.vtt']);
+
+      final index = await c.read(transcriptIndexProvider.future);
+      final now = index.transcriptsFor('https://www.youtube.com/watch?v=a');
+      expect(now.single.reader, SubtitleParser.version);
+      expect(now.single.segments.single.words!.last.text, 'we');
+
+      // A fresh run, as after a restart: nothing left to read.
+      final again = await container();
+      await again.read(sidecarBackfillProvider).run([onServer('a')]);
+      expect(server.asked, ['a.ar.vtt']);
+    },
+  );
 
   test(
     'a server that cannot be reached ends the run and records nothing',

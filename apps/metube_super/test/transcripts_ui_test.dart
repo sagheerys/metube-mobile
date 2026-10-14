@@ -110,7 +110,8 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Export'), findsNothing);
 
-      await tester.tap(find.byType(Switch));
+      // The first switch: the subtitle ones follow it once it is on.
+      await tester.tap(find.byType(Switch).first);
       await tester.pumpAndSettle();
       expect(find.textContaining('up to 40 seconds'), findsOneWidget);
 
@@ -125,7 +126,8 @@ void main() {
       final c = await container();
       await tester.pumpWidget(host(c, section()));
       await tester.pumpAndSettle();
-      await tester.tap(find.byType(Switch));
+      // The first switch: the subtitle ones follow it once it is on.
+      await tester.tap(find.byType(Switch).first);
       await tester.pumpAndSettle();
       await tester.tap(find.text('Cancel'));
       await tester.pumpAndSettle();
@@ -140,7 +142,8 @@ void main() {
       await tester.pumpWidget(host(c, section()));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.byType(Switch));
+      // The first switch: the subtitle ones follow it once it is on.
+      await tester.tap(find.byType(Switch).first);
       await tester.pumpAndSettle();
       expect(find.text('Stop and keep'), findsOneWidget);
       expect(find.text('Stop and delete'), findsOneWidget);
@@ -243,6 +246,28 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Said inside clips'), findsNothing);
     });
+
+    // Owner's request 2026-10-14: which clip, at a glance.
+    for (final locale in const [Locale('en'), Locale('ar')]) {
+      testWidgets(
+        'each clip shows its picture before its title (${locale.languageCode})',
+        (tester) async {
+          final c = await container(enabled: true, query: 'long trunks');
+          await tester.pumpWidget(host(c, results(), locale: locale));
+          await tester.pumpAndSettle();
+
+          final thumb = tester.getRect(find.byType(MTMediaThumb));
+          final title = tester.getRect(find.text('Me at the zoo'));
+          if (locale.languageCode == 'ar') {
+            expect(thumb.left, greaterThan(title.right));
+          } else {
+            expect(thumb.right, lessThan(title.left));
+          }
+          // No cover yet: a film, not the music note of the default.
+          expect(find.byIcon(Icons.movie_rounded), findsOneWidget);
+        },
+      );
+    }
 
     for (final locale in const [Locale('en'), Locale('ar')]) {
       testWidgets(

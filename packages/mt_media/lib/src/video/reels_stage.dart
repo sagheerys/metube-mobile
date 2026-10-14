@@ -85,6 +85,9 @@ class ReelsOverlayLayer extends StatelessWidget {
   /// lives outside this layer.
   final bool visible;
 
+  /// What the top bar and the swipe hint under it take, at normal text.
+  static const _clearTop = 72.0;
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.mtl;
@@ -134,13 +137,34 @@ class ReelsOverlayLayer extends StatelessWidget {
                 ),
               ),
             ),
+            // **A ceiling for the side column** (measured 2026-10-14): held
+            // from the bottom alone, it climbed over the top bar on a small
+            // phone at large text, and a sixth button (the transcript) made
+            // it do so at normal text on the smallest phones. Where it fits
+            // nothing moves; where it does not, it shrinks to fit.
             PositionedDirectional(
               start: MTSpace.md,
+              top: 0,
               bottom: 150,
-              child: MTReelsRail(
-                favorite: favorite,
-                onToggleFavorite: onToggleFavorite,
-                actions: actions,
+              child: SafeArea(
+                bottom: false,
+                child: Padding(
+                  padding: EdgeInsets.only(
+                    top: MediaQuery.textScalerOf(context).scale(_clearTop),
+                  ),
+                  child: Align(
+                    alignment: AlignmentDirectional.bottomStart,
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: AlignmentDirectional.bottomStart,
+                      child: MTReelsRail(
+                        favorite: favorite,
+                        onToggleFavorite: onToggleFavorite,
+                        actions: actions,
+                      ),
+                    ),
+                  ),
+                ),
               ),
             ),
             // **Above the progress bar, not on it** (emulator screenshot

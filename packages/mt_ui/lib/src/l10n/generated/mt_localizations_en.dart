@@ -1400,6 +1400,38 @@ class MTLocalizationsEn extends MTLocalizations {
       'Update the MeTube container to a release that has channel subscriptions, then come back here. Nothing else in the app is affected.';
 
   @override
+  String get subtitles => 'Subtitles';
+
+  @override
+  String get subtitlesHide => 'Hide subtitles';
+
+  @override
+  String get subtitlesInShorts => 'Subtitles in shorts';
+
+  @override
+  String get subtitlesInShortsHelp =>
+      'Off unless you turn it on: many shorts already carry their words in the picture.';
+
+  @override
+  String get subtitlesShow => 'Show subtitles';
+
+  @override
+  String get subtitlesShowHelp =>
+      'Over the video, for clips that have a transcript. The CC button in the player does the same.';
+
+  @override
+  String get subtitlesSize => 'Text size';
+
+  @override
+  String get subtitlesSizeLarge => 'Large';
+
+  @override
+  String get subtitlesSizeMedium => 'Medium';
+
+  @override
+  String get subtitlesSizeSmall => 'Small';
+
+  @override
   String get tagActionsHint => 'Long-press a tag to rename or delete it.';
 
   @override

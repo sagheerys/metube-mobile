@@ -25,6 +25,19 @@ only one.
   count too: 8-inch models whose window is narrower than 600 points.
   Phones are unchanged.
 
+- **Subtitles over the video, with the spoken word lit.** For clips that
+  have a transcript, a CC button in the player shows the words as they are
+  said: a whole sentence that stays put, the word being spoken brighter
+  than the rest, lifted above the controls when they show. Settings has
+  the switch, three sizes, and an option for the shorts (off by default,
+  since many shorts carry their words in the picture). Transcripts kept
+  before this are read again once, quietly, to learn when each word is
+  said. Super only.
+- **The transcript in the shorts.** A button in the side column opens the
+  clip's transcript, following along; a tap on a line jumps there. Super
+  only.
+- **A picture beside each clip under "Said inside clips".** Super only.
+
 ### Changed
 
 - **Square covers for music.** The audio player, the mini player, the

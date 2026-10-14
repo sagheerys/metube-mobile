@@ -11,6 +11,7 @@ import '../video/video_side_panel.dart';
 import '../widgets/mt_queue_panel.dart';
 import '../widgets/mt_up_next_list.dart';
 import 'video_info_sheet.dart';
+import '../video/mt_captions.dart';
 
 /// One action in the portrait player (offline, share, add to a list…).
 /// The app supplies them, because mt_media knows neither the server nor
@@ -46,9 +47,14 @@ class MTVideoScreen extends StatelessWidget {
     this.playlistName,
     this.membershipLine,
     this.fullscreenPanel,
+    this.captions,
   });
 
   final MTVideoSession session;
+
+  /// The subtitles of the item playing, asked again as the queue moves;
+  /// null, or a null answer, draws none and offers no CC button.
+  final MTCaptions? Function(PlaylistItem item)? captions;
   final List<MTPlayerAction> actions;
 
   /// A panel the app offers beside the video in full screen, for the item
@@ -114,6 +120,7 @@ class MTVideoScreen extends StatelessWidget {
       Expanded(
         child: _VideoArea(
           session: session,
+          captions: captions,
           artwork: artwork,
           fill: true,
           playlistName: playlistName,
@@ -175,6 +182,7 @@ class MTVideoScreen extends StatelessWidget {
             : MediaQuery.orientationOf(context) == Orientation.landscape
             ? _VideoArea(
                 session: session,
+                captions: captions,
                 artwork: artwork,
                 fill: true,
                 playlistName: playlistName,
@@ -187,6 +195,7 @@ class MTVideoScreen extends StatelessWidget {
                 children: [
                   _VideoArea(
                     session: session,
+                    captions: captions,
                     artwork: artwork,
                     playlistName: playlistName,
                     membershipLine: membershipLine,
@@ -221,6 +230,7 @@ class MTVideoScreen extends StatelessWidget {
             membershipLine: membershipLine,
             onShowPlaylist: onShowPlaylist,
             panel: fullscreenPanel,
+            captions: captions,
           ),
         ),
       );
@@ -305,11 +315,13 @@ class _VideoArea extends StatelessWidget {
     this.playlistName,
     this.membershipLine,
     this.fill = false,
+    this.captions,
   });
 
   /// Fills the screen in landscape instead of 32% of its height.
   final bool fill;
   final MTArtworkBuilder? artwork;
+  final MTCaptions? Function(PlaylistItem item)? captions;
 
   final MTVideoSession session;
   final VoidCallback onBack;
@@ -352,6 +364,10 @@ class _VideoArea extends StatelessWidget {
             if (ready)
               MTVideoControls(
                 session: session,
+                captions: switch (session.current) {
+                  final item? => captions?.call(item),
+                  null => null,
+                },
                 playlistName: playlistName,
                 membershipLine: membershipLine,
                 onBack: onBack,

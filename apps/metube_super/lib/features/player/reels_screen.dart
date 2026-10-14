@@ -13,7 +13,10 @@ import '../library/widgets/item_details_sheet.dart';
 import '../shared/add_to_sheet.dart';
 import '../shared/membership.dart';
 import '../shared/platform_label.dart';
+import '../transcripts/transcript_openers.dart';
+import '../transcripts/transcripts_state.dart';
 import 'playback_providers.dart';
+import '../transcripts/subtitles.dart';
 
 /// Super's reels player: it builds the shorts lane from the request itself
 /// and wires the actions (favourite, download, add to a list, share) to the
@@ -32,6 +35,16 @@ class _ReelsScreenState extends ConsumerState<ReelsScreen> {
   /// throws there, and the throw used to abort the rest of `dispose()`,
   /// leaving a clip playing with no owner.
   late final MTAudioHandler _audio = ref.read(audioHandlerProvider);
+  final _reel = MTReelsHandle();
+
+  /// The shorts have no CC button: the setting alone decides.
+  final _always = ValueNotifier(true);
+
+  @override
+  void dispose() {
+    _always.dispose();
+    super.dispose();
+  }
 
   /// The last "stopper" we handed to the background player, to tell our
   /// registration apart from anyone else's.
@@ -77,6 +90,7 @@ class _ReelsScreenState extends ConsumerState<ReelsScreen> {
     final membership =
         ref.watch(membershipIndexProvider).valueOrNull ?? const {};
 
+    final transcripts = ref.watch(transcriptIndexProvider).valueOrNull;
     final lane = ShortsLane.from(request.items);
     final startUrl = request.items[request.startIndex].canonicalUrl;
     final laneIndex = lane.laneIndexOf(startUrl);
@@ -99,6 +113,10 @@ class _ReelsScreenState extends ConsumerState<ReelsScreen> {
       // While the reel is alive, starting audio from the
       // notification silences it first.
       onLive: _setLive,
+      handle: _reel,
+      captions: ref.watch(subtitlePrefsProvider).inShorts.value
+          ? (item) => subtitlesFor(ref, item, shown: _always)
+          : null,
       subtitleBuilder: (context, item) => mtMetaLine([
         platformLabel(l10n, MediaPlatform.detect(item.canonicalUrl)),
         item.uploader,
@@ -125,9 +143,17 @@ class _ReelsScreenState extends ConsumerState<ReelsScreen> {
       // the percentage, so the button does not look dead while pulling.
       actionsBuilder: (item) {
         final match = byUrl[item.canonicalUrl];
+        // Empty while transcripts are off, so the action never shows then.
+        final hasTranscript = transcripts?.contains(item.canonicalUrl) ?? false;
         final offline = match?.isOffline ?? item.hasLocal;
         final progress = pulls[item.canonicalUrl];
         return [
+          if (hasTranscript)
+            MTPlayerAction(
+              icon: Icons.subject_rounded,
+              label: l10n.transcript,
+              onTap: () => showReelTranscript(context, _reel, item),
+            ),
           MTPlayerAction(
             icon: Icons.info_outline_rounded,
             label: l10n.details,

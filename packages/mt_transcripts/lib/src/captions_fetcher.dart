@@ -146,6 +146,7 @@ class CaptionsFetcher {
           source: 'captions',
           fetchedAt: DateTime.now(),
           segments: segments,
+          reader: SubtitleParser.version,
         ),
       );
     } on MTApiException catch (e) {

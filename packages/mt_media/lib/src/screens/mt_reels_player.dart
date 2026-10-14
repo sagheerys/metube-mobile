@@ -13,8 +13,10 @@ import '../video/mt_video_open.dart';
 import '../video/reels_overlay.dart';
 import '../video/reels_progress.dart';
 import '../video/reels_stage.dart';
+import '../video/reels_handle.dart';
 import '../video/shorts_lane.dart';
 import 'mt_video_screen.dart';
+import '../video/mt_captions.dart';
 
 part 'mt_reels_player_controls.dart';
 
@@ -40,6 +42,8 @@ class MTReelsPlayer extends StatefulWidget {
     this.onContinueRest,
     this.onTakeAudioFocus,
     this.onLive,
+    this.handle,
+    this.captions,
   });
 
   final ShortsLane lane;
@@ -73,6 +77,14 @@ class MTReelsPlayer extends StatefulWidget {
   /// this, one play press in the media notification produced **two sources
   /// at once**.
   final void Function(Future<void> Function()? pauser)? onLive;
+
+  /// Lets the app follow the clip on screen and jump in it; see
+  /// [MTReelsHandle].
+  final MTReelsHandle? handle;
+
+  /// The reel's subtitles, for an app that shows them in the shorts;
+  /// null, or a null answer, draws none.
+  final MTCaptions? Function(PlaylistItem item)? captions;
 
   @override
   State<MTReelsPlayer> createState() => _MTReelsPlayerState();
@@ -140,6 +152,11 @@ class _MTReelsPlayerState extends State<MTReelsPlayer> {
     // intended. A large screen is left free: it is not turned by hand.
     MTOrientation.home();
     _notifyLive(_pauseForAudioFocus);
+    widget.handle?.attach(
+      current: () => _current,
+      position: () => _controller?.value.position ?? Duration.zero,
+      seek: (to) async => _controller?.seekTo(to),
+    );
     WidgetsBinding.instance.addPostFrameCallback((_) => _load(_index));
   }
 
@@ -177,6 +194,7 @@ class _MTReelsPlayerState extends State<MTReelsPlayer> {
     // is always dark.
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light);
     _notifyLive(null);
+    widget.handle?.detach();
     super.dispose();
   }
 
@@ -264,6 +282,20 @@ class _MTReelsPlayerState extends State<MTReelsPlayer> {
                       },
                     ),
             ),
+            // Above the title and the side column while they show, lower
+            // once they fade, and always clear of the progress bar.
+            if (!_endReached && item != null)
+              if ((widget.captions?.call(item), _controller) case (
+                final captions?,
+                final controller?,
+              ))
+                MTCaptionsLayer(
+                  controller: controller,
+                  captions: captions,
+                  lift:
+                      MediaQuery.paddingOf(context).bottom +
+                      (_chrome ? 168 : 72),
+                ),
             if (_endReached)
               MTReelsEndCard(
                 onBack: () => Navigator.of(context).maybePop(),
