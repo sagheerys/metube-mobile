@@ -96,9 +96,6 @@ class MTLocalizationsEn extends MTLocalizations {
   String get appearanceAndLanguage => 'Appearance & language';
 
   @override
-  String get appearanceSubtitle => 'Theme and language';
-
-  @override
   String audioChannels(int count) {
     return '$count channels';
   }
@@ -999,9 +996,6 @@ class MTLocalizationsEn extends MTLocalizations {
   String get preferences => 'Preferences';
 
   @override
-  String get preferencesSubtitle => 'Quality, quick download, Wi‑Fi';
-
-  @override
   String get previous => 'Previous';
 
   @override
@@ -1189,9 +1183,6 @@ class MTLocalizationsEn extends MTLocalizations {
   String get serverConfiguration => 'Server Configuration';
 
   @override
-  String get serverConfigurationSubtitle => 'Server URL and sign-in';
-
-  @override
   String serverFilesCount(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
@@ -1271,6 +1262,12 @@ class MTLocalizationsEn extends MTLocalizations {
   String get settings => 'Settings';
 
   @override
+  String get settingsBackup => 'Backup';
+
+  @override
+  String get settingsDownloads => 'Downloads';
+
+  @override
   String get settingsGroupApp => 'App';
 
   @override
@@ -1280,7 +1277,67 @@ class MTLocalizationsEn extends MTLocalizations {
   String get settingsGroupServer => 'Server';
 
   @override
+  String get settingsPlayback => 'Playback';
+
+  @override
   String get settingsSaved => 'Settings saved successfully';
+
+  @override
+  String get settingsTranscripts => 'Transcripts & subtitles';
+
+  @override
+  String get settingsValueArrivals => 'tells you what arrives';
+
+  @override
+  String get settingsValueAuto => 'Automatic';
+
+  @override
+  String settingsValueChannels(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count channels',
+      one: '1 channel',
+      zero: 'No channels yet',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get settingsValueCompatOff => 'Best compatibility: off';
+
+  @override
+  String get settingsValueCompatOn => 'Best compatibility: on';
+
+  @override
+  String get settingsValueExternalNow => 'external now';
+
+  @override
+  String get settingsValueLocalNow => 'local now';
+
+  @override
+  String get settingsValueManual => 'Manual';
+
+  @override
+  String get settingsValueNoPassword => 'no password';
+
+  @override
+  String get settingsValueNotSet => 'Not set up yet';
+
+  @override
+  String get settingsValueOff => 'Off';
+
+  @override
+  String get settingsValueOn => 'On';
+
+  @override
+  String get settingsValueQuick => 'quick';
+
+  @override
+  String get settingsValueSubtitlesShown => 'subtitles shown';
+
+  @override
+  String get settingsValueWifiOnly => 'Wi‑Fi only';
 
   @override
   String get setupServer => 'Set up the server';
@@ -1593,9 +1650,6 @@ class MTLocalizationsEn extends MTLocalizations {
   @override
   String get transcriptsSearchHelp =>
       'Keeps the words of every YouTube clip you add, so you can search what was said.';
-
-  @override
-  String get transcriptsSection => 'Transcripts';
 
   @override
   String get transcriptsStopAndDelete => 'Stop and delete';

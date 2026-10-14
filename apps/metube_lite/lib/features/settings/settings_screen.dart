@@ -1,24 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mt_ui/mt_ui.dart';
 
-import '../update/update_section.dart';
 import 'settings_hub.dart';
-import 'widgets/server_fields.dart';
+import 'settings_sections.dart';
 import 'widgets/server_keeps_files_notice.dart';
 import 'widgets/server_status_card.dart';
-import 'widgets/settings_fields.dart';
 
-/// Settings: the server card first, About last. Lite has no endpoint
-/// management, since there is one URL for the family server. On a tablet
-/// held sideways the same sections open in two panes ([SettingsHub]).
-class SettingsScreen extends StatefulWidget {
+/// **The settings home** (approved mock-up, 2026-10-14): the server card,
+/// then three short groups whose rows show each setting as it stands, each
+/// opening its own page. It used to be one long page that grew with every
+/// feature. On a tablet held sideways the same rows open in two panes
+/// ([SettingsHub]).
+class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
 
   @override
-  State<SettingsScreen> createState() => _SettingsScreenState();
+  ConsumerState<SettingsScreen> createState() => _SettingsScreenState();
 }
 
-class _SettingsScreenState extends State<SettingsScreen> {
+class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   /// Kept here, above both shapes, so turning the tablet does not lose the
   /// open section.
   SettingsPane _pane = SettingsPane.server;
@@ -45,38 +47,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
           children: [
             const ServerStatusCard(),
             const ServerKeepsFilesNotice(),
-            const SizedBox(height: MTSpace.xl),
-            const ServerFields(),
-            const SizedBox(height: MTSpace.xl),
-            const PreferencesFields(),
-            const SizedBox(height: MTSpace.lg),
-            const AppearanceFields(),
-            const SizedBox(height: MTSpace.xl),
-
-            // Data and diagnostics, then About last.
-            MTSectionHeader(title: l10n.backupSettings),
-            SettingsNavTile(
-              icon: Icons.shield_outlined,
-              title: l10n.backupSettings,
-              subtitle: l10n.backupSettingsSubtitle,
-              route: '/settings/backup',
-            ),
-            SettingsNavTile(
-              icon: Icons.article_outlined,
-              title: l10n.diagnosticLogs,
-              subtitle: l10n.diagnosticLogsSubtitle,
-              route: '/settings/logs',
-            ),
-            const SizedBox(height: MTSpace.xl),
-            const UpdateSection(),
-            const SizedBox(height: MTSpace.xl),
-            MTSectionHeader(title: l10n.about),
-            SettingsNavTile(
-              icon: Icons.info_outline_rounded,
-              title: l10n.aboutApp,
-              subtitle: l10n.aboutDescriptionLite,
-              route: '/settings/about',
-            ),
+            for (final (title, entries) in settingsGroups(context, ref))
+              MTSettingsGroup(
+                title: title,
+                rows: [
+                  for (final e in entries)
+                    MTSettingsRow(
+                      icon: e.icon,
+                      title: e.title,
+                      value: e.value,
+                      onTap: () => context.go(e.pane.route),
+                    ),
+                ],
+              ),
           ],
         ),
       ),

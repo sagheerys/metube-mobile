@@ -10,7 +10,6 @@ import 'package:mt_ui/mt_ui.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../settings/auto_backup.dart';
-import '../settings/widgets/help_button.dart';
 import '../shared/error_report.dart';
 import 'transcripts_state.dart';
 import 'subtitles.dart';
@@ -30,15 +29,6 @@ class TranscriptsSection extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // What the switch's one line cannot say: YouTube only, kept on
-        // this phone and not in the backup, and how to move them.
-        MTSectionHeader(
-          title: l10n.transcriptsSection,
-          action: HelpButton(
-            title: l10n.transcriptsSection,
-            body: l10n.transcriptsHelp,
-          ),
-        ),
         SwitchListTile(
           contentPadding: EdgeInsets.zero,
           title: Text(l10n.transcriptsSearch, style: text.bodyMedium),

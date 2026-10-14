@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:metube_lite/di.dart';
-import 'package:metube_lite/features/settings/settings_screen.dart';
+import 'package:metube_lite/features/settings/settings_page.dart';
+import 'package:metube_lite/features/settings/settings_sections.dart';
 import 'package:metube_lite/features/settings/settings_state.dart';
 import 'package:mt_core/mt_core.dart';
 import 'package:mt_ui/mt_ui.dart';
@@ -36,7 +37,7 @@ void main() {
         localizationsDelegates: MTLocalizations.localizationsDelegates,
         supportedLocales: MTLocalizations.supportedLocales,
         theme: mtTheme(MTVariant.lite, Brightness.light),
-        home: const SettingsScreen(),
+        home: const SettingsPage(SettingsPane.server),
       ),
     );
   }
@@ -47,9 +48,7 @@ void main() {
     await tester.pumpWidget(host());
     await tester.pumpAndSettle();
 
-    final l10n = MTLocalizations.of(
-      tester.element(find.byType(SettingsScreen)),
-    );
+    final l10n = MTLocalizations.of(tester.element(find.byType(SettingsPage)));
     expect(
       find.text(l10n.authHelper),
       findsOneWidget,

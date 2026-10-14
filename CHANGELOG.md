@@ -44,6 +44,13 @@ only one.
   media notification and the lock screen now show a song's cover as a
   square, like a music app, instead of a wide YouTube strip with black
   bands. The library keeps its pictures as they were. Both apps.
+- **Settings open on a short home page.** Three groups (server, app,
+  data), and under each row the setting as it stands: "Best · Wi‑Fi only",
+  "Dark · English", the last backup. A tap opens that section's page.
+  Preferences became two sections, Downloads and Playback. In Super, "Tell
+  me what arrives" moved to the Subscriptions page, beside the channels it
+  is about. Every setting works as before; only its place changed. A
+  "sign-in required" message now opens the server page itself. Both apps.
 - **Additional protection for your server's sign-in details.** Super only.
 
 ### Fixed

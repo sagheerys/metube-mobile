@@ -9,14 +9,10 @@ import 'features/player/player_screen.dart';
 import 'features/player/reels_screen.dart';
 import 'features/playlists/playlist_details_screen.dart';
 import 'features/playlists/playlists_screen.dart';
-import 'features/settings/about_screen.dart';
-import 'features/settings/backup_screen.dart';
-import 'features/settings/cookies_screen.dart';
-import 'features/settings/logs_screen.dart';
-import 'features/settings/network_screen.dart';
+import 'features/settings/settings_page.dart';
 import 'features/settings/settings_screen.dart';
+import 'features/settings/settings_sections.dart';
 import 'features/shell/shell_screen.dart';
-import 'features/subscriptions/subscriptions_screen.dart';
 
 /// The single route table (`03-APP-FLOW.md` §1). No direct
 /// Navigator.push.
@@ -57,32 +53,19 @@ final router = GoRouter(
               path: '/settings',
               builder: (_, _) => const SettingsScreen(),
               routes: [
-                GoRoute(
-                  path: 'network',
-                  builder: (_, _) => const NetworkScreen(),
-                ),
-                // A new route rather than a fourth tab: the shell's three
-                // destinations are wired into every "is this settings?"
-                // check in the app, and a subscription is set up once and
-                // then left alone.
-                GoRoute(
-                  path: 'subscriptions',
-                  builder: (_, _) => const SubscriptionsScreen(),
-                ),
+                // **A route per section, not a fourth tab**: the shell's
+                // three destinations are wired into every "is this
+                // settings?" check in the app, and each address lets a
+                // message open the page that fixes its problem.
+                for (final pane in SettingsPane.values)
+                  GoRoute(
+                    path: pane.name,
+                    builder: (_, _) => SettingsPage(pane),
+                  ),
                 GoRoute(
                   path: 'language',
                   builder: (_, _) => const LanguageScreen(),
                 ),
-                GoRoute(path: 'logs', builder: (_, _) => const LogsScreen()),
-                GoRoute(
-                  path: 'backup',
-                  builder: (_, _) => const BackupScreen(),
-                ),
-                GoRoute(
-                  path: 'cookies',
-                  builder: (_, _) => const CookiesScreen(),
-                ),
-                GoRoute(path: 'about', builder: (_, _) => const AboutScreen()),
               ],
             ),
           ],

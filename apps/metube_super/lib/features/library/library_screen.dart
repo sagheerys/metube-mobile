@@ -11,6 +11,7 @@ import '../home/add_flow.dart';
 import '../shared/error_text.dart';
 import '../player/playback_providers.dart';
 import '../playlists/add_to_playlist_sheet.dart';
+import '../settings/settings_sections.dart';
 import '../tags/item_tags_sheet.dart';
 import '../transcripts/transcript_results.dart';
 import 'library_models.dart';
@@ -90,7 +91,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
               title: l10n.noServerTitle,
               message: l10n.noServerMessage,
               actionLabel: l10n.setupServer,
-              onAction: () => context.go('/settings'),
+              onAction: () => context.go(SettingsPane.server.route),
             )
           : RefreshIndicator(
               onRefresh: () async {
@@ -265,7 +266,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                       title: l10n.signInRequired,
                       message: l10n.signInRequiredHint,
                       actionLabel: l10n.updateCredentials,
-                      onAction: () => context.go('/settings'),
+                      onAction: () => context.go(SettingsPane.server.route),
                     )
                   : MTEmptyState(
                       icon: Icons.error_outline_rounded,

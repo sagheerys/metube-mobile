@@ -8,6 +8,8 @@ import 'package:metube_super/features/library/library_models.dart';
 import 'package:metube_super/features/library/library_providers.dart';
 import 'package:metube_super/features/library/widgets/item_actions_sheet.dart';
 import 'package:metube_super/features/settings/settings_state.dart';
+import 'package:metube_super/features/settings/settings_page.dart';
+import 'package:metube_super/features/settings/settings_sections.dart';
 import 'package:metube_super/features/transcripts/transcript_lines.dart';
 import 'package:metube_super/features/transcripts/transcript_moment.dart';
 import 'package:metube_super/features/transcripts/transcript_results.dart';
@@ -173,7 +175,10 @@ void main() {
       tester,
     ) async {
       final c = await container();
-      await tester.pumpWidget(host(c, section()));
+      // The help sits on the page's bar, over the section.
+      await tester.pumpWidget(
+        host(c, const SettingsPage(SettingsPane.transcripts)),
+      );
       await tester.pumpAndSettle();
 
       await tester.tap(find.byIcon(Icons.help_outline_rounded));

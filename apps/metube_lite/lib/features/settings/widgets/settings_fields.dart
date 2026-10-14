@@ -56,12 +56,9 @@ class _SwitchTile extends StatelessWidget {
   );
 }
 
-/// The download and playback preferences.
-class PreferencesFields extends ConsumerWidget {
-  const PreferencesFields({super.key, this.showHeader = true});
-
-  /// False under a pane title that already names the section.
-  final bool showHeader;
+/// How a download is made: its quality, and when it may start.
+class DownloadFields extends ConsumerWidget {
+  const DownloadFields({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -71,10 +68,6 @@ class PreferencesFields extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        if (showHeader) ...[
-          MTSectionHeader(title: l10n.preferences),
-          const SizedBox(height: MTSpace.md),
-        ],
         Row(
           children: [
             Expanded(
@@ -132,13 +125,24 @@ class PreferencesFields extends ConsumerWidget {
           value: settings.autoRetry,
           onChanged: notifier.setAutoRetry,
         ),
-        _SwitchTile(
-          title: l10n.compatiblePlayback,
-          subtitle: l10n.compatiblePlaybackHelp,
-          value: settings.compatiblePlayback,
-          onChanged: notifier.setCompatiblePlayback,
-        ),
       ],
+    );
+  }
+}
+
+/// How a clip plays. One switch today; the place for what playback adds.
+class PlaybackFields extends ConsumerWidget {
+  const PlaybackFields({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.mtl;
+    final settings = ref.watch(settingsProvider);
+    return _SwitchTile(
+      title: l10n.compatiblePlayback,
+      subtitle: l10n.compatiblePlaybackHelp,
+      value: settings.compatiblePlayback,
+      onChanged: ref.read(settingsProvider.notifier).setCompatiblePlayback,
     );
   }
 }

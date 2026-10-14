@@ -98,9 +98,6 @@ class MTLocalizationsAr extends MTLocalizations {
   String get appearanceAndLanguage => 'المظهر واللغة';
 
   @override
-  String get appearanceSubtitle => 'السمة واللغة';
-
-  @override
   String audioChannels(int count) {
     return '$count قنوات';
   }
@@ -1007,9 +1004,6 @@ class MTLocalizationsAr extends MTLocalizations {
   String get preferences => 'التفضيلات';
 
   @override
-  String get preferencesSubtitle => 'الجودة، التحميل السريع، Wi‑Fi';
-
-  @override
   String get previous => 'السابق';
 
   @override
@@ -1202,9 +1196,6 @@ class MTLocalizationsAr extends MTLocalizations {
   String get serverConfiguration => 'إعداد الخادم';
 
   @override
-  String get serverConfigurationSubtitle => 'رابط السيرفر وتسجيل الدخول';
-
-  @override
   String serverFilesCount(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
@@ -1288,6 +1279,12 @@ class MTLocalizationsAr extends MTLocalizations {
   String get settings => 'الإعدادات';
 
   @override
+  String get settingsBackup => 'النسخ الاحتياطي';
+
+  @override
+  String get settingsDownloads => 'التحميل';
+
+  @override
   String get settingsGroupApp => 'التطبيق';
 
   @override
@@ -1297,7 +1294,70 @@ class MTLocalizationsAr extends MTLocalizations {
   String get settingsGroupServer => 'السيرفر';
 
   @override
+  String get settingsPlayback => 'التشغيل';
+
+  @override
   String get settingsSaved => 'تم حفظ الإعدادات بنجاح';
+
+  @override
+  String get settingsTranscripts => 'النصوص والترجمة';
+
+  @override
+  String get settingsValueArrivals => 'إشعار بما يصل';
+
+  @override
+  String get settingsValueAuto => 'تلقائي';
+
+  @override
+  String settingsValueChannels(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count قناة',
+      many: '$count قناة',
+      few: '$count قنوات',
+      two: 'قناتان',
+      one: 'قناة واحدة',
+      zero: 'لا قنوات بعد',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get settingsValueCompatOff => 'أفضل توافق: مطفأ';
+
+  @override
+  String get settingsValueCompatOn => 'أفضل توافق: مفعّل';
+
+  @override
+  String get settingsValueExternalNow => 'الخارجي الآن';
+
+  @override
+  String get settingsValueLocalNow => 'المحلي الآن';
+
+  @override
+  String get settingsValueManual => 'يدوي';
+
+  @override
+  String get settingsValueNoPassword => 'بلا كلمة مرور';
+
+  @override
+  String get settingsValueNotSet => 'لم يُعدّ بعد';
+
+  @override
+  String get settingsValueOff => 'مطفأ';
+
+  @override
+  String get settingsValueOn => 'مفعّل';
+
+  @override
+  String get settingsValueQuick => 'سريع';
+
+  @override
+  String get settingsValueSubtitlesShown => 'الترجمة ظاهرة';
+
+  @override
+  String get settingsValueWifiOnly => 'Wi‑Fi فقط';
 
   @override
   String get setupServer => 'إعداد السيرفر';
@@ -1621,9 +1681,6 @@ class MTLocalizationsAr extends MTLocalizations {
   @override
   String get transcriptsSearchHelp =>
       'يحفظ كلام كل مقطع يوتيوب تضيفه، لتبحث داخل ما قيل فيه.';
-
-  @override
-  String get transcriptsSection => 'النصوص';
 
   @override
   String get transcriptsStopAndDelete => 'إيقاف وحذف';

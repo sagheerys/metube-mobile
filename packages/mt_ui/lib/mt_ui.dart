@@ -36,6 +36,7 @@ export 'src/widgets/mt_polish.dart';
 export 'src/widgets/mt_reorder_motion.dart';
 export 'src/widgets/mt_route_depth.dart';
 export 'src/widgets/mt_search_field.dart';
+export 'src/widgets/mt_settings_rows.dart';
 export 'src/widgets/mt_section_header.dart';
 export 'src/widgets/mt_snackbar.dart';
 export 'src/widgets/mt_system_bars.dart';

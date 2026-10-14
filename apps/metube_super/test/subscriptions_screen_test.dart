@@ -7,8 +7,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:metube_super/di.dart';
 import 'package:metube_super/features/settings/settings_state.dart';
+import 'package:metube_super/features/settings/widgets/settings_fields.dart';
 import 'package:metube_super/features/subscriptions/subscription_sheet.dart';
 import 'package:metube_super/features/subscriptions/subscriptions_screen.dart';
+import 'package:metube_super/features/subscriptions/widgets/subscription_card.dart';
 import 'package:mt_core/mt_core.dart';
 import 'package:mt_ui/mt_ui.dart';
 
@@ -125,13 +127,36 @@ void main() {
     expect(find.text('channel is private'), findsOneWidget);
   });
 
+  // Owner's decision 2026-10-14: the switch moved here from the settings'
+  // preferences, beside the channels it is about.
+  testWidgets('the arrivals notice is switched here, beside its channels', (
+    tester,
+  ) async {
+    final container = await open(tester, (_) => _json(_twoRows));
+    final l10n = tester.element(find.byType(SubscriptionsScreen)).mtl;
+    expect(container.read(settingsProvider).notifyArrivals, isTrue);
+    expect(find.byType(ArrivalsSwitch), findsOneWidget);
+
+    await tester.tap(find.text(l10n.notifyArrivals));
+    await tester.pumpAndSettle();
+    expect(container.read(settingsProvider).notifyArrivals, isFalse);
+  });
+
   testWidgets(
     'a paused subscription shows its switch off and says so, rather than '
     'disappearing from the list',
     (tester) async {
       await open(tester, (_) => _json(_twoRows));
 
-      final switches = tester.widgetList<Switch>(find.byType(Switch)).toList();
+      // The cards' own switches: the arrivals switch sits above them.
+      final switches = tester
+          .widgetList<Switch>(
+            find.descendant(
+              of: find.byType(SubscriptionCard),
+              matching: find.byType(Switch),
+            ),
+          )
+          .toList();
       // Sorted for reading: the one with an error comes first, and it is
       // the paused one here.
       expect(switches.first.value, isFalse);

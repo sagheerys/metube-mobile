@@ -242,12 +242,6 @@ abstract class MTLocalizations {
   /// **'Appearance & language'**
   String get appearanceAndLanguage;
 
-  /// No description provided for @appearanceSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Theme and language'**
-  String get appearanceSubtitle;
-
   /// No description provided for @audioChannels.
   ///
   /// In en, this message translates to:
@@ -1838,12 +1832,6 @@ abstract class MTLocalizations {
   /// **'Preferences'**
   String get preferences;
 
-  /// No description provided for @preferencesSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Quality, quick download, Wi‑Fi'**
-  String get preferencesSubtitle;
-
   /// No description provided for @previous.
   ///
   /// In en, this message translates to:
@@ -2162,12 +2150,6 @@ abstract class MTLocalizations {
   /// **'Server Configuration'**
   String get serverConfiguration;
 
-  /// No description provided for @serverConfigurationSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Server URL and sign-in'**
-  String get serverConfigurationSubtitle;
-
   /// No description provided for @serverFilesCount.
   ///
   /// In en, this message translates to:
@@ -2276,6 +2258,18 @@ abstract class MTLocalizations {
   /// **'Settings'**
   String get settings;
 
+  /// No description provided for @settingsBackup.
+  ///
+  /// In en, this message translates to:
+  /// **'Backup'**
+  String get settingsBackup;
+
+  /// No description provided for @settingsDownloads.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloads'**
+  String get settingsDownloads;
+
   /// No description provided for @settingsGroupApp.
   ///
   /// In en, this message translates to:
@@ -2294,11 +2288,113 @@ abstract class MTLocalizations {
   /// **'Server'**
   String get settingsGroupServer;
 
+  /// No description provided for @settingsPlayback.
+  ///
+  /// In en, this message translates to:
+  /// **'Playback'**
+  String get settingsPlayback;
+
   /// No description provided for @settingsSaved.
   ///
   /// In en, this message translates to:
   /// **'Settings saved successfully'**
   String get settingsSaved;
+
+  /// No description provided for @settingsTranscripts.
+  ///
+  /// In en, this message translates to:
+  /// **'Transcripts & subtitles'**
+  String get settingsTranscripts;
+
+  /// No description provided for @settingsValueArrivals.
+  ///
+  /// In en, this message translates to:
+  /// **'tells you what arrives'**
+  String get settingsValueArrivals;
+
+  /// No description provided for @settingsValueAuto.
+  ///
+  /// In en, this message translates to:
+  /// **'Automatic'**
+  String get settingsValueAuto;
+
+  /// No description provided for @settingsValueChannels.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No channels yet} =1{1 channel} other{{count} channels}}'**
+  String settingsValueChannels(int count);
+
+  /// No description provided for @settingsValueCompatOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Best compatibility: off'**
+  String get settingsValueCompatOff;
+
+  /// No description provided for @settingsValueCompatOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Best compatibility: on'**
+  String get settingsValueCompatOn;
+
+  /// No description provided for @settingsValueExternalNow.
+  ///
+  /// In en, this message translates to:
+  /// **'external now'**
+  String get settingsValueExternalNow;
+
+  /// No description provided for @settingsValueLocalNow.
+  ///
+  /// In en, this message translates to:
+  /// **'local now'**
+  String get settingsValueLocalNow;
+
+  /// No description provided for @settingsValueManual.
+  ///
+  /// In en, this message translates to:
+  /// **'Manual'**
+  String get settingsValueManual;
+
+  /// No description provided for @settingsValueNoPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'no password'**
+  String get settingsValueNoPassword;
+
+  /// No description provided for @settingsValueNotSet.
+  ///
+  /// In en, this message translates to:
+  /// **'Not set up yet'**
+  String get settingsValueNotSet;
+
+  /// No description provided for @settingsValueOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Off'**
+  String get settingsValueOff;
+
+  /// No description provided for @settingsValueOn.
+  ///
+  /// In en, this message translates to:
+  /// **'On'**
+  String get settingsValueOn;
+
+  /// No description provided for @settingsValueQuick.
+  ///
+  /// In en, this message translates to:
+  /// **'quick'**
+  String get settingsValueQuick;
+
+  /// No description provided for @settingsValueSubtitlesShown.
+  ///
+  /// In en, this message translates to:
+  /// **'subtitles shown'**
+  String get settingsValueSubtitlesShown;
+
+  /// No description provided for @settingsValueWifiOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Wi‑Fi only'**
+  String get settingsValueWifiOnly;
 
   /// No description provided for @setupServer.
   ///
@@ -2809,12 +2905,6 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'Keeps the words of every YouTube clip you add, so you can search what was said.'**
   String get transcriptsSearchHelp;
-
-  /// No description provided for @transcriptsSection.
-  ///
-  /// In en, this message translates to:
-  /// **'Transcripts'**
-  String get transcriptsSection;
 
   /// No description provided for @transcriptsStopAndDelete.
   ///

@@ -275,6 +275,13 @@
       }
     }
   },
+  "@settingsValueChannels": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "@showChannel": {
     "placeholders": {
       "channel": {
@@ -390,7 +397,6 @@
   "alreadySubscribed": "This channel is already followed",
   "appTitle": "MeTube Super",
   "appearanceAndLanguage": "Appearance & language",
-  "appearanceSubtitle": "Theme and language",
   "audioChannels": "{count} channels",
   "audioMono": "Mono",
   "audioOnly": "Audio Only",
@@ -656,7 +662,6 @@
   "playlistOf": "{current} / {total}",
   "playlists": "Playlists",
   "preferences": "Preferences",
-  "preferencesSubtitle": "Quality, quick download, Wi‑Fi",
   "previous": "Previous",
   "pullingToDevice": "Saving to device…",
   "pullingToDeviceProgress": "Saving to device · {percent}%",
@@ -710,7 +715,6 @@
   "selected": "{count} selected",
   "selectedCount": "{count} selected",
   "serverConfiguration": "Server Configuration",
-  "serverConfigurationSubtitle": "Server URL and sign-in",
   "serverFilesCount": "{count, plural, =0{No files on the server} =1{1 file on the server} other{{count} files on the server}}",
   "serverKeepsFilesBody": "The history entry is removed but the file stays on disk, so the server fills up. Set DELETE_FILE_ON_TRASHCAN=true on the MeTube container.",
   "serverKeepsFilesTitle": "Your server is not deleting the files",
@@ -729,10 +733,29 @@
   "serverVersionOutdated": "Update available: {latest}",
   "serverVersionUnknown": "Version unknown",
   "settings": "Settings",
+  "settingsBackup": "Backup",
+  "settingsDownloads": "Downloads",
   "settingsGroupApp": "App",
   "settingsGroupData": "Data",
   "settingsGroupServer": "Server",
+  "settingsPlayback": "Playback",
   "settingsSaved": "Settings saved successfully",
+  "settingsTranscripts": "Transcripts & subtitles",
+  "settingsValueArrivals": "tells you what arrives",
+  "settingsValueAuto": "Automatic",
+  "settingsValueChannels": "{count, plural, =0{No channels yet} =1{1 channel} other{{count} channels}}",
+  "settingsValueCompatOff": "Best compatibility: off",
+  "settingsValueCompatOn": "Best compatibility: on",
+  "settingsValueExternalNow": "external now",
+  "settingsValueLocalNow": "local now",
+  "settingsValueManual": "Manual",
+  "settingsValueNoPassword": "no password",
+  "settingsValueNotSet": "Not set up yet",
+  "settingsValueOff": "Off",
+  "settingsValueOn": "On",
+  "settingsValueQuick": "quick",
+  "settingsValueSubtitlesShown": "subtitles shown",
+  "settingsValueWifiOnly": "Wi‑Fi only",
   "setupServer": "Set up the server",
   "share": "Share",
   "shareLogs": "Share Logs",
@@ -818,7 +841,6 @@
   "transcriptsSaidInside": "Said inside clips",
   "transcriptsSearch": "Search inside clips",
   "transcriptsSearchHelp": "Keeps the words of every YouTube clip you add, so you can search what was said.",
-  "transcriptsSection": "Transcripts",
   "transcriptsStopAndDelete": "Stop and delete",
   "tryAgain": "Try again",
   "undo": "Undo",

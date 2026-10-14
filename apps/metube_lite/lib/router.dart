@@ -9,10 +9,9 @@ import 'features/player/player_screen.dart';
 import 'features/player/reels_screen.dart';
 import 'features/playlists/playlist_details_screen.dart';
 import 'features/playlists/playlists_screen.dart';
-import 'features/settings/about_screen.dart';
-import 'features/settings/backup_screen.dart';
-import 'features/settings/logs_screen.dart';
+import 'features/settings/settings_page.dart';
 import 'features/settings/settings_screen.dart';
+import 'features/settings/settings_sections.dart';
 import 'features/shell/shell_screen.dart';
 
 /// The single route table (`03-APP-FLOW.md` §1). No direct Navigator.push.
@@ -55,16 +54,17 @@ final router = GoRouter(
               path: '/settings',
               builder: (_, _) => const SettingsScreen(),
               routes: [
+                // A route per section, so a message can open the page
+                // that fixes its problem.
+                for (final pane in SettingsPane.values)
+                  GoRoute(
+                    path: pane.name,
+                    builder: (_, _) => SettingsPage(pane),
+                  ),
                 GoRoute(
                   path: 'language',
                   builder: (_, _) => const LanguageScreen(),
                 ),
-                GoRoute(path: 'logs', builder: (_, _) => const LogsScreen()),
-                GoRoute(
-                  path: 'backup',
-                  builder: (_, _) => const BackupScreen(),
-                ),
-                GoRoute(path: 'about', builder: (_, _) => const AboutScreen()),
               ],
             ),
           ],

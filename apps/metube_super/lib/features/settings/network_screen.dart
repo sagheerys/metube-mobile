@@ -5,6 +5,7 @@ import 'package:mt_core/mt_core.dart';
 import 'package:mt_ui/mt_ui.dart';
 
 import '../../di.dart';
+import 'settings_sections.dart';
 import 'widgets/help_button.dart';
 import 'widgets/server_status_card.dart';
 
@@ -82,7 +83,10 @@ class NetworkScreen extends ConsumerWidget {
       // wrong address is fixed here in this very list, so sending the user
       // to settings would only distract.
       return status == MTEndpointStatus.unauthorized
-          ? InkWell(onTap: () => context.go('/settings'), child: text)
+          ? InkWell(
+              onTap: () => context.go(SettingsPane.server.route),
+              child: text,
+            )
           : text;
     }
 

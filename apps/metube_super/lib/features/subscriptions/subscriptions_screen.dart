@@ -4,6 +4,7 @@ import 'package:mt_core/mt_core.dart';
 import 'package:mt_ui/mt_ui.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../settings/widgets/settings_fields.dart';
 import '../shared/error_text.dart';
 import 'subscription_sheet.dart';
 import 'subscriptions_providers.dart';
@@ -112,6 +113,10 @@ class SubscriptionsScreen extends ConsumerWidget {
           MTSpace.xxl * 2,
         ),
         children: [
+          // Moved here from the settings' preferences: it is about these
+          // channels and nothing else.
+          const ArrivalsSwitch(),
+          const SizedBox(height: MTSpace.sm),
           // Pausing sends a card to the end of the list: it travels there
           // rather than vanishing from under the finger.
           MTReorderMotion(

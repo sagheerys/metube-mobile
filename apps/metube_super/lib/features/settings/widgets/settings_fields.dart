@@ -56,12 +56,9 @@ class _SwitchTile extends StatelessWidget {
   );
 }
 
-/// The download and playback preferences.
-class PreferencesFields extends ConsumerWidget {
-  const PreferencesFields({super.key, this.showHeader = true});
-
-  /// False under a pane title that already names the section.
-  final bool showHeader;
+/// How a download is made: its quality, and when it may start.
+class DownloadFields extends ConsumerWidget {
+  const DownloadFields({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -71,10 +68,6 @@ class PreferencesFields extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        if (showHeader) ...[
-          MTSectionHeader(title: l10n.preferences),
-          const SizedBox(height: MTSpace.md),
-        ],
         Row(
           children: [
             Expanded(
@@ -132,22 +125,41 @@ class PreferencesFields extends ConsumerWidget {
           value: settings.autoRetry,
           onChanged: notifier.setAutoRetry,
         ),
-        // The arrivals notice sits beside the other download preferences,
-        // because that is what it governs: what the server fetched without
-        // being asked.
-        _SwitchTile(
-          title: l10n.notifyArrivals,
-          subtitle: l10n.notifyArrivalsDesc,
-          value: settings.notifyArrivals,
-          onChanged: notifier.setNotifyArrivals,
-        ),
-        _SwitchTile(
-          title: l10n.compatiblePlayback,
-          subtitle: l10n.compatiblePlaybackHelp,
-          value: settings.compatiblePlayback,
-          onChanged: notifier.setCompatiblePlayback,
-        ),
       ],
+    );
+  }
+}
+
+/// How a clip plays. One switch today; the place for what playback adds.
+class PlaybackFields extends ConsumerWidget {
+  const PlaybackFields({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.mtl;
+    final settings = ref.watch(settingsProvider);
+    return _SwitchTile(
+      title: l10n.compatiblePlayback,
+      subtitle: l10n.compatiblePlaybackHelp,
+      value: settings.compatiblePlayback,
+      onChanged: ref.read(settingsProvider.notifier).setCompatiblePlayback,
+    );
+  }
+}
+
+/// Whether the app says what the followed channels brought. It lives on the
+/// subscriptions page, since that is what it is about.
+class ArrivalsSwitch extends ConsumerWidget {
+  const ArrivalsSwitch({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.mtl;
+    return _SwitchTile(
+      title: l10n.notifyArrivals,
+      subtitle: l10n.notifyArrivalsDesc,
+      value: ref.watch(settingsProvider).notifyArrivals,
+      onChanged: ref.read(settingsProvider.notifier).setNotifyArrivals,
     );
   }
 }

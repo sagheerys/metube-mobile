@@ -23,7 +23,6 @@ class UpdateSection extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        MTSectionHeader(title: l10n.updates),
         ListTile(
           contentPadding: EdgeInsets.zero,
           leading: Icon(

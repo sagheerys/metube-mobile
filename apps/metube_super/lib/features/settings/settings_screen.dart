@@ -1,23 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mt_ui/mt_ui.dart';
 
-import '../transcripts/transcripts_section.dart';
-import '../update/update_section.dart';
+import '../transcripts/subtitles.dart';
 import 'settings_hub.dart';
-import 'widgets/server_fields.dart';
+import 'settings_sections.dart';
 import 'widgets/server_status_card.dart';
-import 'widgets/settings_fields.dart';
 
-/// Settings: the server card first, About last. On a tablet held sideways
-/// the same sections open in two panes ([SettingsHub]).
-class SettingsScreen extends StatefulWidget {
+/// **The settings home** (approved mock-up, 2026-10-14): the server card,
+/// then three short groups whose rows show each setting as it stands, each
+/// opening its own page. It used to be one long page that grew with every
+/// feature. On a tablet held sideways the same rows open in two panes
+/// ([SettingsHub]).
+class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
 
   @override
-  State<SettingsScreen> createState() => _SettingsScreenState();
+  ConsumerState<SettingsScreen> createState() => _SettingsScreenState();
 }
 
-class _SettingsScreenState extends State<SettingsScreen> {
+class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   /// Kept here, above both shapes, so turning the tablet does not lose the
   /// open section.
   SettingsPane _pane = SettingsPane.server;
@@ -34,73 +37,34 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Scaffold(
       appBar: AppBar(title: Text(l10n.settings)),
       body: MTReadableWidth(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(
-            MTSpace.pagePad,
-            0,
-            MTSpace.pagePad,
-            120,
+        // The subtitles switch is a plain notifier, not a provider, so the
+        // transcripts row listens to it here.
+        child: ListenableBuilder(
+          listenable: ref.watch(subtitlePrefsProvider).shown,
+          builder: (context, _) => ListView(
+            padding: const EdgeInsets.fromLTRB(
+              MTSpace.pagePad,
+              0,
+              MTSpace.pagePad,
+              120,
+            ),
+            children: [
+              const ServerStatusCard(),
+              for (final (title, entries) in settingsGroups(context, ref))
+                MTSettingsGroup(
+                  title: title,
+                  rows: [
+                    for (final e in entries)
+                      MTSettingsRow(
+                        icon: e.icon,
+                        title: e.title,
+                        value: e.value,
+                        onTap: () => context.go(e.pane.route),
+                      ),
+                  ],
+                ),
+            ],
           ),
-          children: [
-            const ServerStatusCard(),
-            const SizedBox(height: MTSpace.xl),
-            const ServerFields(),
-            const SizedBox(height: MTSpace.sm),
-            // Endpoint management (Super only).
-            SettingsNavTile(
-              icon: Icons.lan_outlined,
-              title: l10n.networkSettings,
-              subtitle: l10n.networkSettingsSubtitle,
-              route: '/settings/network',
-            ),
-            // Channels the server follows. It lives beside the network row
-            // because it is the server's work, not the phone's.
-            SettingsNavTile(
-              icon: Icons.rss_feed_rounded,
-              title: l10n.subscriptions,
-              subtitle: l10n.subscriptionsSubtitle,
-              route: '/settings/subscriptions',
-            ),
-            // Something only the server's owner can do.
-            SettingsNavTile(
-              icon: Icons.cookie_outlined,
-              title: l10n.cookies,
-              subtitle: l10n.cookiesSubtitle,
-              route: '/settings/cookies',
-            ),
-            const SizedBox(height: MTSpace.xl),
-            const PreferencesFields(),
-            const SizedBox(height: MTSpace.lg),
-            const AppearanceFields(),
-            const SizedBox(height: MTSpace.xl),
-            const TranscriptsSection(),
-            const SizedBox(height: MTSpace.xl),
-
-            // Data and diagnostics, then About last.
-            MTSectionHeader(title: l10n.backupSettings),
-            SettingsNavTile(
-              icon: Icons.shield_outlined,
-              title: l10n.backupSettings,
-              subtitle: l10n.backupSettingsSubtitle,
-              route: '/settings/backup',
-            ),
-            SettingsNavTile(
-              icon: Icons.article_outlined,
-              title: l10n.diagnosticLogs,
-              subtitle: l10n.diagnosticLogsSubtitle,
-              route: '/settings/logs',
-            ),
-            const SizedBox(height: MTSpace.xl),
-            const UpdateSection(),
-            const SizedBox(height: MTSpace.xl),
-            MTSectionHeader(title: l10n.about),
-            SettingsNavTile(
-              icon: Icons.info_outline_rounded,
-              title: l10n.aboutApp,
-              subtitle: l10n.aboutDescriptionSuper,
-              route: '/settings/about',
-            ),
-          ],
         ),
       ),
     );

@@ -45,6 +45,13 @@
       }
     }
   },
+  "@settingsValueChannels": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "@transcriptMatches": {
     "placeholders": {
       "count": {
@@ -104,7 +111,6 @@
   "alreadySubscribed": "هذه القناة متابَعة أصلاً",
   "appTitle": "MeTube Super",
   "appearanceAndLanguage": "المظهر واللغة",
-  "appearanceSubtitle": "السمة واللغة",
   "audioChannels": "{count} قنوات",
   "audioMono": "أحادي",
   "audioOnly": "صوت فقط",
@@ -370,7 +376,6 @@
   "playlistOf": "{current} / {total}",
   "playlists": "قوائم التشغيل",
   "preferences": "التفضيلات",
-  "preferencesSubtitle": "الجودة، التحميل السريع، Wi‑Fi",
   "previous": "السابق",
   "pullingToDevice": "يُسحب للجهاز…",
   "pullingToDeviceProgress": "يُسحب للجهاز · {percent}٪",
@@ -424,7 +429,6 @@
   "selected": "{count} محدد",
   "selectedCount": "{count} محدد",
   "serverConfiguration": "إعداد الخادم",
-  "serverConfigurationSubtitle": "رابط السيرفر وتسجيل الدخول",
   "serverFilesCount": "{count, plural, =0{لا ملفات على الخادم} =1{ملف واحد على الخادم} =2{ملفان على الخادم} few{{count} ملفات على الخادم} other{{count} ملفاً على الخادم}}",
   "serverKeepsFilesBody": "يُحذف سجل العنصر ويبقى الملف على القرص، فيمتلئ الخادم. اضبط DELETE_FILE_ON_TRASHCAN=true على حاوية MeTube.",
   "serverKeepsFilesTitle": "خادمك لا يحذف الملفات",
@@ -443,10 +447,29 @@
   "serverVersionOutdated": "يتوفر تحديث: {latest}",
   "serverVersionUnknown": "النسخة غير معروفة",
   "settings": "الإعدادات",
+  "settingsBackup": "النسخ الاحتياطي",
+  "settingsDownloads": "التحميل",
   "settingsGroupApp": "التطبيق",
   "settingsGroupData": "البيانات",
   "settingsGroupServer": "السيرفر",
+  "settingsPlayback": "التشغيل",
   "settingsSaved": "تم حفظ الإعدادات بنجاح",
+  "settingsTranscripts": "النصوص والترجمة",
+  "settingsValueArrivals": "إشعار بما يصل",
+  "settingsValueAuto": "تلقائي",
+  "settingsValueChannels": "{count, plural, =0{لا قنوات بعد} =1{قناة واحدة} =2{قناتان} few{{count} قنوات} many{{count} قناة} other{{count} قناة}}",
+  "settingsValueCompatOff": "أفضل توافق: مطفأ",
+  "settingsValueCompatOn": "أفضل توافق: مفعّل",
+  "settingsValueExternalNow": "الخارجي الآن",
+  "settingsValueLocalNow": "المحلي الآن",
+  "settingsValueManual": "يدوي",
+  "settingsValueNoPassword": "بلا كلمة مرور",
+  "settingsValueNotSet": "لم يُعدّ بعد",
+  "settingsValueOff": "مطفأ",
+  "settingsValueOn": "مفعّل",
+  "settingsValueQuick": "سريع",
+  "settingsValueSubtitlesShown": "الترجمة ظاهرة",
+  "settingsValueWifiOnly": "Wi‑Fi فقط",
   "setupServer": "إعداد السيرفر",
   "share": "مشاركة",
   "shareLogs": "مشاركة السجلات",
@@ -532,7 +555,6 @@
   "transcriptsSaidInside": "قيل داخل المقاطع",
   "transcriptsSearch": "البحث داخل المقاطع",
   "transcriptsSearchHelp": "يحفظ كلام كل مقطع يوتيوب تضيفه، لتبحث داخل ما قيل فيه.",
-  "transcriptsSection": "النصوص",
   "transcriptsStopAndDelete": "إيقاف وحذف",
   "tryAgain": "حاول مرة أخرى",
   "undo": "تراجع",

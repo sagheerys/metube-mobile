@@ -11,6 +11,7 @@ import '../home/add_flow.dart';
 import '../shared/error_text.dart';
 import '../player/playback_providers.dart';
 import '../playlists/add_to_playlist_sheet.dart';
+import '../settings/settings_sections.dart';
 import 'library_actions.dart';
 import 'library_providers.dart';
 import 'local_item.dart';
@@ -92,7 +93,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
               title: l10n.noServerTitle,
               message: l10n.noServerMessage,
               actionLabel: l10n.setupServer,
-              onAction: () => context.go('/settings'),
+              onAction: () => context.go(SettingsPane.server.route),
             )
           : RefreshIndicator(
               onRefresh: () async {

@@ -23,8 +23,20 @@ final autoBackupProvider = Provider(
     service: ref.watch(backupServiceProvider),
     rotation: ref.watch(backupRotationProvider),
     logger: ref.watch(loggerProvider),
+    onWritten: () => ref.invalidate(latestBackupProvider),
   ),
 );
+
+/// When the newest backup was written, for the settings home's line. Read
+/// again after every write, so the line never lags behind the backups.
+/// Null when there is none yet or the folder cannot be read.
+final latestBackupProvider = FutureProvider<DateTime?>((ref) async {
+  try {
+    return (await ref.watch(backupRotationProvider).latest())?.at;
+  } on Object {
+    return null;
+  }
+});
 
 /// Automatic backup for Super (added 2026-09-04): a copy after every data
 /// change.
@@ -46,12 +58,16 @@ class AutoBackup {
     required this.service,
     required this.rotation,
     required this.logger,
+    this.onWritten,
     this.debounce = const Duration(seconds: 3),
   });
 
   final BackupService service;
   final BackupRotation rotation;
   final MTLogger logger;
+
+  /// Told after each copy lands on disk.
+  final void Function()? onWritten;
 
   /// Batches consecutive changes into one write: a download batch becomes
   /// one file.
@@ -82,6 +98,7 @@ class AutoBackup {
     try {
       final written = await rotation.write(await service.exportToString());
       if (written != null) {
+        onWritten?.call();
         await logger.log('auto backup ${written.name}', tag: 'backup');
       }
       return written;
