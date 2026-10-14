@@ -57,6 +57,7 @@ class MTCaptionsLayer extends StatefulWidget {
     required this.controller,
     required this.captions,
     required this.lift,
+    this.clearCenter = false,
   });
 
   final VideoPlayerController controller;
@@ -64,6 +65,11 @@ class MTCaptionsLayer extends StatefulWidget {
 
   /// The room kept free at the bottom, for the controls when they show.
   final double lift;
+
+  /// The play button sits in the middle while the controls show: the
+  /// sentence keeps below it, in fewer lines, or waits for the controls to
+  /// fade where a small player leaves no room between the two.
+  final bool clearCenter;
 
   @override
   State<MTCaptionsLayer> createState() => _MTCaptionsLayerState();
@@ -84,6 +90,10 @@ class _MTCaptionsLayerState extends State<MTCaptionsLayer>
   /// Never runs further than this past the last report: a stall the
   /// player has not reported yet must not race the words ahead.
   static const _reach = Duration(milliseconds: 900);
+
+  /// Half the height of the play button and its seek neighbours, with a
+  /// little air.
+  static const _centerHalf = 44.0;
 
   @override
   void initState() {
@@ -155,30 +165,44 @@ class _MTCaptionsLayerState extends State<MTCaptionsLayer>
     valueListenable: widget.captions.shown,
     builder: (context, shown, _) => IgnorePointer(
       child: LayoutBuilder(
-        builder: (context, box) => AnimatedPadding(
-          duration: MTMotion.fast,
-          curve: MTMotion.ease,
-          padding: EdgeInsets.only(
-            bottom: widget.lift,
-            left: MTSpace.lg,
-            right: MTSpace.lg,
-          ),
-          child: Align(
-            alignment: Alignment.bottomCenter,
-            child: AnimatedSwitcher(
-              duration: MTMotion.fast,
-              child: !shown || _block < 0
-                  ? const SizedBox.shrink()
-                  : _Sentence(
-                      key: ValueKey(_block),
-                      block: _blocks[_block],
-                      word: _word,
-                      width: box.maxWidth,
-                      scale: widget.captions.scale,
-                    ),
+        builder: (context, box) {
+          // In step with the picture: larger on a tablet and in full screen.
+          final size =
+              (box.maxWidth * 0.038).clamp(13.0, 22.0) * widget.captions.scale;
+          final line =
+              MediaQuery.textScalerOf(context).scale(size) * _Sentence.height;
+          var lines = _Sentence.maxLines;
+          if (widget.clearCenter) {
+            final room =
+                box.maxHeight / 2 - _centerHalf - widget.lift - 2 * MTSpace.xs;
+            lines = math.min(lines, room ~/ line);
+          }
+          return AnimatedPadding(
+            duration: MTMotion.fast,
+            curve: MTMotion.ease,
+            padding: EdgeInsets.only(
+              bottom: widget.lift,
+              left: MTSpace.lg,
+              right: MTSpace.lg,
             ),
-          ),
-        ),
+            child: Align(
+              alignment: Alignment.bottomCenter,
+              child: AnimatedSwitcher(
+                duration: MTMotion.fast,
+                child: !shown || _block < 0 || lines < 1
+                    ? const SizedBox.shrink()
+                    : _Sentence(
+                        key: ValueKey(_block),
+                        block: _blocks[_block],
+                        word: _word,
+                        width: box.maxWidth,
+                        size: size,
+                        lines: lines,
+                      ),
+              ),
+            ),
+          );
+        },
       ),
     ),
   );
@@ -192,13 +216,18 @@ class _Sentence extends StatelessWidget {
     required this.block,
     required this.word,
     required this.width,
-    required this.scale,
+    required this.size,
+    required this.lines,
   });
 
   final MTCaptionBlock block;
   final int word;
   final double width;
-  final double scale;
+  final double size;
+  final int lines;
+
+  static const height = 1.35;
+  static const maxLines = 3;
 
   /// The words not being said, against the one that is.
   static const _rest = 0.72;
@@ -207,11 +236,9 @@ class _Sentence extends StatelessWidget {
   Widget build(BuildContext context) {
     final ink = MTPalette.serverCardInk;
     final (direction, _) = mtForeignLine(context, block.text);
-    // In step with the picture: larger on a tablet and in full screen.
-    final size = (width * 0.042).clamp(14.0, 26.0) * scale;
     final style = Theme.of(context).textTheme.bodyLarge!.copyWith(
       fontSize: size,
-      height: 1.35,
+      height: height,
       fontWeight: FontWeight.w500,
       color: ink,
     );
@@ -245,7 +272,7 @@ class _Sentence extends StatelessWidget {
         style: style,
         textAlign: TextAlign.center,
         textDirection: direction,
-        maxLines: 3,
+        maxLines: lines,
         overflow: TextOverflow.ellipsis,
       ),
     );

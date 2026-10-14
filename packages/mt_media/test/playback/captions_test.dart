@@ -92,24 +92,32 @@ void main() {
     });
     tearDown(() => controller.dispose());
 
-    Widget host(MTCaptions captions, {Locale locale = const Locale('en')}) =>
-        MaterialApp(
-          locale: locale,
-          localizationsDelegates: MTLocalizations.localizationsDelegates,
-          supportedLocales: MTLocalizations.supportedLocales,
-          theme: mtTheme(MTVariant.superApp, Brightness.dark),
-          home: Scaffold(
-            body: SizedBox(
-              width: 640,
-              height: 360,
-              child: MTCaptionsLayer(
-                controller: controller,
-                captions: captions,
-                lift: 12,
-              ),
+    Widget host(
+      MTCaptions captions, {
+      Locale locale = const Locale('en'),
+      Size size = const Size(640, 360),
+      double lift = 12,
+      bool clearCenter = false,
+    }) => MaterialApp(
+      locale: locale,
+      localizationsDelegates: MTLocalizations.localizationsDelegates,
+      supportedLocales: MTLocalizations.supportedLocales,
+      theme: mtTheme(MTVariant.superApp, Brightness.dark),
+      home: Scaffold(
+        body: Align(
+          alignment: Alignment.topLeft,
+          child: SizedBox.fromSize(
+            size: size,
+            child: MTCaptionsLayer(
+              controller: controller,
+              captions: captions,
+              lift: lift,
+              clearCenter: clearCenter,
             ),
           ),
-        );
+        ),
+      ),
+    );
 
     testWidgets('the spoken word is lit, the rest a step dimmer', (
       tester,
@@ -160,6 +168,40 @@ void main() {
       controller.value = controller.value.copyWith(position: ms(9000));
       await tester.pumpAndSettle();
       expect(find.textContaining('only'), findsNothing);
+    });
+
+    // Seen on a phone: the controls lifted a two-line sentence over the
+    // play button of the small player above the details.
+    testWidgets('kept clear of the play button while the controls show', (
+      tester,
+    ) async {
+      final sentence = 'a sentence long enough to need two lines here ' * 2;
+      controller.value = controller.value.copyWith(position: ms(500));
+      Future<Rect?> capsule(Size size, double lift) async {
+        await tester.pumpWidget(
+          host(
+            MTCaptions(
+              lines: [line(0, 3000, sentence.trim())],
+              shown: ValueNotifier(true),
+            ),
+            size: size,
+            lift: lift,
+            clearCenter: true,
+          ),
+        );
+        await tester.pump(const Duration(milliseconds: 300));
+        final text = find.textContaining('sentence');
+        return text.evaluate().isEmpty ? null : tester.getRect(text);
+      }
+
+      // The phone's small player: no room under the button, so it waits.
+      expect(await capsule(const Size(384, 216), 108), isNull);
+      // Full screen on its side: below the button, in fewer lines.
+      const wide = Size(823, 384);
+      final rect = await capsule(wide, 80);
+      expect(rect, isNotNull);
+      expect(rect!.top, greaterThan(wide.height / 2 + 30));
+      expect(rect.bottom, lessThanOrEqualTo(wide.height - 80));
     });
 
     for (final locale in const [Locale('en'), Locale('ar')]) {

@@ -102,6 +102,7 @@ class _MTVideoControlsState extends State<MTVideoControls> {
           controller: controller,
           captions: captions,
           lift: _captionLift,
+          clearCenter: _visible && !_locked,
         ),
       _controls(),
     ],
