@@ -24,11 +24,23 @@ void showDownloadsSheet(BuildContext context) {
   );
 }
 
-class _DownloadsSheet extends ConsumerWidget {
+class _DownloadsSheet extends ConsumerStatefulWidget {
   const _DownloadsSheet();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_DownloadsSheet> createState() => _DownloadsSheetState();
+}
+
+class _DownloadsSheetState extends ConsumerState<_DownloadsSheet> {
+  /// Whether the sheet has shown any work. From then on it keeps its frame
+  /// when the last task finishes or is dismissed: the bare empty state is
+  /// centred in all the height a scroll-controlled sheet allows, so the
+  /// sheet used to leap to the top of the screen the moment the list
+  /// emptied (field report 2026-10-15).
+  bool _framed = false;
+
+  @override
+  Widget build(BuildContext context) {
     final l10n = context.mtl;
     final tasks = ref.watch(engineTasksProvider).valueOrNull ?? const [];
     final engine = ref.read(downloadEngineProvider);
@@ -109,7 +121,12 @@ class _DownloadsSheet extends ConsumerWidget {
     final shown = tasks.where(
       (t) => !t.isFinished || t.phase == TaskPhase.failed,
     );
-    if (shown.isEmpty) {
+    final empty = MTEmptyState(
+      icon: Icons.download_done_rounded,
+      title: l10n.noDownloads,
+      message: l10n.allDownloadsFinished,
+    );
+    if (shown.isEmpty && !_framed) {
       return Padding(
         padding: EdgeInsets.fromLTRB(
           MTSpace.xl,
@@ -117,13 +134,12 @@ class _DownloadsSheet extends ConsumerWidget {
           MTSpace.xl,
           mtSheetBottomPad(context, MTSpace.xxl),
         ),
-        child: MTEmptyState(
-          icon: Icons.download_done_rounded,
-          title: l10n.noDownloads,
-          message: l10n.allDownloadsFinished,
-        ),
+        // The column lets the centred state take its own height rather
+        // than the whole screen.
+        child: Column(mainAxisSize: MainAxisSize.min, children: [empty]),
       );
     }
+    _framed = true;
 
     // **A fixed height with a scrolling list** (field report 2026-09-04:
     // "the downloads page is now right at the top and you cannot drag it
@@ -158,15 +174,17 @@ class _DownloadsSheet extends ConsumerWidget {
             ),
             const SizedBox(height: MTSpace.lg),
             Expanded(
-              child: ListView(
-                controller: scrollController,
-                padding: EdgeInsets.zero,
-                children: [
-                  section(l10n.activeNow, running),
-                  section(l10n.queuedSection, queued),
-                  section(l10n.needsAttention, failed, error: true),
-                ],
-              ),
+              child: shown.isEmpty
+                  ? empty
+                  : ListView(
+                      controller: scrollController,
+                      padding: EdgeInsets.zero,
+                      children: [
+                        section(l10n.activeNow, running),
+                        section(l10n.queuedSection, queued),
+                        section(l10n.needsAttention, failed, error: true),
+                      ],
+                    ),
             ),
           ],
         ),

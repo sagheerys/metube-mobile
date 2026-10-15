@@ -12,6 +12,11 @@ void showSortSheet(BuildContext context, WidgetRef ref) {
   showModalBottomSheet<void>(
     context: context,
     useRootNavigator: true,
+    // **Sized to its options, not capped at the default 9/16 of the
+    // screen**: with the platforms section the view modes fell below the
+    // cap and had to be scrolled to (field report 2026-10-15).
+    isScrollControlled: true,
+    useSafeArea: true,
     builder: (_) => const _SortSheet(),
   );
 }
@@ -75,7 +80,6 @@ class _SortSheet extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: MTSpace.xl),
-            const _PlatformSection(),
             // **Four modes instead of overlapping flags**: compact and grid
             // were two switches that could be on together meaninglessly,
             // and a fourth would have doubled the impossible states. One
@@ -106,6 +110,8 @@ class _SortSheet extends ConsumerWidget {
                   ),
               ],
             ),
+            // Last, as its length depends on the library.
+            const _PlatformSection(),
           ],
         ),
       ),
@@ -151,6 +157,7 @@ class _PlatformSection extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        const SizedBox(height: MTSpace.xl),
         MTSectionHeader(title: l10n.platform),
         const SizedBox(height: MTSpace.md),
         Wrap(
@@ -166,7 +173,6 @@ class _PlatformSection extends ConsumerWidget {
               ),
           ],
         ),
-        const SizedBox(height: MTSpace.xl),
       ],
     );
   }

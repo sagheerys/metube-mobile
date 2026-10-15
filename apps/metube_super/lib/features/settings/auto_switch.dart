@@ -92,10 +92,7 @@ class AutoSwitchService {
     // no message.
     final engine = _ref.read(downloadEngineProvider);
     if (engine != null && engine.hasActiveWork) {
-      // It retries itself: no other listener will wake us when the queue
-      // goes quiet.
-      _timer?.cancel();
-      _timer = Timer(minInterval, () => unawaited(resolveNow()));
+      _retryWhenQuiet();
       return;
     }
     _lastRun = DateTime.now();
@@ -151,6 +148,19 @@ class AutoSwitchService {
         return;
       }
       if (best == settings.activeUrl && !activeIsStale) return;
+      // **Work can start while the probe runs**, so the check above is not
+      // enough on its own. Seen on a device: a share arrived as the app
+      // woke, and the switch four seconds later closed the client under
+      // its request, failing the download.
+      final moved = _movable(
+        activeDead:
+            !activeIsStale &&
+            !(probe.statuses[settings.activeUrl]?.isUsable ?? false),
+      );
+      if (moved == null) {
+        _retryWhenQuiet();
+        return;
+      }
       lastAdopted = best;
       // **A fourth trigger, caught on the device:** editing the endpoint
       // list
@@ -162,6 +172,17 @@ class AutoSwitchService {
             .log('server switched to $best', tag: 'network'),
       );
       await _ref.read(settingsProvider.notifier).adoptActiveUrl(best);
+      if (moved.isNotEmpty) {
+        final next = _ref.read(downloadEngineProvider);
+        for (final task in moved) {
+          next?.submit(task.inputUrl, task.quality);
+        }
+        unawaited(
+          _ref
+              .read(loggerProvider)
+              .log('moved ${moved.length} to $best', tag: 'network'),
+        );
+      }
     } finally {
       _running = false;
       if (_pending) {
@@ -169,6 +190,34 @@ class AutoSwitchService {
         schedule();
       }
     }
+  }
+
+  /// It retries itself: no other listener will wake us when the queue goes
+  /// quiet.
+  void _retryWhenQuiet() {
+    _timer?.cancel();
+    _timer = Timer(minInterval, () => unawaited(resolveNow()));
+  }
+
+  /// The tasks to start again on the new endpoint, or null when the switch
+  /// has to wait for the queue. Work is moved only off an endpoint that
+  /// stopped answering, and only work the server has not accepted yet
+  /// (waiting, or being added) and that belongs to no batch: anything
+  /// further along is the server's to finish, and a batch tracks its
+  /// members by the old engine's task ids.
+  List<DownloadTask>? _movable({required bool activeDead}) {
+    final engine = _ref.read(downloadEngineProvider);
+    if (engine == null || !engine.hasActiveWork) return const [];
+    if (!activeDead) return null;
+    final unfinished = engine.tasks.where((t) => !t.isFinished).toList();
+    final unaccepted =
+        unfinished.isNotEmpty &&
+        unfinished.every(
+          (t) =>
+              !t.isBatchMember &&
+              (t.phase == TaskPhase.queued || t.phase == TaskPhase.adding),
+        );
+    return unaccepted ? unfinished : null;
   }
 
   void dispose() {
