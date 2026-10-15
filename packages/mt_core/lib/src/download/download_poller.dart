@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import '../api/api_exceptions.dart';
+import '../api/live_update.dart';
 import '../api/metube_api.dart';
 import '../models/history_item.dart';
 import '../models/history_response.dart';
@@ -65,68 +66,105 @@ class DownloadPoller {
     required void Function(double progress) onProgress,
     Map<String, String>? fingerprintsBefore,
     void Function(String key)? onIdentified,
+    Stream<MTLiveUpdate>? live,
   }) async {
     var failuresInARow = 0;
     String? key;
-    for (var attempt = 0; attempt < maxAttempts; attempt++) {
-      checkAborted();
-      final HistoryResponse history;
-      try {
-        history = await api.fetchHistory();
-        failuresInARow = 0;
-      } on NetworkException {
-        if (++failuresInARow > networkTolerance) rethrow;
-        await _pause(attempt);
-        continue;
-      }
+    // **Progress only moves forward, and stops short of the end until the
+    // server says done.** yt-dlp counts each stream of a clip from zero
+    // (the video, then the audio), so the raw figure would run to 100 and
+    // back.
+    var shown = 0.0;
+    void progress(double value) {
+      final next = value.clamp(0.0, 0.99);
+      if (next <= shown) return;
+      shown = next;
+      onProgress(next);
+    }
 
-      if (key == null &&
-          fingerprintsBefore != null &&
-          attempt < identifyTurns) {
-        key = HistoryMatcher.soleChange(
-          fingerprintsBefore,
-          HistoryMatcher.fingerprints(history),
-        );
-        if (key != null) onIdentified?.call(key);
+    // Between two reads the live channel reports progress as it happens,
+    // and the server's "done" cuts the wait short. Completion itself is
+    // still read from `/history`, which names the finished file.
+    var wake = Completer<void>();
+    final updates = live?.listen((update) {
+      final item = update.item;
+      if (item.isCaptions) return;
+      final ours = key != null
+          ? item.canonicalUrl == key
+          : UrlKit.urlsMatch(item.canonicalUrl, url);
+      if (!ours) return;
+      if (update.completed || item.hasError) {
+        if (!wake.isCompleted) wake.complete();
+      } else if (item.progress != null && item.rawStatus == 'downloading') {
+        progress(item.progress!);
       }
-
-      for (final item in [...history.done, ...history.active]) {
-        // A subtitles job shares its clip's URL but its file is a
-        // transcript: taken for the download, it would be pulled as the
-        // clip, and in Lite deleted from the server as one.
-        if (item.isCaptions) continue;
-        if (key != null) {
-          if (item.canonicalUrl != key) continue;
-        } else if (!UrlKit.urlsMatch(item.canonicalUrl, url)) {
+    });
+    try {
+      for (var attempt = 0; attempt < maxAttempts; attempt++) {
+        checkAborted();
+        final HistoryResponse history;
+        try {
+          history = await api.fetchHistory();
+          failuresInARow = 0;
+        } on NetworkException {
+          if (++failuresInARow > networkTolerance) rethrow;
+          await _pause(attempt);
           continue;
         }
-        // **The fingerprint rule survives the key, and must.** `done` and
-        // `queue` are separate lists, so one URL can be an old failure in
-        // one and this attempt in the other; the key picks the URL, and
-        // only this keeps the old failure from failing the new request —
-        // the 2026-09-01 defect, which has a guard of its own. It can never
-        // skip our own item: what we adopted, we adopted **because** its
-        // fingerprint was not there before.
-        if (before.contains(HistoryMatcher.signature(item))) continue;
-        if (item.hasError) {
-          final detail = item.error ?? item.rawStatus;
-          throw item.isPlatformBlocked
-              ? PlatformBlockedException(detail)
-              : ServerErrorException(detail);
-        }
-        // A missing filename means we wait. It is never invented from the
-        // title (trap §6.3).
-        if (item.isCompleted && item.filename != null) return item;
-        if (item.progress != null) onProgress(item.progress!);
-      }
 
-      await _pause(attempt);
+        if (key == null &&
+            fingerprintsBefore != null &&
+            attempt < identifyTurns) {
+          key = HistoryMatcher.soleChange(
+            fingerprintsBefore,
+            HistoryMatcher.fingerprints(history),
+          );
+          if (key != null) onIdentified?.call(key);
+        }
+
+        for (final item in [...history.done, ...history.active]) {
+          // A subtitles job shares its clip's URL but its file is a
+          // transcript: taken for the download, it would be pulled as the
+          // clip, and in Lite deleted from the server as one.
+          if (item.isCaptions) continue;
+          if (key != null) {
+            if (item.canonicalUrl != key) continue;
+          } else if (!UrlKit.urlsMatch(item.canonicalUrl, url)) {
+            continue;
+          }
+          // **The fingerprint rule survives the key, and must.** `done` and
+          // `queue` are separate lists, so one URL can be an old failure in
+          // one and this attempt in the other; the key picks the URL, and
+          // only this keeps the old failure from failing the new request —
+          // the 2026-09-01 defect, which has a guard of its own. It can never
+          // skip our own item: what we adopted, we adopted **because** its
+          // fingerprint was not there before.
+          if (before.contains(HistoryMatcher.signature(item))) continue;
+          if (item.hasError) {
+            final detail = item.error ?? item.rawStatus;
+            throw item.isPlatformBlocked
+                ? PlatformBlockedException(detail)
+                : ServerErrorException(detail);
+          }
+          // A missing filename means we wait. It is never invented from the
+          // title (trap §6.3).
+          if (item.isCompleted && item.filename != null) return item;
+          if (item.progress != null) progress(item.progress!);
+        }
+
+        await _pause(attempt, wake.future);
+        wake = Completer<void>();
+      }
+      throw const PollTimeoutException();
+    } finally {
+      await updates?.cancel();
     }
-    throw const PollTimeoutException();
   }
 
-  /// The wait between turns, skipped after the last one.
-  Future<void> _pause(int attempt) async {
-    if (attempt < maxAttempts - 1) await Future<void>.delayed(pollInterval);
+  /// The wait between turns, skipped after the last one, and cut short
+  /// when [early] completes.
+  Future<void> _pause(int attempt, [Future<void>? early]) async {
+    if (attempt >= maxAttempts - 1) return;
+    await Future.any([Future<void>.delayed(pollInterval), ?early]);
   }
 }

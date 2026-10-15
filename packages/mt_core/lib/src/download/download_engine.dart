@@ -376,6 +376,7 @@ class DownloadEngine {
           _throwIfCancelRequested(taskId);
         },
         onProgress: (p) => _emitProgress(taskId, p),
+        live: api.liveUpdates(),
       );
 
   /// The task learns the URL the server filed it under, and so does its

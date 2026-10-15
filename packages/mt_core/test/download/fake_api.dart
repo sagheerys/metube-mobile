@@ -229,6 +229,16 @@ class FakeApi implements MeTubeApi {
 
   @override
   Map<String, String> get streamingHeaders => const {};
+
+  /// What the live channel says; nothing unless a test speaks into it.
+  final live = StreamController<MTLiveUpdate>.broadcast();
+  int liveListens = 0;
+
+  @override
+  Stream<MTLiveUpdate> liveUpdates() {
+    liveListens++;
+    return live.stream;
+  }
 }
 
 /// History items ready for the scenarios.

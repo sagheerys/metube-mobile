@@ -7,6 +7,7 @@ export 'src/api/api_exceptions.dart';
 export 'src/api/cookie_files.dart';
 export 'src/api/endpoint_resolver.dart';
 export 'src/api/image_headers.dart';
+export 'src/api/live_update.dart';
 export 'src/api/metube_api.dart';
 export 'src/api/metube_api_client.dart' show MeTubeApiClient, ServerConfig;
 export 'src/backup/backup_crypto.dart';

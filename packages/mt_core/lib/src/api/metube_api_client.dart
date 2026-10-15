@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
@@ -10,7 +11,10 @@ import '../models/server_version.dart';
 import '../urls/playlist_detector.dart';
 import '../urls/url_kit.dart';
 import 'api_exceptions.dart';
+import 'live_update.dart';
 import 'metube_api.dart';
+
+part 'metube_live.dart';
 
 /// Connection settings for a MeTube server. The URL is normalised by
 /// stripping trailing slashes.
@@ -662,21 +666,25 @@ class MeTubeApiClient implements MeTubeApi {
       if (e.type == DioExceptionType.cancel) {
         throw const CancelledException();
       }
-      throw NetworkException(e.message);
+      throw NetworkException('${e.message} at /download');
     }
     _throwIfDownloadRejected(response.statusCode ?? 0);
   }
 
-  /// Runs the request, classifies transport errors, then classifies HTTP
-  /// statuses.
+  /// Classifies the status of a file pull. **A 404 here is a missing
+  /// file, not a missing server**: the server answered for the file it had
+  /// listed as done, and it was no longer there.
   static void _throwIfDownloadRejected(int status) {
     if (status == 200 || status == 206) return;
     if (status == 401 || status == 403) {
-      throw AuthFailureException('HTTP $status');
+      throw AuthFailureException('HTTP $status at /download');
     }
-    if (status == 404) throw const NoApiException();
+    if (status == 404) throw const FileGoneException('HTTP 404 at /download');
     throw ServerErrorException('HTTP $status');
   }
+
+  @override
+  Stream<MTLiveUpdate> liveUpdates() => _liveUpdates(this);
 
   void close() => _dio.close(force: true);
 
@@ -692,19 +700,29 @@ class MeTubeApiClient implements MeTubeApi {
     try {
       response = await send();
     } on DioException catch (e) {
-      throw NetworkException(e.message);
+      throw NetworkException('${e.message} at ${_route(e.requestOptions)}');
     }
     final status = response.statusCode ?? 0;
+    final at = _route(response.requestOptions);
     if (status == 401 || status == 403) {
-      throw AuthFailureException('HTTP $status');
+      throw AuthFailureException('HTTP $status at $at');
     }
-    if (status == 404) throw const NoApiException();
+    if (status == 404) throw NoApiException('HTTP 404 at $at');
     if (status < 200 || status >= 300) {
       final message =
           _extractErrorText(_tryDecode(response.data)) ?? 'HTTP $status';
       _throwClassified(message);
     }
     return response;
+  }
+
+  /// Which of the server's endpoints a request went to, for the log:
+  /// `/history`, `/add`, `/delete`. Only the first step past the server's
+  /// own address, as the rest can name a file.
+  String _route(RequestOptions request) {
+    final base = Uri.parse(config.baseUrl).pathSegments.where((s) => s != '');
+    final path = request.uri.pathSegments.where((s) => s != '').toList();
+    return path.length > base.length ? '/${path[base.length]}' : '/';
   }
 
   /// Defensive JSON decoding: HTML or broken text means this is not a

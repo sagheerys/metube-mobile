@@ -4,6 +4,7 @@ import '../models/channel_subscription.dart';
 import '../models/history_response.dart';
 import '../models/quality.dart';
 import '../models/server_version.dart';
+import 'live_update.dart';
 
 /// The abstract MeTube server contract. [MeTubeApiClient] is the only
 /// production implementation (rule 1); the interface exists so the engine
@@ -124,4 +125,9 @@ abstract interface class MeTubeApi {
   });
 
   Map<String, String> get streamingHeaders;
+
+  /// Items as they change on the server, for progress between two reads of
+  /// `/history`. It may end at any moment, or never start; `/history` stays
+  /// the authority on what is done.
+  Stream<MTLiveUpdate> liveUpdates();
 }
