@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:metube_super/features/shared/error_report.dart';
@@ -7,22 +5,34 @@ import 'package:metube_super/features/shared/error_text.dart';
 import 'package:mt_core/mt_core.dart';
 import 'package:mt_ui/mt_ui.dart';
 
+/// The log held in memory, so the test needs no disk.
+class _Lines extends MTLogger {
+  _Lines() : super(filePath: '');
+
+  final lines = <String>[];
+
+  @override
+  Future<void> log(
+    String message, {
+    LogLevel level = LogLevel.info,
+    String? tag,
+  }) async => lines.add(message);
+}
+
 /// Owner's request 2026-10-15: every error that shows, and every error
 /// nobody caught, is in the diagnostic log.
 void main() {
   testWidgets('error snack bars and framework errors reach the log', (
     tester,
   ) async {
-    final file = File(
-      '${Directory.systemTemp.path}/mtf_every_${DateTime.now().microsecondsSinceEpoch}.log',
-    );
-    addTearDown(() async {
-      if (await file.exists()) await file.delete();
-    });
-    final present = FlutterError.onError;
-    logEveryError(MTLogger(filePath: file.path));
+    final testHandler = FlutterError.onError;
+    // Kept from the test framework, which would fail the test on the
+    // error raised on purpose below.
+    FlutterError.onError = (_) {};
+    final logger = _Lines();
+    logEveryError(logger);
     addTearDown(() {
-      FlutterError.onError = present;
+      FlutterError.onError = testHandler;
       mtErrorSnackLog = null;
     });
 
@@ -41,18 +51,13 @@ void main() {
       ),
     );
     showMTSnack(context, 'could not delete', type: MTSnackType.error);
-    // Stands in for an error while drawing; the test's own handler is
-    // put back before it can fail the test.
-    final reported = FlutterError.onError;
-    FlutterError.onError = (details) => reported?.call(details);
-    await tester.runAsync(() async {
-      reported!(FlutterErrorDetails(exception: StateError('broken layout')));
-      await Future<void>.delayed(const Duration(milliseconds: 200));
-    });
+    FlutterError.reportError(
+      FlutterErrorDetails(exception: StateError('broken layout')),
+    );
+    await tester.pump();
 
-    final log = await file.readAsString();
-    expect(log, contains('shown: could not delete'));
-    expect(log, contains('broken layout'));
+    expect(logger.lines, contains('shown: could not delete'));
+    expect(logger.lines.any((l) => l.contains('broken layout')), isTrue);
   });
 
   test('a file gone from the server is not called a wrong address', () {
