@@ -526,6 +526,7 @@
   "endpointUrl": "Endpoint URL",
   "enterFullscreen": "Fullscreen",
   "errAuth": "Wrong username or password",
+  "errFileGone": "The file is no longer on the server. Try again to download it anew.",
   "errNetwork": "Cannot reach the server",
   "errNoApi": "The address responds but has no MeTube API",
   "errNotMeTube": "This address is not a MeTube server",

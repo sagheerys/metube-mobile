@@ -13,6 +13,7 @@ import 'app.dart';
 import 'di.dart';
 import 'features/downloads_library/local_item.dart';
 import 'features/settings/settings_state.dart';
+import 'features/shared/error_report.dart';
 import 'features/shared/stores.dart';
 import 'features/player/square_art.dart';
 
@@ -35,6 +36,7 @@ Future<void> main() async {
   // created twice. It was created above, before the seeding.
   final logsDir = await getApplicationSupportDirectory();
   final logger = MTLogger(filePath: '${logsDir.path}/logs/metube_lite.log');
+  logEveryError(logger);
 
   // One lock for all storage (rule 3), passed to everyone rather than
   // created twice.

@@ -532,6 +532,10 @@ class MTLocalizationsAr extends MTLocalizations {
   String get errAuth => 'اسم المستخدم أو كلمة المرور خاطئة';
 
   @override
+  String get errFileGone =>
+      'الملف لم يعد على السيرفر. أعد المحاولة لتحميله من جديد.';
+
+  @override
   String get errNetwork => 'تعذر الوصول للسيرفر';
 
   @override

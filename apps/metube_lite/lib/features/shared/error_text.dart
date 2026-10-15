@@ -7,6 +7,9 @@ import 'package:mt_ui/mt_ui.dart';
 String errorText(MTLocalizations l10n, Object error) => switch (error) {
   AuthFailureException() => l10n.errAuth,
   NotMeTubeServerException() => l10n.errNotMeTube,
+  // Before its parent: a file gone from a working server is not a wrong
+  // address.
+  FileGoneException() => l10n.errFileGone,
   NoApiException() => l10n.errNoApi,
   NetworkException() => l10n.errNetwork,
   PlatformBlockedException() => l10n.errPlatformBlocked,

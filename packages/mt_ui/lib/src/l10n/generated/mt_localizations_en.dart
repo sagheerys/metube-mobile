@@ -531,6 +531,10 @@ class MTLocalizationsEn extends MTLocalizations {
   String get errAuth => 'Wrong username or password';
 
   @override
+  String get errFileGone =>
+      'The file is no longer on the server. Try again to download it anew.';
+
+  @override
   String get errNetwork => 'Cannot reach the server';
 
   @override

@@ -1016,6 +1016,12 @@ abstract class MTLocalizations {
   /// **'Wrong username or password'**
   String get errAuth;
 
+  /// No description provided for @errFileGone.
+  ///
+  /// In en, this message translates to:
+  /// **'The file is no longer on the server. Try again to download it anew.'**
+  String get errFileGone;
+
   /// No description provided for @errNetwork.
   ///
   /// In en, this message translates to:

@@ -9,6 +9,9 @@ import '../library/library_actions.dart' show wifiOnlyRejection;
 String errorText(MTLocalizations l10n, Object error) => switch (error) {
   AuthFailureException() => l10n.errAuth,
   NotMeTubeServerException() => l10n.errNotMeTube,
+  // Before its parent: a file gone from a working server is not a wrong
+  // address.
+  FileGoneException() => l10n.errFileGone,
   NoApiException() => l10n.errNoApi,
   // A refusal by the user's own choice ("Wi-Fi only") is not a network
   // fault. "Could not reach the server" here is a wrong diagnosis that
