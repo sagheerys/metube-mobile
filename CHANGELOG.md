@@ -73,6 +73,12 @@ only one.
 - **The library at large text sizes.** With Android's text enlarged, or on a
   small phone, some cards and rows overflowed with yellow-and-black
   stripes. They now fit, in every view mode. Both apps.
+- **Sharing the same link again did nothing.** After a link's sheet was
+  closed, sharing that link once more was ignored without a word, however
+  long after, taken for a double delivery. Only a repeat within a few
+  seconds is ignored now. Both apps. The diagnostic log also notes each
+  step a share goes through, without the link, so a share that shows
+  nothing can be traced.
 - **A download lost when the app switched servers.** Sharing a link just
   as the phone woke away from home could fail the download: the app moved
   from the home address to the outside one in the middle of the request.

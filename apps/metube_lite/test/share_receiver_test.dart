@@ -115,6 +115,30 @@ void main() {
     expect(logs.where((l) => l.startsWith('share duplicate')), hasLength(1));
   });
 
+  // Field report 2026-10-15: sharing a link again after closing its sheet
+  // did nothing at all, because it matched the last link received.
+  test('the same link shared again later gets through', () async {
+    var now = DateTime(2026, 10, 15, 13);
+    final receiver = ShareReceiver(
+      onUrls: delivered.add,
+      onLog: logs.add,
+      clock: () => now,
+    );
+    addTearDown(receiver.dispose);
+    final started = receiver.start();
+    initialGate.complete();
+    await started;
+
+    await emit('https://youtu.be/aaaaaaaaaaa');
+    now = now.add(const Duration(seconds: 1));
+    await emit('https://youtu.be/aaaaaaaaaaa');
+    expect(delivered, hasLength(1), reason: 'a double delivery');
+
+    now = now.add(ShareReceiver.repeatWindow);
+    await emit('https://youtu.be/aaaaaaaaaaa');
+    expect(delivered, hasLength(2), reason: 'a person sharing it again');
+  });
+
   test('two different links both get through', () async {
     final receiver = build();
     addTearDown(receiver.dispose);

@@ -27,7 +27,8 @@ Future<void> refreshClipboardUrl(Ref ref) async {
 /// several links at once. It broadcasts the lists of URLs extracted from
 /// any shared text.
 class ShareReceiver {
-  ShareReceiver({required this.onUrls, this.onLog});
+  ShareReceiver({required this.onUrls, this.onLog, DateTime Function()? clock})
+    : _clock = clock ?? DateTime.now;
 
   final void Function(List<String> urls) onUrls;
 
@@ -45,6 +46,15 @@ class ShareReceiver {
   /// `getInitialMedia` and from the stream together — now that the
   /// subscription comes first.
   List<String>? _lastDelivered;
+  DateTime? _lastAt;
+  final DateTime Function() _clock;
+
+  /// How long a repeat counts as the same delivery. The double delivery
+  /// comes within moments; a person sharing the same link again comes
+  /// later, and means it (field report 2026-10-15: a link shared again
+  /// after its sheet was closed was ignored without a word, however long
+  /// after).
+  static const repeatWindow = Duration(seconds: 3);
 
   /// **Subscribe first, then read the initial link** (field report
   /// 2026-09-08).
@@ -80,7 +90,9 @@ class ShareReceiver {
     if (urls.isEmpty || _disposed) return;
     // The same batch twice means two sheets stacked, or two downloads of
     // one link.
+    final now = _clock();
     if (_lastDelivered != null &&
+        now.difference(_lastAt!) < repeatWindow &&
         _lastDelivered!.length == urls.length &&
         List.generate(
           urls.length,
@@ -90,6 +102,7 @@ class ShareReceiver {
       return;
     }
     _lastDelivered = urls;
+    _lastAt = now;
     onLog?.call('share received: ${urls.length}');
     onUrls(urls);
   }
