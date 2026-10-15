@@ -73,6 +73,18 @@ only one.
 - **The library at large text sizes.** With Android's text enlarged, or on a
   small phone, some cards and rows overflowed with yellow-and-black
   stripes. They now fit, in every view mode. Both apps.
+- **A download lost when the app switched servers.** Sharing a link just
+  as the phone woke away from home could fail the download: the app moved
+  from the home address to the outside one in the middle of the request.
+  A download the server has not taken yet now moves with the switch, and
+  the switch waits while the old address still answers. Super only.
+- **The downloads sheet leapt to the top of the screen** when the last
+  download finished, to say there were none. It now stays where it was,
+  and opens no taller than its message when nothing is running. Both apps.
+- **The view modes were hidden in the sort sheet.** With the platforms
+  section in it, the sheet stopped short and the view modes had to be
+  scrolled to. The sheet now fits its choices, with the view modes before
+  the platforms. Super only.
 
 ## [2.4.0] - 2026-10-09
 
