@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui' show PlatformDispatcher;
 
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -38,7 +39,7 @@ void showErrorSnack(
 /// (owner's request 2026-10-15): any error snack bar, anything the
 /// framework reports while building or drawing, and any error no code
 /// caught. The last two went to the console alone, which nobody sees on a
-/// phone. A few lines of the stack say where.
+/// phone. A few lines of the stack say where, kept on the entry's one line.
 void logEveryError(MTLogger logger) {
   mtErrorSnackLog = (message) =>
       unawaited(logger.error('shown: $message', tag: 'ui'));
@@ -46,25 +47,24 @@ void logEveryError(MTLogger logger) {
   FlutterError.onError = (details) {
     unawaited(
       logger.error(
-        '${details.exceptionAsString()}
-${_where(details.stack)}',
+        '${details.exceptionAsString()} | ${_where(details.stack)}',
         tag: 'crash',
       ),
     );
     present?.call(details);
   };
   PlatformDispatcher.instance.onError = (error, stack) {
-    unawaited(logger.error('$error
-${_where(stack)}', tag: 'crash'));
+    unawaited(logger.error('$error | ${_where(stack)}', tag: 'crash'));
     // Not handled here: the platform still reports it as before.
     return false;
   };
 }
 
-String _where(StackTrace? stack) =>
-    (stack?.toString() ?? '').split('
-').take(4).join('
-');
+String _where(StackTrace? stack) => (stack?.toString() ?? '')
+    .split('\n')
+    .take(4)
+    .map((line) => line.trim())
+    .join(' | ');
 
 /// **It returns the future rather than swallowing it**: the call from the
 /// interface is `unawaited` so the screen never waits on the disk, but a
