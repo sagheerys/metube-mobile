@@ -95,8 +95,8 @@ class DownloadPoller {
       if (!ours) return;
       if (update.completed || item.hasError) {
         if (!wake.isCompleted) wake.complete();
-      } else if (item.progress != null && item.rawStatus == 'downloading') {
-        progress(item.progress!);
+      } else if (_streamProgress(item) case final value?) {
+        progress(value);
       }
     });
     try {
@@ -122,6 +122,7 @@ class DownloadPoller {
           if (key != null) onIdentified?.call(key);
         }
 
+        final finished = history.done.toSet();
         for (final item in [...history.done, ...history.active]) {
           // A subtitles job shares its clip's URL but its file is a
           // transcript: taken for the download, it would be pulled as the
@@ -147,9 +148,18 @@ class DownloadPoller {
                 : ServerErrorException(detail);
           }
           // A missing filename means we wait. It is never invented from the
-          // title (trap §6.3).
-          if (item.isCompleted && item.filename != null) return item;
-          if (item.progress != null) progress(item.progress!);
+          // title (trap §6.3). **Only the done list is done** (field report
+          // 2026-10-15): yt-dlp fetches a clip's subtitles, video and audio
+          // one by one, and each reads "finished" in the queue with its own
+          // file, which is deleted once they are merged. Taken for the clip,
+          // the app stopped following it early, and Lite went to pull a
+          // file that was about to vanish.
+          if (item.isCompleted &&
+              item.filename != null &&
+              finished.contains(item)) {
+            return item;
+          }
+          if (_streamProgress(item) case final value?) progress(value);
         }
 
         await _pause(attempt, wake.future);
@@ -159,6 +169,21 @@ class DownloadPoller {
     } finally {
       await updates?.cancel();
     }
+  }
+
+  /// The share of the clip's own media downloaded, or null when the
+  /// reading says nothing about it: a subtitles file, a stream that is not
+  /// downloading, or the 100% a finished stream leaves behind until the
+  /// next one reports.
+  static double? _streamProgress(HistoryItem item) {
+    final value = item.progress;
+    if (value == null || value >= 1 || item.rawStatus != 'downloading') {
+      return null;
+    }
+    final file = (item.filename ?? '').toLowerCase();
+    const subtitles = ['.vtt', '.srt', '.ass', '.lrc', '.ttml', '.json3'];
+    if (subtitles.any(file.endsWith)) return null;
+    return value;
   }
 
   /// The wait between turns, skipped after the last one, and cut short

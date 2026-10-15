@@ -68,9 +68,11 @@ void main() {
       ..add(update('downloading', percent: 60))
       // The audio stream starts again from zero.
       ..add(update('downloading', percent: 10))
-      // A stream finishing is not the clip finishing.
+      // A stream finishing is not the clip finishing, and the 100% it
+      // leaves behind is not the next stream's progress.
       ..add(update('finished', percent: 100))
-      ..add(update('downloading', percent: 100));
+      ..add(update('downloading', percent: 100))
+      ..add(update('downloading', percent: 99.5));
     await Future<void>.delayed(const Duration(milliseconds: 50));
     expect(seen, [0.3, 0.6, 0.99]);
 

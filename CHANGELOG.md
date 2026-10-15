@@ -79,6 +79,13 @@ only one.
   every few seconds. It now follows the server's live progress and glides
   between readings, and a finished clip moves on at once instead of at the
   next reading. Both apps; most visible in Super.
+- **A download counted as done before it was.** The server fetches a
+  clip's subtitles, video and audio one after another, and each piece
+  read as "finished" on its own. The app took the first finished piece
+  for the whole clip: Super stopped following it too early (so its
+  progress never moved), and Lite could go to fetch a piece the server
+  deletes once it joins them, failing with a "not found". The app now
+  waits for the server to finish the clip itself. Both apps.
 - **"The address responds but has no MeTube API" on a working server.**
   That message stood for any "not found" from the server, including a
   finished file that was gone when the app came to take it. That case now

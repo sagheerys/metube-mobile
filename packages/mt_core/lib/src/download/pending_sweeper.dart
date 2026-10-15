@@ -154,7 +154,11 @@ class PendingSweeper {
       await store.remove(pending.id);
       return SweepOutcome.failed;
     }
-    if (!item.isCompleted || item.filename == null) {
+    // Only the done list is done: a stream of the clip reads "finished"
+    // in the queue too, under a file that goes once the streams are merged.
+    if (!item.isCompleted ||
+        item.filename == null ||
+        !history.done.contains(item)) {
       return SweepOutcome.stillRunning;
     }
     final onPhone = pending.localPath;

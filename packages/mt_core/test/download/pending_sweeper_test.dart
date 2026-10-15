@@ -265,6 +265,21 @@ void main() {
       expect(deletedUrls(), isEmpty);
     });
 
+    // Field report 2026-10-15: one stream of the clip reads "finished" in
+    // the queue under a file that is deleted once the streams are merged.
+    test('a finished stream still in the queue is not pulled', () async {
+      await pending.put(record());
+      api.historyScript = [
+        HistoryResponse(queue: [item(filename: 'clip.f399.mp4')]),
+      ];
+
+      final outcome = await sweeperOf().sweep();
+
+      expect(outcome['t1'], SweepOutcome.stillRunning);
+      expect(pulled, isEmpty);
+      expect(deletedUrls(), isEmpty);
+    });
+
     test('a failed item has its row removed and is not pulled', () async {
       await pending.put(record());
       api.historyScript = [
