@@ -53,8 +53,8 @@ void main() {
     addTearDown(e.dispose);
     final seen = <double>[];
     e.updates.listen((t) {
-      if (t.phase == TaskPhase.polling && (t.progress ?? 0) > 0) {
-        seen.add(t.progress!);
+      if (t.phase == TaskPhase.polling && t.progress > 0) {
+        seen.add(t.progress);
       }
     });
 

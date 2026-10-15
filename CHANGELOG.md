@@ -73,6 +73,21 @@ only one.
 - **The library at large text sizes.** With Android's text enlarged, or on a
   small phone, some cards and rows overflowed with yellow-and-black
   stripes. They now fit, in every view mode. Both apps.
+- **Progress on the server moved in jumps.** While the server downloaded
+  a clip, the bar and the notification showed 30, 60, 100, and a short
+  clip went from nothing to done at once, because progress was read only
+  every few seconds. It now follows the server's live progress and glides
+  between readings, and a finished clip moves on at once instead of at the
+  next reading. Both apps; most visible in Super.
+- **"The address responds but has no MeTube API" on a working server.**
+  That message stood for any "not found" from the server, including a
+  finished file that was gone when the app came to take it. That case now
+  says the file is no longer on the server and that trying again
+  downloads it anew. Both apps.
+- **Errors missing from the diagnostic log.** Every error message shown,
+  every error the app did not expect, and the step a download failed at
+  (adding, on the server, or pulling) are now written to the log, with the
+  server's answer. Both apps.
 - **Sharing the same link again did nothing.** After a link's sheet was
   closed, sharing that link once more was ignored without a word, however
   long after, taken for a double delivery. Only a repeat within a few

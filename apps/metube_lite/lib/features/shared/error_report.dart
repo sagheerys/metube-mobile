@@ -44,7 +44,7 @@ void logEveryError(MTLogger logger) {
   mtErrorSnackLog = (message) =>
       unawaited(logger.error('shown: $message', tag: 'ui'));
   final present = FlutterError.onError;
-  FlutterError.onError ??= (details) {
+  FlutterError.onError = (details) {
     unawaited(
       logger.error(
         '${details.exceptionAsString()} | ${_where(details.stack)}',
