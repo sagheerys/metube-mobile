@@ -98,6 +98,7 @@ void main() {
       Size size = const Size(640, 360),
       double lift = 12,
       bool clearCenter = false,
+      bool tapToSwitch = false,
     }) => MaterialApp(
       locale: locale,
       localizationsDelegates: MTLocalizations.localizationsDelegates,
@@ -113,11 +114,56 @@ void main() {
               captions: captions,
               lift: lift,
               clearCenter: clearCenter,
+              tapToSwitch: tapToSwitch,
             ),
           ),
         ),
       ),
     );
+
+    // Owner's choice 2026-10-15: in the shorts the sentence is the switch,
+    // and only there.
+    group('the sentence as the language switch', () {
+      MTCaptions bilingual(ValueNotifier<String?> language) => MTCaptions(
+        lines: [line(1000, 4000, 'مرحبا')],
+        tracks: {
+          'ar': [line(1000, 4000, 'مرحبا')],
+          'en': [line(1000, 4000, 'hello')],
+        },
+        language: language,
+        shown: ValueNotifier(true),
+      );
+
+      testWidgets('in the shorts a tap moves to the next language', (
+        tester,
+      ) async {
+        final language = ValueNotifier<String?>(null);
+        controller.value = controller.value.copyWith(position: ms(2000));
+        await tester.pumpWidget(host(bilingual(language), tapToSwitch: true));
+        await tester.pump(const Duration(milliseconds: 300));
+        expect(find.text('AR'), findsOneWidget);
+
+        await tester.tap(find.textContaining('مرحبا'));
+        await tester.pump(const Duration(milliseconds: 300));
+        expect(language.value, 'en');
+        expect(find.text('EN'), findsOneWidget);
+        expect(find.textContaining('hello'), findsOneWidget);
+      });
+
+      testWidgets('elsewhere it shows no code and takes no touch', (
+        tester,
+      ) async {
+        final language = ValueNotifier<String?>(null);
+        controller.value = controller.value.copyWith(position: ms(2000));
+        await tester.pumpWidget(host(bilingual(language)));
+        await tester.pump(const Duration(milliseconds: 300));
+        expect(find.text('AR'), findsNothing);
+
+        await tester.tap(find.textContaining('مرحبا'), warnIfMissed: false);
+        await tester.pump(const Duration(milliseconds: 300));
+        expect(language.value, isNull);
+      });
+    });
 
     testWidgets('the spoken word is lit, the rest a step dimmer', (
       tester,

@@ -30,7 +30,11 @@ only one.
   said: a whole sentence that stays put, the word being spoken brighter
   than the rest, lifted above the controls when they show. A clip with
   subtitles in two languages gets a button beside CC that switches between
-  them, and the choice is kept for the next clip. Settings has the switch,
+  them, and the choice is kept for the next clip. In the shorts the
+  subtitles themselves are the switch: a tap on them moves to the other
+  language, whose code shows beside them. With the app in English, a clip
+  spoken in another language also keeps its subtitles in that language,
+  as said rather than as translated, so the switch moves between the two. Settings has the switch,
   three sizes, the background behind the words (dark, light, or none,
   with a dark edge round each letter instead), and an option for the
   shorts (off by default, since many shorts carry their words in the

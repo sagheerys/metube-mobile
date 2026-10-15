@@ -76,6 +76,12 @@ final transcriptStatsProvider = FutureProvider<({int clips, int bytes})>((
 final captionsFetcherFactoryProvider =
     Provider<CaptionsFetcher Function(MeTubeApi)>((ref) => CaptionsFetcher.new);
 
+/// How the language a clip is spoken in is found; a test swaps in its own
+/// answer rather than reaching YouTube.
+final spokenLanguageProvider = Provider<Future<String?> Function(String id)>(
+  (ref) => youtubeSpokenLanguage,
+);
+
 final transcriptsServiceProvider = Provider((ref) => TranscriptsService(ref));
 
 class TranscriptsService {
@@ -97,7 +103,7 @@ class TranscriptsService {
     if (UrlKit.youtubeVideoId(url) == null) return;
 
     final fetcher = _ref.read(captionsFetcherFactoryProvider)(api);
-    for (final language in languages) {
+    for (final language in await _languagesFor(url)) {
       final result = await fetcher.fetch(url, language: language);
       _log(
         'captions $language ${result.outcome.name} for $url'
@@ -121,6 +127,21 @@ class TranscriptsService {
     appLanguage,
     if (appLanguage != 'en') 'en',
   ];
+
+  /// The languages asked for one clip (owner's request 2026-10-15). A
+  /// reader of English has no second language of their own, so theirs is
+  /// the one the clip is spoken in, as said rather than as translated: the
+  /// switch then moves between what they read and what is said. Arabic
+  /// keeps Arabic and English.
+  Future<List<String>> _languagesFor(String url) async {
+    final own = languages;
+    if (own.first != 'en') return own;
+    final spoken = await _ref.read(spokenLanguageProvider)(
+      UrlKit.youtubeVideoId(url)!,
+    );
+    if (spoken == null || own.contains(spoken)) return own;
+    return [...own, '$spoken${CaptionsFetcher.original}'];
+  }
 
   /// [transcriptLanguages] for the language the app is showing now.
   List<String> get languages => transcriptLanguages(

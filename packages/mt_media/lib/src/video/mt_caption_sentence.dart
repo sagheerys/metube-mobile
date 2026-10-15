@@ -98,3 +98,68 @@ class _Sentence extends StatelessWidget {
     );
   }
 }
+
+/// The sentence as the language switch: its code at the line's end, a tap
+/// anywhere on it for the next language. Itself alone while switching is
+/// off, or the clip has one language.
+class _SentenceSwitch extends StatelessWidget {
+  const _SentenceSwitch({
+    super.key,
+    required this.captions,
+    required this.enabled,
+    required this.size,
+    required this.child,
+  });
+
+  final MTCaptions captions;
+  final bool enabled;
+  final double size;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    if (!enabled || !captions.switchable) return child;
+    return Semantics(
+      button: true,
+      label: context.mtl.subtitlesLanguage,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: captions.nextLanguage,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Flexible(child: child),
+            const SizedBox(width: MTSpace.xs),
+            _LanguageTag(code: captions.current ?? '', size: size),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// The language on screen as its short code, in the sentence's own dark,
+/// at half its size.
+class _LanguageTag extends StatelessWidget {
+  const _LanguageTag({required this.code, required this.size});
+
+  final String code;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.symmetric(
+      horizontal: MTSpace.xs + 2,
+      vertical: 2,
+    ),
+    decoration: _Sentence._capsule(0.78),
+    child: Text(
+      code.split('-').first.toUpperCase(),
+      style: Theme.of(context).textTheme.labelSmall!.copyWith(
+        fontSize: size * 0.55,
+        fontWeight: FontWeight.w700,
+        color: MTPalette.serverCardInk,
+      ),
+    ),
+  );
+}

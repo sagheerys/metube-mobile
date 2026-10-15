@@ -11,5 +11,8 @@
 /// name. Nothing crashes, and `arb_parity_test` catches it.
 const Map<String, String> mtLanguageNames = {'ar': 'العربية', 'en': 'English'};
 
-/// The language name, or its code if it has not been registered yet.
-String mtLanguageName(String code) => mtLanguageNames[code] ?? code;
+/// The language name, or its code in capitals if it is not one the app
+/// is translated into: a transcript can be in any language a clip is
+/// spoken in.
+String mtLanguageName(String code) =>
+    mtLanguageNames[code] ?? code.toUpperCase();

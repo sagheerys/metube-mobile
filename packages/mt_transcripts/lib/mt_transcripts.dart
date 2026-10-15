@@ -10,6 +10,7 @@ export 'src/search_text.dart';
 export 'src/sidecar_listing.dart';
 export 'src/sidecar_miss_index.dart';
 export 'src/sidecar_reader.dart';
+export 'src/spoken_language.dart';
 export 'src/subtitle_parser.dart';
 export 'src/transcript.dart';
 export 'src/transcript_bundle.dart';

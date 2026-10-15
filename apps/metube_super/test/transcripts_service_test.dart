@@ -29,11 +29,25 @@ void main() {
       ..texts['Me at the zoo [$id].en.srt'] =
           '1\n00:00:01,000 --> 00:00:02,000\nthe elephants\n';
   });
-  tearDown(() => temp.deleteSync(recursive: true));
+  // The log is written without waiting, and Windows will not delete a file
+  // still open: the folder is retried for a moment rather than failing a
+  // test that passed (the cause of this file's occasional failures).
+  tearDown(() async {
+    for (var tries = 0; ; tries++) {
+      try {
+        temp.deleteSync(recursive: true);
+        return;
+      } on FileSystemException {
+        if (tries == 40) rethrow;
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+      }
+    }
+  });
 
   Future<ProviderContainer> container({
     bool enabled = true,
     String localeCode = 'ar',
+    String? spoken,
   }) async {
     final c = ProviderContainer(
       overrides: [
@@ -52,6 +66,7 @@ void main() {
         captionsFetcherFactoryProvider.overrideWithValue(
           (api) => CaptionsFetcher(api, wait: (_) async {}),
         ),
+        spokenLanguageProvider.overrideWithValue((_) async => spoken),
       ],
     );
     addTearDown(c.dispose);
@@ -111,6 +126,33 @@ void main() {
       (await store.read(watch, 'en'))!.segments.single.text,
       'the elephants',
     );
+  });
+
+  // Owner's request 2026-10-15: a reader of English gets the clip's own
+  // language beside English, as said rather than as translated.
+  test('in English, a clip spoken in Spanish keeps its Spanish too', () async {
+    server.texts['Me at the zoo [$id].es-orig.srt'] =
+        '1\n00:00:01,000 --> 00:00:02,000\nlos elefantes\n';
+    final c = await container(localeCode: 'en', spoken: 'es');
+    await c
+        .read(transcriptsServiceProvider)
+        .fetchBeforeAdd(task('https://youtu.be/$id'), server);
+
+    expect(server.captionsAsked, ['$watch en', '$watch es-orig']);
+    final store = await c.read(transcriptStoreProvider.future);
+    expect(
+      (await store.read(watch, 'es'))!.segments.single.text,
+      'los elefantes',
+    );
+  });
+
+  test('in Arabic, Arabic and English whatever is spoken', () async {
+    final c = await container(spoken: 'es');
+    await c
+        .read(transcriptsServiceProvider)
+        .fetchBeforeAdd(task('https://youtu.be/$id'), server);
+
+    expect(server.captionsAsked, ['$watch ar', '$watch en']);
   });
 
   test('playlists, their members and other sites are left alone', () async {

@@ -103,6 +103,7 @@ class MTCaptionsLayer extends StatefulWidget {
     required this.captions,
     required this.lift,
     this.clearCenter = false,
+    this.tapToSwitch = false,
   });
 
   final VideoPlayerController controller;
@@ -115,6 +116,12 @@ class MTCaptionsLayer extends StatefulWidget {
   /// sentence keeps below it, in fewer lines, or waits for the controls to
   /// fade where a small player leaves no room between the two.
   final bool clearCenter;
+
+  /// **The sentence itself switches the language**, with the language's
+  /// code beside it (owner's choice, 2026-10-15). For the shorts alone,
+  /// which have no CC bar to hold a button; everywhere else the layer lets
+  /// every touch through to the player beneath.
+  final bool tapToSwitch;
 
   @override
   State<MTCaptionsLayer> createState() => _MTCaptionsLayerState();
@@ -222,6 +229,9 @@ class _MTCaptionsLayerState extends State<MTCaptionsLayer>
   Widget build(BuildContext context) => ValueListenableBuilder<bool>(
     valueListenable: widget.captions.shown,
     builder: (context, shown, _) => IgnorePointer(
+      // Only the sentence takes a touch; the space around it is empty and
+      // lets taps reach the player.
+      ignoring: !(widget.tapToSwitch && widget.captions.switchable),
       child: LayoutBuilder(
         builder: (context, box) {
           // In step with the picture: larger on a tablet and in full screen.
@@ -249,14 +259,20 @@ class _MTCaptionsLayerState extends State<MTCaptionsLayer>
                 duration: MTMotion.fast,
                 child: !shown || _block < 0 || lines < 1
                     ? const SizedBox.shrink()
-                    : _Sentence(
+                    : _SentenceSwitch(
                         key: ValueKey(_block),
-                        block: _blocks[_block],
-                        word: _word,
-                        width: box.maxWidth,
+                        captions: widget.captions,
+                        enabled: widget.tapToSwitch,
                         size: size,
-                        lines: lines,
-                        background: widget.captions.background,
+                        child: _Sentence(
+                          key: ValueKey(_block),
+                          block: _blocks[_block],
+                          word: _word,
+                          width: box.maxWidth,
+                          size: size,
+                          lines: lines,
+                          background: widget.captions.background,
+                        ),
                       ),
               ),
             ),

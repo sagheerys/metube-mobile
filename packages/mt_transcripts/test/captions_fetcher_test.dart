@@ -58,6 +58,19 @@ void main() {
     },
   );
 
+  // Owner's request 2026-10-15: the original-language track, asked for by
+  // name (`es-orig`), is kept as Spanish beside the translations.
+  test('an original track is kept under its language', () async {
+    server.script = [
+      const HistoryResponse(),
+      HistoryResponse(done: [row()]),
+    ];
+    final result = await fetcher().fetch(watch, language: 'es-orig');
+
+    expect(server.captionsAsked, [(watch, 'es-orig')]);
+    expect(result.transcript!.language, 'es');
+  });
+
   test('GUARD: a clip already in the library is never asked for', () async {
     server.script = [
       HistoryResponse(

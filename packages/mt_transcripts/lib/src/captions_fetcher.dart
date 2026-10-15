@@ -71,6 +71,12 @@ class CaptionsFetcher {
   final Future<void> Function(Duration) _wait;
   final DateTime Function() _clock;
 
+  /// The suffix yt-dlp gives the track in the language spoken, as opposed
+  /// to one translated from it: ask for `es-orig` to get what was said in
+  /// Spanish.
+  static const original = _original;
+  static const _original = '-orig';
+
   Future<CaptionsResult> fetch(String url, {required String language}) async {
     final id = UrlKit.youtubeVideoId(url);
     if (id == null) return const CaptionsResult(CaptionsOutcome.unsupported);
@@ -141,8 +147,11 @@ class CaptionsFetcher {
         transcript: Transcript(
           canonicalUrl: entry.canonicalUrl,
           // What was asked for, not the track's own label (`en-orig`,
-          // say): a clip holds one transcript per language asked.
-          language: language,
+          // say): a clip holds one transcript per language asked. An
+          // original track asked by name is kept under its language.
+          language: language.endsWith(_original)
+              ? language.substring(0, language.length - _original.length)
+              : language,
           source: 'captions',
           fetchedAt: DateTime.now(),
           segments: segments,

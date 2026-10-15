@@ -292,6 +292,7 @@ class _MTReelsPlayerState extends State<MTReelsPlayer> {
                 MTCaptionsLayer(
                   controller: controller,
                   captions: captions,
+                  tapToSwitch: true,
                   lift:
                       MediaQuery.paddingOf(context).bottom +
                       (_chrome ? 168 : 72),
