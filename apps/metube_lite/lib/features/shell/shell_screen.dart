@@ -68,6 +68,7 @@ class _ShellScreenState extends ConsumerState<ShellScreen>
     }
     if (MTRouteDepth.depth.value != 0) return;
     _updatePrompted = true;
+    unawaited(ref.read(loggerProvider).log('update sheet shown', tag: 'ui'));
     showUpdateSheet(context);
   }
 
@@ -155,6 +156,11 @@ class _ShellScreenState extends ConsumerState<ShellScreen>
   /// submitted one after another).
   Future<void> _onSharedUrls(List<String> shared) async {
     if (!mounted || shared.isEmpty) return;
+    // Each step is logged, without the link: a share that showed nothing
+    // can then be traced to where it stopped.
+    final logger = ref.read(loggerProvider);
+    void note(String step) => unawaited(logger.log(step, tag: 'share'));
+    final started = DateTime.now();
     // **The decision is made on the final URL, not the shared one** (field
     // report 2026-09-08): SoundCloud's share button gives
     // `on.soundcloud.com/…` with no `/sets/`, so an album counted as a
@@ -164,15 +170,14 @@ class _ShellScreenState extends ConsumerState<ShellScreen>
     final urls = [
       for (final url in shared) await resolver.resolveForRouting(url),
     ];
-    if (!mounted) return;
+    note(
+      'share checked in ${DateTime.now().difference(started).inMilliseconds}ms',
+    );
+    if (!mounted) return note('share dropped: the screen is gone');
     widget.navigationShell.goBranch(0);
     if (urls.length == 1) {
-      // "Quick download" makes the default quality an effective setting: a
-      // shared link downloads immediately with no sheet, and the snack bar
-      // offers an undo. The gate lives inside `startQuickDownload` itself,
-      // so
-      // it is not repeated here.
       if (_isPurePlaylistLink(urls.first)) {
+        note('share to the playlist screen');
         GoRouter.of(context).push('/batch', extra: urls.first);
         return;
       }
@@ -180,12 +185,16 @@ class _ShellScreenState extends ConsumerState<ShellScreen>
       // shared link downloads immediately with no sheet, and the snack bar
       // offers an undo. The gate lives inside `startQuickDownload` itself,
       // so it is not repeated here.
-      if (startQuickDownload(context, ref, urls.first)) return;
+      if (startQuickDownload(context, ref, urls.first)) {
+        return note('share downloaded at once');
+      }
+      note('share to the add sheet');
       openAddSheet(context, ref, initialUrl: urls.first);
       return;
     }
     final engine = ref.read(downloadEngineProvider);
-    if (engine == null) return;
+    if (engine == null) return note('share dropped: no server');
+    note('share of ${urls.length} links');
     final quality = ref.read(settingsProvider).quality;
     for (final url in urls) {
       if (PlaylistDetector.isPlaylist(url)) {

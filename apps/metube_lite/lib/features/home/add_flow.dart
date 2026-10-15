@@ -33,7 +33,10 @@ Future<void> openAddSheet(
   String? initialUrl,
 }) async {
   final l10n = context.mtl;
-  await showModalBottomSheet<void>(
+  final logger = ref.read(loggerProvider);
+  final opened = DateTime.now();
+  unawaited(logger.log('add sheet shown', tag: 'share'));
+  final submitted = await showModalBottomSheet<bool>(
     context: context,
     useRootNavigator: true,
     isScrollControlled: true,
@@ -45,6 +48,16 @@ Future<void> openAddSheet(
       l10n: l10n,
       router: GoRouter.of(context),
       messenger: ScaffoldMessenger.of(context),
+    ),
+  );
+  // How it closed, and when: a sheet gone within a second that nobody
+  // touched was closed by something else.
+  final open = DateTime.now().difference(opened).inMilliseconds;
+  unawaited(
+    logger.log(
+      'add sheet ${submitted ?? false ? 'submitted' : 'dismissed'} '
+      'after ${open}ms',
+      tag: 'share',
     ),
   );
 }
@@ -126,7 +139,7 @@ class _AddSheetState extends ConsumerState<_AddSheet> {
       showMTSnack(context, l10n.invalidUrl, type: MTSnackType.error);
       return;
     }
-    Navigator.pop(context);
+    Navigator.pop(context, true);
 
     // **The decision is made on the final URL, not the entered one** (field
     // report 2026-09-08): `on.soundcloud.com/…` is an album with no

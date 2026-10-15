@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mt_core/mt_core.dart';
@@ -5,6 +7,7 @@ import 'package:mt_ui/mt_ui.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../di.dart';
 import 'update_state.dart';
 
 /// The running version, and whether Android installed it over an older
@@ -74,6 +77,8 @@ Future<WhatsNewOutcome> _maybeShow(BuildContext context, WidgetRef ref) async {
   }
   await ref.read(whatsNewServiceProvider).markSeen(pending.version);
   if (!context.mounted) return WhatsNewOutcome.later;
+  // Logged because it can open as a share arrives.
+  unawaited(ref.read(loggerProvider).log('whats-new shown', tag: 'ui'));
   _show(context, pending);
   return WhatsNewOutcome.shown;
 }

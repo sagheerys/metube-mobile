@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -57,6 +58,10 @@ void main() {
     final c = ProviderContainer(
       overrides: [
         keyValueStoreProvider.overrideWithValue(store),
+        // The prompt notes in the log when it opens.
+        loggerProvider.overrideWithValue(
+          MTLogger(filePath: '${Directory.systemTemp.path}/mtf_test.log'),
+        ),
         prefsMutexProvider.overrideWithValue(PrefsMutex()),
         installedVersionProvider.overrideWith((ref) async => (version, true)),
         updateCheckerProvider.overrideWithValue(
