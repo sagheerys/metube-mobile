@@ -255,7 +255,9 @@ class DownloadEngine {
       _emitPhase(taskId, TaskPhase.cancelled);
       await _cleanupOrphan(taskId);
     } on MTApiException catch (e) {
-      onLog?.call('task failed: $e');
+      // The step it failed at: the same refusal means different things
+      // while adding, while the server works, and while pulling the file.
+      onLog?.call('task failed while ${_tasks[taskId]?.phase.name}: $e');
       // **A broken road keeps the record; a refusal drops it.** A network
       // failure or the polling ceiling is exactly the case the record was
       // written for: the server carries on and finishes the file, and the
@@ -264,7 +266,9 @@ class DownloadEngine {
       final task = _tasks[taskId];
       if (task != null) _emit(task.copyWith(phase: TaskPhase.failed, error: e));
     } on Object catch (e) {
-      onLog?.call('task failed (local): $e');
+      onLog?.call(
+        'task failed (local) while ${_tasks[taskId]?.phase.name}: $e',
+      );
       _forget(taskId);
       final task = _tasks[taskId];
       if (task != null) {

@@ -546,7 +546,7 @@ class MeTubeApiClient implements MeTubeApi {
         ),
       );
     } on DioException catch (e) {
-      throw NetworkException(e.message);
+      throw NetworkException('${e.message} at /download');
     }
     _throwIfDownloadRejected(response.statusCode ?? 0);
     final bytes = response.data ?? const <int>[];
@@ -568,9 +568,9 @@ class MeTubeApiClient implements MeTubeApi {
         ),
       );
     } on DioException catch (e) {
-      throw NetworkException(e.message);
+      throw NetworkException('${e.message} at /download');
     }
-    _throwIfDownloadRejected(response.statusCode ?? 0);
+    _throwIfDownloadRejected(response.statusCode ?? 0, file: false);
     final html = response.data ?? '';
     // The same ceiling as any text read from the folder.
     if (html.length > MTConstants.maxTextFileBytes) {
@@ -671,15 +671,22 @@ class MeTubeApiClient implements MeTubeApi {
     _throwIfDownloadRejected(response.statusCode ?? 0);
   }
 
-  /// Classifies the status of a file pull. **A 404 here is a missing
-  /// file, not a missing server**: the server answered for the file it had
-  /// listed as done, and it was no longer there.
-  static void _throwIfDownloadRejected(int status) {
+  /// Classifies the status of a read from the download folder. **A 404 on
+  /// a file is a missing file, not a missing server**: the server answered
+  /// for a file it had listed as done, and it was no longer there.
+  ///
+  /// The folder's own index is not a file: its 404 means a server that
+  /// does not list the folder, so [file] is false there.
+  static void _throwIfDownloadRejected(int status, {bool file = true}) {
     if (status == 200 || status == 206) return;
     if (status == 401 || status == 403) {
       throw AuthFailureException('HTTP $status at /download');
     }
-    if (status == 404) throw const FileGoneException('HTTP 404 at /download');
+    if (status == 404) {
+      throw file
+          ? const FileGoneException('HTTP 404 at /download')
+          : const NoApiException('HTTP 404 at /download');
+    }
     throw ServerErrorException('HTTP $status');
   }
 

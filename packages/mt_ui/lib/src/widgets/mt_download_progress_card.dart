@@ -66,60 +66,70 @@ class MTDownloadProgressCard extends StatelessWidget {
           ),
           const SizedBox(width: MTSpace.md - 1),
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: text.bodyMedium!.copyWith(fontWeight: FontWeight.w700),
-                ),
-                const SizedBox(height: 3),
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        statusText,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: text.bodySmall!.copyWith(color: softInk),
-                      ),
-                    ),
-                    // **The percentage follows every phase that knows its
-                    // progress** (field report 2026-09-03: the counter did
-                    // not appear while pulling to the device). The number
-                    // used to be buried inside the "on server %" string
-                    // alone, so the pull phase, the longest one in Lite,
-                    // showed a moving bar with no number. It is an
-                    // independent element now, so it appears during both
-                    // the pull and the poll without a separate string per
-                    // phase.
-                    if (!isError && progress != null) ...[
-                      const SizedBox(width: MTSpace.sm),
-                      Text(
-                        '${(progress!.clamp(0, 1) * 100).round()}%',
-                        style: text.bodySmall!.copyWith(
-                          fontWeight: FontWeight.w700,
-                          color: tint,
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-                if (!isError) ...[
-                  const SizedBox(height: MTSpace.xs + 1),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(3),
-                    child: LinearProgressIndicator(
-                      value: progress,
-                      minHeight: 5,
-                      backgroundColor: tint.withValues(alpha: 0.16),
-                      valueColor: AlwaysStoppedAnimation(tint),
+            // **The bar and the number glide to each new reading** (field
+            // report 2026-10-15) instead of jumping to it, so a figure
+            // that arrives in steps still reads as a count.
+            child: TweenAnimationBuilder<double>(
+              tween: Tween(end: progress?.clamp(0, 1).toDouble() ?? 0),
+              duration: const Duration(milliseconds: 450),
+              curve: Curves.easeOut,
+              builder: (context, shown, _) => Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: text.bodyMedium!.copyWith(
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
+                  const SizedBox(height: 3),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          statusText,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: text.bodySmall!.copyWith(color: softInk),
+                        ),
+                      ),
+                      // **The percentage follows every phase that knows its
+                      // progress** (field report 2026-09-03: the counter did
+                      // not appear while pulling to the device). The number
+                      // used to be buried inside the "on server %" string
+                      // alone, so the pull phase, the longest one in Lite,
+                      // showed a moving bar with no number. It is an
+                      // independent element now, so it appears during both
+                      // the pull and the poll without a separate string per
+                      // phase.
+                      if (!isError && progress != null) ...[
+                        const SizedBox(width: MTSpace.sm),
+                        Text(
+                          '${(shown * 100).round()}%',
+                          style: text.bodySmall!.copyWith(
+                            fontWeight: FontWeight.w700,
+                            color: tint,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                  if (!isError) ...[
+                    const SizedBox(height: MTSpace.xs + 1),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(3),
+                      child: LinearProgressIndicator(
+                        value: progress == null ? null : shown,
+                        minHeight: 5,
+                        backgroundColor: tint.withValues(alpha: 0.16),
+                        valueColor: AlwaysStoppedAnimation(tint),
+                      ),
+                    ),
+                  ],
                 ],
-              ],
+              ),
             ),
           ),
           if (onCancel != null) ...[

@@ -116,6 +116,20 @@ void main() {
       expect(client.testConnection(), throwsA(isA<NoApiException>()));
     });
 
+    // The log has to say which request failed: a bare "NoApiException"
+    // could have come from any of them.
+    test('a refusal names the endpoint it came from', () async {
+      final (client, _) = makeClient((o) => _json('not found', status: 404));
+      await expectLater(
+        client.fetchHistory(),
+        throwsA(
+          isA<NoApiException>()
+              .having((e) => e.detail, 'detail', 'HTTP 404 at /history')
+              .having((e) => e is FileGoneException, 'a file', isFalse),
+        ),
+      );
+    });
+
     test('a dropped connection raises NetworkException', () async {
       final (client, _) = makeClient(
         (o) => throw DioException.connectionError(
@@ -482,7 +496,12 @@ void main() {
       '403 ⇒ AuthFailure',
       () => expectRejected(403, isA<AuthFailureException>()),
     );
-    test('404 ⇒ NoApi', () => expectRejected(404, isA<NoApiException>()));
+    // Field report 2026-10-15: a file gone from the server read "there
+    // is no MeTube API at this address" on a server that was working.
+    test(
+      '404 on a file is a missing file, not a missing server',
+      () => expectRejected(404, isA<FileGoneException>()),
+    );
     test(
       '500 ⇒ ServerError',
       () => expectRejected(500, isA<ServerErrorException>()),

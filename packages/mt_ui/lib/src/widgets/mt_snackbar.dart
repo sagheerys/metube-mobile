@@ -17,6 +17,7 @@ void showMTSnack(
   String? actionLabel,
   VoidCallback? onAction,
   Duration duration = mtSnackDuration,
+  bool logged = false,
 }) => showMTSnackOn(
   ScaffoldMessenger.of(context),
   message,
@@ -25,7 +26,17 @@ void showMTSnack(
   onAction: onAction,
   themeContext: context,
   duration: duration,
+  logged: logged,
 );
+
+/// Where every error shown in a snack bar is written down. The app points
+/// it at its diagnostic log at startup; this package knows no log.
+///
+/// It catches the errors no one logged on purpose: a message shown is a
+/// message a user may ask about, and the log should hold it too. A caller
+/// that already logged the error itself passes `logged: true`, so it is
+/// not written twice.
+void Function(String message)? mtErrorSnackLog;
 
 /// The same, with a **pre-captured** messenger. Used when the original
 /// context has already been deactivated, such as a bottom sheet that just
@@ -39,7 +50,9 @@ void showMTSnackOn(
   VoidCallback? onAction,
   BuildContext? themeContext,
   Duration duration = mtSnackDuration,
+  bool logged = false,
 }) {
+  if (type == MTSnackType.error && !logged) mtErrorSnackLog?.call(message);
   final x = MTThemeX.of(themeContext ?? messenger.context);
   final (icon, tint) = switch (type) {
     MTSnackType.success => (Icons.check_circle_rounded, x.palette.ok),

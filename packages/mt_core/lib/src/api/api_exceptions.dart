@@ -42,7 +42,10 @@ final class NoApiException extends MTApiException {
 /// 404 on a finished file: the server listed it as done, but it was gone
 /// when asked for, deleted or moved in between. Downloading it again
 /// fixes it, which a wrong address would not.
-final class FileGoneException extends MTApiException {
+///
+/// A kind of [NoApiException], so code that already treats a 404 on a file
+/// as "not there" keeps doing so; only its wording differs.
+final class FileGoneException extends NoApiException {
   const FileGoneException([super.detail]);
 }
 
