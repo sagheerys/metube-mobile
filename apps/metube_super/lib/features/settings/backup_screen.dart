@@ -14,6 +14,7 @@ import '../../di.dart';
 import '../library/library_providers.dart';
 import '../playlists/playlists_providers.dart';
 import '../shared/error_report.dart';
+import '../transcripts/subtitles.dart';
 import 'auto_backup.dart';
 import 'widgets/backup_picker.dart';
 
@@ -115,6 +116,7 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
   /// Everything the backup may have changed is reloaded (rule 8, step 1).
   Future<void> _refreshEverything() async {
     await ref.read(settingsProvider.notifier).reloadFromStore();
+    await ref.read(subtitlePrefsProvider).reload();
     ref.invalidate(libraryItemsProvider);
     ref.invalidate(playlistsProvider);
     ref.invalidate(tagCountsProvider);

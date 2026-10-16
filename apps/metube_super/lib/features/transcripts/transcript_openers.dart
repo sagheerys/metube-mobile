@@ -61,8 +61,8 @@ void showVideoTranscript(
   seek: session.seek,
 );
 
-/// The same, for the reel on screen (owner's request 2026-10-14: the
-/// shorts had no way to the transcript the other players offer).
+/// The same, for the reel on screen, so the shorts reach the transcript
+/// the other players offer.
 void showReelTranscript(
   BuildContext context,
   MTReelsHandle reel,

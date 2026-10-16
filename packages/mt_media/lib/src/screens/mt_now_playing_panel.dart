@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
 import 'package:mt_ui/mt_ui.dart';
@@ -87,35 +89,55 @@ class MTNowPlayingPanel extends StatelessWidget {
                       ),
                     ],
                   ),
-                  Semantics(
-                    button: true,
-                    label: l10n.nowPlaying,
-                    child: GestureDetector(
-                      onTap: onOpen,
-                      child: MTTiltedArtwork(
-                        item: item,
-                        artwork: cover ?? artwork,
-                        size: art,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: MTSpace.md),
-                  MTAudioTitles(
-                    item: item,
-                    media: media,
-                    index: handler.currentIndex,
-                    total: handler.items.length,
-                    showSourceChip: showSourceChip,
-                  ),
-                  const SizedBox(height: MTSpace.sm),
-                  MTAudioSlider(handler: handler, media: media),
-                  MTPlayerControlsRow(handler: handler),
-                  const SizedBox(height: MTSpace.sm),
                   Expanded(
-                    child: MTNowPlayingTabs(
-                      handler: handler,
-                      artwork: artwork,
-                      companion: companion,
+                    child: CustomMultiChildLayout(
+                      delegate: _PlayerOverTabs(
+                        MediaQuery.textScalerOf(context).scale(_tabsAtLeast),
+                      ),
+                      children: [
+                        LayoutId(
+                          id: _PlayerOverTabs.player,
+                          child: SingleChildScrollView(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Semantics(
+                                  button: true,
+                                  label: l10n.nowPlaying,
+                                  child: GestureDetector(
+                                    onTap: onOpen,
+                                    child: MTTiltedArtwork(
+                                      item: item,
+                                      artwork: cover ?? artwork,
+                                      size: art,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: MTSpace.md),
+                                MTAudioTitles(
+                                  item: item,
+                                  media: media,
+                                  index: handler.currentIndex,
+                                  total: handler.items.length,
+                                  showSourceChip: showSourceChip,
+                                ),
+                                const SizedBox(height: MTSpace.sm),
+                                MTAudioSlider(handler: handler, media: media),
+                                MTPlayerControlsRow(handler: handler),
+                                const SizedBox(height: MTSpace.sm),
+                              ],
+                            ),
+                          ),
+                        ),
+                        LayoutId(
+                          id: _PlayerOverTabs.tabs,
+                          child: MTNowPlayingTabs(
+                            handler: handler,
+                            artwork: artwork,
+                            companion: companion,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
@@ -129,4 +151,48 @@ class MTNowPlayingPanel extends StatelessWidget {
 
   static const _minArt = 88.0;
   static const _maxArt = 180.0;
+
+  /// The tab bar and about one row beneath it, at the normal font; it
+  /// grows with the text, since the tabs wrap onto two lines at the largest.
+  static const _tabsAtLeast = 120.0;
+}
+
+/// **The player at its own height, the tabs below in what is left.** When
+/// the window is short and the font large (a small tablet on its side,
+/// Android's text enlarged), the player would push the tabs off the
+/// bottom: it then scrolls instead, and the tabs keep enough room for
+/// their bar and a row. Where everything fits, the player is laid out
+/// exactly as a plain column would.
+class _PlayerOverTabs extends MultiChildLayoutDelegate {
+  _PlayerOverTabs(this.tabsAtLeast);
+
+  static const player = 'player';
+  static const tabs = 'tabs';
+
+  final double tabsAtLeast;
+
+  @override
+  void performLayout(Size size) {
+    final above = layoutChild(
+      player,
+      BoxConstraints(
+        minWidth: size.width,
+        maxWidth: size.width,
+        maxHeight: math.max(0, size.height - tabsAtLeast),
+      ),
+    );
+    positionChild(player, Offset.zero);
+    layoutChild(
+      tabs,
+      BoxConstraints.tightFor(
+        width: size.width,
+        height: math.max(0, size.height - above.height),
+      ),
+    );
+    positionChild(tabs, Offset(0, above.height));
+  }
+
+  @override
+  bool shouldRelayout(_PlayerOverTabs oldDelegate) =>
+      oldDelegate.tabsAtLeast != tabsAtLeast;
 }

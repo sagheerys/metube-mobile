@@ -124,19 +124,27 @@ void main() {
       tester,
     ) async {
       await tester.runAsync(() => handler.playItems([clip('a'), clip('b')]));
-      for (final size in const [Size(960, 600), Size(1280, 800)]) {
-        await pump(
-          tester,
-          size,
-          MediaQuery(
-            data: MediaQueryData(
-              size: size,
-              textScaler: const TextScaler.linear(1.3),
+      // 948x544 is an 8-inch tablet's window on its side; 2.0 is Android's
+      // largest font.
+      for (final size in const [
+        Size(948, 544),
+        Size(960, 600),
+        Size(1280, 800),
+      ]) {
+        for (final scale in const [1.3, 2.0]) {
+          await pump(
+            tester,
+            size,
+            MediaQuery(
+              data: MediaQueryData(
+                size: size,
+                textScaler: TextScaler.linear(scale),
+              ),
+              child: panel(() {}),
             ),
-            child: panel(() {}),
-          ),
-        );
-        expect(tester.takeException(), isNull, reason: '$size');
+          );
+          expect(tester.takeException(), isNull, reason: '$size at $scale');
+        }
       }
     });
   });

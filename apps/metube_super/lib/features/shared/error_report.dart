@@ -35,11 +35,11 @@ void showErrorSnack(
   );
 }
 
-/// **Every error reaches the log, not only the ones logged by hand**
-/// (owner's request 2026-10-15): any error snack bar, anything the
-/// framework reports while building or drawing, and any error no code
-/// caught. The last two went to the console alone, which nobody sees on a
-/// phone. A few lines of the stack say where, kept on the entry's one line.
+/// **Every error reaches the log, not only the ones logged by hand**: any error
+/// snack bar, anything the framework reports while building or drawing, and any
+/// error no code caught. The last two went to the console alone, which nobody
+/// sees on a phone. A few lines of the stack say where, kept on the entry's one
+/// line.
 void logEveryError(MTLogger logger) {
   mtErrorSnackLog = (message) =>
       unawaited(logger.error('shown: $message', tag: 'ui'));

@@ -7,10 +7,9 @@ import 'package:mt_ui/mt_ui.dart';
 import '../../di.dart';
 import 'transcripts_state.dart';
 
-/// Subtitles over the video, drawn from the transcripts (owner's request
-/// 2026-10-14): whether they show, how large, and whether the shorts get
-/// them too. All off until asked for, so nothing changes for anyone who
-/// does not want them.
+/// Subtitles over the video, drawn from the transcripts: whether they show, how
+/// large, and whether the shorts get them too. All off until asked for, so
+/// nothing changes for anyone who does not want them.
 class SubtitlePrefs {
   SubtitlePrefs(this._store) {
     _load();
@@ -51,12 +50,18 @@ class SubtitlePrefs {
         MTCaptionBackground.values.length - 1,
       )];
 
-  Future<void> _load() async {
+  /// Reads the store again, after a restored backup has rewritten it. The
+  /// same notifiers are kept: the players are listening to them.
+  Future<void> reload() async {
     shown.value = await _store.getBool(_shownKey) ?? false;
     size.value = await _store.getInt(_sizeKey) ?? 1;
     inShorts.value = await _store.getBool(_shortsKey) ?? false;
     language.value = await _store.getString(_languageKey);
     background.value = await _store.getInt(_backgroundKey) ?? 0;
+  }
+
+  Future<void> _load() async {
+    await reload();
     // Saved from here on; what was just read is not written back.
     shown.addListener(() => _store.setBool(_shownKey, shown.value));
     size.addListener(() => _store.setInt(_sizeKey, size.value));

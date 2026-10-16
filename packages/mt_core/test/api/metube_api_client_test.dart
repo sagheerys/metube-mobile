@@ -130,6 +130,28 @@ void main() {
       );
     });
 
+    // An address typed without its scheme cannot be parsed. Naming the
+    // route for the log must not turn that into a raw FormatException,
+    // which no screen catches: the user saw nothing at all.
+    test('an address without http:// still raises NetworkException', () async {
+      final dio = Dio()
+        // What the real adapter does with that address.
+        ..httpClientAdapter = _FakeAdapter(
+          (o) => throw DioException(
+            requestOptions: o,
+            error: const FormatException('Scheme not starting with a letter'),
+          ),
+        );
+      final client = MeTubeApiClient(
+        config: ServerConfig(baseUrl: '192.168.1.5:8081'),
+        dio: dio,
+      );
+      await expectLater(
+        client.testConnection(),
+        throwsA(isA<NetworkException>()),
+      );
+    });
+
     test('a dropped connection raises NetworkException', () async {
       final (client, _) = makeClient(
         (o) => throw DioException.connectionError(

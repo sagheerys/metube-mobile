@@ -64,6 +64,9 @@ class _DownloadsSheetState extends ConsumerState<_DownloadsSheet> {
           const SizedBox(height: MTSpace.sm),
           for (final task in sectionTasks) ...[
             MTDownloadProgressCard(
+              // A new task or a new phase starts its own count: the pull
+              // begins at 0 and must not run down from the server's 100%.
+              key: ValueKey('${task.id}-${task.phase.name}'),
               title: task.effectiveUrl,
               statusText: error
                   ? taskErrorText(l10n, task)
@@ -174,8 +177,19 @@ class _DownloadsSheetState extends ConsumerState<_DownloadsSheet> {
             ),
             const SizedBox(height: MTSpace.lg),
             Expanded(
+              // The message scrolls rather than overflows when the sheet
+              // is dragged low or the window is short (a tablet on its side),
+              // and stays attached to the controller so the sheet still drags.
               child: shown.isEmpty
-                  ? empty
+                  ? LayoutBuilder(
+                      builder: (context, box) => SingleChildScrollView(
+                        controller: scrollController,
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(minHeight: box.maxHeight),
+                          child: Center(child: empty),
+                        ),
+                      ),
+                    )
                   : ListView(
                       controller: scrollController,
                       padding: EdgeInsets.zero,

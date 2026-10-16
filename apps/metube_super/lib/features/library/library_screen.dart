@@ -337,6 +337,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       _ => l10n.completed,
     };
     return MTDownloadProgressCard(
+      key: ValueKey('${task.id}-${task.phase.name}'),
       title: task.title ?? task.effectiveUrl,
       statusText: statusText,
       progress: task.hasKnownProgress ? task.progress : null,

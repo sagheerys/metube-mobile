@@ -42,6 +42,10 @@ abstract final class MTVideoOpen {
       if (surface == VideoViewType.platformView || !refusedSurface(error)) {
         rethrow;
       }
+    } on Object {
+      // No caller disposes a controller it never received.
+      await controller.dispose();
+      rethrow;
     }
     final retry = _create(source, VideoViewType.platformView);
     try {

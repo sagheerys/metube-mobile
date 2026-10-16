@@ -150,6 +150,35 @@ void main() {
         expect(find.textContaining('hello'), findsOneWidget);
       });
 
+      testWidgets('a language with nothing said here clears the old sentence', (
+        tester,
+      ) async {
+        // A line without word timings: the word index stays -1 on both
+        // sides of the switch, so only the sentence index can tell.
+        final language = ValueNotifier<String?>(null);
+        final captions = MTCaptions(
+          lines: [line(1000, 4000, 'مرحبا', timed: false)],
+          tracks: {
+            'ar': [line(1000, 4000, 'مرحبا', timed: false)],
+            'en': [line(6000, 8000, 'hello', timed: false)],
+          },
+          language: language,
+          shown: ValueNotifier(true),
+        );
+        controller.value = controller.value.copyWith(position: ms(2000));
+        await tester.pumpWidget(host(captions, tapToSwitch: true));
+        await tester.pump(const Duration(milliseconds: 300));
+        expect(find.textContaining('مرحبا'), findsOneWidget);
+
+        await tester.tap(find.textContaining('مرحبا'));
+        await tester.pump(const Duration(milliseconds: 300));
+        // The fade-out starts on the frame after the tap.
+        await tester.pump(const Duration(milliseconds: 300));
+        expect(language.value, 'en');
+        expect(find.textContaining('مرحبا'), findsNothing);
+        expect(find.textContaining('hello'), findsNothing);
+      });
+
       testWidgets('elsewhere it shows no code and takes no touch', (
         tester,
       ) async {

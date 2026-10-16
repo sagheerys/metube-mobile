@@ -118,7 +118,7 @@ class MTCaptionsLayer extends StatefulWidget {
   final bool clearCenter;
 
   /// **The sentence itself switches the language**, with the language's
-  /// code beside it (owner's choice, 2026-10-15). For the shorts alone,
+  /// code beside it. For the shorts alone,
   /// which have no CC bar to hold a button; everywhere else the layer lets
   /// every touch through to the player beneath.
   final bool tapToSwitch;
@@ -156,10 +156,15 @@ class _MTCaptionsLayerState extends State<MTCaptionsLayer>
     _onPlayer();
   }
 
-  /// Another language: its sentences, from the same moment.
+  /// Another language: its sentences, from the same moment. Redrawn
+  /// whatever [_update] finds, since the old sentence is on screen even
+  /// when the new language has nothing at this moment.
   void _onLanguage() {
-    _blocks = MTCaptionBlock.group(widget.captions.onScreen);
-    _block = -1;
+    setState(() {
+      _blocks = MTCaptionBlock.group(widget.captions.onScreen);
+      _block = -1;
+      _word = -1;
+    });
     _update();
   }
 

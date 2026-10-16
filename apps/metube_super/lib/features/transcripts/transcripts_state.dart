@@ -128,11 +128,10 @@ class TranscriptsService {
     if (appLanguage != 'en') 'en',
   ];
 
-  /// The languages asked for one clip (owner's request 2026-10-15). A
-  /// reader of English has no second language of their own, so theirs is
-  /// the one the clip is spoken in, as said rather than as translated: the
-  /// switch then moves between what they read and what is said. Arabic
-  /// keeps Arabic and English.
+  /// The languages asked for one clip. A reader of English has no second
+  /// language of their own, so theirs is the one the clip is spoken in, as said
+  /// rather than as translated: the switch then moves between what they read
+  /// and what is said. Arabic keeps Arabic and English.
   Future<List<String>> _languagesFor(String url) async {
     final own = languages;
     if (own.first != 'en') return own;

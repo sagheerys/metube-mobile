@@ -65,6 +65,15 @@ void main() {
       expect(clean, contains('[FILE]'));
     });
 
+    test('a host name in a failed lookup is masked', () {
+      final out = MTLogger.sanitizeForShare(
+        "NetworkException: The connection errored: Failed host lookup: "
+        "'my-nas.example.org' at /history",
+      );
+      expect(out, isNot(contains('my-nas')));
+      expect(out, contains('/history'));
+    });
+
     test('readForShare passes through the scrubbing automatically', () async {
       await logger.log('probe https://secret.example.com ok');
       expect(await logger.readForShare(), isNot(contains('secret.example')));

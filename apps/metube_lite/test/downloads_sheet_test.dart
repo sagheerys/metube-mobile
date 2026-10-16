@@ -18,9 +18,10 @@ void main() {
 
   Future<StreamController<List<DownloadTask>>> open(
     WidgetTester tester,
-    List<DownloadTask> first,
-  ) async {
-    tester.view.physicalSize = const Size(384, 823);
+    List<DownloadTask> first, {
+    Size size = const Size(384, 823),
+  }) async {
+    tester.view.physicalSize = size;
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
     final tasks = StreamController<List<DownloadTask>>();
@@ -73,5 +74,33 @@ void main() {
     await open(tester, const []);
     expect(find.text('No Downloads'), findsOneWidget);
     expect(height(tester), lessThan(823 / 2));
+  });
+
+  testWidgets('emptied on a tablet held sideways, the message still fits', (
+    tester,
+  ) async {
+    final tasks = await open(tester, [running], size: const Size(948, 544));
+    // Dragged as low as it goes before the last download finishes.
+    await tester.drag(
+      find.byType(MTDownloadProgressCard),
+      const Offset(0, 140),
+    );
+    await tester.pumpAndSettle();
+
+    tasks.add([running.copyWith(phase: TaskPhase.completed)]);
+    await tester.pumpAndSettle();
+    expect(find.text('No Downloads'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('the pull counts up from zero, not down from the server'
+      "'s hundred", (tester) async {
+    final tasks = await open(tester, [running.copyWith(progress: 1)]);
+    expect(find.text('100%'), findsOneWidget);
+
+    tasks.add([running.copyWith(phase: TaskPhase.pulling, progress: 0)]);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+    expect(find.text('0%'), findsOneWidget);
   });
 }

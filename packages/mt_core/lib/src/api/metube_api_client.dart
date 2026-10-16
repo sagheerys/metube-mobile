@@ -726,10 +726,18 @@ class MeTubeApiClient implements MeTubeApi {
   /// Which of the server's endpoints a request went to, for the log:
   /// `/history`, `/add`, `/delete`. Only the first step past the server's
   /// own address, as the rest can name a file.
+  ///
+  /// **Never throws**: it runs inside the error handler, and an address
+  /// that cannot be parsed (typed without `http://`) would otherwise
+  /// replace the classified error with a raw FormatException.
   String _route(RequestOptions request) {
-    final base = Uri.parse(config.baseUrl).pathSegments.where((s) => s != '');
-    final path = request.uri.pathSegments.where((s) => s != '').toList();
-    return path.length > base.length ? '/${path[base.length]}' : '/';
+    try {
+      final base = Uri.parse(config.baseUrl).pathSegments.where((s) => s != '');
+      final path = request.uri.pathSegments.where((s) => s != '').toList();
+      return path.length > base.length ? '/${path[base.length]}' : '/';
+    } on FormatException {
+      return '/?';
+    }
   }
 
   /// Defensive JSON decoding: HTML or broken text means this is not a

@@ -24,6 +24,11 @@ class MTLogger {
     caseSensitive: false,
   );
   static final RegExp _filePattern = RegExp(r'/storage/emulated/0/[^\s\]),]+');
+  // A host name has no scheme of its own here: the socket's own words.
+  static final RegExp _hostLookupPattern = RegExp(
+    r"(host lookup: ')[^']+'",
+    caseSensitive: false,
+  );
   static final RegExp _ipPattern = RegExp(
     r'\b\d{1,3}(?:\.\d{1,3}){3}(?::\d+)?\b',
   );
@@ -96,5 +101,6 @@ class MTLogger {
       .replaceAll(_authPattern, '[AUTH]')
       .replaceAll(_urlPattern, '[URL]')
       .replaceAll(_filePattern, '[FILE]')
+      .replaceAllMapped(_hostLookupPattern, (m) => "${m[1]}[HOST]'")
       .replaceAll(_ipPattern, '[IP]');
 }

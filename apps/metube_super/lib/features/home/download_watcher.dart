@@ -195,6 +195,14 @@ final downloadWatcherProvider = Provider<void>((ref) {
           await notifications.cancel(id);
       }
     }
+    // A task can leave the list with no ending of its own: an address
+    // switch replaces the engine and moves what the server had not taken.
+    // Its ongoing notice cannot be swiped away, so it goes here.
+    final listed = {for (final task in tasks) idOf(task)};
+    for (final id in [...lastShown.keys.where((id) => !listed.contains(id))]) {
+      lastShown.remove(id);
+      await notifications.cancel(id);
+    }
     await syncBackground(tasks.any((t) => !t.isFinished));
   }
 

@@ -128,10 +128,9 @@ class _ClipMoments extends ConsumerWidget {
             onTap: openAll,
             child: Row(
               children: [
-                // **Which clip, at a glance** (owner's request 2026-10-14):
-                // titles alone read alike in a long list of results. Beside
-                // the title rather than above it, so the moments below keep
-                // their place.
+                // **Which clip, at a glance**: titles alone read alike in a
+                // long list of results. Beside the title rather than above it,
+                // so the moments below keep their place.
                 _Thumb(item: item),
                 const SizedBox(width: MTSpace.sm),
                 Expanded(
