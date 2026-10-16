@@ -7,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mt_media/src/models/playback_source.dart';
 import 'package:mt_media/src/video/mt_video_codec.dart';
 import 'package:mt_media/src/video/mt_video_open.dart';
+import 'package:video_player/video_player.dart';
 import 'package:video_player_platform_interface/video_player_platform_interface.dart';
 
 import 'fake_video_platform.dart';
@@ -102,6 +103,36 @@ void main() {
       await texture.dispose();
     },
   );
+
+  // Field report 2026-10-16, with a screen recording: leaving the player
+  // for the library, the page faded and the AV1 picture did not. Android's
+  // surface takes no part in a fade, so it stayed whole over a page that
+  // was disappearing beneath it.
+  for (final av1 in [true, false]) {
+    testWidgets('leaving the player, ${av1 ? 'an AV1' : 'a texture'} picture '
+        '${av1 ? 'steps aside' : 'fades with the page'}', (tester) async {
+      MTVideoOpen.platformView = av1;
+      final controller = (await tester.runAsync(
+        () => MTVideoOpen.prepare(source),
+      ))!;
+      addTearDown(() => tester.runAsync(controller.dispose));
+      final navigator = GlobalKey<NavigatorState>();
+      await tester.pumpWidget(
+        MaterialApp(navigatorKey: navigator, home: const SizedBox()),
+      );
+      navigator.currentState!.push(
+        MaterialPageRoute<void>(builder: (_) => MTVideoView(controller)),
+      );
+      await tester.pumpAndSettle();
+      expect(find.byType(VideoPlayer), findsOneWidget);
+
+      navigator.currentState!.pop();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 60));
+      expect(find.byType(VideoPlayer), av1 ? findsNothing : findsOneWidget);
+      await tester.pumpAndSettle();
+    });
+  }
 
   test('a network error is not retried: a surface cannot fix it', () async {
     platform.failWith = 'Source error';

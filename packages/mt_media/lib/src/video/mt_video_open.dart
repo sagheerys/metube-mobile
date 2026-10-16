@@ -119,8 +119,14 @@ Route<void> mtFullscreenRoute(
 /// it closes. The full-screen page shows the same player above this one,
 /// so on leaving it the player was left with no surface: the sound went on
 /// over a black frame. This view builds a fresh surface whenever its page
-/// comes back to the front. The texture needs none of that and is left as
-/// it was.
+/// comes back to the front.
+///
+/// **It also steps aside while its page leaves.** Android's surface takes
+/// no part in a fade: going back to the library, the page faded and the
+/// picture stayed whole over it to the last frame. The picture is dropped
+/// as the page starts to leave, so the frame fades with everything else,
+/// and comes back on a fresh surface if the leaving is called off (a back
+/// gesture let go). The texture needs none of that and is left as it was.
 class MTVideoView extends StatefulWidget {
   const MTVideoView(this.controller, {super.key});
 
@@ -132,30 +138,53 @@ class MTVideoView extends StatefulWidget {
 
 class _MTVideoViewState extends State<MTVideoView> {
   Animation<double>? _covered;
+  Animation<double>? _shown;
   int _surface = 0;
+  bool _leaving = false;
+
+  bool get _platform =>
+      widget.controller.viewType == VideoViewType.platformView;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final covered = ModalRoute.of(context)?.secondaryAnimation;
-    if (covered == _covered) return;
-    _covered?.removeStatusListener(_onCovered);
-    _covered = covered?..addStatusListener(_onCovered);
+    final route = ModalRoute.of(context);
+    final covered = route?.secondaryAnimation;
+    if (covered != _covered) {
+      _covered?.removeStatusListener(_onCovered);
+      _covered = covered?..addStatusListener(_onCovered);
+    }
+    final shown = route?.animation;
+    if (shown != _shown) {
+      _shown?.removeStatusListener(_onShown);
+      _shown = shown?..addStatusListener(_onShown);
+    }
   }
 
   void _onCovered(AnimationStatus status) {
-    if (status != AnimationStatus.dismissed || !mounted) return;
-    if (widget.controller.viewType != VideoViewType.platformView) return;
+    if (status != AnimationStatus.dismissed || !mounted || !_platform) return;
     setState(() => _surface++);
+  }
+
+  void _onShown(AnimationStatus status) {
+    if (!mounted || !_platform) return;
+    final leaving = status == AnimationStatus.reverse;
+    if (leaving == _leaving) return;
+    setState(() {
+      _leaving = leaving;
+      if (!leaving) _surface++;
+    });
   }
 
   @override
   void dispose() {
     _covered?.removeStatusListener(_onCovered);
+    _shown?.removeStatusListener(_onShown);
     super.dispose();
   }
 
   @override
-  Widget build(BuildContext context) =>
-      VideoPlayer(widget.controller, key: ValueKey(_surface));
+  Widget build(BuildContext context) => _leaving
+      ? const SizedBox.expand()
+      : VideoPlayer(widget.controller, key: ValueKey(_surface));
 }
