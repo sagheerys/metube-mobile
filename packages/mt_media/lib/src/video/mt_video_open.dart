@@ -1,7 +1,7 @@
 import 'dart:io';
 
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/widgets.dart';
 import 'package:video_player/video_player.dart';
 
 import '../models/playback_source.dart';
@@ -29,8 +29,17 @@ abstract final class MTVideoOpen {
   static bool platformView = false;
 
   /// A prepared controller, or the error of the last attempt.
-  static Future<VideoPlayerController> prepare(PlaybackSource source) async {
-    final surface = platformView || await MTVideoCodec.isAv1(source)
+  ///
+  /// [audioOnly] (a song in the video player) always takes the texture:
+  /// the plugin's platform view reads the video track as the player
+  /// becomes ready and crashes the app when there is none, and a song has
+  /// no picture for either surface to draw.
+  static Future<VideoPlayerController> prepare(
+    PlaybackSource source, {
+    bool audioOnly = false,
+  }) async {
+    final surface =
+        !audioOnly && (platformView || await MTVideoCodec.isAv1(source))
         ? VideoViewType.platformView
         : VideoViewType.textureView;
     final controller = _create(source, surface);
@@ -39,7 +48,9 @@ abstract final class MTVideoOpen {
       return controller;
     } on PlatformException catch (error) {
       await controller.dispose();
-      if (surface == VideoViewType.platformView || !refusedSurface(error)) {
+      if (audioOnly ||
+          surface == VideoViewType.platformView ||
+          !refusedSurface(error)) {
         rethrow;
       }
     } on Object {
@@ -80,6 +91,27 @@ abstract final class MTVideoOpen {
           viewType: viewType,
         );
 }
+
+/// The route full screen opens in.
+///
+/// **No fade for a platform view.** Its picture lives in one place at a
+/// time: the full-screen page takes it, and the player beneath gets it
+/// back only once that page is gone (see [MTVideoView]). A fade on leaving
+/// showed the player beneath with no picture for the length of the fade,
+/// then the picture popping in: an odd dimming on every AV1 clip, which is
+/// most of YouTube. Without the fade, the gap is the moment a new surface
+/// takes. The texture shows the picture on both pages at once, so it keeps
+/// the usual transition.
+Route<void> mtFullscreenRoute(
+  VideoPlayerController? controller,
+  WidgetBuilder builder,
+) => controller?.viewType == VideoViewType.platformView
+    ? PageRouteBuilder<void>(
+        pageBuilder: (context, _, _) => builder(context),
+        transitionDuration: Duration.zero,
+        reverseTransitionDuration: Duration.zero,
+      )
+    : MaterialPageRoute<void>(builder: builder);
 
 /// [VideoPlayer], with one repair for the platform view.
 ///

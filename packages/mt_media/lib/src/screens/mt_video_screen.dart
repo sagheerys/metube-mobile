@@ -6,6 +6,7 @@ import '../video/mt_orientation.dart';
 import '../video/mt_video_controls.dart';
 import '../video/mt_video_frame.dart';
 import '../video/mt_video_fullscreen.dart';
+import '../video/mt_video_open.dart';
 import '../video/mt_video_session.dart';
 import '../video/video_side_panel.dart';
 import '../widgets/mt_queue_panel.dart';
@@ -221,8 +222,9 @@ class MTVideoScreen extends StatelessWidget {
 
   Future<void> _openFullscreen(BuildContext context, bool byRotation) =>
       Navigator.of(context).push(
-        MaterialPageRoute<void>(
-          builder: (_) => MTVideoFullscreenPage(
+        mtFullscreenRoute(
+          session.controller,
+          (_) => MTVideoFullscreenPage(
             session: session,
             byRotation: byRotation,
             artwork: artwork,

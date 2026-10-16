@@ -113,7 +113,7 @@ class MTVideoSession extends ChangeNotifier {
 
     final VideoPlayerController controller;
     try {
-      controller = await MTVideoOpen.prepare(source);
+      controller = await MTVideoOpen.prepare(source, audioOnly: item.isAudio);
     } on Object {
       // **Publish after initialisation completes, not before.**
       // `_controller` was published and then three awaits followed

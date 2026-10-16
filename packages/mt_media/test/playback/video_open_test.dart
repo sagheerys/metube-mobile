@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:async';
 
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mt_media/src/models/playback_source.dart';
@@ -60,6 +61,47 @@ void main() {
     await first.dispose();
     await second.dispose();
   });
+
+  // Field report 2026-10-16: the plugin's platform view reads the video
+  // track as the player becomes ready and crashes the whole app when there
+  // is none. A song in the video player (a mixed playlist) on a device that
+  // had switched to the platform view took the app down.
+  test(
+    'a song opens on the texture even where clips use the platform view',
+    () async {
+      MTVideoOpen.platformView = true;
+      final song = await MTVideoOpen.prepare(source, audioOnly: true);
+      expect(song.viewType, VideoViewType.textureView);
+      await song.dispose();
+
+      MTVideoCodec.reset();
+      MTVideoCodec.readHead = (_) async => _head('av01', 'av1C');
+      final av1Song = await MTVideoOpen.prepare(source, audioOnly: true);
+      expect(av1Song.viewType, VideoViewType.textureView);
+      await av1Song.dispose();
+    },
+  );
+
+  // Field report 2026-10-16: leaving full screen on a YouTube clip dimmed
+  // over a player with no picture, then the picture popped in. The fade
+  // showed the page beneath while the platform view was still away.
+  test(
+    'full screen opens and closes without a fade for a platform view',
+    () async {
+      Widget page(BuildContext _) => const SizedBox();
+      MTVideoOpen.platformView = true;
+      final av1 = await MTVideoOpen.prepare(source);
+      final instant = mtFullscreenRoute(av1, page) as PageRoute<void>;
+      expect(instant.transitionDuration, Duration.zero);
+      expect(instant.reverseTransitionDuration, Duration.zero);
+      await av1.dispose();
+
+      MTVideoOpen.platformView = false;
+      final texture = await MTVideoOpen.prepare(source);
+      expect(mtFullscreenRoute(texture, page), isA<MaterialPageRoute<void>>());
+      await texture.dispose();
+    },
+  );
 
   test('a network error is not retried: a surface cannot fix it', () async {
     platform.failWith = 'Source error';

@@ -17,6 +17,15 @@ only one.
   it had opened on; the link was lost until it was shared again. The sheet
   now opens once the app is back on the library. The "Paste link" shortcut
   had the same fault. Both apps.
+- **Leaving full screen dimmed over a blank player.** On YouTube clips in
+  AV1, going back from full screen faded over a player with no picture,
+  then the picture popped in. Full screen now opens and closes at once for
+  those clips, and the picture carries straight on. Other clips keep their
+  transition. Both apps.
+- **A song in the video player could close the app** on a device that
+  plays clips through Android's own video surface (some older devices
+  since 2.5.0), as in a playlist mixing videos and songs. A song now always
+  plays the usual way. Both apps.
 
 ## [2.5.0] - 2026-10-16
 

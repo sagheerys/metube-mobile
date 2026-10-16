@@ -68,7 +68,7 @@ extension _ReelsPlayback on _MTReelsPlayerState {
     }
     final VideoPlayerController controller;
     try {
-      controller = await MTVideoOpen.prepare(source);
+      controller = await MTVideoOpen.prepare(source, audioOnly: item.isAudio);
     } on Object {
       if (!_stale(generation)) applyState(() => _failed = true);
       return;
