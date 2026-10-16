@@ -9,6 +9,8 @@ only one.
 
 ## [Unreleased]
 
+## [2.5.0] - 2026-10-16
+
 ### Added
 
 - **Tablets.** On a tablet, upright or on its side, both apps now use the
@@ -34,13 +36,12 @@ only one.
   subtitles themselves are the switch: a tap on them moves to the other
   language, whose code shows beside them. With the app in English, a clip
   spoken in another language also keeps its subtitles in that language,
-  as said rather than as translated, so the switch moves between the two. Settings has the switch,
-  three sizes, the background behind the words (dark, light, or none,
-  with a dark edge round each letter instead), and an option for the
-  shorts (off by default, since many shorts carry their words in the
-  picture). Transcripts kept
-  before this are read again once, quietly, to learn when each word is
-  said. Super only.
+  as said rather than as translated, so the switch moves between the two.
+  Settings has the switch, three sizes, the background behind the words
+  (dark, light, or none, with a dark edge round each letter instead), and
+  an option for the shorts (off by default, since many shorts carry their
+  words in the picture). Transcripts kept before this are read again once,
+  quietly, to learn when each word is said. Super only.
 - **The transcript in the shorts.** A button in the side column opens the
   clip's transcript, following along; a tap on a line jumps there. Super
   only.
@@ -103,7 +104,8 @@ only one.
 - **Errors missing from the diagnostic log.** Every error message shown,
   every error the app did not expect, and the step a download failed at
   (adding, on the server, or pulling) are now written to the log, with the
-  server's answer. Both apps.
+  server's answer. A server's name in a failed address lookup is masked
+  when the log is shared, like its address. Both apps.
 - **Sharing the same link again did nothing.** After a link's sheet was
   closed, sharing that link once more was ignored without a word, however
   long after, taken for a double delivery. Only a repeat within a few
@@ -638,7 +640,8 @@ each one left behind a test that fails on the old code.
 - An album pasted as one link expanding into twenty downloads on the server,
   with only one of them pulled.
 
-[Unreleased]: https://github.com/sagheerys/metube-mobile/compare/v2.4.0...HEAD
+[Unreleased]: https://github.com/sagheerys/metube-mobile/compare/v2.5.0...HEAD
+[2.5.0]: https://github.com/sagheerys/metube-mobile/compare/v2.4.0...v2.5.0
 [2.4.0]: https://github.com/sagheerys/metube-mobile/compare/v2.3.0...v2.4.0
 [2.3.0]: https://github.com/sagheerys/metube-mobile/compare/v2.2.1...v2.3.0
 [2.2.1]: https://github.com/sagheerys/metube-mobile/compare/v2.2.0...v2.2.1
