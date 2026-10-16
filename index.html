@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>MeTube Mobile — Android clients for a self-hosted MeTube server</title>
-<meta name="description" content="Two open-source Android apps for a self-hosted MeTube (yt-dlp) server. MeTube Lite pulls each download to your phone and clears the server; MeTube Super keeps files on the server, streams them, and searches inside your clips by what was said. Arabic and English, GPL-3.0.">
+<meta name="description" content="Two open-source Android apps for a self-hosted MeTube (yt-dlp) server. MeTube Lite pulls each download to your phone and clears the server; MeTube Super keeps files on the server, streams them, and searches inside your clips by what was said. Arabic and English, phones and tablets, GPL-3.0.">
 <link rel="canonical" href="https://sagheerys.github.io/metube-mobile/">
 <meta property="og:type" content="website">
 <meta property="og:title" content="MeTube Mobile — Android clients for MeTube">
@@ -143,6 +143,15 @@ code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
 :root[data-theme="dark"] .theme-toggle .moon{display:none}
 body{transition:background-color .25s ease,color .25s ease}
 @media (prefers-reduced-motion: reduce){body{transition:none}}
+/* ── Tablets: two sideways screens beside an upright one, sized so the
+      pair and the single end at the same height; stacked on a phone. ── */
+.tablets{display:grid;gap:22px;margin-top:22px}
+.tablets .phone img{border-radius:16px}
+.tablets .tall{max-width:340px;justify-self:center;width:100%}
+@media (min-width:760px){
+  .tablets{grid-template-columns:1fr .78fr;align-items:start}
+  .tablets .tall{grid-column:2;grid-row:1 / span 2;max-width:none}
+}
 footer{margin-top:56px;border-top:1px solid var(--line);padding-top:22px;font-size:.9rem;color:var(--muted)}
 </style>
 </head>
@@ -197,8 +206,8 @@ footer{margin-top:56px;border-top:1px solid var(--line);padding-top:22px;font-si
       <figcaption><strong>Follow a channel</strong>Your server fetches each new video by itself; one notice says what arrived.</figcaption>
     </figure>
     <figure class="phone">
-      <img loading="lazy" src="screenshots/super-player.png" width="540" height="1200" alt="Streaming a video from the server, with actions and the up-next queue beneath it">
-      <figcaption><strong>Stream from your server</strong>Save to the phone, continue as audio, share, with the queue beneath.</figcaption>
+      <img loading="lazy" src="screenshots/super-player.png" width="540" height="1200" alt="A video streaming from the server with a subtitle over the picture, and the actions and up-next queue beneath it">
+      <figcaption><strong>Subtitles over the video</strong>The words appear as they are said; save, share or continue as audio below.</figcaption>
     </figure>
     <figure class="phone">
       <picture>
@@ -213,6 +222,10 @@ footer{margin-top:56px;border-top:1px solid var(--line);padding-top:22px;font-si
         <img loading="lazy" src="screenshots/super-playlists-day.png" width="540" height="1200" alt="Playlists: three automatic lists above the user's own, each with a cover mosaic">
       </picture>
       <figcaption><strong>Playlists</strong>Favourites, latest and offline build themselves; yours sit beneath.</figcaption>
+    </figure>
+    <figure class="phone">
+      <img loading="lazy" src="screenshots/super-settings.png" width="540" height="1200" alt="The settings home page: a server card, then server, app and data groups, each row showing its current value">
+      <figcaption><strong>Settings at a glance</strong>Three groups, each row showing how it is set now.</figcaption>
     </figure>
     <figure class="phone">
       <img loading="lazy" src="screenshots/super-queue-night.png" width="540" height="1200" alt="The up-next queue at night, with durations and the item now playing">
@@ -232,6 +245,26 @@ footer{margin-top:56px;border-top:1px solid var(--line);padding-top:22px;font-si
     </figure>
   </div>
   <p class="hint">Swipe sideways for more →</p>
+
+  <h2>On a tablet</h2>
+  <p>Both apps use a tablet's room, upright or on its side, instead of
+     stretching the phone layout: a side rail for navigation, settings in two
+     panes, and the library in columns or as a table. Small 8-inch tablets
+     count too, and phones keep their own layout.</p>
+  <div class="tablets">
+    <figure class="phone">
+      <img loading="lazy" src="screenshots/tablet-library.jpg" width="1280" height="800" alt="MeTube Super on a tablet held sideways: the library in two columns of cards, with the Now playing panel and its queue beside it">
+      <figcaption><strong>Library and Now playing</strong>Held sideways, the player sits beside the library.</figcaption>
+    </figure>
+    <figure class="phone">
+      <img loading="lazy" src="screenshots/tablet-video.jpg" width="1280" height="800" alt="A video playing on a tablet held sideways, with its title, actions and up-next queue in a column beside it">
+      <figcaption><strong>A video beside its queue</strong>The details and the up-next list stay in view.</figcaption>
+    </figure>
+    <figure class="phone tall">
+      <img loading="lazy" src="screenshots/tablet-portrait.jpg" width="800" height="1280" alt="MeTube Super on an upright tablet: a side rail, the library in two columns, and the mini player">
+      <figcaption><strong>Upright</strong>Two columns and a side rail.</figcaption>
+    </figure>
+  </div>
 
   <h2>Which app is for you</h2>
   <div class="apps">
@@ -257,7 +290,7 @@ footer{margin-top:56px;border-top:1px solid var(--line);padding-top:22px;font-si
         <dt>Library</dt><dd>The server's history and the phone's files, merged into one.</dd>
         <dt>Playback</dt><dd>Streams from the server, and plays local files.</dd>
         <dt>Search</dt><dd>Inside your clips, by what was said in them: from YouTube's subtitles when you add a clip, and from the subtitle files your server can write beside every download, subscriptions and other sites included.</dd>
-        <dt>Also has</dt><dd>Channel subscriptions — the server fetches each new video by itself and the app tells you when it arrives — plus tags, batch downloads, make available offline, a server card that says what the server holds and runs, and two addresses it switches between.</dd>
+        <dt>Also has</dt><dd>Channel subscriptions — the server fetches each new video by itself and the app tells you when it arrives — plus subtitles over the video, tags, batch downloads, make available offline, a server card that says what the server holds and runs, and two addresses it switches between.</dd>
       </dl>
     </section>
   </div>
@@ -289,6 +322,7 @@ footer{margin-top:56px;border-top:1px solid var(--line);padding-top:22px;font-si
     <li>Background audio with a media notification and lock-screen controls, a mini player, and a lane for portrait clips.</li>
     <li>Playlists, favourites, search, and plain-JSON backups that hold no secret.</li>
     <li>In-app updates, straight from the GitHub releases page.</li>
+    <li>A tablet layout, upright and sideways: a side rail, two-pane settings, and the player beside the library.</li>
     <li>A day palette and a night palette, each drawn on purpose.</li>
     <li>Arabic and English, right-to-left first.</li>
   </ul>
@@ -322,7 +356,7 @@ footer{margin-top:56px;border-top:1px solid var(--line);padding-top:22px;font-si
       يُسحب إلى جهازك ويُنظَّف السيرفر تلقائياً.</p>
 
     <figure class="phone" style="margin:22px 0 26px">
-      <img loading="lazy" src="screenshots/hero-ar.jpg" width="2000" height="1137" style="border-radius:18px;border-width:1px" alt="MeTube Super بالعربية: المكتبة، ومشغل الفيديو مع قائمة التالي، ومشغل الصوت ليلاً، وقوائم التشغيل">
+      <img loading="lazy" src="screenshots/hero-ar.jpg" width="2000" height="1137" style="border-radius:18px;border-width:1px" alt="MeTube Super بالعربية: المكتبة، ومقطع فيديو مع ترجمته وقائمة «التالي»، ومشغل الصوت ليلاً، وقوائم التشغيل">
       <figcaption>الواجهة العربية من اليمين إلى اليسار. كل عنوان وغلاف هنا مخترَع.</figcaption>
     </figure>
 
@@ -349,7 +383,7 @@ footer{margin-top:56px;border-top:1px solid var(--line);padding-top:22px;font-si
           <dt>المكتبة</dt><dd>سجلّ السيرفر وملفات الجوال في مكتبة واحدة.</dd>
           <dt>التشغيل</dt><dd>بثّ من السيرفر، وتشغيل محلي.</dd>
           <dt>البحث</dt><dd>داخل مقاطعك بما قيل فيها: من ترجمات يوتيوب عند إضافة المقطع، ومن ملفات الترجمة التي يكتبها سيرفرك بجانب كل تنزيل، ومنها الاشتراكات والمواقع الأخرى.</dd>
-          <dt>وفيه أيضاً</dt><dd>اشتراكات القنوات: ينزّل السيرفر كل مقطع جديد وحده ويخبرك التطبيق حين يصل. ومعها وسوم، وتنزيل دفعات، و«إتاحة دون اتصال»، وبطاقة تعرض ما على السيرفر ونسخته، وعنوانان بتبديل تلقائي.</dd>
+          <dt>وفيه أيضاً</dt><dd>اشتراكات القنوات: ينزّل السيرفر كل مقطع جديد وحده ويخبرك التطبيق حين يصل. ومعها ترجمة تظهر فوق الفيديو، ووسوم، وتنزيل دفعات، و«إتاحة دون اتصال»، وبطاقة تعرض ما على السيرفر ونسخته، وعنوانان بتبديل تلقائي.</dd>
         </dl>
       </section>
     </div>
@@ -359,6 +393,7 @@ footer{margin-top:56px;border-top:1px solid var(--line);padding-top:22px;font-si
       <li>تشغيل الصوت في الخلفية مع إشعار وسائط وأزرار في شاشة القفل، ومشغل مصغّر، ومسار للمقاطع الطولية.</li>
       <li>قوائم تشغيل ومفضلة وبحث، ونسخ احتياطية بصيغة JSON لا تحمل أي سرّ.</li>
       <li>في Super: البحث داخل المقاطع بما قيل فيها، والضغط على النتيجة يشغّل المقطع من تلك اللحظة، والنص يتبع التشغيل سطراً سطراً.</li>
+      <li>تخطيط خاص بالتابلت، عمودياً وأفقياً: شريط تنقّل جانبي، وإعدادات في لوحتين، ومشغّل بجانب المكتبة.</li>
       <li>تحديث ذاتي من صفحة الإصدارات.</li>
       <li>واجهة عربية كاملة من اليمين إلى اليسار، بوضعين نهاري وليلي.</li>
     </ul>
