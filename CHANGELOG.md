@@ -9,6 +9,15 @@ only one.
 
 ## [Unreleased]
 
+### Fixed
+
+- **A shared link's sheet vanished at once.** With the app left on the video
+  player or the audio screen, a share brought it back to the library and the
+  add sheet showed for a fraction of a second, then closed with the screen
+  it had opened on; the link was lost until it was shared again. The sheet
+  now opens once the app is back on the library. The "Paste link" shortcut
+  had the same fault. Both apps.
+
 ## [2.5.0] - 2026-10-16
 
 ### Added

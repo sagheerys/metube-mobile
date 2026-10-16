@@ -29,6 +29,7 @@ import '../transcripts/transcripts_state.dart';
 import '../update/update_state.dart';
 import '../update/whats_new_prompt.dart';
 import '../shared/notification_permission.dart';
+import 'share_landing.dart';
 
 /// The shell: three bottom destinations plus the floating layer holding
 /// the smart add button, which appears in the library and the playlists
@@ -125,7 +126,8 @@ class _ShellScreenState extends ConsumerState<ShellScreen>
         await ref.read(clipboardRefresherProvider)();
         if (!mounted) return;
         final url = ref.read(clipboardUrlProvider);
-        widget.navigationShell.goBranch(0);
+        await landOnLibrary(widget.navigationShell);
+        if (!mounted) return;
         if (url == null) {
           openAddSheet(context, ref);
         } else if (startQuickDownload(context, ref, url)) {
@@ -171,7 +173,8 @@ class _ShellScreenState extends ConsumerState<ShellScreen>
       'share checked in ${DateTime.now().difference(started).inMilliseconds}ms',
     );
     if (!mounted) return note('share dropped: the screen is gone');
-    widget.navigationShell.goBranch(0);
+    await landOnLibrary(widget.navigationShell);
+    if (!mounted) return note('share dropped: the screen is gone');
     if (urls.length == 1) {
       if (_isPurePlaylistLink(urls.first)) {
         note('share to the playlist screen');
