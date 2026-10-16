@@ -15,13 +15,13 @@ the server and stream it, or pull it to the device and let the server clean
 itself up. MeTube Super can also **follow a channel**: your server downloads
 each new video by itself, and the app tells you when it arrives. It can also
 **search inside your clips**, finding what was said in them and not only their
-titles. Written in Flutter as one monorepo, in Arabic and English, and free
-software under the GPL.
+titles. Written in Flutter as one monorepo, in Arabic and English, for phones
+and tablets alike, and free software under the GPL.
 
 <p align="center">
-  <img src="docs/screenshots/hero.jpg" alt="MeTube Super: the library, the video player with its queue, the audio player at night, and playlists">
+  <img src="docs/screenshots/hero.jpg" alt="MeTube Super: the library, a video playing with its subtitles and queue, the audio player at night, and playlists">
 </p>
-<p align="center"><sub>MeTube Super — the merged library, streaming with an up-next queue, the audio player at night, and playlists. Every title and cover here is invented.</sub></p>
+<p align="center"><sub>MeTube Super — the merged library, a video streaming with its subtitles and up-next queue, the audio player at night, and playlists. Every title and cover here is invented.</sub></p>
 
 <p align="center">
   <img src="docs/screenshots/lite-share.gif" width="300" alt="MeTube Lite: a link is shared to the app, the server downloads it, the phone pulls the file and the server is cleaned up">
@@ -39,7 +39,7 @@ software under the GPL.
 | After a download completes | pulls it to the device, then **deletes it from the server** | **keeps it on the server** |
 | Library | a scan of the local folder | `/history` + the local index, merged into one list |
 | Playback | local files | streaming from the server **and** local files |
-| Exclusive | an optional Wi-Fi-only rule, server cleanup | channel subscriptions, search inside clips, tags, batch downloads, "make available offline", server switching |
+| Exclusive | an optional Wi-Fi-only rule, server cleanup | channel subscriptions, search inside clips, subtitles over the video, tags, batch downloads, "make available offline", server switching |
 
 Both apps share the same core, media and design packages, and both ship in
 **Arabic and English** with a right-to-left-first layout.
@@ -87,12 +87,20 @@ audio **from the same second**.
 full-screen lane that skips over everything that is not a short, with a tap to
 pause, a double tap to favourite, and its own chip in the library.
 
+**Tablets.** On a tablet, upright or on its side, both apps use the room
+instead of stretching the phone layout: navigation moves to a side rail,
+settings open in two panes, and the library's views spread into columns, with
+the list shown as a table. Held sideways, a "Now playing" panel sits beside the
+library, and a video plays beside its details and queue. Small 8-inch tablets
+count too; phones keep their own layout.
+
 **Favourites and playlists.** A heart on every card; playlists you create,
 reorder by dragging, play in order or shuffled; and smart playlists that keep
 themselves — favourites, latest additions, and (in Super) everything available
 offline.
 
-**Settings and safety.** Default quality, theme (system, light or dark), and
+**Settings and safety.** Settings open on a short home page in three groups
+(server, app, data), each row showing the setting as it stands. Default quality, theme (system, light or dark), and
 language — Arabic or English, matched to the phone on first launch. Backups
 are plain text holding no secret, written by themselves after every change,
 keeping the last seven by date, restorable by picking a date, and exportable;
@@ -136,6 +144,10 @@ that again at any time.
 - **Read along**: a clip with a transcript opens it beside the audio or video
   player, with the line being said marked as it plays and a tap on any line
   to jump there.
+- **Subtitles over the video**: a clip with a transcript can show its words over
+  the picture as they are said, in three sizes and with a choice of background.
+  A clip with subtitles in two languages switches between them with one button
+  (in the shorts, a tap on the words themselves), and the choice is kept.
 - **Cookies from the phone** for the sites that want a login: pick the files
   exported from your browser, several platforms at once, and they are merged
   into the single file the server keeps.
@@ -156,6 +168,11 @@ that again at any time.
 
 ## Screenshots
 
+**On a tablet** — held sideways, the library with the "Now playing" panel
+beside it; upright, the library in two columns:
+
+![MeTube Super on a tablet: the library beside the Now playing panel, and the library upright in two columns](docs/screenshots/tablet.jpg)
+
 **Search inside clips** (MeTube Super): a word found inside three clips, the
 transcript following playback, and the same search at night:
 
@@ -166,14 +183,14 @@ and the notice when their videos arrive:
 
 ![The subscriptions list, the follow sheet, and the arrivals notice](docs/screenshots/subscriptions.jpg)
 
+<details>
+<summary><strong>More screens</strong> — the players, the libraries, playlists, batch selection</summary>
+<br>
+
 **The players** — the audio player, the up-next queue at night, and the
 lane for portrait clips:
 
 ![The audio player by day, the queue at night, and the shorts player](docs/screenshots/players.jpg)
-
-<details>
-<summary><strong>More screens</strong> — the libraries, playlists, batch selection, the video player</summary>
-<br>
 
 **The libraries** — MeTube Lite by day and by night, and MeTube Super at night
 with the mini player:
@@ -183,10 +200,6 @@ with the mini player:
 | Playlists | A playlist | Batch selection |
 |---|---|---|
 | ![Playlists, with smart lists above your own](docs/screenshots/super-playlists-day.png) | ![One playlist, with play-all, shuffle and audio-only](docs/screenshots/super-playlist.png) | ![Several items selected for a playlist, a tag or deletion](docs/screenshots/super-select.png) |
-
-| Video player | Playlists at night | Mini player |
-|---|---|---|
-| ![Streaming a video with the queue beneath it](docs/screenshots/super-player.png) | ![Playlists at night](docs/screenshots/super-playlists-night.png) | ![The library with the mini player](docs/screenshots/super-miniplayer.png) |
 
 </details>
 
