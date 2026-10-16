@@ -10,14 +10,14 @@ class MTLocalizationsAr extends MTLocalizations {
   MTLocalizationsAr([String locale = 'ar']) : super(locale);
 
   @override
-  String get about => 'حول';
+  String get about => 'عن التطبيق';
 
   @override
-  String get aboutApp => 'حول التطبيق';
+  String get aboutApp => 'عن التطبيق';
 
   @override
   String get aboutDescriptionLite =>
-      'تطبيق خفيف وسريع لتحميل الفيديوهات من مختلف المنصات عبر سيرفر MeTube، يسحبها إلى جهازك وينظّف السيرفر بعدها — مع مشغل مدمج وقوائم تشغيل.';
+      'تطبيق خفيف وسريع لتحميل الفيديوهات من مختلف المنصات عبر سيرفر MeTube، يسحبها إلى جهازك ثم ينظّف السيرفر، وفيه مشغل مدمج وقوائم تشغيل.';
 
   @override
   String get aboutDescriptionSuper =>
@@ -46,7 +46,7 @@ class MTLocalizationsAr extends MTLocalizations {
   String get activeNow => 'نشط الآن';
 
   @override
-  String get addEndpoint => 'أضف نقطة نهاية';
+  String get addEndpoint => 'أضف عنواناً';
 
   @override
   String get addLinkFab => 'إضافة رابط';
@@ -77,7 +77,7 @@ class MTLocalizationsAr extends MTLocalizations {
   }
 
   @override
-  String get addingToServer => 'يُرسَل للسيرفر…';
+  String get addingToServer => 'جارٍ الإرسال إلى السيرفر…';
 
   @override
   String get allDownloadsFinished => 'اكتملت جميع التحميلات!';
@@ -86,7 +86,7 @@ class MTLocalizationsAr extends MTLocalizations {
   String get allPlatforms => 'كل المنصات';
 
   @override
-  String get alreadyInPlaylist => 'مضاف مسبقاً';
+  String get alreadyInPlaylist => 'موجود في القائمة';
 
   @override
   String get alreadySubscribed => 'أنت تتابع هذه القناة بالفعل';
@@ -121,10 +121,10 @@ class MTLocalizationsAr extends MTLocalizations {
   String get audioStereo => 'ستيريو';
 
   @override
-  String get authHelper => 'اتركه فارغاً للخوادم المفتوحة (بلا كلمة مرور)';
+  String get authHelper => 'اتركه فارغاً إن كان الخادم بلا كلمة مرور';
 
   @override
-  String get authentication => 'المصادقة (اختياري)';
+  String get authentication => 'تسجيل الدخول (اختياري)';
 
   @override
   String get autoBuilt => 'تلقائية';
@@ -138,25 +138,25 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get autoRestoreSuccess =>
-      'تمت استعادة البيانات من النسخة الاحتياطية بنجاح!';
+      'استُعيدت البيانات من النسخة الاحتياطية بنجاح!';
 
   @override
   String get autoRetry => 'إعادة المحاولة عند عودة الشبكة';
 
   @override
   String get autoRetryHelp =>
-      'ما فشل بسبب انقطاع الشبكة يُعاد وحده عند عودتها. ما رفضه الخادم لا يُعاد — إعادته بلا تغيير تفشل مرة أخرى.';
+      'إذا فشل تحميل بسبب انقطاع الشبكة أعاده التطبيق تلقائياً حين تعود. أما ما رفضه الخادم فلا يُعاد، لأن تكراره دون تغيير سيفشل مجدداً.';
 
   @override
   String get autoSwitchDisabledHint =>
-      'التبديل التلقائي مُعطّل — يستخدم التطبيق عنوان الخادم الوحيد من الإعدادات.';
+      'التبديل التلقائي مُعطّل، لذا يستخدم التطبيق عنوان الخادم المحدد في الإعدادات.';
 
   @override
-  String get autoUrlSwitching => 'تبديل URL تلقائي';
+  String get autoUrlSwitching => 'التبديل التلقائي للعنوان';
 
   @override
   String get autoUrlSwitchingDesc =>
-      'اتصل عبر العنوان المحلي عند إمكانية الوصول إليه، واستخدم الاتصالات الخارجية في الأماكن الأخرى';
+      'يتصل بالعنوان المحلي متى أمكن الوصول إليه، وبالعنوان الخارجي فيما عدا ذلك';
 
   @override
   String get availability => 'التوفّر';
@@ -175,14 +175,14 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get backupNote =>
-      'يشمل القوائم والوسوم وفهرس عدم الاتصال وروابط الأغلفة والإعدادات. لا تُنسخ كلمة المرور ولا اسم المستخدم أبداً، ولا تُنسخ ملفات الوسائط.';
+      'تشمل النسخة القوائم والوسوم وفهرس المقاطع المتاحة دون اتصال وروابط الأغلفة والإعدادات، ولا تشمل أبداً اسم المستخدم وكلمة المرور، ولا ملفات الوسائط نفسها.';
 
   @override
   String get backupSettings => 'نسخ جميع البيانات احتياطياً';
 
   @override
   String get backupSettingsSubtitle =>
-      'سبع نسخ مؤرَّخة تتجدد وحدها — استعِد أيّها، أو صدّر نسخة للمشاركة';
+      'سبع نسخ مؤرَّخة تتجدد وحدها، استعِد أيّاً منها أو صدّر نسخة لمشاركتها';
 
   @override
   String backupSuccess(Object path) {
@@ -207,7 +207,7 @@ class MTLocalizationsAr extends MTLocalizations {
   String get batchDownloadSelected => 'تحميل المحدد';
 
   @override
-  String get batchLoading => 'قراءة القائمة…';
+  String get batchLoading => 'جارٍ قراءة القائمة…';
 
   @override
   String get batchNothingSelected => 'اختر عنصراً واحداً على الأقل';
@@ -217,7 +217,7 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String batchSelectedOf(int selected, int total) {
-    return 'محدد $selected من $total';
+    return 'حُدِّد $selected من $total';
   }
 
   @override
@@ -237,7 +237,7 @@ class MTLocalizationsAr extends MTLocalizations {
   }
 
   @override
-  String get builtWith => 'مبنيّ على';
+  String get builtWith => 'بُني باستخدام';
 
   @override
   String get cancel => 'إلغاء';
@@ -261,7 +261,7 @@ class MTLocalizationsAr extends MTLocalizations {
   String get checkNow => 'افحص الآن';
 
   @override
-  String get checkQueued => 'بدأ الفحص. وما يجده يظهر في المكتبة.';
+  String get checkQueued => 'بدأ الفحص، وسيظهر أي جديد في المكتبة.';
 
   @override
   String get chooseOptions => 'خيارات';
@@ -288,7 +288,7 @@ class MTLocalizationsAr extends MTLocalizations {
   String get closePlayer => 'إغلاق المشغل';
 
   @override
-  String get columnAdded => 'أُضيف';
+  String get columnAdded => 'تاريخ الإضافة';
 
   @override
   String get columnLength => 'المدة';
@@ -301,7 +301,7 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get compatiblePlaybackHelp =>
-      'يطلب من الخادم صيغة H.264/AAC التي تفكّها كل الهواتف عتادياً. بدونها قد يعطي يوتيوب صيغة AV1 فيظهر المقطع مشوشاً على أجهزة كثيرة. إطفاؤها يتيح أعلى دقة ممكنة على حساب التوافق.';
+      'يطلب من الخادم صيغة H.264/AAC التي تشغّلها كل الهواتف بعتادها مباشرة. وإن أطفأته أتاح لك أعلى دقة، لكن يوتيوب قد يرسل حينها صيغة AV1 فتظهر الصورة مشوّشة على أجهزة كثيرة.';
 
   @override
   String get completed => 'مكتمل';
@@ -310,19 +310,20 @@ class MTLocalizationsAr extends MTLocalizations {
   String get connectionFailed => 'فشل الاتصال';
 
   @override
-  String get connectionSuccessful => 'تم الاتصال بنجاح — حُفظت الإعدادات';
+  String get connectionSuccessful => 'نجح الاتصال وحُفظت الإعدادات';
 
   @override
-  String get continueAsAudio => 'متابعة صوتاً';
+  String get continueAsAudio => 'متابعة بالصوت فقط';
 
   @override
-  String get continueAsAudioBody => 'أُتابع تشغيله صوتاً من نفس الثانية؟';
+  String get continueAsAudioBody =>
+      'هل تريد متابعة تشغيله صوتاً فقط من اللحظة نفسها؟';
 
   @override
   String get continueAsAudioNo => 'لا، أوقف';
 
   @override
-  String get continueAsAudioTitle => 'متابعة بالخلفية؟';
+  String get continueAsAudioTitle => 'متابعة في الخلفية؟';
 
   @override
   String get cookies => 'الكوكيز';
@@ -335,36 +336,36 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get cookiesDeleteBody =>
-      'سيتوقف السيرفر عن استعمالها، والمنصات التي كانت تطلب تسجيل الدخول سترفض من جديد.';
+      'سيتوقف السيرفر عن استعمالها، وستعود المنصات التي تشترط تسجيل الدخول إلى رفض التحميل.';
 
   @override
   String get cookiesDeleted => 'حُذفت الكوكيز من السيرفر';
 
   @override
   String get cookiesHelp =>
-      'من متصفحك، استعمل إضافة تصدّر الكوكيز بصيغة Netscape — ملفاً لكل منصة — ثم اختر الملفات هنا. بعدها يستعملها السيرفر في كل تحميل، وyt-dlp هو من يقرر متى يحتاجها. والكوكيز تنتهي صلاحيتها، فعودة الفشل غالباً تعني أن وقت تصدير جديد قد حان.';
+      'ثبّت في متصفحك إضافة تصدّر الكوكيز بصيغة Netscape، وصدّر ملفاً لكل منصة، ثم اختر الملفات هنا. سيستعملها السيرفر بعد ذلك في كل تحميل، ويقرر yt-dlp متى يحتاج إليها. وللكوكيز مدة صلاحية، فإذا عاد التحميل إلى الفشل فغالباً حان وقت تصديرها من جديد.';
 
   @override
   String get cookiesNotNetscape =>
       'لا يحوي أيٌّ من هذه الملفات كوكيز بصيغة Netscape';
 
   @override
-  String get cookiesPresent => 'السيرفر لديه كوكيز';
+  String get cookiesPresent => 'على السيرفر كوكيز';
 
   @override
   String get cookiesPrivacy =>
-      'يُرسَل الملف إلى سيرفرك مباشرة ولا يُحفظ على هذا الجوال أبداً. وهو مادة دخولك إلى حساباتك، فلا ترفعه إلا إلى سيرفر تملكه.';
+      'يُرسَل الملف إلى سيرفرك مباشرة ولا يُحفظ على هذا الجوال أبداً. ولأنه بمثابة مفتاح لحساباتك، فلا ترفعه إلا إلى سيرفر تملكه.';
 
   @override
   String get cookiesReplace => 'استبدل ملفات الكوكيز';
 
   @override
   String get cookiesReplaceNote =>
-      'كل رفع يستبدل ملف الكوكيز على السيرفر كله. لتبقى عدة منصات، اختر ملفاتها كلها معاً في كل مرة — حتى التي رفعتها قبل. للاختيار المتعدد: اضغط مطوّلاً على أول ملف.';
+      'كل رفع جديد يحلّ محل ملف الكوكيز على السيرفر بالكامل، فإن أردت الإبقاء على عدة منصات فاختر ملفاتها كلها معاً في كل مرة، ومنها ما رفعته من قبل. ولاختيار أكثر من ملف، اضغط مطولاً على أول ملف.';
 
   @override
   String cookiesSentFor(String sites) {
-    return 'أُرسلت كوكيز: $sites';
+    return 'أُرسلت كوكيز المنصات: $sites';
   }
 
   @override
@@ -372,11 +373,11 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get cookiesTooLarge =>
-      'هذا الملف أكبر من ميغابايت واحد، وهو أكثر مما يقبله السيرفر.';
+      'حجم هذا الملف يتجاوز 1 ميغابايت، وهو الحد الأقصى الذي يقبله السيرفر.';
 
   @override
   String get cookiesUnknown =>
-      'نسخة MeTube هذه لا تستطيع إخبارك إن كان لديها كوكيز';
+      'إصدار MeTube على سيرفرك لا يتيح معرفة وجود الكوكيز من عدمه';
 
   @override
   String get cookiesUpload => 'اختر ملفات الكوكيز';
@@ -386,7 +387,7 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get cookiesWhat =>
-      'بعض المنصات ترفض تسليم المقطع ما لم يبدُ الطلب قادماً من متصفح مسجَّل الدخول. وملف كوكيز مصدَّر من متصفحك يعطي السيرفر ذلك.';
+      'بعض المنصات لا تسمح بتحميل المقطع إلا إذا بدا الطلب قادماً من متصفح سُجّل فيه الدخول، وملف الكوكيز المصدَّر من متصفحك يمنح السيرفر هذه الصفة.';
 
   @override
   String get copiedToClipboard => 'نُسِخ إلى الحافظة';
@@ -396,7 +397,7 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get couldNotLoadPlaylist =>
-      'تعذّر تحميل هذه القائمة. تحقّق من الرابط واتصالك.';
+      'تعذّر فتح هذه القائمة. تحقّق من الرابط ومن اتصالك.';
 
   @override
   String get create => 'إنشاء';
@@ -421,7 +422,7 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String deleteMultipleConfirm(int count) {
-    return 'حذف $count فيديو؟\n\nسيتم إزالة الملفات من جهازك.';
+    return 'حذف $count فيديو؟\n\nستُزال الملفات من جهازك.';
   }
 
   @override
@@ -445,7 +446,7 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String deleteVideoConfirm(Object title) {
-    return 'حذف «$title»؟\n\nسيؤدي هذا إلى إزالة الملف من جهازك.';
+    return 'حذف «$title»؟\n\nسيُزال الملف من جهازك.';
   }
 
   @override
@@ -478,7 +479,7 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get diagnosticLogsSubtitle =>
-      'عرض السجلّات والبحث فيها ومشاركتها (مُنقّحة)';
+      'عرض السجلّات والبحث فيها ومشاركتها، بعد إخفاء البيانات الحساسة';
 
   @override
   String get disclaimer => 'إخلاء مسؤولية';
@@ -541,7 +542,7 @@ class MTLocalizationsAr extends MTLocalizations {
   String get emptyPlaylistMessage => 'أضِف فيديوهات من المكتبة';
 
   @override
-  String get endpointUrl => 'عنوان نقطة النهاية';
+  String get endpointUrl => 'عنوان الخادم الخارجي';
 
   @override
   String get enterFullscreen => 'ملء الشاشة';
@@ -557,7 +558,8 @@ class MTLocalizationsAr extends MTLocalizations {
   String get errNetwork => 'تعذر الوصول للسيرفر';
 
   @override
-  String get errNoApi => 'العنوان يستجيب لكن لا يوجد MeTube API عليه';
+  String get errNoApi =>
+      'العنوان يستجيب، لكن لا تعمل عليه واجهة MeTube البرمجية';
 
   @override
   String get errNotMeTube => 'هذا العنوان ليس سيرفر MeTube';
@@ -571,7 +573,7 @@ class MTLocalizationsAr extends MTLocalizations {
       'المنصة تطلب تسجيل الدخول — ارفع ملف كوكيز من الإعدادات ← الكوكيز';
 
   @override
-  String get errPollTimeout => 'طال انتظار السيرفر — أعد المحاولة';
+  String get errPollTimeout => 'تأخّر ردّ السيرفر — أعد المحاولة';
 
   @override
   String errServer(Object message) {
@@ -611,7 +613,7 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get externalNetworkDesc =>
-      'عندما يتعذّر الوصول للعنوان المحلي، يتصل التطبيق بأول عنوان يمكن الوصول إليه أدناه، من الأعلى إلى الأسفل.';
+      'إن تعذّر الوصول إلى العنوان المحلي، جرّب التطبيق العناوين أدناه بالترتيب من الأعلى، واتصل بأول عنوان يستجيب.';
 
   @override
   String get externalNetworkSection => 'شبكة خارجية';
@@ -623,7 +625,7 @@ class MTLocalizationsAr extends MTLocalizations {
   String get failed => 'فشل';
 
   @override
-  String get failedToLoadPlaylist => 'فشل تحميل القائمة';
+  String get failedToLoadPlaylist => 'تعذّر فتح القائمة';
 
   @override
   String get favorites => 'المفضلة';
@@ -667,7 +669,7 @@ class MTLocalizationsAr extends MTLocalizations {
   }
 
   @override
-  String get helpAboutField => 'حول هذا الحقل';
+  String get helpAboutField => 'عن هذا الحقل';
 
   @override
   String get inPlaylists => 'في قوائم التشغيل';
@@ -728,20 +730,20 @@ class MTLocalizationsAr extends MTLocalizations {
   String get licensedUnder => 'مرخَّص برخصة GPL-3.0';
 
   @override
-  String get licenses => 'تراخيص المصادر المفتوحة';
+  String get licenses => 'تراخيص البرمجيات مفتوحة المصدر';
 
   @override
   String get listSeparator => '، ';
 
   @override
-  String get listenInBackground => 'استماع بالخلفية';
+  String get listenInBackground => 'الاستماع في الخلفية';
 
   @override
   String get localCopyRemoved => 'أُزيلت النسخة المحلية';
 
   @override
   String get localNetworkDesc =>
-      'سيتصل التطبيق بالخادم عبر هذا العنوان عند إمكانية الوصول إليه.';
+      'يتصل التطبيق بالخادم عبر هذا العنوان متى أمكن الوصول إليه.';
 
   @override
   String get localNetworkSection => 'شبكة محلية';
@@ -770,7 +772,7 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get mediaAccessBlockedMessage =>
-      'لن يسأل أندرويد مرة أخرى. فعّل «الصور ومقاطع الفيديو» لهذا التطبيق من إعدادات النظام ثم ارجع.';
+      'لن يعرض أندرويد طلب الإذن مجدداً، ففعّل «الصور ومقاطع الفيديو» لهذا التطبيق من إعدادات النظام ثم عُد إليه.';
 
   @override
   String get mediaAccessGrant => 'السماح';
@@ -798,7 +800,7 @@ class MTLocalizationsAr extends MTLocalizations {
   String get modeRepeatOne => 'تكرار الحالي';
 
   @override
-  String get modeStopAtEnd => 'إيقاف عند النهاية';
+  String get modeStopAtEnd => 'التوقف في النهاية';
 
   @override
   String get navLibrary => 'المكتبة';
@@ -823,7 +825,7 @@ class MTLocalizationsAr extends MTLocalizations {
       'التبديل التلقائي بين عناوين الخادم المحلية والخارجية';
 
   @override
-  String get neverChecked => 'لم تُفحص بعد';
+  String get neverChecked => 'لم يُتحقَّق بعد';
 
   @override
   String newFromSubscriptions(int count) {
@@ -857,7 +859,7 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get noDownloadsMessage =>
-      'ستظهر الفيديوهات المحملة هنا.\nشارك رابط فيديو أو استخدم زر إضافة رابط.';
+      'ستظهر هنا الفيديوهات التي تحمّلها.\nشارك رابط فيديو أو اضغط زر «إضافة رابط».';
 
   @override
   String get noExternalPlayer => 'لا يوجد مشغل خارجي على الجهاز';
@@ -885,7 +887,7 @@ class MTLocalizationsAr extends MTLocalizations {
   String get noServerTitle => 'لا سيرفر بعد';
 
   @override
-  String get noTagsYet => 'لا وسوم بعد. أنشئ واحداً بالأسفل.';
+  String get noTagsYet => 'لا وسوم بعد، أنشئ أول وسم من الأسفل.';
 
   @override
   String get noVideosFound => 'مكتبتك فارغة';
@@ -895,17 +897,17 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get notAffiliated =>
-      'عميل غير رسمي — لا يتبع مشروع MeTube ولا yt-dlp ولا يمثّلهما.';
+      'تطبيق غير رسمي، لا صلة له بمشروع MeTube ولا yt-dlp، ولا يحظى بتأييدهما.';
 
   @override
   String get nothingHereYet => 'لا يوجد شيء بعد';
 
   @override
-  String get notifyArrivals => 'أخبرني بما يصل وحده';
+  String get notifyArrivals => 'نبّهني بما يصل تلقائياً';
 
   @override
   String get notifyArrivalsDesc =>
-      'إشعار واحد حين تنزل مقاطع قناة تتابعها على السيرفر. يظهر حين تفتح التطبيق أو تعود إليه أو تحدّث المكتبة، لا والتطبيق في الخلفية.';
+      'يصلك إشعار واحد حين تصل إلى السيرفر مقاطع جديدة من قناة تتابعها، ويظهر عند فتح التطبيق أو العودة إليه أو تحديث المكتبة، لا أثناء عمله في الخلفية.';
 
   @override
   String get nowPlaying => 'قيد التشغيل';
@@ -932,7 +934,7 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get onlyNewVideos =>
-      'لا يُنزَّل إلا ما يُنشر من الآن. أما مقاطع القناة الموجودة فتُترك مكانها.';
+      'لا يُنزَّل إلا ما يُنشر من الآن فصاعداً، أما ما نُشر في القناة من قبل فلا يُنزَّل.';
 
   @override
   String get openChannel => 'فتح القناة';
@@ -996,7 +998,7 @@ class MTLocalizationsAr extends MTLocalizations {
   String get playerError => 'تعذّر تشغيل هذا الملف';
 
   @override
-  String get playingFromDevice => 'تشغيل من جهازك';
+  String get playingFromDevice => 'يُشغَّل من جهازك';
 
   @override
   String get playlist => 'قائمة التشغيل';
@@ -1031,11 +1033,11 @@ class MTLocalizationsAr extends MTLocalizations {
   String get previous => 'السابق';
 
   @override
-  String get pullingToDevice => 'يُسحب للجهاز…';
+  String get pullingToDevice => 'جارٍ الحفظ في الجهاز…';
 
   @override
   String pullingToDeviceProgress(Object percent) {
-    return 'يُسحب للجهاز · $percent٪';
+    return 'جارٍ الحفظ في الجهاز · $percent٪';
   }
 
   @override
@@ -1058,7 +1060,7 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get qualityHelper =>
-      'تُستعمل في التحميل السريع، وفي تحميل قائمة كاملة، وفي «حمّل الآن» من شريط الحافظة — وتكون الخيار المُنتقى مسبقاً في نافذة إضافة الرابط. فهي مفيدة سواء كان التحميل السريع مفعَّلاً أم لا.';
+      'تُعتمد هذه الجودة في التحميل السريع، وفي تحميل القائمة كاملة، وفي «حمّل الآن» من شريط الحافظة، وتكون محددة مسبقاً في نافذة إضافة الرابط؛ لذا يسري أثرها سواء أكان التحميل السريع مفعّلاً أم لا.';
 
   @override
   String get qualityReading => 'جارٍ قراءة الملف…';
@@ -1097,7 +1099,7 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get quickDownloadHelp =>
-      'الرابط المشارَك أو الملصوق يبدأ التحميل فوراً بالجودة الافتراضية بلا نافذة. الجودات الرقمية ليوتيوب وحده — غيره ينزل بأفضل جودة، وإن كانت الجودة الافتراضية «صوت فقط» فهي تُطبَّق على كل المنصات.';
+      'حين تشارك رابطاً أو تلصقه يبدأ تحميله فوراً بالجودة الافتراضية دون أي نافذة. الجودات الرقمية خاصة بيوتيوب، فما سواه يُحمَّل بأفضل جودة، أما «صوت فقط» فيسري على كل المنصات.';
 
   @override
   String get reelsEndBack => 'عودة للمكتبة';
@@ -1106,10 +1108,10 @@ class MTLocalizationsAr extends MTLocalizations {
   String get reelsEndContinue => 'متابعة بقية القائمة';
 
   @override
-  String get reelsEndReplay => 'أعد من البداية';
+  String get reelsEndReplay => 'إعادة من البداية';
 
   @override
-  String get reelsEndTitle => 'انتهى مسار القِصار';
+  String get reelsEndTitle => 'وصلت إلى آخر القِصار';
 
   @override
   String get reelsSwipeHint => 'اسحب لأعلى للمقطع التالي';
@@ -1121,7 +1123,7 @@ class MTLocalizationsAr extends MTLocalizations {
   String get remove => 'إزالة';
 
   @override
-  String get removeFromFavorites => 'أزل من المفضلة';
+  String get removeFromFavorites => 'إزالة من المفضلة';
 
   @override
   String get removeLocalCopy => 'إزالة النسخة المحلية';
@@ -1148,19 +1150,19 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get restoreConfirm =>
-      'استعادة البيانات من ملف النسخة الاحتياطية؟ سيُستبدل ما لديك من قوائم ووسوم وإعدادات.';
+      'هل تريد استعادة البيانات من النسخة الاحتياطية؟ ستحلّ محل قوائمك ووسومك وإعداداتك الحالية.';
 
   @override
   String get restoreData => 'استعادة';
 
   @override
-  String get restoreFailed => 'فشلت الاستعادة — ملف نسخة غير صالح';
+  String get restoreFailed => 'فشلت الاستعادة — ملف النسخة الاحتياطية غير صالح';
 
   @override
   String get restoreSettings => 'استعادة جميع البيانات';
 
   @override
-  String get restoreSuccess => 'تمت استعادة البيانات بنجاح';
+  String get restoreSuccess => 'استُعيدت البيانات بنجاح';
 
   @override
   String resultsFound(int count) {
@@ -1195,7 +1197,7 @@ class MTLocalizationsAr extends MTLocalizations {
   String get searchLogs => 'بحث في السجلّات…';
 
   @override
-  String get searchVideos => 'بحث في الفيديوهات...';
+  String get searchVideos => 'بحث في الفيديوهات…';
 
   @override
   String get seekBackward10 => 'إرجاع ١٠ ثوانٍ';
@@ -1235,7 +1237,7 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get serverKeepsFilesBody =>
-      'يُحذف سجل العنصر ويبقى الملف على القرص، فيمتلئ الخادم. اضبط DELETE_FILE_ON_TRASHCAN=true على حاوية MeTube.';
+      'يُحذف العنصر من السجل لكن ملفه يبقى على القرص، فتمتلئ مساحة الخادم. اضبط DELETE_FILE_ON_TRASHCAN=true في حاوية MeTube.';
 
   @override
   String get serverKeepsFilesTitle => 'خادمك لا يحذف الملفات';
@@ -1268,14 +1270,14 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get serverUnreachableLocalHint =>
-      'المقاطع المحفوظة على هاتفك ما زالت تعمل.';
+      'ما زال بإمكانك تشغيل المقاطع المحفوظة على هاتفك.';
 
   @override
   String get serverUrl => 'رابط السيرفر (MeTube)';
 
   @override
   String get serverUrlHelpBody =>
-      'عنوان خادم MeTube، مثل http://192.168.1.10:8081. استخدم عنوان IP المحلي لـ HTTP العادي في المنزل، أو عنوان HTTPS (مثل Cloudflare Tunnel) للوصول من الخارج.';
+      'عنوان خادم MeTube، مثل http://192.168.1.10:8081. في المنزل استخدم عنوان IP المحلي مع HTTP العادي، ومن خارج المنزل استخدم عنوان HTTPS (مثل Cloudflare Tunnel).';
 
   @override
   String get serverUrlHelpTitle => 'حول رابط السيرفر';
@@ -1297,7 +1299,7 @@ class MTLocalizationsAr extends MTLocalizations {
   }
 
   @override
-  String get serverVersionUnknown => 'النسخة غير معروفة';
+  String get serverVersionUnknown => 'الإصدار غير معروف';
 
   @override
   String get settings => 'الإعدادات';
@@ -1321,7 +1323,7 @@ class MTLocalizationsAr extends MTLocalizations {
   String get settingsPlayback => 'التشغيل';
 
   @override
-  String get settingsSaved => 'تم حفظ الإعدادات بنجاح';
+  String get settingsSaved => 'حُفظت الإعدادات';
 
   @override
   String get settingsTranscripts => 'النصوص والترجمة';
@@ -1400,7 +1402,7 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String showChannel(String channel) {
-    return 'كل ما جاء من $channel';
+    return 'كل مقاطع $channel';
   }
 
   @override
@@ -1441,7 +1443,7 @@ class MTLocalizationsAr extends MTLocalizations {
   String get sortSmallest => 'الأصغر حجماً';
 
   @override
-  String get sortedByLastPlayed => 'بآخر تشغيل';
+  String get sortedByLastPlayed => 'حسب آخر تشغيل';
 
   @override
   String get source => 'المصدر';
@@ -1470,11 +1472,11 @@ class MTLocalizationsAr extends MTLocalizations {
   String get subscriptionPaused => 'موقوفة مؤقتاً';
 
   @override
-  String get subscriptionQuality => 'جودة هذه القناة';
+  String get subscriptionQuality => 'جودة التنزيل لهذه القناة';
 
   @override
   String get subscriptionQualityHelp =>
-      'السيرفر يحفظ الجودة لحظة المتابعة ولا يسمح بتغييرها. لتغييرها: افحص الآن، ثم ألغِ المتابعة وتابع من جديد.\n\n«الأفضل» قد يأتي بدقة 4K بترميز AV1. الجوالات الحديثة تشغّله بسلاسة، فإن رأيت تقطيعاً فجوالك لا يفكّه بالعتاد: اختر 1080p، أو فعّل «أفضل توافق للتشغيل» قبل المتابعة.';
+      'يثبّت السيرفر الجودة التي تختارها عند المتابعة ولا يسمح بتغييرها. لتغييرها اضغط «افحص الآن» أولاً، ثم ألغِ المتابعة وتابع القناة من جديد.\n\nقد يعني «الأفضل» دقة 4K بترميز AV1، وهي تعمل بسلاسة على الجوالات الحديثة. فإن رأيت تقطيعاً فجوالك لا يفك ترميز AV1 عتادياً: اختر 1080p، أو فعّل «أفضل توافق للتشغيل» قبل المتابعة.';
 
   @override
   String get subscriptionQualityNote => 'لا تُغيَّر بعد المتابعة.';
@@ -1497,7 +1499,7 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get subscriptionsUnsupportedBody =>
-      'حدّث حاوية MeTube إلى إصدار فيه اشتراكات القنوات ثم عد إلى هنا. لا شيء آخر في التطبيق يتأثر.';
+      'حدّث حاوية MeTube إلى إصدار يدعم اشتراكات القنوات، ثم عد إلى هنا. بقية ميزات التطبيق تعمل كالمعتاد.';
 
   @override
   String get subtitles => 'الترجمة على الفيديو';
@@ -1510,7 +1512,7 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get subtitlesBackgroundHelp =>
-      'ما خلف الكلمات. بلا خلفية يبقى حول كل حرف حدٌّ داكن ليُقرأ فوق الصورة الفاتحة.';
+      'اللون الذي يظهر خلف الكلمات. وإن اخترت «بلا خلفية» أحاط بكل حرف حدٌّ داكن ليبقى مقروءاً فوق الصور الفاتحة.';
 
   @override
   String get subtitlesBackgroundNone => 'بلا خلفية';
@@ -1526,7 +1528,7 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get subtitlesInShortsHelp =>
-      'مطفأة ما لم تفعّلها: كثير من الشورتس فيها الكلام مكتوب على الصورة أصلاً.';
+      'معطّلة افتراضياً، لأن كثيراً من الشورتس يُكتب كلامها على الصورة أصلاً.';
 
   @override
   String get subtitlesLanguage => 'لغة الترجمة';
@@ -1536,7 +1538,7 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get subtitlesShowHelp =>
-      'فوق الفيديو، للمقاطع التي لها نص. زر CC في المشغّل يفعل الشيء نفسه.';
+      'تظهر فوق الفيديو في المقاطع التي لها نص، ويؤدي زر CC في المشغّل العمل نفسه.';
 
   @override
   String get subtitlesSize => 'حجم الخط';
@@ -1557,7 +1559,7 @@ class MTLocalizationsAr extends MTLocalizations {
   String get tags => 'الوسوم';
 
   @override
-  String get tagsOpenFiltered => 'تفتح المكتبة مصفّاة';
+  String get tagsOpenFiltered => 'تفتح المكتبة مصفّاةً بالوسم';
 
   @override
   String get testingConnection => 'جارٍ اختبار الاتصال…';
@@ -1572,18 +1574,18 @@ class MTLocalizationsAr extends MTLocalizations {
   String get themeLight => 'فاتح';
 
   @override
-  String get themeSystem => 'النظام';
+  String get themeSystem => 'حسب النظام';
 
   @override
-  String get titleFilter => 'نزّل فقط ما يحوي عنوانه';
+  String get titleFilter => 'نزّل فقط المقاطع التي يحتوي عنوانها على';
 
   @override
   String get titleFilterHelp =>
-      'لا ينزّل السيرفر مقطعاً جديداً من هذه القناة إلا إذا احتوى عنوانه على ما تكتبه هنا.\n\n• كلمة عادية تكفي: الحلقة\n• أيّ كلمة من عدة كلمات: الحلقة|الجزء — العلامة | تعني «أو»\n• الإنجليزية حساسة لحالة الأحرف: episode لا تطابق Episode. اكتب ‎[Ee]pisode‎ أو الكلمتين.\n\nالمقطع الذي يتجاهله الفلتر يُعدّ مُشاهَداً نهائياً: إزالة الفلتر لاحقاً تُنزّل ما يأتي بعدها، لا ما تجاهله.';
+      'لا ينزّل السيرفر مقطعاً جديداً من هذه القناة إلا إذا احتوى عنوانه على ما تكتبه هنا.\n\n• كلمة عادية تكفي: الحلقة\n• أيّ كلمة من عدة كلمات: الحلقة|الجزء — العلامة | تعني «أو»\n• في الإنجليزية يُفرَّق بين الأحرف الكبيرة والصغيرة: episode لا تطابق Episode. اكتب ‎[Ee]pisode‎ أو اكتب الصيغتين.\n\nوالمقطع الذي يتخطاه الفلتر يُعدّ مُشاهَداً إلى الأبد، فإن أزلت الفلتر لاحقاً نُزِّل ما يُنشر بعد ذلك فقط، لا ما تخطّاه.';
 
   @override
   String get titleFilterHelper =>
-      'عدة كلمات: افصل بينها بـ | . اتركه فارغاً لكل شيء.';
+      'لعدة كلمات افصل بينها بـ | ، واتركه فارغاً لتنزيل كل شيء.';
 
   @override
   String get titleFilterHint => 'مثال: الحلقة';
@@ -1678,7 +1680,7 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get transcriptsEnableBody =>
-      'قبل تنزيل كل مقطع يوتيوب تضيفه، يجلب التطبيق نصّه من سيرفرك بلغة التطبيق وبالإنجليزية (حتى 40 ثانية)، ويحفظه في هذا الجوال وحده. المقاطع الموجودة في مكتبتك تُشمل فقط إن كان سيرفرك قد حفظ ترجمتها بجانبها (يبيّن ذلك دليل الإعداد). يمكنك إيقافه متى شئت.';
+      'حين تضيف مقطع يوتيوب، يجلب التطبيق نصّه من سيرفرك قبل تنزيله، بلغة التطبيق وبالإنجليزية، وقد يستغرق ذلك حتى 40 ثانية، ثم يحفظه في هذا الجوال وحده. أما المقاطع الموجودة في مكتبتك فلا تُشمل إلا إن كان سيرفرك يحفظ ملف الترجمة بجانب كل منها (يشرح دليل الإعداد طريقة ذلك). ويمكنك إيقاف الميزة متى شئت.';
 
   @override
   String get transcriptsExport => 'تصدير';
@@ -1690,7 +1692,7 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get transcriptsHelp =>
-      'يحفظ التطبيق الكلام المقول في كل مقطع يوتيوب تضيفه، فيجد بحث المكتبة ما قيل داخل مقاطعك لا عناوينها وحدها.\n\nيُجلب الكلام من سيرفرك قبيل التنزيل ويُحفظ على هذا الجوال، والنسخة الاحتياطية الكاملة لا تشمله. لنقله إلى جوال آخر استعمل «تصدير» هنا و«استيراد» هناك. والاستيراد يضيف إلى ما هنا ولا يحذف شيئاً.\n\nوإن كان سيرفرك مضبوطاً ليكتب الترجمة بجانب كل مقطع (سطر واحد في إعداده، يبيّنه دليل الإعداد) فكل ما ينزّله من بعدها مشمول، والاشتراكات والمواقع الأخرى معه: يقرأ التطبيق تلك الملفات وحده، بلغة التطبيق وبالإنجليزية.';
+      'يحفظ التطبيق ما يُقال في كل مقطع يوتيوب تضيفه، فيبحث بحث المكتبة في كلام مقاطعك لا في عناوينها وحدها.\n\nيُجلب الكلام من سيرفرك قبيل التنزيل ويُحفظ في هذا الجوال، ولا تشمله النسخة الاحتياطية الكاملة. لنقله إلى جوال آخر استعمل «تصدير» هنا و«استيراد» هناك، والاستيراد يضيف إلى الموجود ولا يحذف شيئاً.\n\nوإن ضبطت سيرفرك ليحفظ ملف الترجمة بجانب كل مقطع (سطر واحد في إعداداته يشرحه دليل الإعداد)، شُمل كل ما ينزّله من ذلك الحين، بما فيه مقاطع الاشتراكات والمواقع الأخرى، إذ يقرأ التطبيق تلك الملفات تلقائياً بلغة التطبيق وبالإنجليزية.';
 
   @override
   String get transcriptsImport => 'استيراد';
@@ -1713,7 +1715,7 @@ class MTLocalizationsAr extends MTLocalizations {
   }
 
   @override
-  String get transcriptsKeep => 'إيقاف مع الاحتفاظ';
+  String get transcriptsKeep => 'إيقاف والاحتفاظ بالنصوص';
 
   @override
   String get transcriptsSaidInside => 'قيل داخل المقاطع';
@@ -1723,7 +1725,7 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get transcriptsSearchHelp =>
-      'يحفظ كلام كل مقطع يوتيوب تضيفه، لتبحث داخل ما قيل فيه.';
+      'يحفظ ما يُقال في كل مقطع يوتيوب تضيفه، لتبحث في كلامه لا في عنوانه وحده.';
 
   @override
   String get transcriptsStopAndDelete => 'إيقاف وحذف';
@@ -1762,7 +1764,7 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get updateAllowInstallBody =>
-      'يطلب أندرويد إذنك قبل أن يثبّت التطبيق تحديثاته بنفسه. امنحه مرة واحدة من إعدادات النظام ثم عد واضغط تثبيت.';
+      'يطلب أندرويد إذنك قبل أن يثبّت التطبيق تحديثاته بنفسه. امنحه مرة واحدة من إعدادات النظام، ثم عد واضغط «تثبيت».';
 
   @override
   String get updateAllowInstallTitle => 'السماح بتثبيت التحديثات';
@@ -1815,7 +1817,7 @@ class MTLocalizationsAr extends MTLocalizations {
   String get updateSkipVersion => 'تخطّي هذا الإصدار';
 
   @override
-  String get updateUpToDate => 'أنت على أحدث إصدار';
+  String get updateUpToDate => 'لديك أحدث إصدار';
 
   @override
   String updateVersionAvailable(String version) {
@@ -1884,7 +1886,7 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get wifiOnlyHelp =>
-      'يمنع سحب الملفات إلى جهازك على بيانات الجوّال. المهام تنتظر وتُستأنف تلقائياً عند اتصال Wi‑Fi.';
+      'لا تُسحب الملفات إلى جهازك عبر بيانات الجوّال، بل تنتظر المهام وتُستأنف تلقائياً عند الاتصال بشبكة Wi‑Fi.';
 
   @override
   String get yourPlaylists => 'قوائمك';
@@ -1893,5 +1895,5 @@ class MTLocalizationsAr extends MTLocalizations {
   String get yourTags => 'وسومك';
 
   @override
-  String get ytdlpCredit => 'أداة التنزيل التي يشغّلها MeTube';
+  String get ytdlpCredit => 'أداة التنزيل التي يعتمد عليها MeTube';
 }

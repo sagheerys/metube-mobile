@@ -147,7 +147,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.textContaining('غير معروفة'), findsOneWidget);
+      expect(find.textContaining('الإصدار غير معروف'), findsOneWidget);
       expect(find.textContaining('يتوفر تحديث'), findsNothing);
     });
 
@@ -160,7 +160,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.textContaining('7'), findsOneWidget);
-      expect(find.textContaining('غير معروفة'), findsOneWidget);
+      expect(find.textContaining('الإصدار غير معروف'), findsOneWidget);
     });
 
     testWidgets('an unreachable server adds no second line', (tester) async {
