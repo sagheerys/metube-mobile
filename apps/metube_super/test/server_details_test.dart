@@ -71,7 +71,7 @@ void main() {
       expect(find.textContaining('128'), findsOneWidget);
       expect(find.textContaining('2026.09.15'), findsOneWidget);
       // Nothing in the queue is not "0 in the queue": it is silence.
-      expect(find.textContaining('الطابور'), findsNothing);
+      expect(find.textContaining('في الانتظار'), findsNothing);
     });
 
     testWidgets('the queue is named only when something is in it', (
@@ -90,7 +90,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.textContaining('الطابور'), findsOneWidget);
+      expect(find.textContaining('في الانتظار'), findsOneWidget);
     });
 
     testWidgets('an older server is told, by its tag', (tester) async {

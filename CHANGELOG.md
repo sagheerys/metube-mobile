@@ -60,6 +60,10 @@ only one.
   is about. Every setting works as before; only its place changed. A
   "sign-in required" message now opens the server page itself. Both apps.
 - **Additional protection for your server's sign-in details.** Super only.
+- **Clearer Arabic.** About thirty Arabic texts were corrected: spelling
+  (hamza), counts that now agree with their number ("two copies kept"
+  reads as Arabic says it), units written out in full, and plainer wording
+  for sign-in details, offline copies and subscriptions. Both apps.
 
 ### Fixed
 

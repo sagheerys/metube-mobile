@@ -21,7 +21,7 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get aboutDescriptionSuper =>
-      'نسخة مالك السيرفر: مكتبة موحّدة من السيرفر وجهازك، بثّ مباشر ووسوم وإتاحة دون اتصال وتحميل دفعي وتبديل بين عناوين السيرفر.';
+      'نسخة مالك السيرفر: مكتبة واحدة تجمع ما على السيرفر وما على جهازك، وبثّ من السيرفر، ووسوم، وإتاحة دون اتصال، وتحميل دفعي، وتبديل بين عناوين السيرفر.';
 
   @override
   String get activeDownloads => 'التحميلات النشطة';
@@ -89,7 +89,7 @@ class MTLocalizationsAr extends MTLocalizations {
   String get alreadyInPlaylist => 'مضاف مسبقاً';
 
   @override
-  String get alreadySubscribed => 'هذه القناة متابَعة أصلاً';
+  String get alreadySubscribed => 'أنت تتابع هذه القناة بالفعل';
 
   @override
   String get appTitle => 'MeTube Super';
@@ -99,7 +99,16 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String audioChannels(int count) {
-    return '$count قنوات';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count قناة',
+      many: '$count قناة',
+      few: '$count قنوات',
+      two: 'قناتان',
+      one: 'قناة واحدة',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -162,7 +171,7 @@ class MTLocalizationsAr extends MTLocalizations {
   String get availableOfflineNow => 'صار متاحاً دون اتصال';
 
   @override
-  String get backgroundDownload => 'جاري تحميل الملفات في الخلفية...';
+  String get backgroundDownload => 'جارٍ تحميل الملفات في الخلفية…';
 
   @override
   String get backupNote =>
@@ -182,7 +191,16 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String backupsKept(int count) {
-    return '$count نسخ محفوظة';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count نسخة محفوظة',
+      many: '$count نسخة محفوظة',
+      few: '$count نسخ محفوظة',
+      two: 'نسختان محفوظتان',
+      one: 'نسخة واحدة محفوظة',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -210,12 +228,12 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String bitrateKbps(String value) {
-    return '$value ك.ب/ث';
+    return '$value كيلوبت/ث';
   }
 
   @override
   String bitrateMbps(String value) {
-    return '$value م.ب/ث';
+    return '$value ميغابت/ث';
   }
 
   @override
@@ -276,7 +294,7 @@ class MTLocalizationsAr extends MTLocalizations {
   String get columnLength => 'المدة';
 
   @override
-  String get compactView => 'عرض مدمج';
+  String get compactView => 'عرض مختصر';
 
   @override
   String get compatiblePlayback => 'أفضل توافق للتشغيل';
@@ -387,7 +405,7 @@ class MTLocalizationsAr extends MTLocalizations {
   String get createPlaylist => 'إنشاء قائمة';
 
   @override
-  String get creator => 'المنشئ';
+  String get creator => 'صانع المحتوى';
 
   @override
   String get defaultQuality => 'جودة الفيديو الافتراضية';
@@ -463,11 +481,11 @@ class MTLocalizationsAr extends MTLocalizations {
       'عرض السجلّات والبحث فيها ومشاركتها (مُنقّحة)';
 
   @override
-  String get disclaimer => 'اخلاء مسؤولية';
+  String get disclaimer => 'إخلاء مسؤولية';
 
   @override
   String get disclaimerText =>
-      'هذا التطبيق هو عميل لسيرفر MeTube. المطور غير مسؤول عن طريقة استخدام هذه الاداة. يرجى احترام حقوق الملكية الفكرية وشروط خدمة منصات المحتوى.';
+      'يتصل هذا التطبيق بسيرفر MeTube، والمطوّر غير مسؤول عن طريقة استخدامه. يُرجى احترام حقوق النشر وشروط استخدام منصات المحتوى.';
 
   @override
   String get dismiss => 'تجاهل';
@@ -505,7 +523,7 @@ class MTLocalizationsAr extends MTLocalizations {
   }
 
   @override
-  String get downloading => 'جاري التحميل...';
+  String get downloading => 'جارٍ التحميل...';
 
   @override
   String get downloadingTitle => 'جارٍ التنزيل';
@@ -668,11 +686,12 @@ class MTLocalizationsAr extends MTLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count مقطعاً معروفاً',
-      few: '$count مقاطع معروفة',
-      two: 'مقطعان معروفان',
-      one: 'مقطع معروف',
-      zero: 'لا مقاطع معروفة',
+      other: '$count مقطع مرصود',
+      many: '$count مقطعاً مرصوداً',
+      few: '$count مقاطع مرصودة',
+      two: 'مقطعان مرصودان',
+      one: 'مقطع مرصود',
+      zero: 'لم يُرصد أي مقطع بعد',
     );
     return '$_temp0';
   }
@@ -738,10 +757,10 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get logsSanitizedNote =>
-      'تُحذف الروابط والعناوين والاعتمادات قبل المشاركة';
+      'تُحذف الروابط والعناوين وبيانات الدخول قبل المشاركة';
 
   @override
-  String get madeOffline => 'أُتيح دون اتصال';
+  String get madeOffline => 'صار متاحاً دون اتصال';
 
   @override
   String get makeOffline => 'إتاحة دون اتصال';
@@ -811,10 +830,11 @@ class MTLocalizationsAr extends MTLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count مقطعاً جديداً من قنواتك',
+      other: '$count مقطع جديد من قنواتك',
+      many: '$count مقطعاً جديداً من قنواتك',
       few: '$count مقاطع جديدة من قنواتك',
-      two: 'جديدان من قنواتك',
-      one: 'جديد من قناة تتابعها',
+      two: 'مقطعان جديدان من قنواتك',
+      one: 'مقطع جديد من قناة تتابعها',
       zero: 'لا جديد',
     );
     return '$_temp0';
@@ -1108,7 +1128,7 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String removeUnavailable(int count) {
-    return 'إزالة $count غير متوفر';
+    return 'إزالة غير المتوفر ($count)';
   }
 
   @override
@@ -1124,7 +1144,7 @@ class MTLocalizationsAr extends MTLocalizations {
   String get renameTag => 'إعادة تسمية الوسم';
 
   @override
-  String get reportBug => 'الابلاغ عن مشكلة';
+  String get reportBug => 'الإبلاغ عن مشكلة';
 
   @override
   String get restoreConfirm =>
@@ -1166,10 +1186,10 @@ class MTLocalizationsAr extends MTLocalizations {
   String get saveSettings => 'حفظ الإعدادات';
 
   @override
-  String get saveToDevice => 'حفظ للجهاز';
+  String get saveToDevice => 'حفظ في الجهاز';
 
   @override
-  String get savedOnDevice => 'محفوظ للجهاز';
+  String get savedOnDevice => 'محفوظ في الجهاز';
 
   @override
   String get searchLogs => 'بحث في السجلّات…';
@@ -1188,12 +1208,12 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String selected(int count) {
-    return '$count محدد';
+    return 'المحدد: $count';
   }
 
   @override
   String selectedCount(int count) {
-    return '$count محدد';
+    return 'المحدد: $count';
   }
 
   @override
@@ -1225,10 +1245,10 @@ class MTLocalizationsAr extends MTLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count في الطابور',
-      few: '$count في الطابور',
-      two: 'اثنان في الطابور',
-      one: 'واحد في الطابور',
+      other: '$count في الانتظار',
+      few: '$count في الانتظار',
+      two: 'اثنان في الانتظار',
+      one: 'واحد في الانتظار',
       zero: '',
     );
     return '$_temp0';
@@ -1328,7 +1348,7 @@ class MTLocalizationsAr extends MTLocalizations {
   }
 
   @override
-  String get settingsValueCompatOff => 'أفضل توافق: مطفأ';
+  String get settingsValueCompatOff => 'أفضل توافق: معطّل';
 
   @override
   String get settingsValueCompatOn => 'أفضل توافق: مفعّل';
@@ -1346,10 +1366,10 @@ class MTLocalizationsAr extends MTLocalizations {
   String get settingsValueNoPassword => 'بلا كلمة مرور';
 
   @override
-  String get settingsValueNotSet => 'لم يُعدّ بعد';
+  String get settingsValueNotSet => 'لم يُضبط بعد';
 
   @override
-  String get settingsValueOff => 'مطفأ';
+  String get settingsValueOff => 'معطّل';
 
   @override
   String get settingsValueOn => 'مفعّل';
@@ -1384,14 +1404,14 @@ class MTLocalizationsAr extends MTLocalizations {
   }
 
   @override
-  String get shuffle => 'تبديل عشوائي';
+  String get shuffle => 'تشغيل عشوائي';
 
   @override
   String get signInRequired => 'يلزم تسجيل الدخول';
 
   @override
   String get signInRequiredHint =>
-      'رفض السيرفر الاعتماد المحفوظ. حدّث اسم المستخدم وكلمة المرور في الإعدادات.';
+      'رفض السيرفر بيانات الدخول المحفوظة. حدّث اسم المستخدم وكلمة المرور في الإعدادات.';
 
   @override
   String get size => 'الحجم';
@@ -1436,7 +1456,7 @@ class MTLocalizationsAr extends MTLocalizations {
   String get status => 'الحالة';
 
   @override
-  String get streamingFromServer => 'بث مباشر من السيرفر';
+  String get streamingFromServer => 'يُبثّ من السيرفر';
 
   @override
   String subscriptionAdded(String name) {
@@ -1467,13 +1487,13 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get subscriptionsEmptyBody =>
-      'تابِع قناة، وينزّل السيرفر كل مقطع جديد فيها وحده ويصل مكتبتك مباشرة. وما هو منشور عليها الآن يبقى مكانه.';
+      'تابِع قناة، وسينزّل السيرفر تلقائياً كل مقطع جديد تنشره ليصل إلى مكتبتك مباشرة. أما ما نُشر قبل المتابعة فلا يُنزَّل.';
 
   @override
   String get subscriptionsSubtitle => 'قنوات يتابعها السيرفر نيابةً عنك';
 
   @override
-  String get subscriptionsUnsupported => 'نسخة MeTube لديك أقدم من الاشتراكات';
+  String get subscriptionsUnsupported => 'نسخة MeTube لديك لا تدعم الاشتراكات';
 
   @override
   String get subscriptionsUnsupportedBody =>
@@ -1724,7 +1744,7 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get unfollowConfirmBody =>
-      'سينسى السيرفر ما رآه من مقاطع هذه القناة. وإن تابعتها لاحقاً عُدَّ كل الموجود عليها حينها مرئياً، فلا يُسدّ ما فاتك. والإيقاف المؤقت يحفظ هذه الذاكرة.';
+      'سينسى السيرفر المقاطع التي سبق أن رآها من هذه القناة. فإن تابعتها لاحقاً عُدَّ كل ما عليها حينها مُشاهَداً، ولن يُنزَّل ما فاتك. أما الإيقاف المؤقت فيحفظ هذا السجل.';
 
   @override
   String get unlockTouch => 'فك القفل';
@@ -1757,7 +1777,7 @@ class MTLocalizationsAr extends MTLocalizations {
   String get updateChecking => 'جارٍ التحقق…';
 
   @override
-  String get updateCredentials => 'تحديث الاعتماد';
+  String get updateCredentials => 'تحديث بيانات الدخول';
 
   @override
   String get updateDownloadFailed => 'تعذّر تنزيل التحديث';
@@ -1788,7 +1808,7 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String updateSizeMb(String size) {
-    return '$size م.ب';
+    return '$size ميغابايت';
   }
 
   @override
