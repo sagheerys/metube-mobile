@@ -177,6 +177,24 @@ void main() {
   });
 
   group('add (§2.2)', () {
+    test('a folder is sent cleaned, and the top sends none', () async {
+      final (client, adapter) = makeClient((o) => _json('{"status": "ok"}'));
+      await client.add(
+        'https://www.youtube.com/watch?v=jNQXAC9IVRw',
+        Quality.best,
+        folder: ' Ai / Lessons/ ',
+      );
+      await client.add(
+        'https://www.youtube.com/watch?v=jNQXAC9IVRw',
+        Quality.best,
+        folder: '',
+      );
+      final first = json.decode(adapter.requests.first.data as String) as Map;
+      final last = json.decode(adapter.requests.last.data as String) as Map;
+      expect(first['folder'], 'Ai/Lessons');
+      expect(last, isNot(contains('folder')));
+    });
+
     test('it sends url and quality, applying the platform rule: a numeric quality on TikTok becomes best', () async {
       final (client, adapter) = makeClient((o) => _json('{"status": "ok"}'));
       await client.add(

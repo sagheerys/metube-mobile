@@ -228,6 +228,9 @@ class MTLocalizationsEn extends MTLocalizations {
   String get changeQuality => 'Change quality';
 
   @override
+  String get channelNameFolder => 'Named after the channel';
+
+  @override
   String get channelUrl => 'Channel or playlist link';
 
   @override
@@ -245,6 +248,9 @@ class MTLocalizationsEn extends MTLocalizations {
   @override
   String get checkQueued =>
       'Checking now. Anything new appears in the library.';
+
+  @override
+  String get chooseFolder => 'Choose a folder';
 
   @override
   String get chooseOptions => 'Options';
@@ -637,10 +643,12 @@ class MTLocalizationsEn extends MTLocalizations {
   String get folder => 'Folder';
 
   @override
-  String get folderName => 'Folder name';
+  String get foldersDisabled =>
+      'This server does not allow folders: CUSTOM_DIRS is off in its settings.';
 
   @override
-  String get folderNameHint => 'Empty: the channel\'s name';
+  String get foldersIgnored =>
+      'This server saves every file at the top of the downloads, whatever folder is chosen: its YTDL_OPTIONS has an outtmpl. The setup guide says how to move it to OUTPUT_TEMPLATE.';
 
   @override
   String get follow => 'Follow';
@@ -813,6 +821,12 @@ class MTLocalizationsEn extends MTLocalizations {
   String get neverChecked => 'Not checked yet';
 
   @override
+  String get newFolder => 'New folder…';
+
+  @override
+  String get newFolderHint => 'e.g. Ai/Lessons';
+
+  @override
   String newFromSubscriptions(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
@@ -844,6 +858,12 @@ class MTLocalizationsEn extends MTLocalizations {
 
   @override
   String get noExternalPlayer => 'No external player on this device';
+
+  @override
+  String get noFolder => 'No folder';
+
+  @override
+  String get noFolderHint => 'At the top of the downloads';
 
   @override
   String get noLogsFound => 'No logs found';

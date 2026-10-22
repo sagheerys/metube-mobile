@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mt_core/mt_core.dart';
 import 'package:mt_ui/mt_ui.dart';
 
+import '../folders/folder_picker.dart';
 import '../settings/widgets/help_button.dart';
 
 /// The quality a subscription downloads at, asked once when following.
@@ -59,18 +60,21 @@ class SubscriptionQualityField extends StatelessWidget {
 /// and those who browse them over the network share get the one order the
 /// app's tags cannot give them there.
 ///
-/// The name may be left empty, and the channel's own name is used.
+/// The folder is picked among the server's own, nested ones included, or
+/// made new, or named after the channel, which is the default.
 class SubscriptionFolderField extends StatelessWidget {
   const SubscriptionFolderField({
     super.key,
     required this.enabled,
-    required this.controller,
+    required this.value,
     required this.onToggle,
+    required this.onPick,
   });
 
   final bool enabled;
-  final TextEditingController controller;
+  final String value;
   final ValueChanged<bool> onToggle;
+  final VoidCallback onPick;
 
   @override
   Widget build(BuildContext context) {
@@ -85,15 +89,7 @@ class SubscriptionFolderField extends StatelessWidget {
           title: Text(l10n.ownFolder),
           subtitle: Text(l10n.ownFolderNote),
         ),
-        if (enabled)
-          TextField(
-            controller: controller,
-            decoration: InputDecoration(
-              labelText: l10n.folderName,
-              hintText: l10n.folderNameHint,
-              prefixIcon: const Icon(Icons.folder_rounded),
-            ),
-          ),
+        if (enabled) FolderRow(value: value, onTap: onPick),
       ],
     );
   }

@@ -159,11 +159,13 @@ class DownloadEngine {
     String url,
     Quality quality, {
     bool isBatchMember = false,
+    String? folder,
   }) {
     final task = DownloadTask(
       inputUrl: UrlKit.extractUrl(url),
       quality: quality,
       isBatchMember: isBatchMember,
+      folder: folder,
     );
     _tasks[task.id] = task;
     _queue.enqueue(task.id, isBatchMember: isBatchMember);
@@ -325,6 +327,7 @@ class DownloadEngine {
       resolved,
       task.quality,
       compatibleVideo: compatibleVideo?.call() ?? false,
+      folder: task.folder,
     );
 
     // 2) Poll until completion or an immediate error.

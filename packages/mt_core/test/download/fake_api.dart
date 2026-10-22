@@ -56,16 +56,27 @@ class FakeApi implements MeTubeApi {
   /// test.
   bool? lastCompatibleVideo;
 
+  /// The last folder the engine asked for.
+  String? lastFolder;
+
   @override
   Future<void> add(
     String url,
     Quality quality, {
     bool compatibleVideo = false,
+    String? folder,
   }) async {
     lastCompatibleVideo = compatibleVideo;
+    lastFolder = folder;
     await beforeAdd?.call();
     adds.add((url, quality.applyRule(url)));
   }
+
+  /// What [fetchFolders] answers; null is a server that did not say.
+  ServerFolders? folders;
+
+  @override
+  Future<ServerFolders?> fetchFolders({Duration? timeout}) async => folders;
 
   @override
   Future<void> delete(

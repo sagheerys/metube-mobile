@@ -47,6 +47,7 @@ class DownloadTask {
     this.error,
     this.isBatchMember = false,
     this.serverCleanupFailed = false,
+    this.folder,
     DateTime? createdAt,
   }) : id = id ?? _uuid.v4(),
        createdAt = createdAt ?? DateTime.now();
@@ -83,6 +84,10 @@ class DownloadTask {
 
   /// A single item outranks members of a batch in the queue.
   final bool isBatchMember;
+
+  /// The server folder asked for, or null for the top. Fixed for the task's
+  /// life, so a retry saves where the first attempt was meant to.
+  final String? folder;
 
   /// **The delete after the pull was asked for and refused.** The task
   /// still completes — the file is on the phone — but whoever asks the
@@ -131,6 +136,7 @@ class DownloadTask {
     error: error ?? this.error,
     isBatchMember: isBatchMember,
     serverCleanupFailed: serverCleanupFailed ?? this.serverCleanupFailed,
+    folder: folder,
     createdAt: createdAt,
   );
 }

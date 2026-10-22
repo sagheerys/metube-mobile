@@ -11,13 +11,17 @@ only one.
 
 ### Added
 
-- **Folders on the server (Super).** Following a channel now offers "Save in
-  its own folder": what the channel downloads from then on goes into a folder
-  of its own on the server, named after the channel or as you choose, where
-  the network share and any other app see it. Videos already downloaded stay
-  where they are, since MeTube never moves a file. The library can be
-  filtered by server folder from the sort sheet, and the filter only appears
-  on a server that has folders.
+- **Folders on the server (Super).** The add sheet has a "Folder" row: pick
+  any folder the server already has, nested ones and empty ones included, or
+  make a new one (`Ai/Lessons`), and the clip is saved straight into it. It
+  starts at "No folder" every time. Following a channel offers "Save in its
+  own folder", named after the channel or picked the same way, for what the
+  channel downloads from then on; videos already downloaded stay where they
+  are, since MeTube never moves a file. The library can be filtered by
+  folder from the sort sheet, a level at a time, and the filter only appears
+  on a server that has folders. Nothing to set up on a standard MeTube: the
+  folder list comes from the server's live channel. A server whose settings
+  make it ignore folders is told apart, and the picker says so.
 
 ### Changed
 

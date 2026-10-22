@@ -201,6 +201,8 @@ void main() {
         await probing;
         expect(container.read(settingsProvider).activeUrl, tunnel);
         expect(engines.last.submitted, ['https://youtu.be/abc']);
+        // And to the folder it was meant for.
+        expect(engines.last.folders, ['Ai/Lessons']);
       },
     );
 
@@ -319,12 +321,16 @@ class _FakeEngine implements DownloadEngine {
   final _tasks = <DownloadTask>[];
   final submitted = <String>[];
 
+  /// The folder each submit carried.
+  final folders = <String?>[];
+
   void addTo(List<_FakeEngine> all) => all.add(this);
 
   void busy(TaskPhase phase) => _tasks.add(
     DownloadTask(
       inputUrl: 'https://youtu.be/abc',
       quality: Quality.best,
+      folder: 'Ai/Lessons',
     ).copyWith(phase: phase),
   );
 
@@ -339,8 +345,10 @@ class _FakeEngine implements DownloadEngine {
     String url,
     Quality quality, {
     bool isBatchMember = false,
+    String? folder,
   }) {
     submitted.add(url);
+    folders.add(folder);
     return DownloadTask(inputUrl: url, quality: quality);
   }
 

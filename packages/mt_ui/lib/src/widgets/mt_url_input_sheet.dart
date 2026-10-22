@@ -31,6 +31,7 @@ class MTUrlInputSheet extends StatelessWidget {
     this.platform,
     this.platformLabel,
     this.onUrlChanged,
+    this.extra,
   });
 
   final String title;
@@ -44,6 +45,10 @@ class MTUrlInputSheet extends StatelessWidget {
   final MTPlatformKind? platform;
   final String? platformLabel;
   final ValueChanged<String>? onUrlChanged;
+
+  /// One more choice under the qualities, such as Super's server folder.
+  /// Absent, the sheet is exactly what it always was.
+  final Widget? extra;
 
   @override
   Widget build(BuildContext context) {
@@ -59,78 +64,90 @@ class MTUrlInputSheet extends StatelessWidget {
         // Whichever is showing: the keyboard **or** the system button bar.
         bottom: mtSheetBottomPad(context),
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // **No drag handle here**: the theme sets `showDragHandle: true`
-          // for every bottom sheet, so drawing a second one showed two bars
-          // stacked on top of each other (screenshot 2026-09-04).
-          Row(
-            children: [
-              Expanded(child: Text(title, style: text.titleLarge)),
-              if (platform != null && platform != MTPlatformKind.other)
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: MTSpace.sm,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: p.accentSoft,
-                    borderRadius: BorderRadius.circular(MTRadius.chip),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      MTPlatformChip(kind: platform!),
-                      if (platformLabel != null) ...[
-                        const SizedBox(width: 5),
-                        Text(
-                          platformLabel!,
-                          style: text.labelSmall!.copyWith(color: p.accentInk),
-                        ),
+      // **Scrolls when it must**: a short phone with the system font at its
+      // largest leaves less room than the sheet's rows need, and a row too
+      // many would push the start button off the screen. When everything
+      // fits it looks exactly as before.
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // **No drag handle here**: the theme sets `showDragHandle: true`
+            // for every bottom sheet, so drawing a second one showed two bars
+            // stacked on top of each other (screenshot 2026-09-04).
+            Row(
+              children: [
+                Expanded(child: Text(title, style: text.titleLarge)),
+                if (platform != null && platform != MTPlatformKind.other)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: MTSpace.sm,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: p.accentSoft,
+                      borderRadius: BorderRadius.circular(MTRadius.chip),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        MTPlatformChip(kind: platform!),
+                        if (platformLabel != null) ...[
+                          const SizedBox(width: 5),
+                          Text(
+                            platformLabel!,
+                            style: text.labelSmall!.copyWith(
+                              color: p.accentInk,
+                            ),
+                          ),
+                        ],
                       ],
-                    ],
+                    ),
                   ),
-                ),
-            ],
-          ),
-          const SizedBox(height: MTSpace.lg),
-          TextField(
-            controller: controller,
-            onChanged: onUrlChanged,
-            keyboardType: TextInputType.url,
-            textDirection: TextDirection.ltr,
-            style: text.bodyMedium,
-            decoration: InputDecoration(
-              hintText: urlHint,
-              prefixIcon: Icon(Icons.link_rounded, size: 20, color: p.ink3),
+              ],
             ),
-          ),
-          const SizedBox(height: MTSpace.lg),
-          Wrap(
-            spacing: MTSpace.xs,
-            runSpacing: MTSpace.xs,
-            children: [
-              for (final q in qualities)
-                ChoiceChip(
-                  label: Text(q.label),
-                  selected: q.value == selectedQuality,
-                  onSelected: (_) => onQualitySelected(q.value),
-                  showCheckmark: false,
-                  labelStyle: text.labelMedium!.copyWith(
-                    color: q.value == selectedQuality ? p.bg : p.ink2,
+            const SizedBox(height: MTSpace.lg),
+            TextField(
+              controller: controller,
+              onChanged: onUrlChanged,
+              keyboardType: TextInputType.url,
+              textDirection: TextDirection.ltr,
+              style: text.bodyMedium,
+              decoration: InputDecoration(
+                hintText: urlHint,
+                prefixIcon: Icon(Icons.link_rounded, size: 20, color: p.ink3),
+              ),
+            ),
+            const SizedBox(height: MTSpace.lg),
+            Wrap(
+              spacing: MTSpace.xs,
+              runSpacing: MTSpace.xs,
+              children: [
+                for (final q in qualities)
+                  ChoiceChip(
+                    label: Text(q.label),
+                    selected: q.value == selectedQuality,
+                    onSelected: (_) => onQualitySelected(q.value),
+                    showCheckmark: false,
+                    labelStyle: text.labelMedium!.copyWith(
+                      color: q.value == selectedQuality ? p.bg : p.ink2,
+                    ),
                   ),
-                ),
+              ],
+            ),
+            if (extra case final extra?) ...[
+              const SizedBox(height: MTSpace.md),
+              extra,
             ],
-          ),
-          const SizedBox(height: MTSpace.xl),
-          FilledButton.icon(
-            onPressed: onStart,
-            icon: const Icon(Icons.download_rounded, size: 18),
-            label: Text(startLabel),
-          ),
-        ],
+            const SizedBox(height: MTSpace.xl),
+            FilledButton.icon(
+              onPressed: onStart,
+              icon: const Icon(Icons.download_rounded, size: 18),
+              label: Text(startLabel),
+            ),
+          ],
+        ),
       ),
     );
   }

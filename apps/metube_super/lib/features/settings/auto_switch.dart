@@ -175,7 +175,7 @@ class AutoSwitchService {
       if (moved.isNotEmpty) {
         final next = _ref.read(downloadEngineProvider);
         for (final task in moved) {
-          next?.submit(task.inputUrl, task.quality);
+          next?.submit(task.inputUrl, task.quality, folder: task.folder);
         }
         unawaited(
           _ref

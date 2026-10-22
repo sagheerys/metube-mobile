@@ -6,6 +6,7 @@ import 'package:mt_ui/mt_ui.dart';
 import '../../di.dart';
 import '../settings/widgets/help_button.dart';
 import '../shared/error_text.dart';
+import '../folders/folder_picker.dart';
 import 'subscription_fields.dart';
 import 'subscriptions_providers.dart';
 
@@ -48,10 +49,11 @@ class _SubscriptionSheetState extends ConsumerState<_SubscriptionSheet> {
   late int _interval = _nearestInterval(
     widget.editing?.checkIntervalMinutes ?? 60,
   );
-  late final _folderController = TextEditingController(
-    text: widget.editing?.folder ?? '',
-  );
   late bool _ownFolder = widget.editing?.folder != null;
+  late FolderChoice _folder = switch (widget.editing?.folder) {
+    final folder? => FolderChoice(folder),
+    null => FolderChoice.channel,
+  };
   late Quality _quality = ref.read(settingsProvider).quality;
   bool _busy = false;
 
@@ -73,7 +75,6 @@ class _SubscriptionSheetState extends ConsumerState<_SubscriptionSheet> {
     _urlController.dispose();
     _nameController.dispose();
     _filterController.dispose();
-    _folderController.dispose();
     super.dispose();
   }
 
@@ -82,11 +83,25 @@ class _SubscriptionSheetState extends ConsumerState<_SubscriptionSheet> {
   String? _folderChange(ChannelSubscription sub) {
     final wanted = !_ownFolder
         ? ''
-        : switch (subscriptionFolderName(_folderController.text)) {
-            '' => subscriptionFolderName(sub.name),
-            final typed => typed,
-          };
+        : _folder.channelName
+        ? channelFolderName(sub.name)
+        : _folder.path;
     return wanted == (sub.folder ?? '') ? null : wanted;
+  }
+
+  Future<void> _pickFolder() async {
+    final audio = _isEdit
+        ? widget.editing!.quality == Quality.audio.wire
+        : _quality == Quality.audio;
+    final picked = await showFolderPicker(
+      context,
+      audio: audio,
+      current: _folder,
+      // "No folder" is the switch turned off, so it is not offered twice.
+      offerTop: false,
+      offerChannelName: true,
+    );
+    if (picked != null && mounted) setState(() => _folder = picked);
   }
 
   Future<void> _submit() async {
@@ -115,7 +130,7 @@ class _SubscriptionSheetState extends ConsumerState<_SubscriptionSheet> {
           checkIntervalMinutes: _interval,
           titleRegex: filter.isEmpty ? null : filter,
           ownFolder: _ownFolder,
-          folder: _folderController.text,
+          folder: _folder.path,
         );
         // The server resolved the channel's real title; naming it is the
         // proof that the right channel was followed.
@@ -233,8 +248,11 @@ class _SubscriptionSheetState extends ConsumerState<_SubscriptionSheet> {
             const SizedBox(height: MTSpace.sm),
             SubscriptionFolderField(
               enabled: _ownFolder,
-              controller: _folderController,
+              value: _folder.channelName
+                  ? l10n.channelNameFolder
+                  : mtName(_folder.path),
               onToggle: (value) => setState(() => _ownFolder = value),
+              onPick: _pickFolder,
             ),
             const SizedBox(height: MTSpace.md),
             // The one sentence that decides whether someone dares press

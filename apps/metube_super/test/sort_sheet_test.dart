@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:metube_super/di.dart';
+import 'package:metube_super/features/library/library_models.dart';
 import 'package:metube_super/features/library/library_providers.dart';
 import 'package:metube_super/features/library/widgets/sort_sheet.dart';
 import 'package:mt_core/mt_core.dart';
@@ -71,10 +72,18 @@ void main() {
     );
   }
 
-  testWidgets('the folders appear only on a server that has them, and a '
-      'choice filters the library', (tester) async {
+  testWidgets('the folders appear only on a server that has them, one row '
+      'per level, and the chosen one goes back up when tapped again', (
+    tester,
+  ) async {
     late WidgetRef captured;
-    Future<void> pump(List<MapEntry<String, int>> folders) async {
+    LibraryItem at(String path) => LibraryItem(
+      canonicalUrl: 'https://youtu.be/$path',
+      title: path,
+      serverFilename: path,
+      onServer: true,
+    );
+    Future<void> pump(List<LibraryItem> items) async {
       await tester.pumpWidget(
         ProviderScope(
           key: UniqueKey(),
@@ -82,7 +91,7 @@ void main() {
             keyValueStoreProvider.overrideWithValue(MemoryKeyValueStore()),
             prefsMutexProvider.overrideWithValue(PrefsMutex()),
             platformCountsProvider.overrideWithValue(const []),
-            folderCountsProvider.overrideWithValue(folders),
+            libraryItemsProvider.overrideWith((ref) async => items),
           ],
           child: MaterialApp(
             theme: mtTheme(MTVariant.superApp, Brightness.light),
@@ -102,17 +111,33 @@ void main() {
           ),
         ),
       );
+      await tester.pumpAndSettle();
       await tester.tap(find.text('open'));
       await tester.pumpAndSettle();
     }
 
-    await pump(const []);
+    String? chosen() => captured.read(libraryViewProvider).folder;
+
+    await pump([at('a.mp4')]);
     expect(find.text('All folders'), findsNothing);
 
-    await pump(const [MapEntry('Kids', 3)]);
+    await pump([
+      at('Ai/a.mp4'),
+      at('Ai/Lessons/b.mp4'),
+      at('Ai/Lessons/c.mp4'),
+      at('Quran/d.mp4'),
+    ]);
     expect(find.text('All folders'), findsOneWidget);
-    await tester.tap(find.textContaining('Kids'));
+    expect(find.textContaining('Lessons'), findsNothing);
+
+    await tester.tap(find.textContaining('Ai'));
     await tester.pumpAndSettle();
-    expect(captured.read(libraryViewProvider).folder, 'Kids');
+    expect(chosen(), 'Ai');
+    await tester.tap(find.textContaining('Lessons'));
+    await tester.pumpAndSettle();
+    expect(chosen(), 'Ai/Lessons');
+    await tester.tap(find.textContaining('Lessons'));
+    await tester.pumpAndSettle();
+    expect(chosen(), 'Ai');
   });
 }

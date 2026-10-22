@@ -29,6 +29,7 @@ export 'src/models/download_task.dart';
 export 'src/models/history_item.dart';
 export 'src/models/history_response.dart';
 export 'src/models/playlist_preview.dart';
+export 'src/models/server_folders.dart';
 export 'src/models/server_version.dart';
 export 'src/models/quality.dart';
 export 'src/models/saved_playlist.dart';

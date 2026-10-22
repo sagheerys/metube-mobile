@@ -183,13 +183,17 @@ class _PlatformSection extends ConsumerWidget {
 /// removable chip in the first row once chosen. Absent while every clip
 /// sits at the top of the download directory, which is most servers: the
 /// library looks exactly as it did before folders were understood.
+///
+/// One row per level: choosing `Ai` adds a row with what is inside it, and
+/// tapping the chosen folder again goes back up a level.
 class _FolderSection extends ConsumerWidget {
   const _FolderSection();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final counts = ref.watch(folderCountsProvider);
-    if (counts.isEmpty) return const SizedBox.shrink();
+    final items = ref.watch(libraryItemsProvider).valueOrNull ?? const [];
+    final top = folderCounts(items);
+    if (top.isEmpty) return const SizedBox.shrink();
 
     final l10n = context.mtl;
     final p = MTThemeX.of(context).palette;
@@ -198,34 +202,59 @@ class _FolderSection extends ConsumerWidget {
     );
     final controller = ref.read(libraryViewProvider.notifier);
 
-    Widget chip(String label, bool on, String? target) => ChoiceChip(
-      label: Text(label),
-      selected: on,
-      showCheckmark: false,
-      labelStyle: Theme.of(context).textTheme.labelMedium!
-          .copyWith(color: on ? p.bg : p.ink2),
-      onSelected: (_) => controller.setFolder(target),
+    String? parentOf(String path) =>
+        path.contains('/') ? path.substring(0, path.lastIndexOf('/')) : null;
+
+    Widget chip(String path, int count) {
+      final on =
+          selected != null &&
+          (selected == path || selected.startsWith('$path/'));
+      return ChoiceChip(
+        label: Text(l10n.platformCount(mtName(path.split('/').last), count)),
+        selected: on,
+        showCheckmark: false,
+        labelStyle: Theme.of(context).textTheme.labelMedium!
+            .copyWith(color: on ? p.bg : p.ink2),
+        onSelected: (_) =>
+            controller.setFolder(selected == path ? parentOf(path) : path),
+      );
+    }
+
+    Widget row(List<Widget> chips) => Padding(
+      padding: const EdgeInsets.only(top: MTSpace.xs),
+      child: Wrap(spacing: MTSpace.xs, runSpacing: MTSpace.xs, children: chips),
     );
+
+    // The levels under the chosen folder, from the top down.
+    final levels = <List<MapEntry<String, int>>>[];
+    if (selected != null) {
+      final parts = selected.split('/');
+      for (var i = 1; i <= parts.length; i++) {
+        final below = folderCounts(items, parent: parts.take(i).join('/'));
+        if (below.isEmpty) break;
+        levels.add(below);
+      }
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(height: MTSpace.xl),
         MTSectionHeader(title: l10n.folder),
-        const SizedBox(height: MTSpace.md),
-        Wrap(
-          spacing: MTSpace.xs,
-          runSpacing: MTSpace.xs,
-          children: [
-            chip(l10n.allFolders, selected == null, null),
-            for (final MapEntry(:key, :value) in counts)
-              chip(
-                l10n.platformCount(mtName(key), value),
-                selected == key,
-                selected == key ? null : key,
-              ),
-          ],
-        ),
+        const SizedBox(height: MTSpace.sm),
+        row([
+          ChoiceChip(
+            label: Text(l10n.allFolders),
+            selected: selected == null,
+            showCheckmark: false,
+            labelStyle: Theme.of(context).textTheme.labelMedium!
+                .copyWith(color: selected == null ? p.bg : p.ink2),
+            onSelected: (_) => controller.setFolder(null),
+          ),
+          for (final MapEntry(:key, :value) in top) chip(key, value),
+        ]),
+        for (final level in levels)
+          row([for (final MapEntry(:key, :value) in level) chip(key, value)]),
       ],
     );
   }

@@ -6,6 +6,7 @@ import 'package:dio/dio.dart';
 import '../constants/mt_constants.dart';
 import '../models/channel_subscription.dart';
 import '../models/history_response.dart';
+import '../models/server_folders.dart';
 import '../models/quality.dart';
 import '../models/server_version.dart';
 import '../urls/playlist_detector.dart';
@@ -182,6 +183,7 @@ class MeTubeApiClient implements MeTubeApi {
     String url,
     Quality quality, {
     bool compatibleVideo = false,
+    String? folder,
   }) async {
     final applied = quality.applyRule(url);
     // **`best` only**: the selector is fixed with no `[height<=…]`, so
@@ -194,6 +196,7 @@ class MeTubeApiClient implements MeTubeApi {
         applied,
         compatibleVideo: compatibleVideo,
         preset: withPreset,
+        folder: folder,
       );
     } on ServerErrorException {
       if (!withPreset) rethrow;
@@ -206,6 +209,7 @@ class MeTubeApiClient implements MeTubeApi {
         applied,
         compatibleVideo: compatibleVideo,
         preset: false,
+        folder: folder,
       );
     }
   }
@@ -215,6 +219,7 @@ class MeTubeApiClient implements MeTubeApi {
     Quality applied, {
     required bool compatibleVideo,
     required bool preset,
+    String? folder,
   }) async {
     final response = await _request(
       () => _dio.post<String>(
@@ -237,6 +242,11 @@ class MeTubeApiClient implements MeTubeApi {
           // Measured on a real server: a three-track album plus this limit
           // yielded one download.
           if (!PlaylistDetector.isPlaylist(url)) 'playlist_item_limit': 1,
+          // Left out for the top, so a server without CUSTOM_DIRS, which
+          // refuses any folder, never sees one it was not asked for.
+          if (ServerPath.cleanFolder(folder ?? '') case final dir
+              when dir.isNotEmpty)
+            'folder': dir,
         }),
         options: Options(contentType: 'application/json'),
       ),
@@ -705,6 +715,10 @@ class MeTubeApiClient implements MeTubeApi {
 
   @override
   Stream<MTLiveUpdate> liveUpdates() => _liveUpdates(this);
+
+  @override
+  Future<ServerFolders?> fetchFolders({Duration? timeout}) =>
+      _fetchFolders(this, timeout ?? MTConstants.foldersTimeout);
 
   void close() => _dio.close(force: true);
 

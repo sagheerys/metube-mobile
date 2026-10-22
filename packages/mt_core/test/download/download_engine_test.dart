@@ -82,8 +82,31 @@ void main() {
       final task = engine.submit(canonical, Quality.best);
       await awaitFinished(engine, task.id);
       expect(api.lastCompatibleVideo, isFalse);
+      expect(api.lastFolder, isNull);
       await engine.dispose();
     });
+
+    test(
+      'the folder chosen for a task is the one the server is asked for',
+      () async {
+        final api = FakeApi(
+          historyScript: [
+            historyWith(),
+            historyWith(done: [doneItem()]),
+          ],
+        );
+        final engine = makeEngine(api);
+        final task = engine.submit(
+          canonical,
+          Quality.best,
+          folder: 'Ai/Lessons',
+        );
+        expect(task.folder, 'Ai/Lessons');
+        await awaitFinished(engine, task.id);
+        expect(api.lastFolder, 'Ai/Lessons');
+        await engine.dispose();
+      },
+    );
 
     test("a full success under Lite's policy: add, poll, pull, then delete by the canonical URL", () async {
       final api = FakeApi(

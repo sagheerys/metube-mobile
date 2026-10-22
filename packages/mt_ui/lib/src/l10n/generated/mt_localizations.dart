@@ -470,6 +470,12 @@ abstract class MTLocalizations {
   /// **'Change quality'**
   String get changeQuality;
 
+  /// No description provided for @channelNameFolder.
+  ///
+  /// In en, this message translates to:
+  /// **'Named after the channel'**
+  String get channelNameFolder;
+
   /// No description provided for @channelUrl.
   ///
   /// In en, this message translates to:
@@ -505,6 +511,12 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'Checking now. Anything new appears in the library.'**
   String get checkQueued;
+
+  /// No description provided for @chooseFolder.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a folder'**
+  String get chooseFolder;
 
   /// No description provided for @chooseOptions.
   ///
@@ -1196,17 +1208,17 @@ abstract class MTLocalizations {
   /// **'Folder'**
   String get folder;
 
-  /// No description provided for @folderName.
+  /// No description provided for @foldersDisabled.
   ///
   /// In en, this message translates to:
-  /// **'Folder name'**
-  String get folderName;
+  /// **'This server does not allow folders: CUSTOM_DIRS is off in its settings.'**
+  String get foldersDisabled;
 
-  /// No description provided for @folderNameHint.
+  /// No description provided for @foldersIgnored.
   ///
   /// In en, this message translates to:
-  /// **'Empty: the channel\'s name'**
-  String get folderNameHint;
+  /// **'This server saves every file at the top of the downloads, whatever folder is chosen: its YTDL_OPTIONS has an outtmpl. The setup guide says how to move it to OUTPUT_TEMPLATE.'**
+  String get foldersIgnored;
 
   /// No description provided for @follow.
   ///
@@ -1508,6 +1520,18 @@ abstract class MTLocalizations {
   /// **'Not checked yet'**
   String get neverChecked;
 
+  /// No description provided for @newFolder.
+  ///
+  /// In en, this message translates to:
+  /// **'New folder…'**
+  String get newFolder;
+
+  /// No description provided for @newFolderHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Ai/Lessons'**
+  String get newFolderHint;
+
   /// No description provided for @newFromSubscriptions.
   ///
   /// In en, this message translates to:
@@ -1555,6 +1579,18 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'No external player on this device'**
   String get noExternalPlayer;
+
+  /// No description provided for @noFolder.
+  ///
+  /// In en, this message translates to:
+  /// **'No folder'**
+  String get noFolder;
+
+  /// No description provided for @noFolderHint.
+  ///
+  /// In en, this message translates to:
+  /// **'At the top of the downloads'**
+  String get noFolderHint;
 
   /// No description provided for @noLogsFound.
   ///

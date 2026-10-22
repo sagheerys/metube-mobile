@@ -249,6 +249,9 @@ class MTLocalizationsAr extends MTLocalizations {
   String get changeQuality => 'تغيير الجودة';
 
   @override
+  String get channelNameFolder => 'باسم القناة';
+
+  @override
   String get channelUrl => 'رابط قناة أو قائمة';
 
   @override
@@ -265,6 +268,9 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get checkQueued => 'بدأ الفحص، وسيظهر أي جديد في المكتبة.';
+
+  @override
+  String get chooseFolder => 'اختر المجلد';
 
   @override
   String get chooseOptions => 'خيارات';
@@ -661,10 +667,12 @@ class MTLocalizationsAr extends MTLocalizations {
   String get folder => 'المجلد';
 
   @override
-  String get folderName => 'اسم المجلد';
+  String get foldersDisabled =>
+      'هذا السيرفر لا يسمح بالمجلدات: الخيار CUSTOM_DIRS مطفأ في إعداداته.';
 
   @override
-  String get folderNameHint => 'فارغ: اسم القناة';
+  String get foldersIgnored =>
+      'هذا السيرفر يحفظ كل ملف أعلى التنزيلات أياً كان المجلد المختار، لأن في YTDL_OPTIONS عنده outtmpl. دليل الإعداد يشرح نقله إلى OUTPUT_TEMPLATE.';
 
   @override
   String get follow => 'متابعة';
@@ -840,6 +848,12 @@ class MTLocalizationsAr extends MTLocalizations {
   String get neverChecked => 'لم يُتحقَّق بعد';
 
   @override
+  String get newFolder => 'مجلد جديد…';
+
+  @override
+  String get newFolderHint => 'مثال: Ai/دروس';
+
+  @override
   String newFromSubscriptions(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
@@ -875,6 +889,12 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get noExternalPlayer => 'لا يوجد مشغل خارجي على الجهاز';
+
+  @override
+  String get noFolder => 'بلا مجلد';
+
+  @override
+  String get noFolderHint => 'أعلى التنزيلات';
 
   @override
   String get noLogsFound => 'لا توجد سجلّات';

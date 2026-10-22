@@ -412,7 +412,19 @@ Only these fields may be sent to `update`, and the server drops the rest:
 `enabled` · `check_interval_minutes` · `name` · `folder` · `title_regex` ·
 `skip_subscriber_only`.
 
-`folder` (on `/subscribe` and on `update`) is relative to the download
+**The folder list** has no HTTP endpoint. MeTube sends it once to every
+client that joins its live channel (`/socket.io/`, the long-polling the apps
+already read progress from), after `all`, `subscriptions_all`,
+`formats` and `configuration`, as `custom_dirs`:
+`{"download_dir": ["", "Ai", "Ai/Lessons"], "audio_download_dir": [...]}`,
+every folder below each directory, empty ones included, `""` being the top.
+Only with `CUSTOM_DIRS` on; `configuration` says when it is off. Measured on
+2026.10.09: about 250 ms over the LAN, `all` (the whole history) arriving
+first. `MeTubeApiClient.fetchFolders` opens a session, reads until that
+event, and closes it.
+
+`folder` on `/add` is relative to the download directory and is left out for
+the top. `folder` (on `/subscribe` and on `update`) is relative to the download
 directory; the server refuses an absolute path and `..`, and creates the
 folder on first use. An empty string is the top. It applies to what the
 subscription downloads from then on: nothing already on disk is moved.

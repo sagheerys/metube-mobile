@@ -66,7 +66,7 @@ class SubscriptionsController {
   }) async {
     final api = _api;
     if (api == null) throw const NoApiException();
-    final named = ownFolder ? subscriptionFolderName(folder) : '';
+    final named = ownFolder ? ServerPath.cleanFolder(folder) : '';
     final created = await api.subscribe(
       url,
       quality,
@@ -80,7 +80,7 @@ class SubscriptionsController {
     // downloaded in between, since following marks the channel's current
     // videos as seen.
     if (ownFolder && named.isEmpty && created != null) {
-      final fromChannel = subscriptionFolderName(created.name);
+      final fromChannel = channelFolderName(created.name);
       if (fromChannel.isNotEmpty) {
         await api.updateSubscription(created.id, folder: fromChannel);
       }
@@ -136,16 +136,10 @@ final subscriptionsControllerProvider = Provider<SubscriptionsController>(
   SubscriptionsController.new,
 );
 
-/// **A folder name the server will take as one folder**: a slash or
-/// backslash would make a path of it, and `.` or `..` alone is refused.
-/// Empty when nothing usable is left.
-String subscriptionFolderName(String raw) {
-  final name = raw
-      .replaceAll(RegExp(r'[/\\]+'), '-')
-      .replaceAll('\u0000', '')
-      .trim();
-  return (name == '.' || name == '..') ? '' : name;
-}
+/// **A folder named after a channel**: the name is one folder, so a slash
+/// in it ("AC/DC") is not read as nesting.
+String channelFolderName(String name) =>
+    ServerPath.cleanFolder(name.replaceAll(RegExp(r'[/\\]'), '-'));
 
 /// The intervals the sheet offers, in minutes. **Nothing under half an
 /// hour**: the server clamps its own loop to a minute, but a channel

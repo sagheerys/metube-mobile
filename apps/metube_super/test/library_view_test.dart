@@ -224,5 +224,32 @@ void main() {
       ]);
       expect(folderCounts([at('d.mp4')]), isEmpty);
     });
+
+    test('one level down lists what is inside the folder, as full paths', () {
+      final all = [
+        at('Ai/a.mp4'),
+        at('Ai/Lessons/b.mp4'),
+        at('Ai/Lessons/c.mp4'),
+        at('Ai/Talks/d.mp4'),
+        at('Ai/Talks/e.mp4'),
+      ];
+      expect(folderCounts(all, parent: 'Ai').map((e) => e.key).toList(), [
+        'Ai/Lessons',
+        'Ai/Talks',
+      ]);
+      expect(buildLibraryView(all, folder: 'Ai/Lessons'), hasLength(2));
+      // "Ai" is not "AiTalks": a folder matches at a slash.
+      expect(at('AiTalks/x.mp4').isIn('Ai'), isFalse);
+    });
+
+    test("a level of one clip per folder is each clip's own folder, and is "
+        'not offered', () {
+      final all = [
+        at('Creator/clip one [a]/clip one [a].mp4'),
+        at('Creator/clip two [b]/clip two [b].mp4'),
+      ];
+      expect(folderCounts(all).single.key, 'Creator');
+      expect(folderCounts(all, parent: 'Creator'), isEmpty);
+    });
   });
 }

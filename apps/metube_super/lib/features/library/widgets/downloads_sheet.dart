@@ -104,7 +104,11 @@ class _DownloadsSheetState extends ConsumerState<_DownloadsSheet> {
                 children: [
                   TextButton(
                     onPressed: () {
-                      engine?.submit(task.effectiveUrl, task.quality);
+                      engine?.submit(
+                        task.effectiveUrl,
+                        task.quality,
+                        folder: task.folder,
+                      );
                       // The old card does not linger beside the new
                       // attempt.
                       engine?.forget(task.id);

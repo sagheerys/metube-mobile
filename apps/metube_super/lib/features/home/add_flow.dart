@@ -7,6 +7,7 @@ import 'package:mt_core/mt_core.dart';
 import 'package:mt_ui/mt_ui.dart';
 
 import '../../di.dart';
+import '../folders/folder_picker.dart';
 import '../shared/error_text.dart';
 
 /// Converts the core's platform into its presentation type, since mt_ui
@@ -95,6 +96,10 @@ class _AddSheetState extends ConsumerState<_AddSheet> {
   late String _quality = ref.read(settingsProvider).quality.wire;
   late String _url = _controller.text;
 
+  /// **Never remembered**: every sheet starts at the top, so a folder is a
+  /// choice made for this clip and not a setting forgotten from the last.
+  FolderChoice _folder = FolderChoice.top;
+
   @override
   void dispose() {
     _controller.dispose();
@@ -129,6 +134,22 @@ class _AddSheetState extends ConsumerState<_AddSheet> {
       onQualitySelected: (value) => setState(() => _quality = value),
       startLabel: l10n.startDownload,
       onStart: () => unawaited(_submit()),
+      // A playlist opens the batch screen, which saves at the top.
+      extra: PlaylistDetector.isPlaylist(_url)
+          ? null
+          : FolderRow(
+              value: _folder.isTop ? l10n.noFolder : mtName(_folder.path),
+              onTap: () async {
+                final picked = await showFolderPicker(
+                  context,
+                  audio: _quality == Quality.audio.wire,
+                  current: _folder,
+                );
+                if (picked != null && mounted) {
+                  setState(() => _folder = picked);
+                }
+              },
+            ),
     );
   }
 
@@ -166,7 +187,11 @@ class _AddSheetState extends ConsumerState<_AddSheet> {
       );
       return;
     }
-    engine.submit(url, Quality.fromWire(_quality));
+    engine.submit(
+      url,
+      Quality.fromWire(_quality),
+      folder: _folder.isTop ? null : _folder.path,
+    );
     showMTSnackOn(
       widget.messenger,
       l10n.downloadStarted,

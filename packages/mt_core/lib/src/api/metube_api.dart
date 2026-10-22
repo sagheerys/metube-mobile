@@ -3,6 +3,7 @@ import 'package:dio/dio.dart' show CancelToken;
 import '../models/channel_subscription.dart';
 import '../models/history_response.dart';
 import '../models/quality.dart';
+import '../models/server_folders.dart';
 import '../models/server_version.dart';
 import 'live_update.dart';
 
@@ -16,7 +17,14 @@ abstract interface class MeTubeApi {
   /// [compatibleVideo] asks for **H.264/AAC in mp4** instead of letting the
   /// server choose (§2.2). It is never sent with `audio`. See the
   /// implementation for the measured reason.
-  Future<void> add(String url, Quality quality, {bool compatibleVideo});
+  /// [folder] is relative to the download directory, empty or null for the
+  /// top; the server creates it on first use.
+  Future<void> add(
+    String url,
+    Quality quality, {
+    bool compatibleVideo,
+    String? folder,
+  });
   Future<void> delete(List<String> canonicalUrls, {String where});
 
   /// Asks the server for [url]'s subtitles alone, as SRT, with no media.
@@ -47,6 +55,10 @@ abstract interface class MeTubeApi {
   /// instead of a throw: "unknown" is a state the interface shows, not a
   /// failure it reports.
   Future<ServerVersion?> fetchVersion({Duration? timeout});
+
+  /// **The folders the server would save into** (§2.4), read from its live
+  /// channel, empty ones included; null when the server did not say.
+  Future<ServerFolders?> fetchFolders({Duration? timeout});
 
   /// **Does the file actually exist on the server right now?** One byte,
   /// short timeout.

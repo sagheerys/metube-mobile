@@ -88,7 +88,7 @@ final autoRetryProvider = Provider<void>((ref) {
       // The old card was retried, so it does not stay on screen as a second
       // failure.
       if (!retried.add(task.inputUrl)) continue;
-      engine.submit(task.inputUrl, task.quality);
+      engine.submit(task.inputUrl, task.quality, folder: task.folder);
       // The old card was retried, so it does not stay on screen as a second
       // failure.
       engine.forget(task.id);

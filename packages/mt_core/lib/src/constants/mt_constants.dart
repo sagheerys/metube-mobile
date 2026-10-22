@@ -10,6 +10,10 @@ abstract final class MTConstants {
   static const Duration downloadReceiveTimeout = Duration(minutes: 30);
   static const Duration testConnectionTimeout = Duration(seconds: 10);
 
+  /// The folder list arrives after the whole history on the live channel,
+  /// so it gets longer than a connection test.
+  static const Duration foldersTimeout = Duration(seconds: 15);
+
   /// A quick probe for endpoint switching (EndpointResolver).
   static const Duration probeTimeout = Duration(seconds: 4);
 

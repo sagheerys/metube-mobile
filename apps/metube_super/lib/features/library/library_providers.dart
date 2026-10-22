@@ -287,12 +287,6 @@ final platformCountsProvider = Provider<List<MapEntry<MediaPlatform, int>>>((
   return platformCounts(items);
 });
 
-/// The server folders, for the folder filter in the sort sheet.
-final folderCountsProvider = Provider<List<MapEntry<String, int>>>((ref) {
-  final items = ref.watch(libraryItemsProvider).valueOrNull ?? const [];
-  return folderCounts(items);
-});
-
 /// The item currently highlighted, from a notification tap or a finished
 /// download. It extinguishes itself.
 final highlightedItemProvider = StateProvider<String?>((ref) => null);

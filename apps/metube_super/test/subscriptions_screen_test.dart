@@ -373,7 +373,23 @@ void main() {
 ]
 ''';
 
+    // The live channel as MeTube speaks it: a handshake, then the events a
+    // client gets on connecting, the folder list among them.
     ResponseBody server(RequestOptions o) {
+      if (o.path.endsWith('/socket.io/')) {
+        if (o.method == 'POST') return ResponseBody.fromString('ok', 200);
+        if (!o.queryParameters.containsKey('sid')) {
+          return ResponseBody.fromString(
+            '0{"sid":"s1","pingInterval":25000}',
+            200,
+          );
+        }
+        return ResponseBody.fromString(
+          '40{"sid":"x"}\x1e42["custom_dirs",{"download_dir":'
+          '["","Ai","Ai/Lessons","Quran"],"audio_download_dir":["","Quran"]}]',
+          200,
+        );
+      }
       if (o.path.endsWith('/subscribe')) return _json(created);
       if (o.path.endsWith('/subscriptions/update')) {
         return _json('{"status":"ok"}');
@@ -390,7 +406,8 @@ void main() {
     Future<void> follow(
       WidgetTester tester, {
       bool ownFolder = true,
-      String? name,
+      String? pick,
+      String? typed,
     }) async {
       await open(tester, server);
       await tester.tap(find.text('Follow a channel').last);
@@ -403,11 +420,18 @@ void main() {
         await tester.tap(find.text('Save in its own folder'));
         await tester.pumpAndSettle();
       }
-      if (name != null) {
-        await tester.enterText(
-          find.widgetWithText(TextField, 'Folder name'),
-          name,
-        );
+      if (pick != null || typed != null) {
+        await tester.tap(find.text('Named after the channel'));
+        await tester.pumpAndSettle();
+        if (pick != null) {
+          await tester.tap(find.text(mtName(pick)));
+        } else {
+          await tester.tap(find.text('New folder…'));
+          await tester.pumpAndSettle();
+          await tester.enterText(find.byType(TextField).last, typed!);
+          await tester.tap(find.text('Create'));
+        }
+        await tester.pumpAndSettle();
       }
       await tester.tap(find.text('Follow').last);
       await tester.pumpAndSettle();
@@ -421,24 +445,32 @@ void main() {
       expect(sent('/subscriptions/update'), isNull);
     });
 
-    testWidgets('a typed name goes with the follow, cleaned to one folder', (
+    testWidgets('a folder the server already has is picked, nested too', (
       tester,
     ) async {
-      await follow(tester, name: ' Kids/Cartoons ');
-      expect(sent('/subscribe')!['folder'], 'Kids-Cartoons');
+      await follow(tester, pick: 'Lessons');
+      expect(sent('/subscribe')!['folder'], 'Ai/Lessons');
       expect(sent('/subscriptions/update'), isNull);
     });
 
-    testWidgets('an empty name becomes the channel name the server resolved', (
+    testWidgets('a new folder is typed, nested with a slash, and cleaned', (
       tester,
     ) async {
-      await follow(tester);
-      expect(sent('/subscribe'), isNot(contains('folder')));
-      expect(sent('/subscriptions/update'), {
-        'id': 'n1',
-        'folder': 'Homelab Hour',
-      });
+      await follow(tester, typed: ' Kids / Cartoons/ ');
+      expect(sent('/subscribe')!['folder'], 'Kids/Cartoons');
     });
+
+    testWidgets(
+      'by default the folder is the channel name the server resolved',
+      (tester) async {
+        await follow(tester);
+        expect(sent('/subscribe'), isNot(contains('folder')));
+        expect(sent('/subscriptions/update'), {
+          'id': 'n1',
+          'folder': 'Homelab Hour',
+        });
+      },
+    );
 
     testWidgets('the card says where its clips go, and switching it off sends '
         'them back to the top', (tester) async {
@@ -479,10 +511,10 @@ void main() {
       expect(sent('/subscriptions/update'), isNot(contains('folder')));
     });
 
-    test('a name the server would split or refuse is made one folder', () {
-      expect(subscriptionFolderName('a/b\\c'), 'a-b-c');
-      expect(subscriptionFolderName('  ..  '), '');
-      expect(subscriptionFolderName('قناة'), 'قناة');
+    test("a channel's name is one folder, whatever slash it holds", () {
+      expect(channelFolderName('AC/DC'), 'AC-DC');
+      expect(channelFolderName('  ..  '), '');
+      expect(channelFolderName('قناة'), 'قناة');
     });
   });
 }

@@ -45,16 +45,23 @@ class LibraryItem {
 
   bool get isOffline => localPath != null;
 
-  /// **The top folder the file sits in on the server**, for the folder
-  /// filter, or null at the top. Only the first level: a server whose
-  /// `OUTPUT_TEMPLATE` gives every clip a folder of its own
-  /// (`channel/clip [id]/clip [id].mp4`) would otherwise offer one choice
-  /// per clip.
-  String? get topFolder {
+  /// **The folder the file sits in on the server**, below its route, or
+  /// null at the top: the one chosen when it was added, and any subfolders
+  /// `OUTPUT_TEMPLATE` wrote inside it.
+  String? get folderPath {
     final path = serverFilename;
     if (path == null) return null;
     final dir = ServerPath.folderOf(path);
-    return dir.isEmpty ? null : dir.split('/').first;
+    return dir.isEmpty ? null : dir;
+  }
+
+  /// The first level of [folderPath].
+  String? get topFolder => folderPath?.split('/').first;
+
+  /// In [folder] or anywhere below it.
+  bool isIn(String folder) {
+    final dir = folderPath;
+    return dir != null && (dir == folder || dir.startsWith('$folder/'));
   }
 
   /// The platform from the canonical URL: one approved detector, never a
@@ -216,7 +223,7 @@ List<LibraryItem> buildLibraryView(
     };
     if (!typeOk) return false;
     if (platform != null && item.platform != platform) return false;
-    if (folder != null && item.topFolder != folder) return false;
+    if (folder != null && !item.isIn(folder)) return false;
     if (wantedChannel != null &&
         (item.uploader?.trim().toLowerCase() ?? '') != wantedChannel) {
       return false;
@@ -274,16 +281,35 @@ List<MapEntry<MediaPlatform, int>> platformCounts(List<LibraryItem> items) {
   });
 }
 
-/// The server folders the library's clips sit in, most clips first, for
-/// the folder filter. Empty when every clip is at the top, which hides the
-/// filter altogether.
-List<MapEntry<String, int>> folderCounts(List<LibraryItem> items) {
+/// The folders one level below [parent] (the top when empty), each with
+/// the clips in it or below it, most clips first, as full paths. Empty when
+/// nothing lies below, which hides that level of the filter.
+///
+/// **A level where every folder holds a single clip is no level at all**:
+/// a server whose `OUTPUT_TEMPLATE` gives each clip a folder of its own
+/// (`channel/clip [id]/clip [id].mp4`) would otherwise offer one choice
+/// per clip, so it is left out and the parent shows them all.
+List<MapEntry<String, int>> folderCounts(
+  List<LibraryItem> items, {
+  String parent = '',
+}) {
   final counts = <String, int>{};
   for (final item in items) {
-    if (item.topFolder case final folder?) {
-      counts[folder] = (counts[folder] ?? 0) + 1;
+    final dir = item.folderPath;
+    if (dir == null) continue;
+    final String rest;
+    if (parent.isEmpty) {
+      rest = dir;
+    } else if (dir.startsWith('$parent/')) {
+      rest = dir.substring(parent.length + 1);
+    } else {
+      continue;
     }
+    final child = rest.split('/').first;
+    final key = parent.isEmpty ? child : '$parent/$child';
+    counts[key] = (counts[key] ?? 0) + 1;
   }
+  if (parent.isNotEmpty && counts.values.every((n) => n == 1)) return const [];
   return counts.entries.toList()..sort(
     (a, b) => a.value != b.value
         ? b.value.compareTo(a.value)

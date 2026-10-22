@@ -46,6 +46,17 @@ abstract final class ServerPath {
     return audio ? '$_audioMark$relative' : relative;
   }
 
+  /// **A folder the server will take**, typed or picked: every segment
+  /// trimmed, empty, `.` and `..` segments and NUL dropped, a backslash read
+  /// as a separator. Empty means the top. Nested folders stay nested
+  /// (`Ai/Lessons`), which MeTube creates at any depth.
+  static String cleanFolder(String raw) => raw
+      .replaceAll('\u0000', '')
+      .split(RegExp(r'[/\\]'))
+      .map((segment) => segment.trim())
+      .where((s) => s.isNotEmpty && s != '.' && s != '..')
+      .join('/');
+
   /// Served from `audio_download/` rather than `download/`.
   static bool isAudio(String path) => path.startsWith(_audioMark);
 
