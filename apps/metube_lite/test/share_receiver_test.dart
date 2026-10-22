@@ -1,117 +1,112 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:flutter/services.dart';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:metube_lite/features/home/reception.dart';
 
-/// **Field report 2026-09-08: "sometimes the download sheet only appears if
-/// I try again".**
+/// The Dart half of receiving a share. The native inbox (`ShareInbox.kt`)
+/// holds a new share until it is taken, and calls `arrived` when one lands
+/// on a running app; it is simulated here by a list that `take` empties.
 ///
-/// `start()` used to read the initial link **and then** subscribe to the
-/// stream, and between the two awaits there was a window with no listener.
-/// An app resting in the background has its link delivered straight to the
-/// stream, so it fell into that window without a trace, and a retry then
-/// succeeded because the subscription was in place.
-///
-/// The platform is simulated through the package's own two channels:
-/// `getInitialMedia` is deliberately slow, and the event arrives during
-/// that slowness, which is the moment that used to be lost.
+/// What the native half decides (that a rebuilt activity's old share is not
+/// a new one) is checked on a device: share a link with the app closed,
+/// send the app to the background, `adb shell am kill <package>`, then share
+/// another link. The sheet must show the second link, and opening the app
+/// from its icon afterwards must show no sheet at all.
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  const methods = MethodChannel('receive_sharing_intent/messages');
-  const events = EventChannel('receive_sharing_intent/events-media');
-  final binding = TestDefaultBinaryMessengerBinding.instance;
+  const channel = ShareReceiver.channel;
+  final messenger =
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
 
-  late Completer<void> initialGate;
+  late List<String> inbox;
+  late Completer<void>? takeGate;
   late List<List<String>> delivered;
   late List<String> logs;
 
-  /// Pushes an event into the broadcast channel **with the platform's own
-  /// encoding**: JSON text inside a success envelope, not a raw map (read
-  /// from the package source, version 1.9.0).
-  Future<void> emit(String text) async {
-    final payload = const StandardMethodCodec().encodeSuccessEnvelope(
-      jsonEncode([
-        {'path': text, 'type': 'text'},
-      ]),
-    );
-    await binding.defaultBinaryMessenger.handlePlatformMessage(
-      events.name,
-      payload,
+  /// The platform's half of `arrived`: a share has landed.
+  Future<void> arrive(String text) async {
+    inbox = [text];
+    await messenger.handlePlatformMessage(
+      channel.name,
+      const StandardMethodCodec().encodeMethodCall(const MethodCall('arrived')),
       (_) {},
     );
   }
 
   setUp(() {
-    initialGate = Completer<void>();
+    inbox = [];
+    takeGate = null;
     delivered = [];
     logs = [];
-    binding.defaultBinaryMessenger.setMockMethodCallHandler(methods, (
-      call,
-    ) async {
-      if (call.method == 'getInitialMedia') {
-        // **Deliberately slow**: this is the window the event used to fall
-        // into.
-        await initialGate.future;
-        return null;
-      }
-      return null;
+    messenger.setMockMethodCallHandler(channel, (call) async {
+      if (call.method != 'take') return null;
+      await takeGate?.future;
+      final taken = inbox;
+      inbox = [];
+      return taken;
     });
-    // **No `setMockMessageHandler` here**: it replaces the channel receiver
-    // that `EventChannel` registered on subscribing, so the event never
-    // arrives. What is needed is to answer the outgoing `listen` and
-    // `cancel` calls only.
-    binding.defaultBinaryMessenger.setMockMethodCallHandler(
-      const MethodChannel('receive_sharing_intent/events-media'),
-      (call) async => null,
-    );
   });
 
   tearDown(() {
-    binding.defaultBinaryMessenger.setMockMethodCallHandler(methods, null);
-    binding.defaultBinaryMessenger.setMockMethodCallHandler(
-      const MethodChannel('receive_sharing_intent/events-media'),
-      null,
-    );
+    messenger.setMockMethodCallHandler(channel, null);
+    channel.setMethodCallHandler(null);
   });
 
   ShareReceiver build() =>
       ShareReceiver(onUrls: delivered.add, onLog: logs.add);
 
-  test('a link arriving before getInitialMedia finishes is not lost', () async {
+  test('a share waiting before the shell listens is delivered', () async {
+    inbox = ['https://youtu.be/dQw4w9WgXcQ'];
     final receiver = build();
     addTearDown(receiver.dispose);
-    final started = receiver.start();
+    await receiver.start();
 
-    // The critical moment: the platform delivers the link while the first
-    // await has not finished.
-    await emit('https://youtu.be/dQw4w9WgXcQ');
-    initialGate.complete();
-    await started;
-
-    // **The guard**: with the old ordering this list was empty.
-    expect(
-      delivered,
-      hasLength(1),
-      reason: 'الاشتراك يجب أن يسبق قراءة الرابط الأولي',
-    );
+    expect(delivered, hasLength(1));
     expect(delivered.single.single, contains('dQw4w9WgXcQ'));
+  });
+
+  test(
+    'a share arriving while the first take is in flight is not lost',
+    () async {
+      takeGate = Completer<void>();
+      final receiver = build();
+      addTearDown(receiver.dispose);
+      final started = receiver.start();
+
+      // The first take has already emptied the inbox and is waiting; the new
+      // share lands now, and its own `arrived` must take it.
+      final arrived = arrive('https://youtu.be/bbbbbbbbbbb');
+      takeGate!.complete();
+      await started;
+      await arrived;
+
+      expect(delivered.expand((b) => b), [contains('bbbbbbbbbbb')]);
+    },
+  );
+
+  test('a share on a running app is taken when it arrives', () async {
+    final receiver = build();
+    addTearDown(receiver.dispose);
+    await receiver.start();
+    expect(delivered, isEmpty, reason: 'nothing was shared');
+
+    await arrive('look at this https://youtu.be/aaaaaaaaaaa');
+
+    expect(delivered.single.single, 'https://youtu.be/aaaaaaaaaaa');
   });
 
   test('the same batch twice is delivered once', () async {
     final receiver = build();
     addTearDown(receiver.dispose);
-    final started = receiver.start();
-    initialGate.complete();
-    await started;
+    await receiver.start();
 
-    await emit('https://youtu.be/aaaaaaaaaaa');
-    await emit('https://youtu.be/aaaaaaaaaaa');
+    await arrive('https://youtu.be/aaaaaaaaaaa');
+    await arrive('https://youtu.be/aaaaaaaaaaa');
 
-    expect(delivered, hasLength(1), reason: 'وإلا ورقتان فوق بعضهما');
+    expect(delivered, hasLength(1), reason: 'otherwise two sheets stack');
     expect(logs.where((l) => l.startsWith('share duplicate')), hasLength(1));
   });
 
@@ -125,53 +120,78 @@ void main() {
       clock: () => now,
     );
     addTearDown(receiver.dispose);
-    final started = receiver.start();
-    initialGate.complete();
-    await started;
+    await receiver.start();
 
-    await emit('https://youtu.be/aaaaaaaaaaa');
+    await arrive('https://youtu.be/aaaaaaaaaaa');
     now = now.add(const Duration(seconds: 1));
-    await emit('https://youtu.be/aaaaaaaaaaa');
+    await arrive('https://youtu.be/aaaaaaaaaaa');
     expect(delivered, hasLength(1), reason: 'a double delivery');
 
     now = now.add(ShareReceiver.repeatWindow);
-    await emit('https://youtu.be/aaaaaaaaaaa');
+    await arrive('https://youtu.be/aaaaaaaaaaa');
     expect(delivered, hasLength(2), reason: 'a person sharing it again');
   });
 
   test('two different links both get through', () async {
     final receiver = build();
     addTearDown(receiver.dispose);
-    final started = receiver.start();
-    initialGate.complete();
-    await started;
+    await receiver.start();
 
-    await emit('https://youtu.be/aaaaaaaaaaa');
-    await emit('https://youtu.be/bbbbbbbbbbb');
+    await arrive('https://youtu.be/aaaaaaaaaaa');
+    await arrive('https://youtu.be/bbbbbbbbbbb');
 
     expect(delivered, hasLength(2));
+  });
+
+  test('several links in one share arrive as one batch', () async {
+    final receiver = build();
+    addTearDown(receiver.dispose);
+    await receiver.start();
+
+    await arrive('https://youtu.be/aaaaaaaaaaa\nhttps://youtu.be/bbbbbbbbbbb');
+
+    expect(delivered.single, hasLength(2));
+  });
+
+  test('text with no link delivers nothing', () async {
+    final receiver = build();
+    addTearDown(receiver.dispose);
+    await receiver.start();
+
+    await arrive('just some words');
+
+    expect(delivered, isEmpty);
   });
 
   test('every reception leaves a trace in the log', () async {
     final receiver = build();
     addTearDown(receiver.dispose);
-    final started = receiver.start();
-    initialGate.complete();
-    await started;
+    await receiver.start();
 
-    await emit('https://youtu.be/aaaaaaaaaaa');
+    await arrive('https://youtu.be/aaaaaaaaaaa');
 
     expect(logs.any((l) => l.startsWith('share received: 1')), isTrue);
   });
 
-  test('a teardown during the await delivers nothing', () async {
+  test('a teardown during the take delivers nothing', () async {
+    inbox = ['https://youtu.be/aaaaaaaaaaa'];
+    takeGate = Completer<void>();
     final receiver = build();
     final started = receiver.start();
     receiver.dispose();
-    initialGate.complete();
+    takeGate!.complete();
     await started;
 
-    await emit('https://youtu.be/aaaaaaaaaaa');
+    await arrive('https://youtu.be/bbbbbbbbbbb');
+    expect(delivered, isEmpty);
+  });
+
+  test('no native side is not an error', () async {
+    messenger.setMockMethodCallHandler(channel, null);
+    final receiver = build();
+    addTearDown(receiver.dispose);
+
+    await expectLater(receiver.start(), completes);
     expect(delivered, isEmpty);
   });
 }

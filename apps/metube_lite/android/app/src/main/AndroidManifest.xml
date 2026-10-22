@@ -54,10 +54,9 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
-            <!-- Receiving a share from any app, one link or several. The
-                 `receive_sharing_intent` package ships an empty manifest and
-                 injects nothing, so without these filters the app never appears
-                 in the share sheet. -->
+            <!-- Receiving a share from any app, one link or several. Without
+                 these filters the app never appears in the share sheet; what
+                 arrives is held by ShareInbox until Dart takes it. -->
             <intent-filter>
                 <action android:name="android.intent.action.SEND"/>
                 <category android:name="android.intent.category.DEFAULT"/>

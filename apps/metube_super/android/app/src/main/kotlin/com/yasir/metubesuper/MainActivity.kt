@@ -24,6 +24,7 @@ class MainActivity : AudioServiceActivity() {
     override fun configureFlutterEngine(engine: FlutterEngine) {
         super.configureFlutterEngine(engine)
         UpdateInstaller.register(this, engine)
+        ShareInbox.register(engine.dartExecutor.binaryMessenger)
         MethodChannel(engine.dartExecutor.binaryMessenger, channel)
             .setMethodCallHandler { call, result ->
                 when (call.method) {
@@ -105,6 +106,7 @@ class MainActivity : AudioServiceActivity() {
     override fun onCreate(savedInstanceState: android.os.Bundle?) {
         super.onCreate(savedInstanceState)
         captureShortcut(intent)
+        ShareInbox.offer(intent, restored = savedInstanceState != null)
     }
 
     // With `launchMode="singleTask"` a running app is not recreated, so the
@@ -114,6 +116,7 @@ class MainActivity : AudioServiceActivity() {
         super.onNewIntent(intent)
         setIntent(intent)
         captureShortcut(intent)
+        ShareInbox.offer(intent, restored = false)
     }
 
     /**

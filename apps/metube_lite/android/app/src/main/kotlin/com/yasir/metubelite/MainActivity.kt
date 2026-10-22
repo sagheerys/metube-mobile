@@ -21,6 +21,7 @@ class MainActivity : AudioServiceActivity() {
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
         UpdateInstaller.register(this, flutterEngine)
+        ShareInbox.register(flutterEngine.dartExecutor.binaryMessenger)
         MethodChannel(
             flutterEngine.dartExecutor.binaryMessenger,
             "metube_lite/media",
@@ -124,6 +125,7 @@ class MainActivity : AudioServiceActivity() {
     override fun onCreate(savedInstanceState: android.os.Bundle?) {
         super.onCreate(savedInstanceState)
         captureShortcut(intent)
+        ShareInbox.offer(intent, restored = savedInstanceState != null)
     }
 
     // With `launchMode="singleTask"` a running app is not recreated, so the
@@ -133,6 +135,7 @@ class MainActivity : AudioServiceActivity() {
         super.onNewIntent(intent)
         setIntent(intent)
         captureShortcut(intent)
+        ShareInbox.offer(intent, restored = false)
     }
 
     /**

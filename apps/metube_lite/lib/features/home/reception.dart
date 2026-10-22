@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mt_core/mt_core.dart';
-import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 
 /// A known-platform link waiting in the clipboard switches the add button
 /// to its "link ready to paste" state. Checked at startup and when the app
@@ -26,9 +25,17 @@ Future<void> refreshClipboardUrl(Ref ref) async {
 /// Receiving a share from Android, including on a cold start and with
 /// several links at once. It broadcasts the lists of URLs extracted from
 /// any shared text.
+///
+/// The share is held natively (`ShareInbox.kt`) until this side takes it.
+/// Android calls `arrived` when one lands on a running app, and [start]
+/// takes whatever landed before Dart was listening. The native side alone
+/// decides what counts as a new share: a rebuilt activity carries the old
+/// one, which used to open the previous clip instead of the one shared.
 class ShareReceiver {
   ShareReceiver({required this.onUrls, this.onLog, DateTime Function()? clock})
     : _clock = clock ?? DateTime.now;
+
+  static const channel = MethodChannel('metube/share');
 
   final void Function(List<String> urls) onUrls;
 
@@ -38,13 +45,10 @@ class ShareReceiver {
   /// the link or it never arrived.
   final void Function(String message)? onLog;
 
-  StreamSubscription<List<SharedMediaFile>>? _subscription;
-
   bool _disposed = false;
 
-  /// The last batch delivered. The initial link can arrive **twice** — from
-  /// `getInitialMedia` and from the stream together — now that the
-  /// subscription comes first.
+  /// The last batch delivered, so a platform that signals one share twice
+  /// does not stack two sheets.
   List<String>? _lastDelivered;
   DateTime? _lastAt;
   final DateTime Function() _clock;
@@ -56,37 +60,37 @@ class ShareReceiver {
   /// after).
   static const repeatWindow = Duration(seconds: 3);
 
-  /// **Subscribe first, then read the initial link** (field report
-  /// 2026-09-08).
-  ///
-  /// The order used to be reversed: `getInitialMedia`, `reset`, `listen`,
-  /// and between the two awaits there was a window **with no listener**. An
-  /// app resting in the background has its link delivered straight to the
-  /// stream, so it fell into that window without a trace, and then a retry
-  /// succeeded because the subscription was by then in place. Which is
-  /// exactly what was reported.
+  /// **Listen first, then take** what is already waiting: a share landing
+  /// between the two is still held natively, and its `arrived` call takes
+  /// it, so there is no window in which it can be lost.
   Future<void> start() async {
-    // **Early teardown during the await:** a hot restart or a
-    // quick close left a live listener holding a dead shell.
+    // **Early teardown:** a hot restart or a quick close left a live
+    // listener holding a dead shell.
     if (_disposed) return;
-    _subscription = ReceiveSharingIntent.instance.getMediaStream().listen(
-      _handle,
-    );
-
-    final initial = await ReceiveSharingIntent.instance.getInitialMedia();
-    if (_disposed) return;
-    _handle(initial);
-    await ReceiveSharingIntent.instance.reset();
+    channel.setMethodCallHandler((call) async {
+      if (call.method == 'arrived') await _take();
+    });
+    await _take();
   }
 
-  void _handle(List<SharedMediaFile> shared) {
-    final urls = <String>[];
-    for (final media in shared) {
-      if (media.type == SharedMediaType.text ||
-          media.type == SharedMediaType.url) {
-        urls.addAll(UrlKit.extractAllUrls(media.path));
-      }
+  Future<void> _take() async {
+    if (_disposed) return;
+    List<String>? texts;
+    try {
+      texts = await channel.invokeListMethod<String>('take');
+    } on MissingPluginException {
+      // No native side: a platform with no share sheet.
+      return;
+    } on PlatformException catch (e) {
+      onLog?.call('share take failed: ${e.code}');
+      return;
     }
+    if (_disposed || texts == null) return;
+    _handle(texts);
+  }
+
+  void _handle(List<String> texts) {
+    final urls = [for (final text in texts) ...UrlKit.extractAllUrls(text)];
     if (urls.isEmpty || _disposed) return;
     // The same batch twice means two sheets stacked, or two downloads of
     // one link.
@@ -107,8 +111,10 @@ class ShareReceiver {
     onUrls(urls);
   }
 
+  /// The channel handler is left in place: a shell built before this one
+  /// is torn down has already installed its own, and clearing it here
+  /// would silence that one. A disposed receiver ignores every call.
   void dispose() {
     _disposed = true;
-    _subscription?.cancel();
   }
 }

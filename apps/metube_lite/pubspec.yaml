@@ -42,7 +42,6 @@ dependencies:
   # folder, and nothing ever asked the user (field report, Galaxy S22 Ultra
   # in a fresh profile, 2026-09-16).
   permission_handler: ^13.0.2
-  receive_sharing_intent: ^1.8.1
   share_plus: ^10.1.2
   shared_preferences: ^2.3.3
   url_launcher: ^6.3.1

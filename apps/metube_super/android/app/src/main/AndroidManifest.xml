@@ -57,8 +57,8 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
             <!-- Without these filters the app never appears in Android's share
-                 sheet: the `receive_sharing_intent` package ships an empty
-                 manifest and injects nothing. -->
+                 sheet; what arrives is held by ShareInbox until Dart takes
+                 it. -->
             <intent-filter>
                 <action android:name="android.intent.action.SEND"/>
                 <category android:name="android.intent.category.DEFAULT"/>

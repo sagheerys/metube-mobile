@@ -57,7 +57,8 @@ class _LogsScreenState extends ConsumerState<LogsScreen> {
   Future<void> _share() async {
     final sanitized = await _logger.readForShare();
     final dir = await getTemporaryDirectory();
-    final file = File('${dir.path}/metube_super_logs.txt');
+    final day = DateTime.now().toIso8601String().substring(0, 10);
+    final file = File('${dir.path}/metube_super_logs_$day.txt');
     await file.writeAsString(sanitized, flush: true);
     await Share.shareXFiles([XFile(file.path)]);
   }

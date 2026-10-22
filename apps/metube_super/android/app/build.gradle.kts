@@ -17,7 +17,8 @@ if (keystorePropertiesFile.exists()) {
 
 android {
     namespace = "com.yasir.metubesuper"
-    // Pinned explicitly: receive_sharing_intent requires 37.
+    // Pinned explicitly rather than following the Flutter default, in step
+    // with Lite.
     compileSdk = 37
     ndkVersion = flutter.ndkVersion
 
