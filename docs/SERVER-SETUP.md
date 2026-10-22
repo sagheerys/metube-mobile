@@ -32,6 +32,11 @@ services:
       # title do not collide. MeTube's own variable, not an outtmpl in
       # YTDL_OPTIONS: see below.
       OUTPUT_TEMPLATE: "%(title)s.%(id)s.%(ext)s"
+      # The same for clips added as a playlist or a channel, so nothing goes
+      # into a folder unless one is chosen. Leave these two out to have
+      # MeTube put each playlist in a folder named after it (see Folders).
+      OUTPUT_TEMPLATE_PLAYLIST: "%(title)s.%(id)s.%(ext)s"
+      OUTPUT_TEMPLATE_CHANNEL: "%(title)s.%(id)s.%(ext)s"
 
       # Serve the files back over HTTP so the apps can pull and stream them.
       DOWNLOAD_DIRS_INDEXABLE: "true"
@@ -250,6 +255,53 @@ Before adding it, know these:
   server's list, fetches the subtitles on the computer, and writes one file
   that Super imports from Settings → Transcripts → Import. Running it with no
   arguments prints its usage.
+
+### Optional: folders, for Super
+
+**Without it, everything lands at the top of the download directory**, which
+is fine if the app is the only thing that opens those files.
+
+Super can save a clip into a folder on the server: chosen in the add sheet,
+or for everything a followed channel downloads. The folder is a real
+directory under your downloads, so the network share, Jellyfin or any other
+app sees the order too. The list offered in the app is the server's own,
+empty folders included, and a new one can be typed, nested with a slash
+(`Ai/Lessons`). Leaving the choice at "No folder" sends nothing new to the
+server.
+
+**What MeTube needs, and most of it is its default:**
+
+| Setting | Value | Why |
+|---|---|---|
+| `CUSTOM_DIRS` | `true` (default) | lets a download name a folder |
+| `CREATE_CUSTOM_DIRS` | `true` (default) | lets that folder be created on first use |
+| `OUTPUT_TEMPLATE` | `%(title)s.%(id)s.%(ext)s` | the file name, relative, so it lands inside the folder |
+| `OUTPUT_TEMPLATE_PLAYLIST` and `OUTPUT_TEMPLATE_CHANNEL` | the same value | optional: keeps playlists and channels at the top unless a folder is chosen |
+| `YTDL_OPTIONS` | **no `outtmpl` in it** | an `outtmpl` there overrides every folder |
+
+**The one that catches people is the last.** `YTDL_OPTIONS` is applied over
+MeTube's own options, so an `outtmpl` in it, especially one with an absolute
+path such as `/downloads/…`, sends every file to the top whatever folder was
+asked for. MeTube then reports the file as `Folder/../name` and, when it is
+deleted, keeps it on disk, because it lies outside the folder MeTube expects.
+Super still plays such a clip, and its folder picker says plainly that the
+server is ignoring folders, so a choice never looks as if it worked when it
+did not.
+
+On TrueNAS, or any panel with one field per environment variable:
+
+1. In `YTDL_OPTIONS`, delete the `"outtmpl": "…",` entry and keep the rest
+   (the subtitle options above, for instance).
+2. Add `OUTPUT_TEMPLATE` with the template you had, without the
+   `/downloads/` part: `%(title)s [%(id)s].%(ext)s` keeps names like
+   `Clip [dQw4w9WgXcQ].webm`.
+3. Optionally add `OUTPUT_TEMPLATE_PLAYLIST` and `OUTPUT_TEMPLATE_CHANNEL`
+   with the same value.
+4. Save; the panel restarts the app.
+
+Nothing already downloaded moves, and those clips keep playing. To check it:
+add a clip into a folder from the app, and the file should appear inside
+that folder on the share, with its subtitles beside it.
 
 ### `COOKIES_FILE`
 
