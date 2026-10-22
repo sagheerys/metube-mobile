@@ -9,6 +9,7 @@ import 'package:metube_super/di.dart';
 import 'package:metube_super/features/settings/settings_state.dart';
 import 'package:metube_super/features/settings/widgets/settings_fields.dart';
 import 'package:metube_super/features/subscriptions/subscription_sheet.dart';
+import 'package:metube_super/features/subscriptions/subscriptions_providers.dart';
 import 'package:metube_super/features/subscriptions/subscriptions_screen.dart';
 import 'package:metube_super/features/subscriptions/widgets/subscription_card.dart';
 import 'package:mt_core/mt_core.dart';
@@ -358,6 +359,131 @@ void main() {
       tester,
       () => host(container, locale: const Locale('ar')),
     );
+  });
+
+  group('a folder of its own', () {
+    const created =
+        '{"status":"ok","subscription":{"id":"n1","name":"Homelab Hour",'
+        '"url":"https://yt.example/@homelab"}}';
+    const withFolder = '''
+[
+ {"id":"a1","name":"Homelab Hour","url":"https://yt.example/@homelab",
+  "enabled":true,"check_interval_minutes":120,"quality":"1080",
+  "folder":"Homelab"}
+]
+''';
+
+    ResponseBody server(RequestOptions o) {
+      if (o.path.endsWith('/subscribe')) return _json(created);
+      if (o.path.endsWith('/subscriptions/update')) {
+        return _json('{"status":"ok"}');
+      }
+      return _json('[]');
+    }
+
+    Map<String, dynamic>? sent(String suffix) {
+      final hit = adapter.requests.where((r) => r.path.endsWith(suffix));
+      if (hit.isEmpty) return null;
+      return json.decode(hit.last.data as String) as Map<String, dynamic>;
+    }
+
+    Future<void> follow(
+      WidgetTester tester, {
+      bool ownFolder = true,
+      String? name,
+    }) async {
+      await open(tester, server);
+      await tester.tap(find.text('Follow a channel').last);
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byType(TextField).first,
+        'https://yt.example/@homelab',
+      );
+      if (ownFolder) {
+        await tester.tap(find.text('Save in its own folder'));
+        await tester.pumpAndSettle();
+      }
+      if (name != null) {
+        await tester.enterText(
+          find.widgetWithText(TextField, 'Folder name'),
+          name,
+        );
+      }
+      await tester.tap(find.text('Follow').last);
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('it is off unless asked for, and nothing is sent', (
+      tester,
+    ) async {
+      await follow(tester, ownFolder: false);
+      expect(sent('/subscribe'), isNot(contains('folder')));
+      expect(sent('/subscriptions/update'), isNull);
+    });
+
+    testWidgets('a typed name goes with the follow, cleaned to one folder', (
+      tester,
+    ) async {
+      await follow(tester, name: ' Kids/Cartoons ');
+      expect(sent('/subscribe')!['folder'], 'Kids-Cartoons');
+      expect(sent('/subscriptions/update'), isNull);
+    });
+
+    testWidgets('an empty name becomes the channel name the server resolved', (
+      tester,
+    ) async {
+      await follow(tester);
+      expect(sent('/subscribe'), isNot(contains('folder')));
+      expect(sent('/subscriptions/update'), {
+        'id': 'n1',
+        'folder': 'Homelab Hour',
+      });
+    });
+
+    testWidgets('the card says where its clips go, and switching it off sends '
+        'them back to the top', (tester) async {
+      await open(tester, (o) {
+        if (o.path.endsWith('/subscriptions/update')) {
+          return _json('{"status":"ok"}');
+        }
+        return _json(withFolder);
+      });
+      expect(find.text(mtName('Homelab')), findsOneWidget);
+
+      await tester.tap(find.byIcon(Icons.more_vert_rounded));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Edit'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Save in its own folder'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Save Settings'));
+      await tester.pumpAndSettle();
+      expect(sent('/subscriptions/update')!['folder'], '');
+    });
+
+    testWidgets('editing without touching the folder leaves it alone', (
+      tester,
+    ) async {
+      await open(tester, (o) {
+        if (o.path.endsWith('/subscriptions/update')) {
+          return _json('{"status":"ok"}');
+        }
+        return _json(withFolder);
+      });
+      await tester.tap(find.byIcon(Icons.more_vert_rounded));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Edit'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Save Settings'));
+      await tester.pumpAndSettle();
+      expect(sent('/subscriptions/update'), isNot(contains('folder')));
+    });
+
+    test('a name the server would split or refuse is made one folder', () {
+      expect(subscriptionFolderName('a/b\\c'), 'a-b-c');
+      expect(subscriptionFolderName('  ..  '), '');
+      expect(subscriptionFolderName('قناة'), 'قناة');
+    });
   });
 }
 

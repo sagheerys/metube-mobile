@@ -65,7 +65,7 @@ Future<void> _recover(Ref ref) async {
         inputUrl: item.canonicalUrl,
         quality: Quality.best,
         canonicalUrl: item.canonicalUrl,
-        serverFilename: item.filename,
+        serverFilename: item.serverPath,
         title: item.title,
         thumbnail: item.thumbnail,
         localPath: path,

@@ -79,11 +79,12 @@ abstract interface class MeTubeApi {
     required int checkIntervalMinutes,
     bool compatibleVideo,
     String? titleRegex,
+    String? folder,
   });
 
   /// Changes one subscription. Every argument left null is left alone;
   /// [clearTitleRegex] is how a filter is removed, since null means "no
-  /// change".
+  /// change", and an empty [folder] sends new clips back to the top.
   Future<void> updateSubscription(
     String id, {
     String? name,
@@ -91,6 +92,7 @@ abstract interface class MeTubeApi {
     int? checkIntervalMinutes,
     String? titleRegex,
     bool clearTitleRegex,
+    String? folder,
   });
 
   Future<void> deleteSubscriptions(List<String> ids);

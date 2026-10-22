@@ -460,7 +460,43 @@ void main() {
       });
     }
 
-    for (final bad in ['', '.', '..', '../secret', 'a/b.mp4', r'a\b.mp4']) {
+    test('a subfolder path keeps its slashes and encodes each segment', () {
+      final (client, _) = makeClient((o) => _json('{}'));
+      expect(
+        client.downloadUrl('creator name/clip [id]/clip [id].mp4'),
+        'https://metube.example.com/download/'
+        'creator%20name/clip%20%5Bid%5D/clip%20%5Bid%5D.mp4',
+      );
+    });
+
+    // MeTube serves audio downloads from their own route, because
+    // AUDIO_DOWNLOAD_DIR may be another directory; its own page links them
+    // the same way.
+    test('an audio download is served from audio_download/', () {
+      final (client, _) = makeClient((o) => _json('{}'));
+      final path = ServerPath.of(
+        folder: 'قرآن',
+        filename: 'سورة.m4a',
+        audio: true,
+      )!;
+      expect(
+        client.downloadUrl(path),
+        'https://metube.example.com/audio_download/'
+        '${Uri.encodeComponent('قرآن')}/${Uri.encodeComponent('سورة.m4a')}',
+      );
+    });
+
+    for (final bad in [
+      '',
+      '.',
+      '..',
+      '../secret',
+      'a/../b.mp4',
+      '/a.mp4',
+      r'a\b.mp4',
+      '/audio_download/../x.mp4',
+      '/audio_download/',
+    ]) {
       test('the path guard rejects "$bad"', () {
         final (client, _) = makeClient((o) => _json('{}'));
         expect(

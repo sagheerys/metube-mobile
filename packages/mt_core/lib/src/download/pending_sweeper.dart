@@ -175,7 +175,7 @@ class PendingSweeper {
     final String path;
     try {
       path = await _transfer.pull(
-        serverFilename: item.filename!,
+        serverFilename: item.serverPath!,
         savePath: savePathBuilder(pending, item),
       );
     } on UnsafeFilenameException catch (e) {

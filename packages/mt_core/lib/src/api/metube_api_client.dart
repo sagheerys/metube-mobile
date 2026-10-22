@@ -9,6 +9,7 @@ import '../models/history_response.dart';
 import '../models/quality.dart';
 import '../models/server_version.dart';
 import '../urls/playlist_detector.dart';
+import '../urls/server_path.dart';
 import '../urls/url_kit.dart';
 import 'api_exceptions.dart';
 import 'live_update.dart';
@@ -305,6 +306,7 @@ class MeTubeApiClient implements MeTubeApi {
     required int checkIntervalMinutes,
     bool compatibleVideo = false,
     String? titleRegex,
+    String? folder,
   }) async {
     final applied = quality.applyRule(url);
     final withPreset = compatibleVideo && applied == Quality.best;
@@ -316,6 +318,7 @@ class MeTubeApiClient implements MeTubeApi {
         compatibleVideo: compatibleVideo,
         preset: withPreset,
         titleRegex: titleRegex,
+        folder: folder,
       );
     } on ServerErrorException {
       // The same retry as [add]: a container nobody configured answers 400
@@ -328,6 +331,7 @@ class MeTubeApiClient implements MeTubeApi {
         compatibleVideo: compatibleVideo,
         preset: false,
         titleRegex: titleRegex,
+        folder: folder,
       );
     }
   }
@@ -339,6 +343,7 @@ class MeTubeApiClient implements MeTubeApi {
     required bool compatibleVideo,
     required bool preset,
     String? titleRegex,
+    String? folder,
   }) async {
     final response = await _request(
       () => _dio.post<String>(
@@ -353,6 +358,10 @@ class MeTubeApiClient implements MeTubeApi {
           'check_interval_minutes': checkIntervalMinutes,
           if (titleRegex != null && titleRegex.trim().isNotEmpty)
             'title_regex': titleRegex.trim(),
+          // Relative to the download directory; the server refuses `..`
+          // and an absolute path, and creates the folder on first use.
+          if (folder != null && folder.trim().isNotEmpty)
+            'folder': folder.trim(),
         }),
         options: Options(contentType: 'application/json'),
       ),
@@ -369,7 +378,7 @@ class MeTubeApiClient implements MeTubeApi {
   }
 
   /// §2.7: change one subscription. The server ignores any field outside
-  /// its own list, so only the six it accepts are ever sent.
+  /// its own list, so only the ones it accepts are ever sent.
   @override
   Future<void> updateSubscription(
     String id, {
@@ -378,6 +387,7 @@ class MeTubeApiClient implements MeTubeApi {
     int? checkIntervalMinutes,
     String? titleRegex,
     bool clearTitleRegex = false,
+    String? folder,
   }) async {
     final changes = <String, Object?>{
       'name': ?name,
@@ -391,6 +401,8 @@ class MeTubeApiClient implements MeTubeApi {
         'title_regex': ''
       else if (titleRegex != null)
         'title_regex': titleRegex.trim(),
+      // Empty is a real value here too: the top of the download directory.
+      'folder': ?folder?.trim(),
     };
     // Nothing to say is not a request worth making; the server answers 400
     // to an empty change set.
@@ -597,13 +609,14 @@ class MeTubeApiClient implements MeTubeApi {
   }
 
   /// §2.4: the pull and stream URL, with the **mandatory filename guard**
-  /// inside the client.
+  /// inside the client. [serverFilename] is a [ServerPath]: the file's
+  /// folder and name, and the route an audio download is served from.
   @override
   String downloadUrl(String serverFilename) {
-    if (!UrlKit.isSafeServerFilename(serverFilename)) {
+    if (!ServerPath.isSafe(serverFilename)) {
       throw const UnsafeFilenameException();
     }
-    return '${config.baseUrl}/download/${Uri.encodeComponent(serverFilename)}';
+    return '${config.baseUrl}/${ServerPath.urlPath(serverFilename)}';
   }
 
   /// **A one-byte existence check**, the cheapest possible question, on a

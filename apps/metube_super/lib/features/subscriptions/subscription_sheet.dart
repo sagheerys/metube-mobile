@@ -6,6 +6,7 @@ import 'package:mt_ui/mt_ui.dart';
 import '../../di.dart';
 import '../settings/widgets/help_button.dart';
 import '../shared/error_text.dart';
+import 'subscription_fields.dart';
 import 'subscriptions_providers.dart';
 
 /// Following a channel, and editing one that is already followed.
@@ -47,6 +48,10 @@ class _SubscriptionSheetState extends ConsumerState<_SubscriptionSheet> {
   late int _interval = _nearestInterval(
     widget.editing?.checkIntervalMinutes ?? 60,
   );
+  late final _folderController = TextEditingController(
+    text: widget.editing?.folder ?? '',
+  );
+  late bool _ownFolder = widget.editing?.folder != null;
   late Quality _quality = ref.read(settingsProvider).quality;
   bool _busy = false;
 
@@ -68,7 +73,20 @@ class _SubscriptionSheetState extends ConsumerState<_SubscriptionSheet> {
     _urlController.dispose();
     _nameController.dispose();
     _filterController.dispose();
+    _folderController.dispose();
     super.dispose();
+  }
+
+  /// The folder to send when editing, or null when it has not changed. Off
+  /// is the top of the download directory; an empty name is the channel's.
+  String? _folderChange(ChannelSubscription sub) {
+    final wanted = !_ownFolder
+        ? ''
+        : switch (subscriptionFolderName(_folderController.text)) {
+            '' => subscriptionFolderName(sub.name),
+            final typed => typed,
+          };
+    return wanted == (sub.folder ?? '') ? null : wanted;
   }
 
   Future<void> _submit() async {
@@ -87,6 +105,7 @@ class _SubscriptionSheetState extends ConsumerState<_SubscriptionSheet> {
           // An emptied field is a deletion, and the server only reads keys
           // it is sent, so it has to be said explicitly.
           clearTitleRegex: filter.isEmpty,
+          folder: _folderChange(sub),
         );
         message = l10n.done;
       } else {
@@ -95,6 +114,8 @@ class _SubscriptionSheetState extends ConsumerState<_SubscriptionSheet> {
           quality: _quality,
           checkIntervalMinutes: _interval,
           titleRegex: filter.isEmpty ? null : filter,
+          ownFolder: _ownFolder,
+          folder: _folderController.text,
         );
         // The server resolved the channel's real title; naming it is the
         // proof that the right channel was followed.
@@ -187,55 +208,9 @@ class _SubscriptionSheetState extends ConsumerState<_SubscriptionSheet> {
             // nothing.
             if (!_isEdit) ...[
               const SizedBox(height: MTSpace.md),
-              // **Said before the choice, because it cannot be undone
-              // after it** (2026-09-25): the server keeps the quality it
-              // was given and offers no way to change it. The help is
-              // conditional on purpose — "best" is AV1 at 4K, smooth on a
-              // phone that decodes AV1 in hardware and choppy on one that
-              // does not, and a warning for everyone would push the first
-              // kind down to 1080p for nothing. Telling the two apart
-              // would need the device's decoders queried, which this
-              // sheet does not do yet.
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: DropdownMenu<Quality>(
-                      initialSelection: _quality,
-                      label: Text(l10n.subscriptionQuality),
-                      helperText: l10n.subscriptionQualityNote,
-                      expandedInsets: EdgeInsets.zero,
-                      onSelected: (value) =>
-                          setState(() => _quality = value ?? Quality.best),
-                      dropdownMenuEntries: [
-                        DropdownMenuEntry(
-                          value: Quality.best,
-                          label: l10n.qualityBest,
-                        ),
-                        DropdownMenuEntry(
-                          value: Quality.q1080,
-                          label: l10n.quality1080,
-                        ),
-                        DropdownMenuEntry(
-                          value: Quality.q720,
-                          label: l10n.quality720,
-                        ),
-                        DropdownMenuEntry(
-                          value: Quality.q480,
-                          label: l10n.quality480,
-                        ),
-                        DropdownMenuEntry(
-                          value: Quality.audio,
-                          label: l10n.audioOnly,
-                        ),
-                      ],
-                    ),
-                  ),
-                  HelpButton(
-                    title: l10n.subscriptionQuality,
-                    body: l10n.subscriptionQualityHelp,
-                  ),
-                ],
+              SubscriptionQualityField(
+                value: _quality,
+                onChanged: (value) => setState(() => _quality = value),
               ),
             ],
             const SizedBox(height: MTSpace.md),
@@ -254,6 +229,12 @@ class _SubscriptionSheetState extends ConsumerState<_SubscriptionSheet> {
                   body: l10n.titleFilterHelp,
                 ),
               ),
+            ),
+            const SizedBox(height: MTSpace.sm),
+            SubscriptionFolderField(
+              enabled: _ownFolder,
+              controller: _folderController,
+              onToggle: (value) => setState(() => _ownFolder = value),
             ),
             const SizedBox(height: MTSpace.md),
             // The one sentence that decides whether someone dares press

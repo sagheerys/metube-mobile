@@ -81,6 +81,9 @@ class MTLocalizationsEn extends MTLocalizations {
   String get allDownloadsFinished => 'All downloads finished!';
 
   @override
+  String get allFolders => 'All folders';
+
+  @override
   String get allPlatforms => 'All platforms';
 
   @override
@@ -631,6 +634,15 @@ class MTLocalizationsEn extends MTLocalizations {
   String get filterVideo => 'Video';
 
   @override
+  String get folder => 'Folder';
+
+  @override
+  String get folderName => 'Folder name';
+
+  @override
+  String get folderNameHint => 'Empty: the channel\'s name';
+
+  @override
   String get follow => 'Follow';
 
   @override
@@ -913,6 +925,13 @@ class MTLocalizationsEn extends MTLocalizations {
 
   @override
   String get openOriginalLink => 'Open Original Link';
+
+  @override
+  String get ownFolder => 'Save in its own folder';
+
+  @override
+  String get ownFolderNote =>
+      'A folder in the server\'s downloads, which the network share and other apps see too. Only what arrives from now on goes there; what is already downloaded stays where it is.';
 
   @override
   String get password => 'Password';

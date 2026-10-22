@@ -70,4 +70,49 @@ void main() {
       },
     );
   }
+
+  testWidgets('the folders appear only on a server that has them, and a '
+      'choice filters the library', (tester) async {
+    late WidgetRef captured;
+    Future<void> pump(List<MapEntry<String, int>> folders) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          key: UniqueKey(),
+          overrides: [
+            keyValueStoreProvider.overrideWithValue(MemoryKeyValueStore()),
+            prefsMutexProvider.overrideWithValue(PrefsMutex()),
+            platformCountsProvider.overrideWithValue(const []),
+            folderCountsProvider.overrideWithValue(folders),
+          ],
+          child: MaterialApp(
+            theme: mtTheme(MTVariant.superApp, Brightness.light),
+            localizationsDelegates: MTLocalizations.localizationsDelegates,
+            supportedLocales: MTLocalizations.supportedLocales,
+            home: Scaffold(
+              body: Consumer(
+                builder: (context, ref, _) {
+                  captured = ref;
+                  return TextButton(
+                    onPressed: () => showSortSheet(context, ref),
+                    child: const Text('open'),
+                  );
+                },
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('open'));
+      await tester.pumpAndSettle();
+    }
+
+    await pump(const []);
+    expect(find.text('All folders'), findsNothing);
+
+    await pump(const [MapEntry('Kids', 3)]);
+    expect(find.text('All folders'), findsOneWidget);
+    await tester.tap(find.textContaining('Kids'));
+    await tester.pumpAndSettle();
+    expect(captured.read(libraryViewProvider).folder, 'Kids');
+  });
 }

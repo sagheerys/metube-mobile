@@ -1,5 +1,6 @@
 import 'package:uuid/uuid.dart';
 
+import '../urls/server_path.dart';
 import '../urls/url_kit.dart';
 
 const _uuid = Uuid();
@@ -33,6 +34,7 @@ class HistoryItem {
     this.format,
     this.sizeBytes,
     this.downloadType,
+    this.folder,
   });
 
   final String id;
@@ -61,6 +63,20 @@ class HistoryItem {
   /// `download_type` as the server sent it: `video`, `audio`, `captions`
   /// or `thumbnail`, or null from a server too old to send it.
   final String? downloadType;
+
+  /// The download's own folder below the download directory (`folder`),
+  /// or null at the top. Chosen when the download was added, by the app,
+  /// the web page or a subscription.
+  final String? folder;
+
+  /// Where the file is, for the client to stream or pull it: the folder,
+  /// the [filename] (which may hold subfolders of its own) and the audio
+  /// route. Null without a filename.
+  String? get serverPath => ServerPath.of(
+    folder: folder,
+    filename: filename,
+    audio: downloadType == 'audio',
+  );
 
   /// A subtitles-only job: its file is a transcript, not media, so it
   /// belongs in no library.
@@ -99,6 +115,7 @@ class HistoryItem {
       format: _str(json['format']),
       sizeBytes: json['size'] is num ? (json['size'] as num).toInt() : null,
       downloadType: _str(json['download_type']),
+      folder: _str(json['folder']),
     );
   }
 

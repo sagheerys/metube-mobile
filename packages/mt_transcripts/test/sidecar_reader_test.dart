@@ -143,8 +143,37 @@ void main() {
     expect((await read()).outcome, SidecarOutcome.failed);
   });
 
+  // A clip in a folder has its subtitles in that folder, which the listing
+  // of the top of download/ does not show: the plain names are tried there.
+  test('a clip in a folder is read from its own folder', () async {
+    server.texts['Kids/Me at the zoo [jNQXAC9IVRw].en.vtt'] = vtt;
+    final result = await SidecarReader(
+      server,
+      listing: const SidecarListing({}),
+    ).read(canonicalUrl: watch, filename: 'Kids/$media', language: 'en');
+    expect(result.outcome, SidecarOutcome.found);
+  });
+
+  test('an audio download is read from the audio route', () async {
+    final path = ServerPath.of(
+      folder: 'Music',
+      filename: 'Me at the zoo [jNQXAC9IVRw].m4a',
+      audio: true,
+    )!;
+    server.texts['/audio_download/Music/Me at the zoo [jNQXAC9IVRw].en.vtt'] =
+        vtt;
+    final result = await SidecarReader(server)
+        .read(canonicalUrl: watch, filename: path, language: 'en');
+    expect(result.outcome, SidecarOutcome.found);
+  });
+
   test('a media name that could leave the folder is never sent', () async {
-    for (final name in ['../etc/passwd', 'sub/clip.mp4', 'c:\\clip.mp4']) {
+    for (final name in [
+      '../etc/passwd',
+      'sub/../clip.mp4',
+      '/abs/clip.mp4',
+      'c:\\clip.mp4',
+    ]) {
       final result = await SidecarReader(server)
           .read(canonicalUrl: watch, filename: name, language: 'en');
       expect(result.outcome, SidecarOutcome.none, reason: name);

@@ -42,60 +42,30 @@ class LibraryFilterChips extends ConsumerWidget {
           scrollDirection: Axis.horizontal,
           child: Row(
             children: [
-              // **The chosen platform is seen and removed from here**
-              // (requested
-              // 2026-09-08): the choice is made in the sort sheet so no
-              // third row
-              // appears, but an active filter hidden behind a button makes
-              // the library
-              // look incomplete for no visible reason. The chip appears
-              // only while the
-              // filter is on.
-              // **The active channel, first and removable**. It is
-              // set from an item's sheet, which is a screen the user has
-              // already left by the time the list narrows — so without a
-              // chip here the library would simply look half empty.
-              if (options.channel case final channel?) ...[
-                InputChip(
-                  avatar: Icon(
-                    Icons.subscriptions_rounded,
-                    size: 15,
-                    color: x.palette.bg,
-                  ),
-                  // A channel name can be long; the row scrolls, but one
-                  // chip must not own all of it.
-                  label: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 150),
-                    child: Text(
-                      channel,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  selected: true,
-                  showCheckmark: false,
+              // **The active filters, first and removable.** The platform
+              // and the folder are chosen in the sort sheet so no third row
+              // appears, and the channel from an item's sheet, a screen
+              // already left by the time the list narrows: without a chip
+              // here the library would simply look half empty.
+              if (options.channel case final channel?)
+                _ActiveFilterChip(
+                  icon: Icons.subscriptions_rounded,
+                  label: channel,
                   onDeleted: () => controller.toggleChannel(null),
-                  deleteIcon: const Icon(Icons.close_rounded, size: 16),
-                  deleteIconColor: x.palette.bg,
-                  labelStyle: Theme.of(context).textTheme.labelMedium!
-                      .copyWith(color: x.palette.bg),
                 ),
-                const SizedBox(width: MTSpace.xs),
-              ],
-              if (options.platform != null) ...[
-                InputChip(
-                  label: Text(options.platform!.label),
-                  selected: true,
-                  showCheckmark: false,
-                  onDeleted: () => controller.setPlatform(null),
-                  deleteIcon: const Icon(Icons.close_rounded, size: 16),
-                  deleteIconColor: x.palette.bg,
+              if (options.folder case final folder?)
+                _ActiveFilterChip(
+                  icon: Icons.folder_rounded,
+                  label: mtName(folder),
+                  onDeleted: () => controller.setFolder(null),
                   onPressed: () => showSortSheet(context, ref),
-                  labelStyle: Theme.of(context).textTheme.labelMedium!
-                      .copyWith(color: x.palette.bg),
                 ),
-                const SizedBox(width: MTSpace.xs),
-              ],
+              if (options.platform case final platform?)
+                _ActiveFilterChip(
+                  label: platform.label,
+                  onDeleted: () => controller.setPlatform(null),
+                  onPressed: () => showSortSheet(context, ref),
+                ),
               chip(
                 l10n.filterAll,
                 options.scope == LibraryScope.all,
@@ -274,6 +244,45 @@ class _TagChip extends StatelessWidget {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// One active filter in the first row, with its way out. A name from the
+/// server can be long; the row scrolls, but one chip must not own all of it.
+class _ActiveFilterChip extends StatelessWidget {
+  const _ActiveFilterChip({
+    required this.label,
+    required this.onDeleted,
+    this.icon,
+    this.onPressed,
+  });
+
+  final String label;
+  final IconData? icon;
+  final VoidCallback onDeleted;
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final bg = MTThemeX.of(context).palette.bg;
+    return Padding(
+      padding: const EdgeInsetsDirectional.only(end: MTSpace.xs),
+      child: InputChip(
+        avatar: icon == null ? null : Icon(icon, size: 15, color: bg),
+        label: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 150),
+          child: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis),
+        ),
+        selected: true,
+        showCheckmark: false,
+        onDeleted: onDeleted,
+        deleteIcon: const Icon(Icons.close_rounded, size: 16),
+        deleteIconColor: bg,
+        onPressed: onPressed,
+        labelStyle: Theme.of(context).textTheme.labelMedium!
+            .copyWith(color: bg),
       ),
     );
   }

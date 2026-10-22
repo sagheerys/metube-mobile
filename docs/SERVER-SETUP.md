@@ -29,8 +29,9 @@ services:
       DELETE_FILE_ON_TRASHCAN: "true"
 
       # Put the source id into the filename, so two clips that share a
-      # title do not collide.
-      YTDL_OPTIONS: '{"outtmpl":"/downloads/%(title)s.%(id)s.%(ext)s"}'
+      # title do not collide. MeTube's own variable, not an outtmpl in
+      # YTDL_OPTIONS: see below.
+      OUTPUT_TEMPLATE: "%(title)s.%(id)s.%(ext)s"
 
       # Serve the files back over HTTP so the apps can pull and stream them.
       DOWNLOAD_DIRS_INDEXABLE: "true"
@@ -118,13 +119,31 @@ without limit, with nothing in any interface to show it.
 
 Super does not delete by default, so it is unaffected.
 
-### `YTDL_OPTIONS` with an id in `outtmpl`
+### `OUTPUT_TEMPLATE` with an id
 
 **Without it, two clips that share a title overwrite each other.**
 
 The default template is the title alone. Two videos called "Trailer" become
 one file. Putting `%(id)s` into the name makes every download distinct, and
 it is what the apps' own filename handling was measured against.
+
+**Set it here, not as an `outtmpl` inside `YTDL_OPTIONS`.** An earlier
+version of this page did that, with an absolute path
+(`"outtmpl":"/downloads/…"`). It works until folders are used, and then
+breaks three things, measured on MeTube 2026.10.09:
+
+- **Folders stop being folders.** `YTDL_OPTIONS` is applied over MeTube's own
+  options, so the absolute path wins over the folder a download or a
+  subscription asked for. Every file lands at the top of the downloads.
+- **Playlist and channel folders vanish too**, for the same reason:
+  `OUTPUT_TEMPLATE_PLAYLIST` and `OUTPUT_TEMPLATE_CHANNEL` are never used.
+- **Deleting leaves the file behind.** MeTube then reports such a file as
+  `Folder/../name`, and refuses to delete anything outside the folder it
+  expects, so `DELETE_FILE_ON_TRASHCAN` quietly keeps it.
+
+If your `YTDL_OPTIONS` has an `outtmpl`, move the template to
+`OUTPUT_TEMPLATE` (without the `/downloads/` part) and take `outtmpl` out.
+Nothing already downloaded moves; new files follow the new rule.
 
 ### `DOWNLOAD_DIRS_INDEXABLE=true`
 
@@ -165,12 +184,11 @@ transcript.
 
 The way around it is to have the server write the subtitles **beside every
 file it downloads**, and let Super read them from there. Extend the
-`YTDL_OPTIONS` line (keep your own `outtmpl`):
+`YTDL_OPTIONS` line (no `outtmpl` in it, see `OUTPUT_TEMPLATE` above):
 
 ```yaml
       YTDL_OPTIONS: >-
-        {"outtmpl":"/downloads/%(title)s.%(id)s.%(ext)s",
-         "writesubtitles":true,"writeautomaticsub":true,
+        {"writesubtitles":true,"writeautomaticsub":true,
          "subtitleslangs":["ar(-(?![a-z][a-z][a-z]?(-|$)).*)?","ar-ar-.*",
                            "en(-(?![a-z][a-z][a-z]?(-|$)).*)?","en-en-.*"],
          "subtitlesformat":"vtt/srt/best","ignoreerrors":true}
@@ -180,7 +198,7 @@ On TrueNAS, or any panel with one field per environment variable, the name
 is `YTDL_OPTIONS` and the value is the same, on one line:
 
 ```
-{"outtmpl":"/downloads/%(title)s.%(id)s.%(ext)s","writesubtitles":true,"writeautomaticsub":true,"subtitleslangs":["ar(-(?![a-z][a-z][a-z]?(-|$)).*)?","ar-ar-.*","en(-(?![a-z][a-z][a-z]?(-|$)).*)?","en-en-.*"],"subtitlesformat":"vtt/srt/best","ignoreerrors":true}
+{"writesubtitles":true,"writeautomaticsub":true,"subtitleslangs":["ar(-(?![a-z][a-z][a-z]?(-|$)).*)?","ar-ar-.*","en(-(?![a-z][a-z][a-z]?(-|$)).*)?","en-en-.*"],"subtitlesformat":"vtt/srt/best","ignoreerrors":true}
 ```
 
 **Which languages.** Super reads the app's language and English, nothing
@@ -531,7 +549,8 @@ server at all:
 | Lite says the server was cleaned, but the disk keeps filling | `DELETE_FILE_ON_TRASHCAN=true` |
 | Facebook clips play torn or smeared | `YTDL_OPTIONS_PRESETS` with `compat_h264` |
 | Downloads complete on the server but the app cannot pull them | `DOWNLOAD_DIRS_INDEXABLE=true` |
-| Two clips with the same title become one file | `%(id)s` in `YTDL_OPTIONS` `outtmpl` |
+| Two clips with the same title become one file | `%(id)s` in `OUTPUT_TEMPLATE` |
+| A folder or a subscription's folder stays empty, and every file lands at the top | an `outtmpl` in `YTDL_OPTIONS` — move it to `OUTPUT_TEMPLATE` |
 | One platform always fails with a sign-in message | `COOKIES_FILE` |
 | Super's search inside clips finds nothing in what subscriptions bring | `writesubtitles` and friends in `YTDL_OPTIONS` (optional, above) |
 | Streaming fails in Super while downloading works | HTTPS, or cleartext allowed for that host |

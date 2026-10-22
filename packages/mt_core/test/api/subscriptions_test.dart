@@ -128,6 +128,20 @@ void main() {
       expect(subs.map((s) => s.id), ['a', 'b']);
     });
 
+    test('the folder is read, and an empty one is the top', () {
+      final row = ChannelSubscription.fromJson({
+        'id': 'a1',
+        'url': 'https://www.youtube.com/@homelab',
+        'folder': 'Homelab',
+      })!;
+      expect(row.folder, 'Homelab');
+      expect(
+        ChannelSubscription.fromJson({'id': 'a', 'url': 'u', 'folder': ''})!
+            .folder,
+        isNull,
+      );
+    });
+
     test('a name the server lost falls back to the URL', () {
       final sub = ChannelSubscription.fromJson({
         'id': 'x',
@@ -281,6 +295,23 @@ void main() {
       );
       expect(_body(adapter.requests.single), isNot(contains('title_regex')));
     });
+
+    test('a folder is sent, and no folder is left out', () async {
+      final (client, adapter) = _makeClient((o) => _json('{"status":"ok"}'));
+      await client.subscribe(
+        'https://www.youtube.com/@homelab',
+        Quality.best,
+        checkIntervalMinutes: 60,
+        folder: ' Homelab ',
+      );
+      await client.subscribe(
+        'https://www.youtube.com/@other',
+        Quality.best,
+        checkIntervalMinutes: 60,
+      );
+      expect(_body(adapter.requests.first)['folder'], 'Homelab');
+      expect(_body(adapter.requests.last), isNot(contains('folder')));
+    });
   });
 
   group('updateSubscription (§2.7)', () {
@@ -298,6 +329,15 @@ void main() {
         final (client, adapter) = _makeClient((o) => _json('{"status":"ok"}'));
         await client.updateSubscription('a1', clearTitleRegex: true);
         expect(_body(adapter.requests.single)['title_regex'], '');
+      },
+    );
+
+    test(
+      'an empty folder is sent as such: new clips go back to the top',
+      () async {
+        final (client, adapter) = _makeClient((o) => _json('{"status":"ok"}'));
+        await client.updateSubscription('a1', folder: '');
+        expect(_body(adapter.requests.single), {'id': 'a1', 'folder': ''});
       },
     );
 

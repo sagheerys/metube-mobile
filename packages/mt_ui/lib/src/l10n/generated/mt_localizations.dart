@@ -212,6 +212,12 @@ abstract class MTLocalizations {
   /// **'All downloads finished!'**
   String get allDownloadsFinished;
 
+  /// No description provided for @allFolders.
+  ///
+  /// In en, this message translates to:
+  /// **'All folders'**
+  String get allFolders;
+
   /// No description provided for @allPlatforms.
   ///
   /// In en, this message translates to:
@@ -1184,6 +1190,24 @@ abstract class MTLocalizations {
   /// **'Video'**
   String get filterVideo;
 
+  /// No description provided for @folder.
+  ///
+  /// In en, this message translates to:
+  /// **'Folder'**
+  String get folder;
+
+  /// No description provided for @folderName.
+  ///
+  /// In en, this message translates to:
+  /// **'Folder name'**
+  String get folderName;
+
+  /// No description provided for @folderNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Empty: the channel\'s name'**
+  String get folderNameHint;
+
   /// No description provided for @follow.
   ///
   /// In en, this message translates to:
@@ -1681,6 +1705,18 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'Open Original Link'**
   String get openOriginalLink;
+
+  /// No description provided for @ownFolder.
+  ///
+  /// In en, this message translates to:
+  /// **'Save in its own folder'**
+  String get ownFolder;
+
+  /// No description provided for @ownFolderNote.
+  ///
+  /// In en, this message translates to:
+  /// **'A folder in the server\'s downloads, which the network share and other apps see too. Only what arrives from now on goes there; what is already downloaded stays where it is.'**
+  String get ownFolderNote;
 
   /// No description provided for @password.
   ///

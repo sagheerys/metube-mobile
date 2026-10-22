@@ -190,4 +190,39 @@ void main() {
       expect(item.location, MTMediaLocation.offline);
     });
   });
+
+  // A server whose downloads sit in folders: chosen at download time
+  // (`folder`), or written by an OUTPUT_TEMPLATE inside the filename.
+  group('server folders', () {
+    LibraryItem at(String? path) => LibraryItem(
+      canonicalUrl: 'https://youtu.be/${path ?? 'top'}',
+      title: path ?? 'top',
+      serverFilename: path,
+      onServer: true,
+    );
+
+    test('the top folder is the first level, whatever lies below it', () {
+      expect(at('Kids/a.mp4').topFolder, 'Kids');
+      expect(at('Creator/clip [id]/clip [id].mp4').topFolder, 'Creator');
+      expect(at('/audio_download/Music/a.m4a').topFolder, 'Music');
+      expect(at('a.mp4').topFolder, isNull);
+      expect(at(null).topFolder, isNull);
+    });
+
+    test('filtering keeps that folder alone, and counting skips the top', () {
+      final all = [
+        at('Kids/a.mp4'),
+        at('Kids/Cartoons/b.mp4'),
+        at('Homelab/c.mp4'),
+        at('d.mp4'),
+      ];
+      expect(buildLibraryView(all, folder: 'Kids'), hasLength(2));
+      expect(buildLibraryView(all), hasLength(4));
+      expect(folderCounts(all).map((e) => '${e.key}:${e.value}').toList(), [
+        'Kids:2',
+        'Homelab:1',
+      ]);
+      expect(folderCounts([at('d.mp4')]), isEmpty);
+    });
+  });
 }

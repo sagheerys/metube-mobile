@@ -124,6 +124,38 @@ void main() {
   });
 
   group('HistoryItem: the edges', () {
+    // Measured on MeTube 2026.10.09: every item carries `folder`, empty at
+    // the top, and `filename` is relative to that folder.
+    test('a clip in a folder is found under its folder', () {
+      final item = HistoryItem.fromJson({
+        'url': 'https://www.youtube.com/watch?v=jNQXAC9IVRw',
+        'folder': 'Kids',
+        'filename': 'Me at the zoo [jNQXAC9IVRw].mp4',
+        'download_type': 'video',
+      });
+      expect(item.folder, 'Kids');
+      expect(item.serverPath, 'Kids/Me at the zoo [jNQXAC9IVRw].mp4');
+    });
+
+    test('an empty folder is the top, and the path is the name alone', () {
+      final item = HistoryItem.fromJson({
+        'url': 'u',
+        'folder': '',
+        'filename': 'a.mp4',
+      });
+      expect(item.folder, isNull);
+      expect(item.serverPath, 'a.mp4');
+    });
+
+    test('an audio download is served from its own route', () {
+      final item = HistoryItem.fromJson({
+        'url': 'u',
+        'filename': 'a.m4a',
+        'download_type': 'audio',
+      });
+      expect(ServerPath.isAudio(item.serverPath!), isTrue);
+    });
+
     test('with no id, a unique uuid for every call', () {
       final a = HistoryItem.fromJson({'url': 'https://x.com/a/status/1'});
       final b = HistoryItem.fromJson({'url': 'https://x.com/a/status/1'});

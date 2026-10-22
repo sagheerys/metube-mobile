@@ -24,7 +24,7 @@ extension DownloadEnginePull on DownloadEngine {
     // The final path comes from `pull`, not from what was requested: it may
     // shift on a collision.
     final finalPath = await _transfer.pull(
-      serverFilename: done.filename!,
+      serverFilename: done.serverPath!,
       savePath: savePath,
       cancelToken: token,
       onProgress: (p) => _emitProgress(taskId, p),

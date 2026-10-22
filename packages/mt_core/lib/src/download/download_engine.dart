@@ -333,7 +333,7 @@ class DownloadEngine {
     task = _emit(
       task.copyWith(
         canonicalUrl: done.canonicalUrl,
-        serverFilename: done.filename,
+        serverFilename: done.serverPath,
         title: done.title,
         thumbnail: done.thumbnail,
       ),

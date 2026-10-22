@@ -110,8 +110,9 @@ class _SortSheet extends ConsumerWidget {
                   ),
               ],
             ),
-            // Last, as its length depends on the library.
+            // Last, as their length depends on the library.
             const _PlatformSection(),
+            const _FolderSection(),
           ],
         ),
       ),
@@ -168,6 +169,58 @@ class _PlatformSection extends ConsumerWidget {
             for (final MapEntry(:key, :value) in counts)
               chip(
                 l10n.platformCount(platformLabel(l10n, key), value),
+                selected == key,
+                selected == key ? null : key,
+              ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+/// **The server folders, chosen like the platform** and shown as a
+/// removable chip in the first row once chosen. Absent while every clip
+/// sits at the top of the download directory, which is most servers: the
+/// library looks exactly as it did before folders were understood.
+class _FolderSection extends ConsumerWidget {
+  const _FolderSection();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final counts = ref.watch(folderCountsProvider);
+    if (counts.isEmpty) return const SizedBox.shrink();
+
+    final l10n = context.mtl;
+    final p = MTThemeX.of(context).palette;
+    final selected = ref.watch(
+      libraryViewProvider.select((options) => options.folder),
+    );
+    final controller = ref.read(libraryViewProvider.notifier);
+
+    Widget chip(String label, bool on, String? target) => ChoiceChip(
+      label: Text(label),
+      selected: on,
+      showCheckmark: false,
+      labelStyle: Theme.of(context).textTheme.labelMedium!
+          .copyWith(color: on ? p.bg : p.ink2),
+      onSelected: (_) => controller.setFolder(target),
+    );
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: MTSpace.xl),
+        MTSectionHeader(title: l10n.folder),
+        const SizedBox(height: MTSpace.md),
+        Wrap(
+          spacing: MTSpace.xs,
+          runSpacing: MTSpace.xs,
+          children: [
+            chip(l10n.allFolders, selected == null, null),
+            for (final MapEntry(:key, :value) in counts)
+              chip(
+                l10n.platformCount(mtName(key), value),
                 selected == key,
                 selected == key ? null : key,
               ),

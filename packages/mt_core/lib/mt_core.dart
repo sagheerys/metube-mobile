@@ -57,5 +57,6 @@ export 'src/update/update_release.dart';
 export 'src/update/whats_new.dart';
 export 'src/urls/platform_detector.dart';
 export 'src/urls/playlist_detector.dart';
+export 'src/urls/server_path.dart';
 export 'src/urls/short_link_resolver.dart';
 export 'src/urls/url_kit.dart';

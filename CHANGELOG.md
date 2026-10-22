@@ -9,7 +9,39 @@ only one.
 
 ## [Unreleased]
 
+### Added
+
+- **Folders on the server (Super).** Following a channel now offers "Save in
+  its own folder": what the channel downloads from then on goes into a folder
+  of its own on the server, named after the channel or as you choose, where
+  the network share and any other app see it. Videos already downloaded stay
+  where they are, since MeTube never moves a file. The library can be
+  filtered by server folder from the sort sheet, and the filter only appears
+  on a server that has folders.
+
+### Changed
+
+- **The server setup guide sets the filename template with
+  `OUTPUT_TEMPLATE`.** It used to put an `outtmpl` with an absolute path in
+  `YTDL_OPTIONS`, which overrides every folder: files landed at the top of
+  the downloads whatever folder was asked for, and deleting such a file left
+  it on disk. If your `YTDL_OPTIONS` has an `outtmpl`, see
+  [SERVER-SETUP.md](docs/SERVER-SETUP.md).
+
 ### Fixed
+
+- **Clips in a server folder could not be played or pulled.** A clip MeTube
+  saved in a folder (chosen on its web page, set by `DEFAULT_FOLDER`, or
+  written by an `OUTPUT_TEMPLATE` with subfolders) was refused as an
+  "unsafe filename". It now plays, pulls and keeps its subtitles, and a name
+  that would leave the download folder is still refused. Reported with a fix
+  by @Kasull-454 in #25, thank you. Both apps.
+- **Audio on a server with its own audio folder.** With `AUDIO_DOWNLOAD_DIR`
+  set, no audio download could be played or pulled. Audio now comes from the
+  server's audio route, as on MeTube's own page. Both apps.
+- **The tags sheet with many tags.** The field for a new tag was pushed off
+  the screen; the tags now scroll and the field stays in reach. Also from
+  @Kasull-454.
 
 - **Sharing a clip opened the previous one.** When Android had closed the app
   in the background, sharing a new link brought back the link that had opened

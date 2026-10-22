@@ -51,6 +51,8 @@ class SidecarListing {
   /// The media filename without its extension, as yt-dlp derives it.
   static String stemOf(String filename) {
     final dot = filename.lastIndexOf('.');
-    return dot <= 0 ? filename : filename.substring(0, dot);
+    // A dot in a folder's name is not the file's extension.
+    final start = filename.lastIndexOf('/') + 1;
+    return dot <= start ? filename : filename.substring(0, dot);
   }
 }

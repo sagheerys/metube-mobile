@@ -97,15 +97,19 @@ class SidecarReader {
     // A name that could leave the download folder is never sent, nor any
     // name derived from it; the media's own name was already refused for
     // the same reason.
-    if (!UrlKit.isSafeServerFilename(filename)) {
+    if (!ServerPath.isSafe(filename)) {
       return const SidecarResult(SidecarOutcome.none);
     }
+    // The listing is the top of `download/` alone: a clip in a folder, or
+    // one served from `audio_download/`, has its files elsewhere, so only
+    // the plain names are tried for it.
+    final nested = filename.contains('/');
     final names = switch (listing) {
-      final listing? => choose(listing, filename, language),
-      null => namesFor(filename, language),
+      final listing? when !nested => choose(listing, filename, language),
+      _ => namesFor(filename, language),
     };
     for (final name in names) {
-      if (!UrlKit.isSafeServerFilename(name)) continue;
+      if (!ServerPath.isSafe(name)) continue;
       final String text;
       try {
         text = await api.fetchText(name);

@@ -307,13 +307,35 @@ send and the key the server files equal, which is what the fallback needs.
 ### 2.4 Pulling / streaming
 
 ```
-GET {base}/download/{Uri.encodeComponent(serverFilename)}
+GET {base}/download/{folder}/{filename}         (each segment encoded on its own)
+GET {base}/audio_download/{folder}/{filename}   (download_type == "audio")
 Headers: Authorization: Basic …, Connection: keep-alive
 ```
 
+- **Where a file is** (measured on MeTube 2026.10.09). Every `/history` item
+  carries `folder`, the download's own folder below the download directory
+  (empty at the top), and `filename` **relative to that folder** — which holds
+  subfolders of its own when `OUTPUT_TEMPLATE` writes them
+  (`%(channel)s/%(title)s.%(ext)s`). MeTube's page links the two joined, under
+  `audio_download/` for an audio download, because `AUDIO_DOWNLOAD_DIR` may be
+  another directory; the route always exists and serves `DOWNLOAD_DIR` when
+  the two are the same. `ServerPath` in `mt_core` holds the three as one
+  stored string; a plain name stored before folders were understood still
+  means the top of `download/`.
+- **A file written above its folder.** An absolute `outtmpl` in
+  `YTDL_OPTIONS` writes every file at the top whatever folder was asked for,
+  and MeTube then reports it as `../name` relative to that folder. The `..` is
+  resolved against the folder (`Kids/../name` is `name`, which the server
+  serves); one that would climb above the download directory is kept and
+  refused by the guard.
 - **A mandatory guard**, inside `MeTubeApiClient.downloadUrl()` itself: reject an
-  empty name, a name containing a path separator (`/` or `\`) or a NUL
-  character, or a name that is exactly `.` or `..`.
+  empty path, a backslash or a NUL character anywhere, and any segment that is
+  empty (a leading, trailing or doubled `/`) or is exactly `.` or `..`.
+  - **Correction 2026-10-22: a relative path is a real file.** The guard used
+    to refuse every `/`, so a clip in any folder could neither play nor be
+    pulled (first reported, with a fix, by Kasull-454 in pull request #25).
+    Traversal needs a `..` segment or an absolute path, and both are still
+    refused.
   - **Correction 2026-09-03, from a field report.** The condition used to be
     "contains `..`", which rejected every name with consecutive dots. yt-dlp
     truncates long titles with "..." — so clips from X/Twitter and elsewhere
@@ -389,6 +411,11 @@ remote control for a list the server keeps.
 Only these fields may be sent to `update`, and the server drops the rest:
 `enabled` · `check_interval_minutes` · `name` · `folder` · `title_regex` ·
 `skip_subscriber_only`.
+
+`folder` (on `/subscribe` and on `update`) is relative to the download
+directory; the server refuses an absolute path and `..`, and creates the
+folder on first use. An empty string is the top. It applies to what the
+subscription downloads from then on: nothing already on disk is moved.
 
 One subscription, as the server returns it:
 
@@ -651,6 +678,7 @@ title.
 6. **A reference server for testing.** A MeTube container with
    `COOKIES_FILE=…/cookies.txt`, `DOWNLOAD_DIRS_INDEXABLE=true`,
    `DELETE_FILE_ON_TRASHCAN=true` and
-   `YTDL_OPTIONS={"outtmpl":"…/%(title)s.%(id)s.%(ext)s"}`, reached over HTTPS
-   with Basic auth. The `outtmpl` matters: it is what puts the id into the
-   filename that §2.4 has to survive.
+   `OUTPUT_TEMPLATE=%(title)s.%(id)s.%(ext)s`, reached over HTTPS with Basic
+   auth. The template matters: it is what puts the id into the filename that
+   §2.4 has to survive. (Not an `outtmpl` in `YTDL_OPTIONS`, which overrides
+   every folder; see SERVER-SETUP.md.)

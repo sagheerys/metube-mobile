@@ -135,6 +135,7 @@ class FakeApi implements MeTubeApi {
     required int checkIntervalMinutes,
     bool compatibleVideo = false,
     String? titleRegex,
+    String? folder,
   }) async {
     subscribeCalls.add(url);
     return null;
@@ -148,6 +149,7 @@ class FakeApi implements MeTubeApi {
     int? checkIntervalMinutes,
     String? titleRegex,
     bool clearTitleRegex = false,
+    String? folder,
   }) async {}
 
   @override

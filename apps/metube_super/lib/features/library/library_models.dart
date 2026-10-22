@@ -27,6 +27,9 @@ class LibraryItem {
   final String title;
   final String? uploader;
   final String? thumbnail;
+
+  /// Where the file is on the server, as a [ServerPath]: folder, name and
+  /// route.
   final String? serverFilename;
   final String? localPath;
   final DateTime? timestamp;
@@ -41,6 +44,18 @@ class LibraryItem {
   final double? aspectRatio;
 
   bool get isOffline => localPath != null;
+
+  /// **The top folder the file sits in on the server**, for the folder
+  /// filter, or null at the top. Only the first level: a server whose
+  /// `OUTPUT_TEMPLATE` gives every clip a folder of its own
+  /// (`channel/clip [id]/clip [id].mp4`) would otherwise offer one choice
+  /// per clip.
+  String? get topFolder {
+    final path = serverFilename;
+    if (path == null) return null;
+    final dir = ServerPath.folderOf(path);
+    return dir.isEmpty ? null : dir.split('/').first;
+  }
 
   /// The platform from the canonical URL: one approved detector, never a
   /// second list.
@@ -81,7 +96,7 @@ class LibraryItem {
     title: item.title ?? item.filename ?? item.canonicalUrl,
     uploader: item.uploader,
     thumbnail: item.thumbnail ?? cachedThumb,
-    serverFilename: item.filename,
+    serverFilename: item.serverPath,
     localPath: localPath,
     timestamp: item.timestamp,
     sizeBytes: item.sizeBytes,
@@ -169,6 +184,7 @@ List<LibraryItem> buildLibraryView(
   Set<String> excludedTags = const {},
   MediaPlatform? platform,
   String? channel,
+  String? folder,
   LibrarySort sort = LibrarySort.newest,
 }) {
   final q = query.trim().toLowerCase();
@@ -200,6 +216,7 @@ List<LibraryItem> buildLibraryView(
     };
     if (!typeOk) return false;
     if (platform != null && item.platform != platform) return false;
+    if (folder != null && item.topFolder != folder) return false;
     if (wantedChannel != null &&
         (item.uploader?.trim().toLowerCase() ?? '') != wantedChannel) {
       return false;
@@ -255,4 +272,21 @@ List<MapEntry<MediaPlatform, int>> platformCounts(List<LibraryItem> items) {
     }
     return b.value.compareTo(a.value);
   });
+}
+
+/// The server folders the library's clips sit in, most clips first, for
+/// the folder filter. Empty when every clip is at the top, which hides the
+/// filter altogether.
+List<MapEntry<String, int>> folderCounts(List<LibraryItem> items) {
+  final counts = <String, int>{};
+  for (final item in items) {
+    if (item.topFolder case final folder?) {
+      counts[folder] = (counts[folder] ?? 0) + 1;
+    }
+  }
+  return counts.entries.toList()..sort(
+    (a, b) => a.value != b.value
+        ? b.value.compareTo(a.value)
+        : a.key.toLowerCase().compareTo(b.key.toLowerCase()),
+  );
 }

@@ -133,7 +133,7 @@ class CaptionsFetcher {
       );
     }
     try {
-      final filename = entry.filename;
+      final filename = entry.serverPath;
       if (entry.hasError) {
         return CaptionsResult(CaptionsOutcome.failed, detail: entry.error);
       }

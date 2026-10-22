@@ -109,6 +109,8 @@ class SubscriptionCard extends StatelessWidget {
                   _chip(context, Icons.high_quality_rounded, quality),
                 if (sub.titleRegex case final filter?)
                   _chip(context, Icons.filter_alt_outlined, filter),
+                if (sub.folder case final folder?)
+                  _chip(context, Icons.folder_rounded, mtName(folder)),
                 if (!sub.enabled)
                   _chip(context, Icons.pause_rounded, l10n.subscriptionPaused),
               ],

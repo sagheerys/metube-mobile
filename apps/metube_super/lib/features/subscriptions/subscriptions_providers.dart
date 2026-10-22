@@ -61,16 +61,30 @@ class SubscriptionsController {
     required Quality quality,
     required int checkIntervalMinutes,
     String? titleRegex,
+    bool ownFolder = false,
+    String folder = '',
   }) async {
     final api = _api;
     if (api == null) throw const NoApiException();
+    final named = ownFolder ? subscriptionFolderName(folder) : '';
     final created = await api.subscribe(
       url,
       quality,
       checkIntervalMinutes: checkIntervalMinutes,
       compatibleVideo: _ref.read(settingsProvider).compatiblePlayback,
       titleRegex: titleRegex,
+      folder: named.isEmpty ? null : named,
     );
+    // **An empty name means the channel's own**, which only the server
+    // knows once it has resolved the URL. Set straight after: nothing is
+    // downloaded in between, since following marks the channel's current
+    // videos as seen.
+    if (ownFolder && named.isEmpty && created != null) {
+      final fromChannel = subscriptionFolderName(created.name);
+      if (fromChannel.isNotEmpty) {
+        await api.updateSubscription(created.id, folder: fromChannel);
+      }
+    }
     _reload();
     return created?.name;
   }
@@ -86,6 +100,7 @@ class SubscriptionsController {
     int? checkIntervalMinutes,
     String? titleRegex,
     bool clearTitleRegex = false,
+    String? folder,
   }) async {
     await _api?.updateSubscription(
       sub.id,
@@ -93,6 +108,7 @@ class SubscriptionsController {
       checkIntervalMinutes: checkIntervalMinutes,
       titleRegex: titleRegex,
       clearTitleRegex: clearTitleRegex,
+      folder: folder,
     );
     _reload();
   }
@@ -119,6 +135,17 @@ class SubscriptionsController {
 final subscriptionsControllerProvider = Provider<SubscriptionsController>(
   SubscriptionsController.new,
 );
+
+/// **A folder name the server will take as one folder**: a slash or
+/// backslash would make a path of it, and `.` or `..` alone is refused.
+/// Empty when nothing usable is left.
+String subscriptionFolderName(String raw) {
+  final name = raw
+      .replaceAll(RegExp(r'[/\\]+'), '-')
+      .replaceAll('\u0000', '')
+      .trim();
+  return (name == '.' || name == '..') ? '' : name;
+}
 
 /// The intervals the sheet offers, in minutes. **Nothing under half an
 /// hour**: the server clamps its own loop to a minute, but a channel

@@ -18,6 +18,7 @@ class ChannelSubscription {
     this.seenCount = 0,
     this.lastChecked,
     this.error,
+    this.folder,
   });
 
   final String id;
@@ -55,6 +56,11 @@ class ChannelSubscription {
   /// The last check's failure, kept by the server until a check succeeds.
   final String? error;
 
+  /// The folder below the download directory its clips are saved in, or
+  /// null for the top. **It applies to what arrives from then on**: MeTube
+  /// never moves a file that is already downloaded.
+  final String? folder;
+
   bool get hasError => error != null && error!.trim().isNotEmpty;
 
   ChannelSubscription copyWith({
@@ -74,6 +80,7 @@ class ChannelSubscription {
     seenCount: seenCount,
     lastChecked: lastChecked,
     error: error,
+    folder: folder,
   );
 
   /// Returns null for anything that is not a usable row, so one malformed
@@ -100,6 +107,7 @@ class ChannelSubscription {
       seenCount: _asInt(decoded['seen_count']) ?? 0,
       lastChecked: _asEpochSeconds(decoded['last_checked']),
       error: _asText(decoded['error']),
+      folder: _asText(decoded['folder']),
     );
   }
 

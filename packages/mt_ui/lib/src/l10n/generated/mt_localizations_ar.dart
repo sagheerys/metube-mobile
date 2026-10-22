@@ -83,6 +83,9 @@ class MTLocalizationsAr extends MTLocalizations {
   String get allDownloadsFinished => 'اكتملت جميع التحميلات!';
 
   @override
+  String get allFolders => 'كل المجلدات';
+
+  @override
   String get allPlatforms => 'كل المنصات';
 
   @override
@@ -655,6 +658,15 @@ class MTLocalizationsAr extends MTLocalizations {
   String get filterVideo => 'فيديو';
 
   @override
+  String get folder => 'المجلد';
+
+  @override
+  String get folderName => 'اسم المجلد';
+
+  @override
+  String get folderNameHint => 'فارغ: اسم القناة';
+
+  @override
   String get follow => 'متابعة';
 
   @override
@@ -944,6 +956,13 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get openOriginalLink => 'فتح الرابط الأصلي';
+
+  @override
+  String get ownFolder => 'احفظ في مجلد خاص بها';
+
+  @override
+  String get ownFolderNote =>
+      'مجلد داخل تنزيلات السيرفر، تراه في مشاركة الشبكة وفي أي برنامج آخر. يذهب إليه ما ينزل من الآن فقط، وما نزل قبله يبقى مكانه.';
 
   @override
   String get password => 'كلمة المرور';
