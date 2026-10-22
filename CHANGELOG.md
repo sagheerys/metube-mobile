@@ -9,6 +9,17 @@ only one.
 
 ## [Unreleased]
 
+### Fixed
+
+- **Sharing a clip opened the previous one.** When Android had closed the app
+  in the background, sharing a new link brought back the link that had opened
+  the app last time, and the new one was lost; opening the app from its icon
+  could also show an add sheet nobody asked for. Shares are now received by
+  the app itself instead of a third-party package, and only a share that is
+  really new opens a sheet. Checked on a real phone in both apps.
+- **The exported log in Lite was named after Super.** The file is now
+  `metube_lite_logs_<date>.txt` or `metube_super_logs_<date>.txt`.
+
 ## [2.5.1] - 2026-10-16
 
 ### Fixed
