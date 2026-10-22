@@ -6,6 +6,7 @@ import 'package:mt_media/mt_media.dart';
 
 import 'features/downloads_library/download_wiring.dart';
 import 'features/downloads_library/local_item.dart';
+import 'features/home/handled_links.dart';
 import 'features/home/network_gate.dart';
 import 'features/settings/auto_backup.dart';
 import 'features/settings/settings_state.dart';
@@ -183,6 +184,7 @@ final downloadEngineProvider = Provider<DownloadEngine?>((ref) {
     compatibleVideo: () => ref.read(settingsProvider).compatiblePlayback,
   );
   ref.onDispose(engine.dispose);
+  noteSubmittedLinks(ref, engine);
   return engine;
 });
 

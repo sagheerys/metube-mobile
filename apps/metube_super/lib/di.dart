@@ -5,6 +5,7 @@ import 'package:mt_core/mt_core.dart';
 import 'package:mt_media/mt_media.dart';
 
 import 'features/batch/batch_offline_saver.dart';
+import 'features/home/handled_links.dart';
 import 'features/library/quality_cache.dart';
 import 'features/settings/auto_backup.dart';
 import 'features/settings/settings_state.dart';
@@ -152,6 +153,7 @@ final downloadEngineProvider = Provider<DownloadEngine?>((ref) {
     onLog: (message) => unawaited(logger.log(message, tag: 'download')),
   );
   ref.onDispose(engine.dispose);
+  noteSubmittedLinks(ref, engine);
   return engine;
 });
 

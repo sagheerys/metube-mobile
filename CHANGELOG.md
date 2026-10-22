@@ -17,6 +17,12 @@ only one.
   could also show an add sheet nobody asked for. Shares are now received by
   the app itself instead of a third-party package, and only a share that is
   really new opens a sheet. Checked on a real phone in both apps.
+- **The clipboard bar kept offering a link already downloaded.** It came
+  back on every return to the app, and again after a restart, for as long as
+  the link stayed in the clipboard. A link sent to the server by any route
+  (the bar, the add sheet, a share, a playlist) is now remembered and not
+  offered again, and a slow clipboard read can no longer bring back a link a
+  newer read had replaced. Checked on a real phone in both apps.
 - **The exported log in Lite was named after Super.** The file is now
   `metube_lite_logs_<date>.txt` or `metube_super_logs_<date>.txt`.
 

@@ -4,12 +4,25 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mt_core/mt_core.dart';
 
+import 'handled_links.dart';
+
 /// A known-platform link waiting in the clipboard switches the add button
 /// to its "link ready to paste" state. Checked at startup and when the app
 /// returns to the foreground.
 final clipboardUrlProvider = StateProvider<String?>((ref) => null);
 
+/// Numbers each clipboard read. Reads overlap (start-up, a return to the
+/// app, a shortcut), and the clipboard answers asynchronously, so an older
+/// read finishing last used to put back a link a newer read had replaced.
+int _clipboardReads = 0;
+
+/// A link already sent to the server is not offered (see [HandledLinks]).
+/// Android 10+ only lets a focused window read the clipboard; Flutter
+/// reports `resumed` only once the window has focus, so the read on return
+/// is not refused.
 Future<void> refreshClipboardUrl(Ref ref) async {
+  final read = ++_clipboardReads;
+  final handled = ref.read(handledLinksProvider);
   String? found;
   try {
     final data = await Clipboard.getData('text/plain');
@@ -19,6 +32,9 @@ Future<void> refreshClipboardUrl(Ref ref) async {
     // Some devices forbid reading the clipboard in the background; we
     // ignore that silently.
   }
+  await handled.ready;
+  if (read != _clipboardReads) return;
+  if (found != null && handled.contains(found)) found = null;
   ref.read(clipboardUrlProvider.notifier).state = found;
 }
 
