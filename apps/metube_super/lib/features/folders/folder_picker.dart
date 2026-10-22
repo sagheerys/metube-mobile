@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mt_core/mt_core.dart';
 import 'package:mt_ui/mt_ui.dart';
 
 import '../settings/widgets/help_button.dart';
+import 'folder_widgets.dart';
 import 'folders_providers.dart';
 
 /// A folder chosen in the picker. An empty [path] is the top of the
@@ -132,16 +132,22 @@ class _FolderPicker extends ConsumerWidget {
                   ),
                 ),
                 // What a folder is, and what the server needs for it, is
-                // asked for rather than imposed on everyone who opens this.
-                HelpButton(title: l10n.chooseFolder, body: l10n.foldersHelp),
+                // asked for rather than imposed on everyone who opens this;
+                // the button pulses as the picker opens so it is seen.
+                PulsingHelp(
+                  child: HelpButton(
+                    title: l10n.chooseFolder,
+                    body: l10n.foldersHelp,
+                  ),
+                ),
               ],
             ),
           ),
           if (server.isLoading) const LinearProgressIndicator(minHeight: 2),
           if (disabled)
-            _Notice(text: l10n.foldersDisabled)
+            FolderNotice(text: l10n.foldersDisabled)
           else if (ref.watch(foldersIgnoredProvider))
-            _Notice(text: l10n.foldersIgnored),
+            FolderNotice(text: l10n.foldersIgnored),
           Flexible(
             child: ListView(
               shrinkWrap: true,
@@ -180,7 +186,7 @@ class _FolderPicker extends ConsumerWidget {
                     ),
                     title: Text(l10n.newFolder),
                     onTap: () async {
-                      final made = await _askNewFolder(context, current.path);
+                      final made = await askNewFolder(context, current.path);
                       if (made != null && context.mounted) {
                         Navigator.of(context).pop(FolderChoice(made));
                       }
@@ -191,90 +197,6 @@ class _FolderPicker extends ConsumerWidget {
           ),
         ],
       ),
-    );
-  }
-}
-
-/// The name of a new folder, nested when typed with a slash. It is made on
-/// the server by the first download saved into it.
-Future<String?> _askNewFolder(BuildContext context, String parent) async {
-  final typed = await showDialog<String>(
-    context: context,
-    builder: (_) => _NewFolderDialog(parent: parent),
-  );
-  final clean = ServerPath.cleanFolder(typed ?? '');
-  return clean.isEmpty ? null : clean;
-}
-
-/// **The dialog owns its controller**, so it is disposed only once the
-/// route is gone: disposing it when `showDialog` returns runs during the
-/// closing animation, while the field is still being built.
-class _NewFolderDialog extends StatefulWidget {
-  const _NewFolderDialog({required this.parent});
-
-  final String parent;
-
-  @override
-  State<_NewFolderDialog> createState() => _NewFolderDialogState();
-}
-
-class _NewFolderDialogState extends State<_NewFolderDialog> {
-  late final _controller = TextEditingController(
-    text: widget.parent.isEmpty ? '' : '${widget.parent}/',
-  );
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.mtl;
-    return AlertDialog(
-      title: Text(l10n.newFolder),
-      content: TextField(
-        controller: _controller,
-        autofocus: true,
-        decoration: InputDecoration(hintText: l10n.newFolderHint),
-        onSubmitted: (value) => Navigator.of(context).pop(value),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: Text(l10n.cancel),
-        ),
-        FilledButton(
-          onPressed: () => Navigator.of(context).pop(_controller.text),
-          child: Text(l10n.create),
-        ),
-      ],
-    );
-  }
-}
-
-/// A line the picker must say before the list: the server refuses folders,
-/// or ignores them.
-class _Notice extends StatelessWidget {
-  const _Notice({required this.text});
-
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    final p = MTThemeX.of(context).palette;
-    return Container(
-      margin: const EdgeInsets.symmetric(
-        horizontal: MTSpace.pagePad,
-        vertical: MTSpace.xs,
-      ),
-      padding: const EdgeInsets.all(MTSpace.sm),
-      decoration: BoxDecoration(
-        color: p.cardAlt,
-        border: BorderDirectional(start: BorderSide(color: p.err, width: 3)),
-      ),
-      child: Text(text, style: Theme.of(context).textTheme.bodySmall),
     );
   }
 }

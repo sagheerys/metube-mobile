@@ -89,6 +89,10 @@ class _DetailsSheet extends ConsumerWidget {
                 if (item.onServer) l10n.availabilityServer,
               ].join(' + '),
             ),
+            // Only for a clip in a folder: at the top there is nothing to
+            // say, and a library with no folders shows no new row.
+            if (item.folderPath case final folder?)
+              row(l10n.folder, mtName(folder)),
             // **Where it belongs** (field report 2026-09-04): which
             // playlists it is in and which tags it carries. The information
             // was in the store and no screen displayed it.
