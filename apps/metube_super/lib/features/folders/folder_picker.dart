@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mt_core/mt_core.dart';
 import 'package:mt_ui/mt_ui.dart';
 
+import '../settings/widgets/help_button.dart';
 import 'folders_providers.dart';
 
 /// A folder chosen in the picker. An empty [path] is the top of the
@@ -122,9 +123,18 @@ class _FolderPicker extends ConsumerWidget {
               MTSpace.pagePad,
               MTSpace.sm,
             ),
-            child: Text(
-              l10n.chooseFolder,
-              style: Theme.of(context).textTheme.titleMedium,
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    l10n.chooseFolder,
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                ),
+                // What a folder is, and what the server needs for it, is
+                // asked for rather than imposed on everyone who opens this.
+                HelpButton(title: l10n.chooseFolder, body: l10n.foldersHelp),
+              ],
             ),
           ),
           if (server.isLoading) const LinearProgressIndicator(minHeight: 2),

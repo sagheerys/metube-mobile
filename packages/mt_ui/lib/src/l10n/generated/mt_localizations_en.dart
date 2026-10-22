@@ -647,6 +647,10 @@ class MTLocalizationsEn extends MTLocalizations {
       'This server does not allow folders: CUSTOM_DIRS is off in its settings.';
 
   @override
+  String get foldersHelp =>
+      'A folder is made on the server, inside its downloads, and the clip is saved straight into it, where the network share and any other app see it. Leave it at \"No folder\" and nothing changes. For folders to work the server needs two things: CUSTOM_DIRS on, which is MeTube\'s default, and no outtmpl in YTDL_OPTIONS, which would save every file at the top whatever folder is chosen. To name files your way, use OUTPUT_TEMPLATE instead. The setup guide shows the lines.';
+
+  @override
   String get foldersIgnored =>
       'This server saves every file at the top of the downloads, whatever folder is chosen: its YTDL_OPTIONS has an outtmpl. The setup guide says how to move it to OUTPUT_TEMPLATE.';
 
@@ -794,6 +798,11 @@ class MTLocalizationsEn extends MTLocalizations {
 
   @override
   String get modeStopAtEnd => 'Stop at end';
+
+  @override
+  String moreFolders(int count) {
+    return 'More · $count';
+  }
 
   @override
   String get navLibrary => 'Library';

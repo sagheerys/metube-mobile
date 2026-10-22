@@ -93,6 +93,8 @@ class _SubscriptionSheetState extends ConsumerState<_SubscriptionSheet> {
     final audio = _isEdit
         ? widget.editing!.quality == Quality.audio.wire
         : _quality == Quality.audio;
+    // The channel field would take the focus back as the picker closes.
+    FocusManager.instance.primaryFocus?.unfocus();
     final picked = await showFolderPicker(
       context,
       audio: audio,

@@ -60,11 +60,20 @@ final libraryFolderPathsProvider = Provider<Set<String>>((ref) {
 /// folder; MeTube then reports the file as `Folder/../name`. Seen in the
 /// history it is certain, and the picker says so rather than let a choice
 /// look as if it worked.
+///
+/// **The newest download into a folder decides**, not any of them: the
+/// ones from before the server was fixed stay in the history as they were,
+/// and must not keep the warning up once folders work.
 final foldersIgnoredProvider = Provider<bool>((ref) {
   final done = ref.watch(historyProvider).valueOrNull?.done ?? const [];
-  return done.any(
-    (item) =>
-        (item.folder?.isNotEmpty ?? false) &&
-        (item.filename?.startsWith('../') ?? false),
-  );
+  HistoryItem? newest;
+  for (final item in done) {
+    if (!(item.folder?.isNotEmpty ?? false)) continue;
+    final at = item.timestamp;
+    if (newest == null ||
+        (at != null && at.isAfter(newest.timestamp ?? DateTime(0)))) {
+      newest = item;
+    }
+  }
+  return newest?.filename?.startsWith('../') ?? false;
 });

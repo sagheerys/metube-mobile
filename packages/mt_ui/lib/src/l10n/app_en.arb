@@ -559,6 +559,7 @@
   "filterVideo": "Video",
   "folder": "Folder",
   "foldersDisabled": "This server does not allow folders: CUSTOM_DIRS is off in its settings.",
+  "foldersHelp": "A folder is made on the server, inside its downloads, and the clip is saved straight into it, where the network share and any other app see it. Leave it at \"No folder\" and nothing changes. For folders to work the server needs two things: CUSTOM_DIRS on, which is MeTube's default, and no outtmpl in YTDL_OPTIONS, which would save every file at the top whatever folder is chosen. To name files your way, use OUTPUT_TEMPLATE instead. The setup guide shows the lines.",
   "foldersIgnored": "This server saves every file at the top of the downloads, whatever folder is chosen: its YTDL_OPTIONS has an outtmpl. The setup guide says how to move it to OUTPUT_TEMPLATE.",
   "follow": "Follow",
   "followChannel": "Follow a channel",
@@ -602,6 +603,14 @@
   "modeRepeatAll": "Repeat all",
   "modeRepeatOne": "Repeat one",
   "modeStopAtEnd": "Stop at end",
+  "moreFolders": "More · {count}",
+  "@moreFolders": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "navLibrary": "Library",
   "navMyDownloads": "My downloads",
   "navPlaylists": "Playlists",

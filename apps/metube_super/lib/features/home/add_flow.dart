@@ -140,6 +140,9 @@ class _AddSheetState extends ConsumerState<_AddSheet> {
           : FolderRow(
               value: _folder.isTop ? l10n.noFolder : mtName(_folder.path),
               onTap: () async {
+                // Otherwise the link field takes the focus back when the
+                // picker closes, and the keyboard covers the sheet.
+                FocusManager.instance.primaryFocus?.unfocus();
                 final picked = await showFolderPicker(
                   context,
                   audio: _quality == Quality.audio.wire,

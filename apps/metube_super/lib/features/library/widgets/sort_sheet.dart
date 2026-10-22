@@ -186,11 +186,22 @@ class _PlatformSection extends ConsumerWidget {
 ///
 /// One row per level: choosing `Ai` adds a row with what is inside it, and
 /// tapping the chosen folder again goes back up a level.
-class _FolderSection extends ConsumerWidget {
+class _FolderSection extends ConsumerStatefulWidget {
   const _FolderSection();
 
+  /// Past this many a row folds behind a "more" chip, so a server with
+  /// dozens of folders does not push the sheet off the screen.
+  static const folded = 8;
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_FolderSection> createState() => _FolderSectionState();
+}
+
+class _FolderSectionState extends ConsumerState<_FolderSection> {
+  bool _expanded = false;
+
+  @override
+  Widget build(BuildContext context) {
     final items = ref.watch(libraryItemsProvider).valueOrNull ?? const [];
     final top = folderCounts(items);
     if (top.isEmpty) return const SizedBox.shrink();
@@ -225,6 +236,30 @@ class _FolderSection extends ConsumerWidget {
       child: Wrap(spacing: MTSpace.xs, runSpacing: MTSpace.xs, children: chips),
     );
 
+    // The first few of a level, the chosen one always among them, and a
+    // chip for the rest.
+    List<Widget> level(List<MapEntry<String, int>> entries) {
+      if (_expanded || entries.length <= _FolderSection.folded) {
+        return [for (final MapEntry(:key, :value) in entries) chip(key, value)];
+      }
+      bool chosen(String path) =>
+          selected != null &&
+          (selected == path || selected.startsWith('$path/'));
+      final shown = [
+        ...entries.take(_FolderSection.folded),
+        ...entries.skip(_FolderSection.folded).where((e) => chosen(e.key)),
+      ];
+      return [
+        for (final MapEntry(:key, :value) in shown) chip(key, value),
+        ActionChip(
+          label: Text(l10n.moreFolders(entries.length - shown.length)),
+          labelStyle: Theme.of(context).textTheme.labelMedium!
+              .copyWith(color: p.ink2),
+          onPressed: () => setState(() => _expanded = true),
+        ),
+      ];
+    }
+
     // The levels under the chosen folder, from the top down.
     final levels = <List<MapEntry<String, int>>>[];
     if (selected != null) {
@@ -251,10 +286,9 @@ class _FolderSection extends ConsumerWidget {
                 .copyWith(color: selected == null ? p.bg : p.ink2),
             onSelected: (_) => controller.setFolder(null),
           ),
-          for (final MapEntry(:key, :value) in top) chip(key, value),
+          ...level(top),
         ]),
-        for (final level in levels)
-          row([for (final MapEntry(:key, :value) in level) chip(key, value)]),
+        for (final entries in levels) row(level(entries)),
       ],
     );
   }

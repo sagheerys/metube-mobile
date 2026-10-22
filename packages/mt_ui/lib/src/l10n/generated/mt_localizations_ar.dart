@@ -671,6 +671,10 @@ class MTLocalizationsAr extends MTLocalizations {
       'هذا السيرفر لا يسمح بالمجلدات: الخيار CUSTOM_DIRS مطفأ في إعداداته.';
 
   @override
+  String get foldersHelp =>
+      'يُنشأ المجلد على السيرفر داخل التنزيلات، ويُحفظ المقطع فيه مباشرة، فتراه في مشاركة الشبكة وفي أي برنامج آخر. اتركه «بلا مجلد» فلا يتغير شيء. ولتعمل المجلدات يحتاج السيرفر أمرين: أن يكون CUSTOM_DIRS مفعّلاً، وهو الافتراضي في MeTube، وألا يكون في YTDL_OPTIONS المفتاح outtmpl، لأنه يحفظ كل ملف أعلى التنزيلات أياً كان المجلد المختار. ولتسمية الملفات بطريقتك استعمل OUTPUT_TEMPLATE بدلاً منه. دليل الإعداد فيه الأسطر.';
+
+  @override
   String get foldersIgnored =>
       'هذا السيرفر يحفظ كل ملف أعلى التنزيلات أياً كان المجلد المختار، لأن في YTDL_OPTIONS عنده outtmpl. دليل الإعداد يشرح نقله إلى OUTPUT_TEMPLATE.';
 
@@ -821,6 +825,11 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get modeStopAtEnd => 'التوقف في النهاية';
+
+  @override
+  String moreFolders(int count) {
+    return 'المزيد · $count';
+  }
 
   @override
   String get navLibrary => 'المكتبة';
