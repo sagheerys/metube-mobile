@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:synchronized/synchronized.dart';
@@ -14,6 +15,11 @@ class MTLogger {
   final String filePath;
   final int maxLines;
   final Lock _lock = Lock();
+  final StreamController<void> _changes = StreamController<void>.broadcast();
+
+  /// Fires after every write and every clear, so a screen showing the log
+  /// can follow it live instead of asking to be refreshed.
+  Stream<void> get changes => _changes.stream;
 
   static final RegExp _authPattern = RegExp(
     r'(?:Basic|Bearer)\s+[A-Za-z0-9+/=._-]{8,}',
@@ -49,6 +55,7 @@ class MTLogger {
         flush: true,
       );
       await _trimIfNeeded(file);
+      _changes.add(null);
     } on FileSystemException {
       // **Best effort by design.** A diagnostic log must never take down
       // the thing it is describing. The directory can go away underneath it
@@ -80,6 +87,7 @@ class MTLogger {
     if (await file.exists()) {
       await file.writeAsString('', flush: true);
     }
+    _changes.add(null);
   });
 
   /// The log text ready to share, after the mandatory sanitising.

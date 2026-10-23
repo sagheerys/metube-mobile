@@ -60,8 +60,8 @@ final downloadWatcherProvider = Provider<void>((ref) {
             notificationText: texts.backgroundDownload,
             notificationImportance: AndroidNotificationImportance.normal,
             notificationIcon: const AndroidResource(
-              name: 'ic_launcher',
-              defType: 'mipmap',
+              name: 'ic_stat_metube',
+              defType: 'drawable',
             ),
             enableWifiLock: true,
             // No battery-optimisation exemption: an intrusive system dialog,

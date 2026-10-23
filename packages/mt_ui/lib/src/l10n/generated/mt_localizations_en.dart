@@ -684,6 +684,9 @@ class MTLocalizationsEn extends MTLocalizations {
   String get itemUnavailable => 'No longer available';
 
   @override
+  String get jumpToNewest => 'Go to the newest';
+
+  @override
   String knownVideos(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,

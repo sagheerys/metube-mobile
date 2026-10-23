@@ -61,6 +61,8 @@ Future<void> main() async {
       // notification ongoing, so the flag only ever mattered in the paused,
       // unprotected state we are leaving behind.
       androidNotificationOngoing: false,
+      // The white status-bar silhouette, as in the download notifications.
+      androidNotificationIcon: 'drawable/ic_stat_metube',
       // **`false`, against the package's default of `true`, after the
       // measurement of
       // 2026-09-19 on Super.** It used to be `true`, which leaves the

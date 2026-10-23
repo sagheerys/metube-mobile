@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -12,6 +13,10 @@ import '../../di.dart';
 /// The diagnostic log viewer: search, clear, share. **Sharing passes
 /// through mandatory sanitising**, which removes URLs, IP addresses,
 /// credentials and paths.
+///
+/// The newest line is at the bottom, and the screen follows the log live:
+/// a reader resting at the bottom sees each new line arrive, and one
+/// reading higher up is not moved; an arrow offers the way down instead.
 class LogsScreen extends ConsumerStatefulWidget {
   const LogsScreen({super.key});
 
@@ -21,17 +26,31 @@ class LogsScreen extends ConsumerStatefulWidget {
 
 class _LogsScreenState extends ConsumerState<LogsScreen> {
   final TextEditingController _search = TextEditingController();
+  final ScrollController _scroll = ScrollController();
+  StreamSubscription<void>? _changes;
+  Timer? _settle;
   List<String> _lines = const [];
   bool _loading = true;
+
+  /// Lines arrived below the part being read.
+  bool _fresh = false;
 
   @override
   void initState() {
     super.initState();
     _load();
+    // A burst of lines is one reload, not one per line.
+    _changes = _logger.changes.listen((_) {
+      _settle?.cancel();
+      _settle = Timer(MTMotion.medium, _follow);
+    });
   }
 
   @override
   void dispose() {
+    _changes?.cancel();
+    _settle?.cancel();
+    _scroll.dispose();
     _search.dispose();
     super.dispose();
   }
@@ -44,6 +63,26 @@ class _LogsScreenState extends ConsumerState<LogsScreen> {
     setState(() {
       _lines = text.split('\n').where((l) => l.trim().isNotEmpty).toList();
       _loading = false;
+    });
+  }
+
+  /// Reloads after a write. Only a reader already at the bottom is
+  /// carried down with the new lines.
+  Future<void> _follow() async {
+    final atEnd =
+        !_scroll.hasClients ||
+        _scroll.position.extentAfter < MTJumpToEnd.nearEnd;
+    final before = _lines.length;
+    await _load();
+    if (!mounted || _lines.length <= before) return;
+    if (!atEnd) {
+      setState(() => _fresh = true);
+      return;
+    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scroll.hasClients) {
+        _scroll.jumpTo(_scroll.position.maxScrollExtent);
+      }
     });
   }
 
@@ -134,25 +173,36 @@ class _LogsScreenState extends ConsumerState<LogsScreen> {
                           ? l10n.noLogsFound
                           : l10n.noResultsMessage,
                     )
-                  : ListView.builder(
-                      padding: const EdgeInsets.fromLTRB(
-                        MTSpace.pagePad,
-                        0,
-                        MTSpace.pagePad,
-                        MTSpace.xxl,
-                      ),
-                      itemCount: visible.length,
-                      itemBuilder: (context, index) => Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 3),
-                        child: Text(
-                          visible[index],
-                          style: Theme.of(context).textTheme.labelSmall!
-                              .copyWith(
-                                color: visible[index].contains('ERROR')
-                                    ? p.err
-                                    : p.ink2,
-                                fontFamily: 'monospace',
-                              ),
+                  : MTJumpToEnd(
+                      controller: _scroll,
+                      tooltip: l10n.jumpToNewest,
+                      fresh: _fresh,
+                      onReachedEnd: () {
+                        if (_fresh) setState(() => _fresh = false);
+                      },
+                      child: ListView.builder(
+                        controller: _scroll,
+                        // Room under the last line, so the arrow never
+                        // covers it.
+                        padding: const EdgeInsets.fromLTRB(
+                          MTSpace.pagePad,
+                          0,
+                          MTSpace.pagePad,
+                          MTJumpToEnd.reserve,
+                        ),
+                        itemCount: visible.length,
+                        itemBuilder: (context, index) => Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 3),
+                          child: Text(
+                            visible[index],
+                            style: Theme.of(context).textTheme.labelSmall!
+                                .copyWith(
+                                  color: visible[index].contains('ERROR')
+                                      ? p.err
+                                      : p.ink2,
+                                  fontFamily: 'monospace',
+                                ),
+                          ),
                         ),
                       ),
                     ),

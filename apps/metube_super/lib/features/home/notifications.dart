@@ -19,7 +19,10 @@ class DownloadNotifications {
   Future<void> init({void Function(String itemKey)? onOpenItem}) async {
     await _plugin.initialize(
       settings: const InitializationSettings(
-        android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+        // The status bar draws this icon from its alpha alone: a white
+        // silhouette, like every other app's, not the coloured launcher
+        // icon.
+        android: AndroidInitializationSettings('@drawable/ic_stat_metube'),
       ),
       onDidReceiveNotificationResponse: (response) {
         final payload = response.payload;

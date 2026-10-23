@@ -708,6 +708,9 @@ class MTLocalizationsAr extends MTLocalizations {
   String get itemUnavailable => 'لم يعد متوفراً';
 
   @override
+  String get jumpToNewest => 'إلى الأحدث';
+
+  @override
   String knownVideos(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,

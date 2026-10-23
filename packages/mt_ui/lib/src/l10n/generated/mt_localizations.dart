@@ -1280,6 +1280,12 @@ abstract class MTLocalizations {
   /// **'No longer available'**
   String get itemUnavailable;
 
+  /// No description provided for @jumpToNewest.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to the newest'**
+  String get jumpToNewest;
+
   /// No description provided for @knownVideos.
   ///
   /// In en, this message translates to:

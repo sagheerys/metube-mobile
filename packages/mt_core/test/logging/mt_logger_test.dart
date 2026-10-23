@@ -34,6 +34,17 @@ void main() {
       expect(lines.last, contains('سطر 8'));
     });
 
+    test('every write and every clear is announced', () async {
+      var heard = 0;
+      final sub = logger.changes.listen((_) => heard++);
+      await logger.log('one');
+      await logger.error('two');
+      await logger.clear();
+      await Future<void>.delayed(Duration.zero);
+      expect(heard, 3);
+      await sub.cancel();
+    });
+
     test('clear empties it', () async {
       await logger.log('شيء');
       await logger.clear();

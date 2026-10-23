@@ -22,6 +22,7 @@ export 'src/widgets/mt_foreign_text.dart';
 export 'src/widgets/mt_downloads_icon.dart';
 export 'src/widgets/mt_fab.dart';
 export 'src/widgets/mt_highlight_surface.dart';
+export 'src/widgets/mt_jump_to_end.dart';
 export 'src/widgets/mt_library_sliver.dart';
 export 'src/widgets/mt_location_badge.dart';
 export 'src/widgets/mt_markdown_text.dart';

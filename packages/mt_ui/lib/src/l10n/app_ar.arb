@@ -298,6 +298,7 @@
   "invalidUrl": "أدخل رابطاً صالحاً",
   "itemOptions": "خيارات العنصر",
   "itemUnavailable": "لم يعد متوفراً",
+  "jumpToNewest": "إلى الأحدث",
   "knownVideos": "{count, plural, =0{لم يُرصد أي مقطع بعد} =1{مقطع مرصود} =2{مقطعان مرصودان} few{{count} مقاطع مرصودة} many{{count} مقطعاً مرصوداً} other{{count} مقطع مرصود}}",
   "language": "اللغة",
   "languageArabic": "العربية",
