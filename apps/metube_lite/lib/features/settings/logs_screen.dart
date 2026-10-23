@@ -79,11 +79,9 @@ class _LogsScreenState extends ConsumerState<LogsScreen> {
       setState(() => _fresh = true);
       return;
     }
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (_scroll.hasClients) {
-        _scroll.jumpTo(_scroll.position.maxScrollExtent);
-      }
-    });
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => MTJumpToEnd.settleAtEnd(_scroll),
+    );
   }
 
   Future<void> _clear() async {

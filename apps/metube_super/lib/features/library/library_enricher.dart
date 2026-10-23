@@ -35,6 +35,7 @@ class LibraryEnricher {
 
   final Set<String> _seen = {};
   bool _running = false;
+  String? _lastQueueLine;
 
   Future<void> enrich(List<LibraryItem> items) async {
     if (_running) return;
@@ -97,16 +98,18 @@ class LibraryEnricher {
     }
     // The queue counter in the log: "no thumbnails" has three causes that
     // look alike (no candidates, all cooling down, all without a filename),
-    // and without this line nobody can tell them apart.
-    unawaited(
-      _ref
-          .read(loggerProvider)
-          .log(
-            'probe queue: ${pending.length} of ${candidates.length} '
-            '(cooling ${cooling.length})',
-            tag: 'library',
-          ),
-    );
+    // and without this line nobody can tell them apart. **Only when it
+    // changes**: this runs on every poll of the server, every two seconds
+    // while anything downloads, and the same line repeated filled the
+    // thousand-line log in half an hour, pushing out the lines worth
+    // reading.
+    final queueLine =
+        'probe queue: ${pending.length} of ${candidates.length} '
+        '(cooling ${cooling.length})';
+    if (queueLine != _lastQueueLine) {
+      _lastQueueLine = queueLine;
+      unawaited(_ref.read(loggerProvider).log(queueLine, tag: 'library'));
+    }
     if (pending.isEmpty) return;
 
     _running = true;

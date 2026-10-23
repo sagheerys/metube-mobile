@@ -121,6 +121,27 @@ void main() {
     },
   );
 
+  test('the queue line is logged when it changes, not on every poll', () async {
+    // The same queue on every poll, every two seconds while anything
+    // downloads: the repeated line used to fill the whole log.
+    final index = ProbeFailureIndex(store: store, mutex: PrefsMutex());
+    await index.put(item.canonicalUrl, DateTime.now());
+    final container = containerWith(206, _RecordingProbe());
+    addTearDown(container.dispose);
+
+    final enricher = LibraryEnricher(
+      container.read(_refProvider),
+      probe: _RecordingProbe(),
+    );
+    for (var i = 0; i < 5; i++) {
+      await enricher.enrich(const [item]);
+    }
+    await logger.log('flush');
+
+    final lines = (await logger.readAll()).split('\n');
+    expect(lines.where((l) => l.contains('probe queue')), hasLength(1));
+  });
+
   test('a file that exists really is probed', () async {
     final probe = _RecordingProbe();
     final container = containerWith(206, probe);

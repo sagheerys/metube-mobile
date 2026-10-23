@@ -1,9 +1,15 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mt_ui/mt_ui.dart';
 
 void main() {
-  Widget host(ScrollController controller, {bool fresh = false}) => MaterialApp(
+  Widget host(
+    ScrollController controller, {
+    bool fresh = false,
+    int count = 300,
+  }) => MaterialApp(
     theme: mtTheme(MTVariant.superApp, Brightness.light),
     home: Scaffold(
       body: MTJumpToEnd(
@@ -13,11 +19,11 @@ void main() {
         child: ListView.builder(
           controller: controller,
           padding: const EdgeInsets.only(bottom: MTJumpToEnd.reserve),
-          itemCount: 300,
+          itemCount: count,
           // Uneven heights, like wrapped log lines: the end measured
           // before a jump is not the real one.
           itemBuilder: (_, i) =>
-              SizedBox(height: i.isEven ? 20 : 44, child: Text('line $i')),
+              SizedBox(height: i % 7 == 0 ? 120 : 20, child: Text('line $i')),
         ),
       ),
     ),
@@ -74,13 +80,35 @@ void main() {
     expect(controller.offset, 0);
   });
 
-  testWidgets('new entries below bring it out with a dot', (tester) async {
+  testWidgets('new entries below mark it with a dot but do not bring it '
+      'out', (tester) async {
     final controller = ScrollController();
     addTearDown(controller.dispose);
     await tester.pumpWidget(host(controller));
     await tester.pumpWidget(host(controller, fresh: true));
     await tester.pumpAndSettle();
-    expect(opacity(tester), 1);
+    expect(opacity(tester), 0);
     expect(controller.offset, 0, reason: 'the reader is not moved');
+
+    await tester.drag(find.byType(ListView), const Offset(0, -300));
+    await tester.pumpAndSettle();
+    expect(opacity(tester), 1);
+  });
+
+  testWidgets('settleAtEnd reaches the real end of a long uneven list', (
+    tester,
+  ) async {
+    final controller = ScrollController();
+    addTearDown(controller.dispose);
+    await tester.pumpWidget(host(controller, count: 1000));
+    // Each step waits for a frame, and frames here come from pump.
+    var settled = false;
+    unawaited(MTJumpToEnd.settleAtEnd(controller).then((_) => settled = true));
+    for (var i = 0; i < 20 && !settled; i++) {
+      await tester.pump();
+    }
+    expect(settled, isTrue);
+    expect(controller.position.extentAfter, 0);
+    expect(find.text('line 999'), findsOneWidget);
   });
 }

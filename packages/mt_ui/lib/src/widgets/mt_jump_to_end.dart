@@ -28,8 +28,9 @@ class MTJumpToEnd extends StatefulWidget {
   final String tooltip;
   final Widget child;
 
-  /// New entries arrived below the part on screen: the arrow comes out on
-  /// its own and carries a dot, and the list is not moved under the reader.
+  /// New entries arrived below the part on screen: the arrow carries a
+  /// dot. It does not bring the arrow out by itself, because a busy log
+  /// gains a line every few seconds and the arrow would never stay away.
   final bool fresh;
 
   /// Called when the reader gets near the end, by the arrow or by hand.
@@ -37,6 +38,21 @@ class MTJumpToEnd extends StatefulWidget {
 
   /// How close to the end counts as "at the end", in logical pixels.
   static const double nearEnd = 48;
+
+  /// Puts [controller] at the true end of its list. A list of entries of
+  /// uneven height only estimates its length until the entries near the
+  /// end are laid out, so one jump lands short; each jump lays out more
+  /// of them, and a few settle it. The estimate can also shrink under the
+  /// jump and leave the list past its end, showing nothing, so the test is
+  /// "exactly at the end", not "nothing below".
+  static Future<void> settleAtEnd(ScrollController controller) async {
+    for (var i = 0; i < 12 && controller.hasClients; i++) {
+      final p = controller.position;
+      if ((p.pixels - p.maxScrollExtent).abs() < 0.5) return;
+      controller.jumpTo(p.maxScrollExtent);
+      await WidgetsBinding.instance.endOfFrame;
+    }
+  }
 
   /// The space a list leaves under its last item for the arrow.
   static const double reserve = _size + MTSpace.lg * 2;
@@ -63,7 +79,6 @@ class _MTJumpToEndState extends State<MTJumpToEnd> {
       old.controller.removeListener(_onScroll);
       widget.controller.addListener(_onScroll);
     }
-    if (widget.fresh && !old.fresh && !_nearEnd) _out = true;
   }
 
   @override
@@ -118,13 +133,7 @@ class _MTJumpToEndState extends State<MTJumpToEnd> {
         curve: MTMotion.ease,
       );
     }
-    // Entries of uneven height: the end measured before the trip moves as
-    // the entries on the way are laid out, so land on the real one.
-    for (var i = 0; i < 4 && c.hasClients; i++) {
-      if (c.position.extentAfter == 0) break;
-      c.jumpTo(c.position.maxScrollExtent);
-      await WidgetsBinding.instance.endOfFrame;
-    }
+    await MTJumpToEnd.settleAtEnd(c);
   }
 
   @override

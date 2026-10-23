@@ -22,6 +22,11 @@ only one.
   on a server that has folders. Nothing to set up on a standard MeTube: the
   folder list comes from the server's live channel. A server whose settings
   make it ignore folders is told apart, and the picker says so.
+- **The diagnostic log follows itself, with a way to the newest line.** New
+  lines appear as they are written, with no refresh; whoever is at the
+  bottom is carried down with them, and whoever is reading higher up is not
+  moved. Scrolling down brings out a small arrow that goes to the newest
+  line in one tap, and it hides again on a scroll back up. Both apps.
 
 ### Changed
 
@@ -61,6 +66,14 @@ only one.
   newer read had replaced. Checked on a real phone in both apps.
 - **The exported log in Lite was named after Super.** The file is now
   `metube_lite_logs_<date>.txt` or `metube_super_logs_<date>.txt`.
+- **A coloured tile in the status bar.** The app's notifications showed its
+  full-colour icon at the top of the screen on some phones, beside the white
+  icons of every other app. They now show a white silhouette of the same
+  film strip; the notification itself is unchanged. Both apps.
+- **The log filled with one repeated line in Super.** The library's probe
+  queue was logged on every poll, every two seconds while anything
+  downloaded, which filled the whole log in about half an hour and pushed
+  out the lines worth reading. It is now logged only when it changes.
 
 ## [2.5.1] - 2026-10-16
 

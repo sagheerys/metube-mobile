@@ -93,6 +93,9 @@ void main() {
     expect(tester.getTopLeft(first).dy, before);
     expect(find.textContaining('the newest line'), findsNothing);
 
+    // Scrolling down brings the arrow out.
+    await tester.drag(find.byType(ListView), const Offset(0, -300));
+    await tester.pumpAndSettle();
     await tester.tap(find.byTooltip('Go to the newest'));
     await tester.pumpAndSettle();
     expect(find.textContaining('the newest line'), findsOneWidget);
