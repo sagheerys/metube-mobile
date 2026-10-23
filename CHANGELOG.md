@@ -81,6 +81,11 @@ only one.
   full-colour icon at the top of the screen on some phones, beside the white
   icons of every other app. They now show a white silhouette of the same
   film strip; the notification itself is unchanged. Both apps.
+- **A failed download's reason was cut and jumbled in Arabic.** The
+  server's message is several English lines behind an `[extractor]` tag; in
+  an Arabic line it showed as "This video is unav [youtube]". It is now the
+  first sentence alone, in its own direction: "This video is unavailable".
+  Both apps.
 - **The log filled with one repeated line in Super.** The library's probe
   queue was logged on every poll, every two seconds while anything
   downloaded, which filled the whole log in about half an hour and pushed

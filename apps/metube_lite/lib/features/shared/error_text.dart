@@ -16,7 +16,11 @@ String errorText(MTLocalizations l10n, Object error) => switch (error) {
   PollTimeoutException() => l10n.errPollTimeout,
   CookiesTooLargeException() => l10n.cookiesTooLarge,
   UnsafeFilenameException() => l10n.errServer('unsafe filename'),
-  ServerErrorException(:final detail) => l10n.errServer(detail ?? '؟'),
+  // The first sentence only, isolated: yt-dlp's multi-line English
+  // inside an Arabic line was cut and reordered ("unav [youtube]").
+  ServerErrorException(:final detail) => l10n.errServer(
+    detail == null ? '؟' : mtName(serverReason(detail)),
+  ),
   CancelledException() => l10n.cancel,
   _ => l10n.errorGeneric(error.toString()),
 };

@@ -104,20 +104,10 @@ Quality retryQuality(HistoryItem item) => item.downloadType == 'audio'
     ? Quality.audio
     : Quality.fromWire(item.quality).applyRule(item.canonicalUrl);
 
-/// The server's reason in one readable line. yt-dlp writes several lines
-/// behind an `ERROR:` and an `[extractor]` tag, then often the video id
-/// ("[youtube] abc: Video unavailable"); on a phone only the first sentence
-/// says anything.
+/// The server's reason in one readable line ([serverReason]), or null when
+/// it gave none.
 String? failureReason(HistoryItem item) {
   final raw = item.error?.trim();
   if (raw == null || raw.isEmpty) return null;
-  final first = raw
-      .split('\n')
-      .map((line) => line.trim())
-      .firstWhere((line) => line.isNotEmpty);
-  final reason = first
-      .replaceFirst(RegExp(r'^ERROR:\s*', caseSensitive: false), '')
-      .replaceFirst(RegExp(r'^\[[^\]]+\]\s*([\w-]+:\s+)?'), '')
-      .trim();
-  return reason.isEmpty ? first : reason;
+  return serverReason(raw);
 }

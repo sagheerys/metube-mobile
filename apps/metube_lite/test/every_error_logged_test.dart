@@ -68,4 +68,19 @@ void main() {
     );
     expect(errorText(l10n, const NoApiException()), l10n.errNoApi);
   });
+
+  test(
+    'a server reason is its first sentence, isolated for an Arabic line',
+    () {
+      final l10n = lookupMTLocalizations(const Locale('ar'));
+      final text = errorText(
+        l10n,
+        const ServerErrorException(
+          '[youtube] This video is unavailable\nNo video formats found!',
+        ),
+      );
+      expect(text, l10n.errServer(mtName('This video is unavailable')));
+      expect(text, isNot(contains('[youtube]')));
+    },
+  );
 }
