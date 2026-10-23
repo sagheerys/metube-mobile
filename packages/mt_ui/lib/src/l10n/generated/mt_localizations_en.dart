@@ -1142,6 +1142,36 @@ class MTLocalizationsEn extends MTLocalizations {
   String get remove => 'Remove';
 
   @override
+  String removedFailed(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Removed $count failed downloads',
+      one: 'Removed 1 failed download',
+      zero: 'Nothing to remove: they are no longer failed',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get removeFailed => 'Remove the failed';
+
+  @override
+  String get removeFailedBody =>
+      'Only downloads that failed leave the server\'s list. Everything that finished, which is what your library shows, stays exactly as it is.';
+
+  @override
+  String removeFailedTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Remove $count failed downloads?',
+      one: 'Remove 1 failed download?',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get removeFromFavorites => 'Remove from favorites';
 
   @override
@@ -1201,6 +1231,9 @@ class MTLocalizationsEn extends MTLocalizations {
   String get retry => 'Retry';
 
   @override
+  String get retryAll => 'Retry all';
+
+  @override
   String get saveSettings => 'Save Settings';
 
   @override
@@ -1236,6 +1269,24 @@ class MTLocalizationsEn extends MTLocalizations {
 
   @override
   String get serverConfiguration => 'Server Configuration';
+
+  @override
+  String serverFailuresLine(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count downloads didn\'t finish on the server',
+      one: '1 download didn\'t finish on the server',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get serverFailuresNote =>
+      'Stopped by the server with an error, whether added from this phone, a subscription or MeTube\'s own page.';
+
+  @override
+  String get serverFailuresTitle => 'Didn\'t finish on the server';
 
   @override
   String serverFilesCount(int count) {

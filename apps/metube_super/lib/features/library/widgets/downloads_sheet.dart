@@ -5,10 +5,13 @@ import 'package:mt_ui/mt_ui.dart';
 
 import '../../../di.dart';
 import '../../home/add_flow.dart';
+import '../server_failures.dart';
+import 'server_failures_section.dart';
 
 /// The "manage downloads" sheet: in progress, waiting, needs your
-/// attention, with cancel and retry.
-void showDownloadsSheet(BuildContext context) {
+/// attention, with cancel and retry, and what did not finish on the
+/// server. [toFailures] opens it scrolled to that last part.
+void showDownloadsSheet(BuildContext context, {bool toFailures = false}) {
   showModalBottomSheet<void>(
     context: context,
     useRootNavigator: true,
@@ -20,12 +23,14 @@ void showDownloadsSheet(BuildContext context) {
     // left
     // to grab to pull it down.
     useSafeArea: true,
-    builder: (_) => const _DownloadsSheet(),
+    builder: (_) => _DownloadsSheet(toFailures: toFailures),
   );
 }
 
 class _DownloadsSheet extends ConsumerStatefulWidget {
-  const _DownloadsSheet();
+  const _DownloadsSheet({required this.toFailures});
+
+  final bool toFailures;
 
   @override
   ConsumerState<_DownloadsSheet> createState() => _DownloadsSheetState();
@@ -39,6 +44,18 @@ class _DownloadsSheetState extends ConsumerState<_DownloadsSheet> {
   /// emptied (field report 2026-10-15).
   bool _framed = false;
 
+  final GlobalKey _failuresKey = GlobalKey();
+
+  @override
+  void initState() {
+    super.initState();
+    if (!widget.toFailures) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final target = _failuresKey.currentContext;
+      if (target != null) Scrollable.ensureVisible(target);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.mtl;
@@ -50,6 +67,7 @@ class _DownloadsSheetState extends ConsumerState<_DownloadsSheet> {
         .toList();
     final queued = tasks.where((t) => t.phase == TaskPhase.queued).toList();
     final failed = tasks.where((t) => t.phase == TaskPhase.failed).toList();
+    final serverFailed = ref.watch(serverFailuresProvider);
 
     Widget section(
       String title,
@@ -133,7 +151,8 @@ class _DownloadsSheetState extends ConsumerState<_DownloadsSheet> {
       title: l10n.noDownloads,
       message: l10n.allDownloadsFinished,
     );
-    if (shown.isEmpty && !_framed) {
+    final nothing = shown.isEmpty && serverFailed.isEmpty;
+    if (nothing && !_framed) {
       return Padding(
         padding: EdgeInsets.fromLTRB(
           MTSpace.xl,
@@ -184,7 +203,7 @@ class _DownloadsSheetState extends ConsumerState<_DownloadsSheet> {
               // The message scrolls rather than overflows when the sheet
               // is dragged low or the window is short (a tablet on its side),
               // and stays attached to the controller so the sheet still drags.
-              child: shown.isEmpty
+              child: nothing
                   ? LayoutBuilder(
                       builder: (context, box) => SingleChildScrollView(
                         controller: scrollController,
@@ -201,6 +220,11 @@ class _DownloadsSheetState extends ConsumerState<_DownloadsSheet> {
                         section(l10n.activeNow, running),
                         section(l10n.queuedSection, queued),
                         section(l10n.needsAttention, failed, error: true),
+                        if (serverFailed.isNotEmpty)
+                          ServerFailuresSection(
+                            key: _failuresKey,
+                            items: serverFailed,
+                          ),
                       ],
                     ),
             ),

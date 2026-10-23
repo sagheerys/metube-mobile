@@ -1174,6 +1174,42 @@ class MTLocalizationsAr extends MTLocalizations {
   String get remove => 'إزالة';
 
   @override
+  String removedFailed(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'أُزيل $count تحميل فاشل',
+      many: 'أُزيل $count تحميلاً فاشلاً',
+      few: 'أُزيلت $count تحميلات فاشلة',
+      two: 'أُزيل تحميلان فاشلان',
+      one: 'أُزيل تحميل فاشل واحد',
+      zero: 'لا شيء لإزالته: لم تعد فاشلة',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get removeFailed => 'أزل الفاشلة';
+
+  @override
+  String get removeFailedBody =>
+      'يُزال من قائمة السيرفر ما فشل فقط. وكل ما اكتمل، وهو ما تعرضه مكتبتك، يبقى كما هو تماماً.';
+
+  @override
+  String removeFailedTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'إزالة $count تحميل فاشل؟',
+      many: 'إزالة $count تحميلاً فاشلاً؟',
+      few: 'إزالة $count تحميلات فاشلة؟',
+      two: 'إزالة تحميلين فاشلين؟',
+      one: 'إزالة تحميل فاشل واحد؟',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get removeFromFavorites => 'إزالة من المفضلة';
 
   @override
@@ -1236,6 +1272,9 @@ class MTLocalizationsAr extends MTLocalizations {
   String get retry => 'إعادة المحاولة';
 
   @override
+  String get retryAll => 'أعد محاولة الكل';
+
+  @override
   String get saveSettings => 'حفظ الإعدادات';
 
   @override
@@ -1271,6 +1310,27 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get serverConfiguration => 'إعداد الخادم';
+
+  @override
+  String serverFailuresLine(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count تحميل لم يكتمل على السيرفر',
+      many: '$count تحميلاً لم يكتمل على السيرفر',
+      few: '$count تحميلات لم تكتمل على السيرفر',
+      two: 'تحميلان لم يكتملا على السيرفر',
+      one: 'تحميل واحد لم يكتمل على السيرفر',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get serverFailuresNote =>
+      'أوقفها السيرفر بخطأ، سواء أُضيفت من هذا الجوال أو من اشتراك أو من صفحة MeTube.';
+
+  @override
+  String get serverFailuresTitle => 'لم تكتمل على السيرفر';
 
   @override
   String serverFilesCount(int count) {

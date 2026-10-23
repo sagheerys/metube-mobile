@@ -22,6 +22,17 @@ only one.
   on a server that has folders. Nothing to set up on a standard MeTube: the
   folder list comes from the server's live channel. A server whose settings
   make it ignore folders is told apart, and the picker says so.
+- **Downloads that didn't finish on the server (Super).** A download the
+  server stopped with an error used to be visible on MeTube's own page only,
+  unless this phone had added it in the same session. Whoever added it (this
+  phone earlier, a subscription, MeTube's page or another device), one line
+  at the top of the library now says how many there are, and the downloads
+  sheet lists them with the server's reason. Each can be retried with the
+  quality, format and folder it was added with, or removed, and several at
+  once. Removing touches the failed ones only: everything that finished,
+  which is what the library shows, stays exactly as it is, and the server is
+  asked again at that moment so a download finished meanwhile is never
+  removed. Nothing shows when nothing failed.
 - **The diagnostic log follows itself, with a way to the newest line.** New
   lines appear as they are written, with no refresh; whoever is at the
   bottom is carried down with them, and whoever is reading higher up is not

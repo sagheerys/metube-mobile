@@ -219,6 +219,20 @@
       }
     }
   },
+  "@removedFailed": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@removeFailedTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "@removeUnavailable": {
     "placeholders": {
       "count": {
@@ -241,6 +255,13 @@
     }
   },
   "@selectedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@serverFailuresLine": {
     "placeholders": {
       "count": {
         "type": "int"
@@ -711,6 +732,10 @@
   "reelsSwipeHint": "Swipe up for the next short",
   "refresh": "Refresh",
   "remove": "Remove",
+  "removedFailed": "{count, plural, =0{Nothing to remove: they are no longer failed} =1{Removed 1 failed download} other{Removed {count} failed downloads}}",
+  "removeFailed": "Remove the failed",
+  "removeFailedBody": "Only downloads that failed leave the server's list. Everything that finished, which is what your library shows, stays exactly as it is.",
+  "removeFailedTitle": "{count, plural, =1{Remove 1 failed download?} other{Remove {count} failed downloads?}}",
   "removeFromFavorites": "Remove from favorites",
   "removeLocalCopy": "Remove local copy",
   "removeUnavailable": "Remove {count} unavailable",
@@ -727,6 +752,7 @@
   "resultsFound": "{count, plural, =1{1 result} other{{count} results}}",
   "resumeSubscription": "Resume",
   "retry": "Retry",
+  "retryAll": "Retry all",
   "saveSettings": "Save Settings",
   "saveToDevice": "Save to device",
   "savedOnDevice": "Saved on device",
@@ -738,6 +764,9 @@
   "selected": "{count} selected",
   "selectedCount": "{count} selected",
   "serverConfiguration": "Server Configuration",
+  "serverFailuresLine": "{count, plural, =1{1 download didn't finish on the server} other{{count} downloads didn't finish on the server}}",
+  "serverFailuresNote": "Stopped by the server with an error, whether added from this phone, a subscription or MeTube's own page.",
+  "serverFailuresTitle": "Didn't finish on the server",
   "serverFilesCount": "{count, plural, =0{No files on the server} =1{1 file on the server} other{{count} files on the server}}",
   "serverKeepsFilesBody": "The history entry is removed but the file stays on disk, so the server fills up. Set DELETE_FILE_ON_TRASHCAN=true on the MeTube container.",
   "serverKeepsFilesTitle": "Your server is not deleting the files",

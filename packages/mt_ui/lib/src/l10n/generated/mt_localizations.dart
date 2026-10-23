@@ -2084,6 +2084,30 @@ abstract class MTLocalizations {
   /// **'Remove'**
   String get remove;
 
+  /// No description provided for @removedFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{Nothing to remove: they are no longer failed} =1{Removed 1 failed download} other{Removed {count} failed downloads}}'**
+  String removedFailed(int count);
+
+  /// No description provided for @removeFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove the failed'**
+  String get removeFailed;
+
+  /// No description provided for @removeFailedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Only downloads that failed leave the server\'s list. Everything that finished, which is what your library shows, stays exactly as it is.'**
+  String get removeFailedBody;
+
+  /// No description provided for @removeFailedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Remove 1 failed download?} other{Remove {count} failed downloads?}}'**
+  String removeFailedTitle(int count);
+
   /// No description provided for @removeFromFavorites.
   ///
   /// In en, this message translates to:
@@ -2180,6 +2204,12 @@ abstract class MTLocalizations {
   /// **'Retry'**
   String get retry;
 
+  /// No description provided for @retryAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry all'**
+  String get retryAll;
+
   /// No description provided for @saveSettings.
   ///
   /// In en, this message translates to:
@@ -2245,6 +2275,24 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'Server Configuration'**
   String get serverConfiguration;
+
+  /// No description provided for @serverFailuresLine.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 download didn\'t finish on the server} other{{count} downloads didn\'t finish on the server}}'**
+  String serverFailuresLine(int count);
+
+  /// No description provided for @serverFailuresNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Stopped by the server with an error, whether added from this phone, a subscription or MeTube\'s own page.'**
+  String get serverFailuresNote;
+
+  /// No description provided for @serverFailuresTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Didn\'t finish on the server'**
+  String get serverFailuresTitle;
 
   /// No description provided for @serverFilesCount.
   ///

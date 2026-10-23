@@ -21,6 +21,7 @@ import 'widgets/confirm_bulk_delete.dart';
 import 'widgets/library_cards.dart';
 import 'widgets/library_chips.dart';
 import 'widgets/server_banner.dart';
+import 'widgets/server_failures_section.dart';
 import 'widgets/sort_sheet.dart';
 
 /// The unified library: live cards only while something is active, plus a
@@ -229,6 +230,11 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
               const SizedBox(height: MTSpace.md),
               // Why the server part is missing, when it is (2026-09-13).
               const LibraryServerBanner(),
+              // Failures the server holds, from anywhere: one line, and
+              // nothing when there are none.
+              ServerFailuresLine(
+                onOpen: () => showDownloadsSheet(context, toFailures: true),
+              ),
               ..._activeStrip(l10n, active),
             ],
           ),
