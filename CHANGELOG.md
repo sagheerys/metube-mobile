@@ -9,6 +9,8 @@ only one.
 
 ## [Unreleased]
 
+## [2.6.0] - 2026-10-23
+
 ### Added
 
 - **Folders on the server (Super).** The add sheet has a "Folder" row: pick
@@ -62,7 +64,6 @@ only one.
 - **The tags sheet with many tags.** The field for a new tag was pushed off
   the screen; the tags now scroll and the field stays in reach. Also from
   @Kasull-454.
-
 - **Sharing a clip opened the previous one.** When Android had closed the app
   in the background, sharing a new link brought back the link that had opened
   the app last time, and the new one was lost; opening the app from its icon
@@ -745,7 +746,8 @@ each one left behind a test that fails on the old code.
 - An album pasted as one link expanding into twenty downloads on the server,
   with only one of them pulled.
 
-[Unreleased]: https://github.com/sagheerys/metube-mobile/compare/v2.5.1...HEAD
+[Unreleased]: https://github.com/sagheerys/metube-mobile/compare/v2.6.0...HEAD
+[2.6.0]: https://github.com/sagheerys/metube-mobile/compare/v2.5.1...v2.6.0
 [2.5.1]: https://github.com/sagheerys/metube-mobile/compare/v2.5.0...v2.5.1
 [2.5.0]: https://github.com/sagheerys/metube-mobile/compare/v2.4.0...v2.5.0
 [2.4.0]: https://github.com/sagheerys/metube-mobile/compare/v2.3.0...v2.4.0
