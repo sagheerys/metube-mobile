@@ -56,8 +56,9 @@ abstract interface class MeTubeApi {
   /// failure it reports.
   Future<ServerVersion?> fetchVersion({Duration? timeout});
 
-  /// **The folders the server would save into** (§2.4), read from its live
-  /// channel, empty ones included; null when the server did not say.
+  /// **The folders the server would save into** (SERVER-API.md §2.7, the
+  /// folder list), read from its live channel, empty ones included; null
+  /// when the server did not say.
   Future<ServerFolders?> fetchFolders({Duration? timeout});
 
   /// **Does the file actually exist on the server right now?** One byte,

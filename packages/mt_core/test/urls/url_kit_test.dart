@@ -185,8 +185,8 @@ void main() {
       'مدر... [2077436096300945409].mp4',
       'a....b',
       // A clip in a subfolder, as MeTube reports it (contributed by
-      // Kasull-454): the server serves these, so refusing them made the
-      // clip unplayable.
+      // Kasull-454, pull request #25): the server serves these, so refusing
+      // them made the clip unplayable.
       'a/b.mp4',
       'creator/clip [id]/clip [id].mp4',
     ]) {

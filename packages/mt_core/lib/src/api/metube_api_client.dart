@@ -242,8 +242,8 @@ class MeTubeApiClient implements MeTubeApi {
           // Measured on a real server: a three-track album plus this limit
           // yielded one download.
           if (!PlaylistDetector.isPlaylist(url)) 'playlist_item_limit': 1,
-          // Left out for the top, so a server without CUSTOM_DIRS, which
-          // refuses any folder, never sees one it was not asked for.
+          // Omitted for the top: a server with CUSTOM_DIRS off rejects any
+          // `folder` field, so a plain add must not send one.
           if (ServerPath.cleanFolder(folder ?? '') case final dir
               when dir.isNotEmpty)
             'folder': dir,

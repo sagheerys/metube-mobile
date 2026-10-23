@@ -46,8 +46,8 @@ class MTUrlInputSheet extends StatelessWidget {
   final String? platformLabel;
   final ValueChanged<String>? onUrlChanged;
 
-  /// One more choice under the qualities, such as Super's server folder.
-  /// Absent, the sheet is exactly what it always was.
+  /// One more choice under the qualities, such as Super's server folder;
+  /// null for no extra row.
   final Widget? extra;
 
   @override
@@ -67,7 +67,7 @@ class MTUrlInputSheet extends StatelessWidget {
       // **Scrolls when it must**: a short phone with the system font at its
       // largest leaves less room than the sheet's rows need, and a row too
       // many would push the start button off the screen. When everything
-      // fits it looks exactly as before.
+      // fits, nothing scrolls.
       child: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,

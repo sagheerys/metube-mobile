@@ -13,9 +13,8 @@ import 'url_kit.dart';
 /// The string is the relative path, folder first. An audio download is
 /// marked by a leading [_audioMark]: a name from the server is relative and
 /// never starts with `/` (the guard refuses it), so the mark cannot be
-/// mistaken for a real path. A plain name stored before folders were
-/// understood still means a file at the top of `download/`, as it always
-/// did.
+/// mistaken for a real path. A plain name stored by app versions without
+/// folder support still means a file at the top of `download/`.
 abstract final class ServerPath {
   static const _audioMark = '/audio_download/';
 

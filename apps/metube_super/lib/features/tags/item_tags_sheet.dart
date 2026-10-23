@@ -185,9 +185,9 @@ class _ItemTagsSheetState extends ConsumerState<_ItemTagsSheet> {
               Text(l10n.noTagsYet, style: Theme.of(context).textTheme.bodySmall)
             else
               // **The chips scroll, the input row stays put** (contributed
-              // by Kasull-454). With dozens of tags the Wrap grew past the
-              // sheet and pushed the new-tag field and its button off
-              // screen, with no way to reach them. `Flexible` lets the list
+              // by Kasull-454, pull request #25). With dozens of tags the
+              // Wrap grew past the sheet and pushed the new-tag field and
+              // its button off screen, with no way to reach them. `Flexible` lets the list
               // shrink to the space that is left.
               Flexible(
                 child: SingleChildScrollView(

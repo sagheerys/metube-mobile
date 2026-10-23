@@ -131,9 +131,9 @@ class _FolderPicker extends ConsumerWidget {
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                 ),
-                // What a folder is, and what the server needs for it, is
-                // asked for rather than imposed on everyone who opens this;
-                // the button pulses as the picker opens so it is seen.
+                // The explanation of folders and of what the server needs
+                // sits behind a help button rather than always showing; the
+                // button pulses as the picker opens so it gets noticed.
                 PulsingHelp(
                   child: HelpButton(
                     title: l10n.chooseFolder,

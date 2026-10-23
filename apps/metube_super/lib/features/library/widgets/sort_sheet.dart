@@ -182,7 +182,7 @@ class _PlatformSection extends ConsumerWidget {
 /// **The server folders, chosen like the platform** and shown as a
 /// removable chip in the first row once chosen. Absent while every clip
 /// sits at the top of the download directory, which is most servers: the
-/// library looks exactly as it did before folders were understood.
+/// library looks as it would without folder support.
 ///
 /// One row per level: choosing `Ai` adds a row with what is inside it, and
 /// tapping the chosen folder again goes back up a level.

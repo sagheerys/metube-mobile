@@ -101,8 +101,9 @@ class SidecarReader {
       return const SidecarResult(SidecarOutcome.none);
     }
     // The listing is the top of `download/` alone: a clip in a folder, or
-    // one served from `audio_download/`, has its files elsewhere, so only
-    // the plain names are tried for it.
+    // one served from `audio_download/`, has its files elsewhere, so the
+    // listing is skipped and only the standard names from [namesFor] are
+    // tried for it.
     final nested = filename.contains('/');
     final names = switch (listing) {
       final listing? when !nested => choose(listing, filename, language),

@@ -23,7 +23,7 @@ void main() {
       );
     });
 
-    // Measured on the owner's server 2026-10-22: an absolute outtmpl in
+    // Measured on a real server 2026-10-22: an absolute outtmpl in
     // YTDL_OPTIONS writes the file at the top, and MeTube reports it as
     // "../name" relative to the folder that was asked for.
     test('a file written above its folder is found where it really is', () {

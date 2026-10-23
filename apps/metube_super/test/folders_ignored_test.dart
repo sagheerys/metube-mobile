@@ -35,9 +35,9 @@ void main() {
       return c.read(foldersIgnoredProvider);
     }
 
-    // Measured on the owner's server 2026-10-22: two downloads from before
-    // the fix stay in the history as `../name`, and the newer ones are in
-    // their folders.
+    // Measured on a real MeTube 2026-10-22, after its outtmpl was moved out
+    // of YTDL_OPTIONS: two older downloads stay in the history as
+    // `../name`, and the newer ones are in their folders.
     test('goes once the newest folder download is in its folder', () async {
       expect(
         await ignored([

@@ -11,7 +11,7 @@ abstract final class MTConstants {
   static const Duration testConnectionTimeout = Duration(seconds: 10);
 
   /// The folder list arrives after the whole history on the live channel,
-  /// so it gets longer than a connection test.
+  /// so its timeout is longer than [testConnectionTimeout].
   static const Duration foldersTimeout = Duration(seconds: 15);
 
   /// A quick probe for endpoint switching (EndpointResolver).

@@ -80,8 +80,9 @@ class ShareReceiver {
   /// between the two is still held natively, and its `arrived` call takes
   /// it, so there is no window in which it can be lost.
   Future<void> start() async {
-    // **Early teardown:** a hot restart or a quick close left a live
-    // listener holding a dead shell.
+    // start() can run after dispose() (a hot restart, or the app closed
+    // during start-up); installing the handler then would leave a
+    // listener tied to a widget tree that is gone.
     if (_disposed) return;
     channel.setMethodCallHandler((call) async {
       if (call.method == 'arrived') await _take();

@@ -144,7 +144,8 @@ void main() {
   });
 
   // A clip in a folder has its subtitles in that folder, which the listing
-  // of the top of download/ does not show: the plain names are tried there.
+  // of the top of download/ does not show: the standard subtitle names are
+  // tried in that folder instead.
   test('a clip in a folder is read from its own folder', () async {
     server.texts['Kids/Me at the zoo [jNQXAC9IVRw].en.vtt'] = vtt;
     final result = await SidecarReader(

@@ -55,15 +55,14 @@ final libraryFolderPathsProvider = Provider<Set<String>>((ref) {
   return {for (final item in items) ?item.folderPath};
 });
 
-/// **The server saves at the top whatever folder is asked for.** Its
-/// `YTDL_OPTIONS` carries an absolute `outtmpl`, which overrides the
-/// folder; MeTube then reports the file as `Folder/../name`. Seen in the
-/// history it is certain, and the picker says so rather than let a choice
-/// look as if it worked.
+/// **True when the server ignores the chosen folder** and saves at the
+/// top: an absolute `outtmpl` in its `YTDL_OPTIONS` overrides the folder,
+/// and MeTube then reports the file as `Folder/../name`. The picker says
+/// so rather than let a choice look as if it worked.
 ///
-/// **The newest download into a folder decides**, not any of them: the
-/// ones from before the server was fixed stay in the history as they were,
-/// and must not keep the warning up once folders work.
+/// **Only the newest download into a folder counts**: older ones, made
+/// before the server's settings were corrected, stay in the history as
+/// they were and must not keep the warning up once folders work.
 final foldersIgnoredProvider = Provider<bool>((ref) {
   final done = ref.watch(historyProvider).valueOrNull?.done ?? const [];
   HistoryItem? newest;
