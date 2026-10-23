@@ -59,6 +59,7 @@ keys/
 # Third-party skill content (sources and hashes recorded in skills-lock.json)
 # is not republished from here; restore it from its own sources when needed.
 .claude/
+.agents/
 skills-lock.json
 
 # ── Local-only, archived out of the public repo (2026-09-09) ──
