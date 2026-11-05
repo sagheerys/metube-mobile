@@ -3,12 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>MeTube Mobile — Android clients for a self-hosted MeTube server</title>
-<meta name="description" content="Two open-source Android apps for a self-hosted MeTube (yt-dlp) server. MeTube Lite pulls each download to your phone and clears the server; MeTube Super keeps files on the server, streams them, and searches inside your clips by what was said. Arabic and English, phones and tablets, GPL-3.0.">
+<title>MeTube Mobile — Android and Windows clients for a self-hosted MeTube server</title>
+<meta name="description" content="Open-source apps for a self-hosted MeTube (yt-dlp) server: MeTube Lite pulls each download to your phone and clears the server; MeTube Super keeps files on the server, streams them, and searches inside your clips by what was said; MeTube Ember brings the same library to Windows. Arabic and English, phones, tablets and Windows, GPL-3.0.">
 <link rel="canonical" href="https://sagheerys.github.io/metube-mobile/">
 <meta property="og:type" content="website">
-<meta property="og:title" content="MeTube Mobile — Android clients for MeTube">
-<meta property="og:description" content="Queue a link from your phone, then keep the file on your server and stream it, or pull it to the device and let the server clean itself up.">
+<meta property="og:title" content="MeTube Mobile — Android and Windows clients for MeTube">
+<meta property="og:description" content="Queue a link from your phone or your computer, then keep the file on your server and stream it, or pull it to the device and let the server clean itself up.">
 <meta property="og:url" content="https://sagheerys.github.io/metube-mobile/">
 <meta property="og:image" content="https://sagheerys.github.io/metube-mobile/screenshots/hero.jpg">
 <meta property="og:image:width" content="2000">
@@ -145,6 +145,11 @@ body{transition:background-color .25s ease,color .25s ease}
 @media (prefers-reduced-motion: reduce){body{transition:none}}
 /* ── Tablets: two sideways screens beside an upright one, sized so the
       pair and the single end at the same height; stacked on a phone. ── */
+.ember-shots{display:grid;gap:22px;margin-top:22px}
+.ember-shots .phone img{border-radius:12px}
+@media (min-width:760px){.ember-shots{grid-template-columns:1fr 1fr}.ember-shots .wide{grid-column:1 / -1}}
+.ember{--accent:var(--super)}
+@media (min-width:1100px){.apps.three{grid-template-columns:1fr 1fr 1fr}}
 .tablets{display:grid;gap:22px;margin-top:22px}
 .tablets .phone img{border-radius:16px}
 .tablets .tall{max-width:340px;justify-self:center;width:100%}
@@ -164,15 +169,15 @@ footer{margin-top:56px;border-top:1px solid var(--line);padding-top:22px;font-si
 
   <header class="hero">
     <div>
-      <span class="tag">Unofficial · GPL-3.0 · Android</span>
+      <span class="tag">Unofficial · GPL-3.0 · Android · Windows</span>
       <h1>MeTube Mobile</h1>
-      <p class="lead">Two Android apps for a self-hosted
+      <p class="lead">Two Android apps and a Windows app for a self-hosted
         <a href="https://github.com/alexta69/metube">MeTube</a> server — the yt-dlp
-        web downloader you already run on your NAS or homelab. Share a link from
-        your phone, and either keep the file on the server and stream it, or pull it
-        to the device and let the server clean itself up.</p>
+        web downloader you already run on your NAS or homelab. Send a link from
+        your phone or your computer, and either keep the file on the server and
+        stream it, or pull it to the device and let the server clean itself up.</p>
       <div class="cta">
-        <a class="btn btn-main" href="https://github.com/sagheerys/metube-mobile/releases/latest">Download the APKs</a>
+        <a class="btn btn-main" href="https://github.com/sagheerys/metube-mobile/releases/latest">Download</a>
         <a class="btn btn-ghost" href="https://github.com/sagheerys/metube-mobile">Source on GitHub</a>
       </div>
       <p class="note">Listed in MeTube's own README, under
@@ -187,23 +192,57 @@ footer{margin-top:56px;border-top:1px solid var(--line);padding-top:22px;font-si
     </figure>
   </header>
 
+  <h2>New: MeTube Ember, on Windows</h2>
+  <p>The owner's app on a computer, reading the same server as MeTube Super: the
+     library as a grid, a table or a compact list; the transcript following the
+     video beside it; <kbd>Ctrl</kbd>+<kbd>K</kbd> to search the titles and what was
+     said; a reading room, a mini window, channels and their arrivals, and copies
+     to your computer by download, by drag to Explorer, or with
+     <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>C</kbd>. It installs for your user only,
+     with no administrator rights, and updates itself.</p>
+  <div class="ember-shots">
+    <figure class="phone wide">
+      <picture>
+        <source srcset="screenshots/ember-player-night.jpg" media="(prefers-color-scheme: dark)">
+        <img loading="lazy" src="screenshots/ember-player.jpg" width="1600" height="940" alt="MeTube Ember: a video playing, with the transcript beside it marking the line being said, and the player bar beneath">
+      </picture>
+      <figcaption><strong>Watch and read</strong>The transcript follows the video; click a line to jump there.</figcaption>
+    </figure>
+    <figure class="phone">
+      <img loading="lazy" src="screenshots/ember-library.jpg" width="1600" height="940" alt="The MeTube Ember library as a grid of covers, with chips for favourites, video, audio and shorts">
+      <figcaption><strong>Your library</strong>A grid, a table or a compact list.</figcaption>
+    </figure>
+    <figure class="phone">
+      <img loading="lazy" src="screenshots/ember-palette.jpg" width="1600" height="940" alt="The Ctrl+K palette over the library, listing commands">
+      <figcaption><strong>Ctrl+K</strong>Search what was said, or run any command.</figcaption>
+    </figure>
+    <figure class="phone">
+      <img loading="lazy" src="screenshots/ember-channels.jpg" width="1600" height="940" alt="The channels page: four followed channels with what each has brought, and channels in the library to follow">
+      <figcaption><strong>Channels</strong>What each followed channel has brought.</figcaption>
+    </figure>
+    <figure class="phone">
+      <img loading="lazy" src="screenshots/ember-stats-night.jpg" width="1600" height="940" alt="Library statistics at night: clips, room taken, running time, by site, month and channel">
+      <figcaption><strong>Library statistics</strong>What the library holds; nothing is deleted from here.</figcaption>
+    </figure>
+  </div>
+
   <h2>A look inside</h2>
   <p class="note">Every title, channel and cover below is invented for these screenshots; no real server or account appears in them.</p>
   <div class="rail wrap" aria-label="Screenshots of MeTube Super">
     <figure class="phone">
       <picture>
         <source srcset="screenshots/super-search-night.png" media="(prefers-color-scheme: dark)">
-        <img loading="lazy" src="screenshots/super-search.png" width="540" height="1200" alt="A library search for the word backup: one title match, then the lines inside three clips where the word was said, each with its timestamp and the word highlighted">
+        <img loading="lazy" src="screenshots/super-search.png" width="540" height="1200" alt="A library search for the word backup: the lines inside two clips where the word was said, each with its timestamp and the word highlighted">
       </picture>
       <figcaption><strong>Search what was said</strong>Find a word inside your clips, not just in titles, and tap to play from that moment.</figcaption>
     </figure>
     <figure class="phone">
-      <img loading="lazy" src="screenshots/super-transcript.png" width="540" height="1200" alt="The full transcript of an audio episode beneath the player, with the line being spoken marked">
+      <img loading="lazy" src="screenshots/super-transcript.png" width="540" height="1200" alt="The full transcript of a clip over the video, with the line being said marked">
       <figcaption><strong>Read along</strong>The transcript follows playback; tap any line to jump there.</figcaption>
     </figure>
     <figure class="phone">
-      <img loading="lazy" src="screenshots/super-subscriptions.png" width="540" height="1200" alt="Subscriptions: four followed channels, each with how often it is checked, its quality and when it was last checked, one of them paused">
-      <figcaption><strong>Follow a channel</strong>Your server fetches each new video by itself; one notice says what arrived.</figcaption>
+      <img loading="lazy" src="screenshots/super-subscriptions.png" width="540" height="1200" alt="The playlists tab: your tags, then your channels with what each has brought and a switch to pause it">
+      <figcaption><strong>Follow a channel</strong>Your server fetches each new video by itself; one notice says what a subscription brought.</figcaption>
     </figure>
     <figure class="phone">
       <img loading="lazy" src="screenshots/super-player.png" width="540" height="1200" alt="A video streaming from the server with a subtitle over the picture, and the actions and up-next queue beneath it">
@@ -219,7 +258,7 @@ footer{margin-top:56px;border-top:1px solid var(--line);padding-top:22px;font-si
     <figure class="phone">
       <picture>
         <source srcset="screenshots/super-playlists-night.png" media="(prefers-color-scheme: dark)">
-        <img loading="lazy" src="screenshots/super-playlists-day.png" width="540" height="1200" alt="Playlists: three automatic lists above the user's own, each with a cover mosaic">
+        <img loading="lazy" src="screenshots/super-playlists-day.png" width="540" height="1200" alt="Playlists: three automatic lists as rows above the user's own, each with a cover mosaic">
       </picture>
       <figcaption><strong>Playlists</strong>Favourites, latest and offline build themselves; yours sit beneath.</figcaption>
     </figure>
@@ -232,12 +271,12 @@ footer{margin-top:56px;border-top:1px solid var(--line);padding-top:22px;font-si
       <figcaption><strong>Up next, at night</strong>A full night palette, not a half-dark screen.</figcaption>
     </figure>
     <figure class="phone">
-      <img loading="lazy" src="screenshots/super-select.png" width="540" height="1200" alt="Four library items selected, with actions for playlist, tag and delete">
-      <figcaption><strong>Batch actions</strong>Select many: add to a playlist, tag, or delete from the server.</figcaption>
+      <img loading="lazy" src="screenshots/super-reading.png" width="540" height="1200" alt="Reading mode: a clip's transcript as one paragraph, with the sentence being said marked">
+      <figcaption><strong>Read it instead</strong>A clip's words as an article; tap a sentence to hear it from there.</figcaption>
     </figure>
     <figure class="phone">
-      <img loading="lazy" src="screenshots/super-playlist.png" width="540" height="1200" alt="One playlist with play all, shuffle and audio-only buttons">
-      <figcaption><strong>Play all, or just listen</strong>Any playlist plays as video or as audio only.</figcaption>
+      <img loading="lazy" src="screenshots/super-channel.png" width="540" height="1200" alt="One channel's page: how often it is checked, its quality, and its clips in the library">
+      <figcaption><strong>A channel's own page</strong>Check now, pause, edit, and its clips in your library.</figcaption>
     </figure>
     <figure class="phone">
       <img loading="lazy" src="screenshots/lite-shorts.png" width="540" height="1200" alt="The shorts player showing a portrait clip with details, add-to and share">
@@ -267,7 +306,7 @@ footer{margin-top:56px;border-top:1px solid var(--line);padding-top:22px;font-si
   </div>
 
   <h2>Which app is for you</h2>
-  <div class="apps">
+  <div class="apps three">
     <section class="app lite">
       <div class="app-head">
         <h3>MeTube Lite</h3>
@@ -293,8 +332,20 @@ footer{margin-top:56px;border-top:1px solid var(--line);padding-top:22px;font-si
         <dt>Also has</dt><dd>Channel subscriptions — the server fetches each new video by itself and the app tells you when it arrives — plus subtitles over the video, tags, batch downloads, make available offline, a server card that says what the server holds and runs, and two addresses it switches between.</dd>
       </dl>
     </section>
+    <section class="app ember">
+      <div class="app-head">
+        <h3>MeTube Ember</h3>
+        <p class="for">For the same person, at a Windows computer.</p>
+      </div>
+      <dl>
+        <dt>After a download</dt><dd>Keeps everything on the server, and copies a clip to this computer when you ask.</dd>
+        <dt>Library</dt><dd>The same merged library, as a grid, a table or a compact list.</dd>
+        <dt>Playback</dt><dd>In the window, beside its transcript, or in a mini window on top.</dd>
+        <dt>Also has</dt><dd>Ctrl+K, a reading room, channels, drag a clip to Explorer, a "To Ember" button for your browser, and optional sync with MeTube Super through a folder you choose.</dd>
+      </dl>
+    </section>
   </div>
-  <p class="note" style="margin-top:14px">They are separate apps and install side by side.</p>
+  <p class="note" style="margin-top:14px">They are separate apps: the two phone apps install side by side, and Ember needs Windows 10 or 11 on x64.</p>
 
   <h2>MeTube Lite, start to finish</h2>
   <div class="split">
@@ -309,6 +360,7 @@ footer{margin-top:56px;border-top:1px solid var(--line);padding-top:22px;font-si
       <div class="rail pair" aria-label="Screenshots of MeTube Lite">
         <figure class="phone"><img loading="lazy" src="screenshots/lite-day.png" width="540" height="1200" alt="The MeTube Lite library by day"><figcaption>By day</figcaption></figure>
         <figure class="phone"><img loading="lazy" src="screenshots/lite-night.png" width="540" height="1200" alt="The MeTube Lite library at night"><figcaption>At night</figcaption></figure>
+        <figure class="phone"><img loading="lazy" src="screenshots/lite-playlists.png" width="540" height="1200" alt="MeTube Lite playlists: favourites and the latest additions as rows, then your own"><figcaption>Playlists</figcaption></figure>
       </div>
     </div>
     <figure class="phone">
@@ -317,12 +369,13 @@ footer{margin-top:56px;border-top:1px solid var(--line);padding-top:22px;font-si
     </figure>
   </div>
 
-  <h2>Shared by both</h2>
+  <h2>Shared by all three</h2>
   <ul>
     <li>Background audio with a media notification and lock-screen controls, a mini player, and a lane for portrait clips.</li>
     <li>Playlists, favourites, search, and plain-JSON backups that hold no secret.</li>
     <li>In-app updates, straight from the GitHub releases page.</li>
     <li>A tablet layout, upright and sideways: a side rail, two-pane settings, and the player beside the library.</li>
+    <li>Chips that put every clip under one of video, shorts or audio, so videos can be seen without the shorts.</li>
     <li>A day palette and a night palette, each drawn on purpose.</li>
     <li>Arabic and English, right-to-left first.</li>
   </ul>
@@ -342,7 +395,7 @@ footer{margin-top:56px;border-top:1px solid var(--line);padding-top:22px;font-si
 
   <h2>Links</h2>
   <ul>
-    <li><a href="https://github.com/sagheerys/metube-mobile/releases/latest">Latest release</a> — one signed APK per app</li>
+    <li><a href="https://github.com/sagheerys/metube-mobile/releases/latest">Latest release</a> — one file per app: two APKs and a Windows installer</li>
     <li><a href="https://github.com/sagheerys/metube-mobile">Repository</a> — a Flutter monorepo, GPL-3.0</li>
     <li><a href="https://github.com/sagheerys/metube-mobile/blob/main/CHANGELOG.md">Changelog</a></li>
     <li><a href="https://github.com/sagheerys/metube-mobile/issues">Issues</a> — in Arabic or English</li>
@@ -350,17 +403,22 @@ footer{margin-top:56px;border-top:1px solid var(--line);padding-top:22px;font-si
 
   <section class="ar" lang="ar" dir="rtl">
     <h2 style="margin-top:0">بالعربية</h2>
-    <p class="lead">تطبيقان لأندرويد لسيرفر
+    <p class="lead">تطبيقان لأندرويد وتطبيق لويندوز لسيرفر
       <a href="https://github.com/alexta69/metube">MeTube</a> الذي تستضيفه بنفسك.
-      شارك الرابط من جوالك، ثم إما أن يبقى الملف على السيرفر فتشغّله بثّاً، أو
-      يُسحب إلى جهازك ويُنظَّف السيرفر تلقائياً.</p>
+      أرسل الرابط من جوالك أو حاسوبك، ثم إما أن يبقى الملف على السيرفر فتشغّله
+      بثّاً، أو يُسحب إلى جهازك ويُنظَّف السيرفر تلقائياً.</p>
+
+    <figure class="phone" style="margin:22px 0 10px">
+      <img loading="lazy" src="screenshots/ember-library-ar.jpg" width="1600" height="940" style="border-radius:12px" alt="MeTube Ember بالعربية: المكتبة شبكةً من الأغلفة، والنص بجانب الفيديو">
+      <figcaption>جديد: MeTube Ember على ويندوز، بالواجهة العربية.</figcaption>
+    </figure>
 
     <figure class="phone" style="margin:22px 0 26px">
       <img loading="lazy" src="screenshots/hero-ar.jpg" width="2000" height="1137" style="border-radius:18px;border-width:1px" alt="MeTube Super بالعربية: المكتبة، ومقطع فيديو مع ترجمته وقائمة «التالي»، ومشغل الصوت ليلاً، وقوائم التشغيل">
       <figcaption>الواجهة العربية من اليمين إلى اليسار. كل عنوان وغلاف هنا مخترَع.</figcaption>
     </figure>
 
-    <div class="apps">
+    <div class="apps three">
       <section class="app lite">
         <div class="app-head">
           <h3>MeTube Lite</h3>
@@ -386,6 +444,18 @@ footer{margin-top:56px;border-top:1px solid var(--line);padding-top:22px;font-si
           <dt>وفيه أيضاً</dt><dd>اشتراكات القنوات: ينزّل السيرفر كل مقطع جديد وحده ويخبرك التطبيق حين يصل. ومعها ترجمة تظهر فوق الفيديو، ووسوم، وتنزيل دفعات، و«إتاحة دون اتصال»، وبطاقة تعرض ما على السيرفر ونسخته، وعنوانان بتبديل تلقائي.</dd>
         </dl>
       </section>
+      <section class="app ember">
+        <div class="app-head">
+          <h3>MeTube Ember</h3>
+          <p class="for">لمالك السيرفر نفسه، على حاسوب ويندوز.</p>
+        </div>
+        <dl>
+          <dt>بعد التنزيل</dt><dd>يُبقي كل شيء على السيرفر، وينسخ المقطع إلى الحاسوب حين تطلب.</dd>
+          <dt>المكتبة</dt><dd>المكتبة الموحَّدة نفسها، شبكةً أو جدولاً أو قائمة مضغوطة.</dd>
+          <dt>التشغيل</dt><dd>في النافذة بجانب النص، أو في نافذة مصغّرة فوق كل شيء.</dd>
+          <dt>وفيه أيضاً</dt><dd>Ctrl+K، وغرفة القراءة، والقنوات، وسحب المقطع إلى المستكشف، وزر «إلى Ember» في المتصفح، ومزامنة اختيارية مع MeTube Super عبر مجلد تختاره.</dd>
+        </dl>
+      </section>
     </div>
 
     <ul style="margin-top:22px">
@@ -394,6 +464,7 @@ footer{margin-top:56px;border-top:1px solid var(--line);padding-top:22px;font-si
       <li>قوائم تشغيل ومفضلة وبحث، ونسخ احتياطية بصيغة JSON لا تحمل أي سرّ.</li>
       <li>في Super: البحث داخل المقاطع بما قيل فيها، والضغط على النتيجة يشغّل المقطع من تلك اللحظة، والنص يتبع التشغيل سطراً سطراً.</li>
       <li>تخطيط خاص بالتابلت، عمودياً وأفقياً: شريط تنقّل جانبي، وإعدادات في لوحتين، ومشغّل بجانب المكتبة.</li>
+      <li>رقاقات تضع كل مقطع تحت واحد من فيديو وقِصار وصوت، فترى الفيديوهات بلا القِصار.</li>
       <li>تحديث ذاتي من صفحة الإصدارات.</li>
       <li>واجهة عربية كاملة من اليمين إلى اليسار، بوضعين نهاري وليلي.</li>
     </ul>
@@ -456,7 +527,7 @@ footer{margin-top:56px;border-top:1px solid var(--line);padding-top:22px;font-si
   "name": "MeTube Mobile",
   "author": { "@type": "Person", "name": "Yasir Sagheer", "url": "https://github.com/sagheerys" },
   "applicationCategory": "MultimediaApplication",
-  "operatingSystem": "Android",
+  "operatingSystem": "Android, Windows",
   "license": "https://www.gnu.org/licenses/gpl-3.0.html",
   "url": "https://sagheerys.github.io/metube-mobile/",
   "downloadUrl": "https://github.com/sagheerys/metube-mobile/releases/latest",
@@ -464,7 +535,7 @@ footer{margin-top:56px;border-top:1px solid var(--line);padding-top:22px;font-si
   "screenshot": "https://sagheerys.github.io/metube-mobile/screenshots/hero.jpg",
   "inLanguage": ["en", "ar"],
   "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
-  "description": "Two Android clients for a self-hosted MeTube (yt-dlp) server: Lite pulls each download to the phone and clears the server, Super keeps files on the server and streams them."
+  "description": "Clients for a self-hosted MeTube (yt-dlp) server: Lite pulls each download to the phone and clears the server, Super keeps files on the server and streams them, and Ember brings the same library to Windows."
 }
 </script>
 </body>
