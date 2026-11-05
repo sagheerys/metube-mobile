@@ -14,8 +14,8 @@
 <meta property="og:image:width" content="2000">
 <meta property="og:image:height" content="1137">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="theme-color" content="#FBF6EE" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#1A130F" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#F4F2EE" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#171513" media="(prefers-color-scheme: dark)">
 <script>
 /* The visitor's own choice, if they made one, wins over the system's. */
 try{var t=localStorage.getItem('theme');if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t);}catch(e){}
@@ -25,18 +25,18 @@ try{var t=localStorage.getItem('theme');if(t==='dark'||t==='light')document.docu
 <link href="https://fonts.googleapis.com/css2?family=Noto+Kufi+Arabic:wght@500;700&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#FBF6EE; --ink:#2B211B; --muted:#6B5B4E; --line:#E3D8C9;
-  --card:#FFFDF8; --super:#C25E2E; --superDeep:#9E4517; --lite:#2F6D74;
+  --bg:#F4F2EE; --ink:#2B211B; --muted:#6B635D; --line:#DEDAD4;
+  --card:#FFFFFF; --cardAlt:#EAE7E1; --super:#C25E2E; --superDeep:#9E4517; --lite:#2F6D74;
   --onAccent:#FFF8F2; --frame:#2B211B; --gutter:16px;
 }
 @media (prefers-color-scheme: dark){
-  :root:not([data-theme="light"]){ --bg:#1A130F; --ink:#F4EBDF; --muted:#C3B2A2; --line:#3A2C23;
-         --card:#241B15; --super:#E0784A; --superDeep:#E0784A; --lite:#6FB3BA;
-         --onAccent:#2B1207; --frame:#4A3A2F; }
+  :root:not([data-theme="light"]){ --bg:#171513; --ink:#F0EBE4; --muted:#A8A39D; --line:#34302C;
+         --card:#211E1B; --cardAlt:#2A2622; --super:#E0784A; --superDeep:#E0784A; --lite:#6FB3BA;
+         --onAccent:#2B1207; --frame:#3E3934; }
 }
-:root[data-theme="dark"]{ --bg:#1A130F; --ink:#F4EBDF; --muted:#C3B2A2; --line:#3A2C23;
-         --card:#241B15; --super:#E0784A; --superDeep:#E0784A; --lite:#6FB3BA;
-         --onAccent:#2B1207; --frame:#4A3A2F; }
+:root[data-theme="dark"]{ --bg:#171513; --ink:#F0EBE4; --muted:#A8A39D; --line:#34302C;
+         --card:#211E1B; --cardAlt:#2A2622; --super:#E0784A; --superDeep:#E0784A; --lite:#6FB3BA;
+         --onAccent:#2B1207; --frame:#3E3934; }
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
 img{max-width:100%;height:auto;display:block}
@@ -90,29 +90,39 @@ a{color:var(--superDeep)}
     overflow:visible;scroll-snap-type:none;padding-bottom:0}
 }
 
-/* ── The two apps, as cards rather than a table: a table of four columns
-      is the first thing to break on a phone. ── */
-.apps{display:grid;gap:16px;margin-top:20px}
-@media (min-width:720px){.apps{grid-template-columns:1fr 1fr}}
-/* Each card is a spec sheet: a head washed in the app's own colour, then
-   rows split by hairlines, so the two read side by side, row against row. */
-.lite{--accent:var(--lite)} .super{--accent:var(--super)}
-.app{background:var(--card);border:1px solid var(--line);border-radius:20px;overflow:hidden}
-.app-head{padding:20px 22px 16px;border-bottom:1px solid var(--line);
-  background:var(--card);background:color-mix(in srgb,var(--accent) 9%,var(--card))}
-.app h3{font-size:1.25rem;margin-bottom:2px;color:var(--accent)}
-.app .for{color:var(--muted);font-size:.95rem;margin:0}
-.app dl{margin:0;padding:0 22px;display:grid;grid-template-columns:minmax(7.5rem,auto) 1fr}
-.app dt,.app dd{padding:14px 0;border-top:1px solid var(--line)}
-.app dt:first-of-type,.app dd:first-of-type{border-top:0}
-.app dt{font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);line-height:1.5;padding-top:19px;padding-inline-end:18px}
-.app dd{margin:0}
-@media (max-width:480px){
-  .app dl{display:block}
-  .app dt{padding:14px 0 0}
-  .app dd{padding:2px 0 14px;border-top:0}
+/* ── Which app: one table, read across a row, so the three answers to the
+      same question sit side by side. On a phone each row becomes a block:
+      the question, then one line per app, labelled with its name. ── */
+.lite{--accent:var(--lite)} .super{--accent:var(--super)} .ember{--accent:var(--super)}
+.compare{width:100%;border-collapse:separate;border-spacing:0;margin-top:20px;
+  background:var(--card);border:1px solid var(--line);border-radius:20px;overflow:hidden;
+  font-size:.97rem;line-height:1.55}
+.compare th,.compare td{padding:14px 18px;text-align:start;vertical-align:top;border-top:1px solid var(--line)}
+.compare thead th{border-top:0;background:var(--cardAlt);padding-top:18px;padding-bottom:16px}
+.compare thead th.app{color:var(--accent);font-size:1.12rem;font-family:'Noto Kufi Arabic','Tajawal',system-ui,sans-serif}
+.compare thead th small{display:block;color:var(--muted);font-family:'Tajawal',system-ui,sans-serif;font-weight:500;font-size:.82rem;margin-top:2px}
+.compare tbody th{width:19%;font-weight:700;color:var(--muted);font-size:.86rem;letter-spacing:.02em}
+.compare td{width:27%}
+.compare .no{color:var(--muted)}
+.compare .yes{font-weight:700;color:var(--accent)}
+.compare .yes span{font-weight:400;color:var(--ink)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+@media (max-width:759px){
+  .compare,.compare tbody,.compare tr,.compare tbody th,.compare td{display:block;width:auto}
+  .compare thead{display:none}
+  .compare tbody tr{border-top:1px solid var(--line);padding:14px 18px 10px}
+  .compare tbody tr:first-child{border-top:0}
+  .compare tbody th,.compare td{border-top:0;padding:0}
+  .compare tbody th{margin-bottom:8px;color:var(--ink);font-size:.95rem}
+  .compare td{position:relative;padding:5px 0;padding-inline-start:4.8rem}
+  .compare td::before{content:attr(data-app);position:absolute;inset-inline-start:0;top:6px;font-weight:700;color:var(--accent);font-size:.88rem}
 }
-
+/* A grid item takes its content's width unless told otherwise: without this a
+   rail of phones inside it widened the whole page on a phone. */
+.hero > *,.split > *{min-width:0}
+.prose{max-width:72ch}
+.shared{max-width:none}
+@media (min-width:860px){.shared{columns:2;column-gap:48px}.shared li{break-inside:avoid}}
 .split{display:grid;gap:clamp(20px,5vw,48px);align-items:center;margin-top:12px}
 @media (min-width:760px){.split{grid-template-columns:1fr minmax(220px,280px)}}
 .split > .phone{justify-self:center;width:min(70vw,280px)}
@@ -124,7 +134,7 @@ pre{max-width:100%;background:var(--card);border:1px solid var(--line);border-ra
 code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
 .ar{direction:rtl;text-align:right;border-top:1px solid var(--line);margin-top:64px;padding-top:36px}
 .ar ul{padding-inline-start:1.2em}
-.ar .app dt{letter-spacing:0}
+.ar .compare tbody th{letter-spacing:0}
 /* ── Day / night ── */
 .theme-toggle{position:fixed;top:12px;inset-inline-end:12px;z-index:10;width:46px;height:46px;
   display:grid;place-items:center;padding:0;border-radius:50%;cursor:pointer;
@@ -148,8 +158,6 @@ body{transition:background-color .25s ease,color .25s ease}
 .ember-shots{display:grid;gap:22px;margin-top:22px}
 .ember-shots .phone img{border-radius:12px}
 @media (min-width:760px){.ember-shots{grid-template-columns:1fr 1fr}.ember-shots .wide{grid-column:1 / -1}}
-.ember{--accent:var(--super)}
-@media (min-width:1100px){.apps.three{grid-template-columns:1fr 1fr 1fr}}
 .tablets{display:grid;gap:22px;margin-top:22px}
 .tablets .phone img{border-radius:16px}
 .tablets .tall{max-width:340px;justify-self:center;width:100%}
@@ -193,7 +201,7 @@ footer{margin-top:56px;border-top:1px solid var(--line);padding-top:22px;font-si
   </header>
 
   <h2>New: MeTube Ember, on Windows</h2>
-  <p>The owner's app on a computer, reading the same server as MeTube Super: the
+  <p class="prose">The owner's app on a computer, reading the same server as MeTube Super: the
      library as a grid, a table or a compact list; the transcript following the
      video beside it; <kbd>Ctrl</kbd>+<kbd>K</kbd> to search the titles and what was
      said; a reading room, a mini window, channels and their arrivals, and copies
@@ -286,7 +294,7 @@ footer{margin-top:56px;border-top:1px solid var(--line);padding-top:22px;font-si
   <p class="hint">Swipe sideways for more →</p>
 
   <h2>On a tablet</h2>
-  <p>Both apps use a tablet's room, upright or on its side, instead of
+  <p class="prose">Both apps use a tablet's room, upright or on its side, instead of
      stretching the phone layout: a side rail for navigation, settings in two
      panes, and the library in columns or as a table. Small 8-inch tablets
      count too, and phones keep their own layout.</p>
@@ -306,46 +314,46 @@ footer{margin-top:56px;border-top:1px solid var(--line);padding-top:22px;font-si
   </div>
 
   <h2>Which app is for you</h2>
-  <div class="apps three">
-    <section class="app lite">
-      <div class="app-head">
-        <h3>MeTube Lite</h3>
-        <p class="for">For family and friends who just want the file.</p>
-      </div>
-      <dl>
-        <dt>After a download</dt><dd>Pulls the file to the phone, then removes it from the server.</dd>
-        <dt>Library</dt><dd>What is on the phone.</dd>
-        <dt>Playback</dt><dd>Local files.</dd>
-        <dt>Also has</dt><dd>A Wi-Fi-only rule for limited data, and it finishes at the next launch what a killed app could not.</dd>
-      </dl>
-    </section>
-    <section class="app super">
-      <div class="app-head">
-        <h3>MeTube Super</h3>
-        <p class="for">For the person who runs the server.</p>
-      </div>
-      <dl>
-        <dt>After a download</dt><dd>Keeps everything on the server.</dd>
-        <dt>Library</dt><dd>The server's history and the phone's files, merged into one.</dd>
-        <dt>Playback</dt><dd>Streams from the server, and plays local files.</dd>
-        <dt>Search</dt><dd>Inside your clips, by what was said in them: from YouTube's subtitles when you add a clip, and from the subtitle files your server can write beside every download, subscriptions and other sites included.</dd>
-        <dt>Also has</dt><dd>Channel subscriptions — the server fetches each new video by itself and the app tells you when it arrives — plus subtitles over the video, tags, batch downloads, make available offline, a server card that says what the server holds and runs, and two addresses it switches between.</dd>
-      </dl>
-    </section>
-    <section class="app ember">
-      <div class="app-head">
-        <h3>MeTube Ember</h3>
-        <p class="for">For the same person, at a Windows computer.</p>
-      </div>
-      <dl>
-        <dt>After a download</dt><dd>Keeps everything on the server, and copies a clip to this computer when you ask.</dd>
-        <dt>Library</dt><dd>The same merged library, as a grid, a table or a compact list.</dd>
-        <dt>Playback</dt><dd>In the window, beside its transcript, or in a mini window on top.</dd>
-        <dt>Also has</dt><dd>Ctrl+K, a reading room, channels, drag a clip to Explorer, a "To Ember" button for your browser, and optional sync with MeTube Super through a folder you choose.</dd>
-      </dl>
-    </section>
-  </div>
-  <p class="note" style="margin-top:14px">They are separate apps: the two phone apps install side by side, and Ember needs Windows 10 or 11 on x64.</p>
+  <table class="compare">
+    <caption class="sr">The three apps compared</caption>
+    <thead><tr>
+      <th scope="col"><span class="sr">Question</span></th>
+      <th scope="col" class="app lite">MeTube Lite<small>Android · for the family</small></th>
+      <th scope="col" class="app super">MeTube Super<small>Android · for the server's owner</small></th>
+      <th scope="col" class="app ember">MeTube Ember<small>Windows · for the server's owner</small></th>
+    </tr></thead>
+    <tbody>
+      <tr><th scope="row">After a download</th>
+        <td class="lite" data-app="Lite">Pulls the file to the phone, then clears it from the server.</td>
+        <td class="super" data-app="Super">Keeps it on the server.</td>
+        <td class="ember" data-app="Ember">Keeps it on the server, and copies it to the computer when you ask.</td></tr>
+      <tr><th scope="row">Library</th>
+        <td class="lite" data-app="Lite">What is on the phone.</td>
+        <td class="super" data-app="Super">The server's history and the phone's files, in one.</td>
+        <td class="ember" data-app="Ember">The same library, as a grid, a table or a compact list.</td></tr>
+      <tr><th scope="row">Playback</th>
+        <td class="lite" data-app="Lite">Local files.</td>
+        <td class="super" data-app="Super">Streams from the server, and plays local files.</td>
+        <td class="ember" data-app="Ember">Beside the transcript, or in a mini window on top.</td></tr>
+      <tr><th scope="row">Search by what was said</th>
+        <td class="lite no" data-app="Lite">—<span class="sr">Not in Lite</span></td>
+        <td class="super yes" data-app="Super">Yes</td>
+        <td class="ember yes" data-app="Ember">Yes <span>— with Ctrl+K</span></td></tr>
+      <tr><th scope="row">Channel subscriptions</th>
+        <td class="lite no" data-app="Lite">—<span class="sr">Not in Lite</span></td>
+        <td class="super yes" data-app="Super">Yes <span>— a notice says what arrived</span></td>
+        <td class="ember yes" data-app="Ember">Yes <span>— a notice says what arrived</span></td></tr>
+      <tr><th scope="row">Sync</th>
+        <td class="lite no" data-app="Lite">—<span class="sr">Not in Lite</span></td>
+        <td class="super" data-app="Super">Optional, through a folder you choose.</td>
+        <td class="ember" data-app="Ember">Optional, with Super, through the same folder.</td></tr>
+      <tr><th scope="row">Also has</th>
+        <td class="lite" data-app="Lite">Wi-Fi-only downloads, and it finishes at the next launch what a closed app could not.</td>
+        <td class="super" data-app="Super">Subtitles over the video, tags, batch downloads, make available offline, and two server addresses it switches between.</td>
+        <td class="ember" data-app="Ember">A reading room, drag a clip to Explorer, and a "To Ember" button for your browser.</td></tr>
+    </tbody>
+  </table>
+  <p class="note prose" style="margin-top:14px">Search reads YouTube's subtitles when you add a clip, and the subtitle files your server can write beside every download, subscriptions and other sites included. They are separate apps: the two phone apps install side by side, and Ember needs Windows 10 or 11 on x64.</p>
 
   <h2>MeTube Lite, start to finish</h2>
   <div class="split">
@@ -370,7 +378,7 @@ footer{margin-top:56px;border-top:1px solid var(--line);padding-top:22px;font-si
   </div>
 
   <h2>Shared by all three</h2>
-  <ul>
+  <ul class="shared">
     <li>Background audio with a media notification and lock-screen controls, a mini player, and a lane for portrait clips.</li>
     <li>Playlists, favourites, search, and plain-JSON backups that hold no secret.</li>
     <li>In-app updates, straight from the GitHub releases page.</li>
@@ -381,14 +389,14 @@ footer{margin-top:56px;border-top:1px solid var(--line);padding-top:22px;font-si
   </ul>
 
   <h2>No server yet?</h2>
-  <p>These are clients: they download nothing by themselves. Every file is
+  <p class="prose">These are clients: they download nothing by themselves. Every file is
      fetched by your own MeTube server, and that server runs anywhere Docker
      runs — a PC, a NAS, a Raspberry Pi:</p>
 <pre><code>docker run -d -p 8081:8081 \
   -v /path/on/your/disk/downloads:/downloads \
   -e DELETE_FILE_ON_TRASHCAN=true \
   ghcr.io/alexta69/metube</code></pre>
-  <p>Then point the app at that address. Four server settings change how the
+  <p class="prose">Then point the app at that address. Four server settings change how the
      apps behave, and the absence of each looks like a defect in the app; they
      are listed, with the symptom each one causes, in
      <a href="https://github.com/sagheerys/metube-mobile/blob/main/docs/SERVER-SETUP.md">the server setup guide</a>.</p>
@@ -418,47 +426,47 @@ footer{margin-top:56px;border-top:1px solid var(--line);padding-top:22px;font-si
       <figcaption>الواجهة العربية من اليمين إلى اليسار. كل عنوان وغلاف هنا مخترَع.</figcaption>
     </figure>
 
-    <div class="apps three">
-      <section class="app lite">
-        <div class="app-head">
-          <h3>MeTube Lite</h3>
-          <p class="for">للعائلة والأصدقاء: يريدون الملف فقط.</p>
-        </div>
-        <dl>
-          <dt>بعد التنزيل</dt><dd>يسحب الملف إلى الجوال ثم يحذفه من السيرفر.</dd>
-          <dt>المكتبة</dt><dd>ما هو على الجوال.</dd>
-          <dt>التشغيل</dt><dd>الملفات المحلية.</dd>
-          <dt>وفيه أيضاً</dt><dd>قصر التنزيل على Wi-Fi، وإكمال ما لم يكتمل عند الفتح التالي.</dd>
-        </dl>
-      </section>
-      <section class="app super">
-        <div class="app-head">
-          <h3>MeTube Super</h3>
-          <p class="for">لمالك السيرفر.</p>
-        </div>
-        <dl>
-          <dt>بعد التنزيل</dt><dd>يُبقي كل شيء على السيرفر.</dd>
-          <dt>المكتبة</dt><dd>سجلّ السيرفر وملفات الجوال في مكتبة واحدة.</dd>
-          <dt>التشغيل</dt><dd>بثّ من السيرفر، وتشغيل محلي.</dd>
-          <dt>البحث</dt><dd>داخل مقاطعك بما قيل فيها: من ترجمات يوتيوب عند إضافة المقطع، ومن ملفات الترجمة التي يكتبها سيرفرك بجانب كل تنزيل، ومنها الاشتراكات والمواقع الأخرى.</dd>
-          <dt>وفيه أيضاً</dt><dd>اشتراكات القنوات: ينزّل السيرفر كل مقطع جديد وحده ويخبرك التطبيق حين يصل. ومعها ترجمة تظهر فوق الفيديو، ووسوم، وتنزيل دفعات، و«إتاحة دون اتصال»، وبطاقة تعرض ما على السيرفر ونسخته، وعنوانان بتبديل تلقائي.</dd>
-        </dl>
-      </section>
-      <section class="app ember">
-        <div class="app-head">
-          <h3>MeTube Ember</h3>
-          <p class="for">لمالك السيرفر نفسه، على حاسوب ويندوز.</p>
-        </div>
-        <dl>
-          <dt>بعد التنزيل</dt><dd>يُبقي كل شيء على السيرفر، وينسخ المقطع إلى الحاسوب حين تطلب.</dd>
-          <dt>المكتبة</dt><dd>المكتبة الموحَّدة نفسها، شبكةً أو جدولاً أو قائمة مضغوطة.</dd>
-          <dt>التشغيل</dt><dd>في النافذة بجانب النص، أو في نافذة مصغّرة فوق كل شيء.</dd>
-          <dt>وفيه أيضاً</dt><dd>Ctrl+K، وغرفة القراءة، والقنوات، وسحب المقطع إلى المستكشف، وزر «إلى Ember» في المتصفح، ومزامنة اختيارية مع MeTube Super عبر مجلد تختاره.</dd>
-        </dl>
-      </section>
-    </div>
+    <table class="compare">
+      <caption class="sr">مقارنة التطبيقات الثلاثة</caption>
+      <thead><tr>
+        <th scope="col"><span class="sr">السؤال</span></th>
+        <th scope="col" class="app lite">MeTube Lite<small>أندرويد · للعائلة</small></th>
+        <th scope="col" class="app super">MeTube Super<small>أندرويد · لمالك السيرفر</small></th>
+        <th scope="col" class="app ember">MeTube Ember<small>ويندوز · لمالك السيرفر</small></th>
+      </tr></thead>
+      <tbody>
+        <tr><th scope="row">بعد التنزيل</th>
+          <td class="lite" data-app="Lite">يسحب الملف إلى الجوال ثم يحذفه من السيرفر.</td>
+          <td class="super" data-app="Super">يُبقيه على السيرفر.</td>
+          <td class="ember" data-app="Ember">يُبقيه على السيرفر، وينسخه إلى الحاسوب حين تطلب.</td></tr>
+        <tr><th scope="row">المكتبة</th>
+          <td class="lite" data-app="Lite">ما هو على الجوال.</td>
+          <td class="super" data-app="Super">سجلّ السيرفر وملفات الجوال في مكتبة واحدة.</td>
+          <td class="ember" data-app="Ember">المكتبة نفسها، شبكةً أو جدولاً أو قائمة مضغوطة.</td></tr>
+        <tr><th scope="row">التشغيل</th>
+          <td class="lite" data-app="Lite">الملفات المحلية.</td>
+          <td class="super" data-app="Super">بثّ من السيرفر، وتشغيل محلي.</td>
+          <td class="ember" data-app="Ember">بجانب النص، أو في نافذة مصغّرة فوق كل شيء.</td></tr>
+        <tr><th scope="row">البحث بما قيل</th>
+          <td class="lite no" data-app="Lite">—<span class="sr">ليس في Lite</span></td>
+          <td class="super yes" data-app="Super">نعم</td>
+          <td class="ember yes" data-app="Ember">نعم <span>— بالاختصار <bdi dir="ltr">Ctrl+K</bdi></span></td></tr>
+        <tr><th scope="row">اشتراكات القنوات</th>
+          <td class="lite no" data-app="Lite">—<span class="sr">ليس في Lite</span></td>
+          <td class="super yes" data-app="Super">نعم <span>— وإشعار بما وصل</span></td>
+          <td class="ember yes" data-app="Ember">نعم <span>— وإشعار بما وصل</span></td></tr>
+        <tr><th scope="row">المزامنة</th>
+          <td class="lite no" data-app="Lite">—<span class="sr">ليس في Lite</span></td>
+          <td class="super" data-app="Super">اختيارية عبر مجلد تختاره.</td>
+          <td class="ember" data-app="Ember">اختيارية مع Super عبر المجلد نفسه.</td></tr>
+        <tr><th scope="row">وفيه أيضاً</th>
+          <td class="lite" data-app="Lite">قصر التنزيل على Wi-Fi، وإكمال ما لم يكتمل عند الفتح التالي.</td>
+          <td class="super" data-app="Super">ترجمة فوق الفيديو، ووسوم، وتنزيل دفعات، و«إتاحة دون اتصال»، وعنوانان للسيرفر بتبديل تلقائي.</td>
+          <td class="ember" data-app="Ember">غرفة القراءة، وسحب المقطع إلى المستكشف، وزر «إلى Ember» في المتصفح.</td></tr>
+      </tbody>
+    </table>
 
-    <ul style="margin-top:22px">
+    <ul class="shared" style="margin-top:22px">
       <li>استقبال الروابط من قائمة المشاركة، ولو كان التطبيق مغلقاً، وعدة روابط معاً.</li>
       <li>تشغيل الصوت في الخلفية مع إشعار وسائط وأزرار في شاشة القفل، ومشغل مصغّر، ومسار للمقاطع الطولية.</li>
       <li>قوائم تشغيل ومفضلة وبحث، ونسخ احتياطية بصيغة JSON لا تحمل أي سرّ.</li>
@@ -505,7 +513,7 @@ footer{margin-top:56px;border-top:1px solid var(--line);padding-top:22px;font-si
     sources.forEach(function(s){
       s.media = !forced ? '(prefers-color-scheme: dark)' : (forced==='dark' ? 'all' : 'not all');
     });
-    metas.forEach(function(m){ m.setAttribute('content', isDark() ? '#1A130F' : '#FBF6EE'); });
+    metas.forEach(function(m){ m.setAttribute('content', isDark() ? '#171513' : '#F4F2EE'); });
     var b=document.getElementById('themeToggle');
     if(b) b.setAttribute('aria-pressed', isDark() ? 'true' : 'false');
   }
