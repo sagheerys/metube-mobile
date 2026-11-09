@@ -10,6 +10,17 @@ for Android, and MeTube Ember for Windows.
 
 ## [Unreleased]
 
+### Added
+
+- **Servers behind Cloudflare Access.** A server protected by Cloudflare
+  Zero Trust answered the apps with its login page, which read as "not a
+  MeTube server". Under the password there is now an optional, folded
+  *Cloudflare Access* section for a service token's Client ID and Client
+  Secret. They are sent to `https://` addresses only (a home `http://`
+  address never sees them), never follow a redirect to another host, and
+  are kept beside the password, out of backups and logs. Built on the work
+  by @cciprian5 in #32, thank you. All three apps.
+
 ## [2.7.0] - 2026-11-05
 
 ### Added

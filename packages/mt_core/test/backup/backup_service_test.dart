@@ -516,4 +516,91 @@ void main() {
       );
     },
   );
+
+  /// Cloudflare Access: a backup file is
+  /// something people send to themselves by e-mail or keep in a cloud drive,
+  /// so the service token must not be in it, and restoring a file must not
+  /// wipe a token the phone already holds.
+  group('the Cloudflare Access pair and backups', () {
+    const id = '4c1f0d7a.access';
+    const secret = '9a7e11c0b2d4f6a8';
+
+    Future<void> seed() async {
+      await secrets.write(SecretKeys.cfAccessClientId, id);
+      await secrets.write(SecretKeys.cfAccessClientSecret, secret);
+      await store.setString('server_url', 'https://metube.example.com');
+      await store.setBool('library_compact_view', true);
+    }
+
+    Future<void> expectKept() async {
+      expect(await secrets.read(SecretKeys.cfAccessClientId), id);
+      expect(await secrets.read(SecretKeys.cfAccessClientSecret), secret);
+    }
+
+    test('the exported file holds neither value', () async {
+      // Defect: a live credential written into a file that gets shared.
+      await seed();
+      final exported = await service.exportToString();
+      expect(exported, isNot(contains(id)));
+      expect(exported, isNot(contains(secret)));
+      expect(exported, isNot(contains('CF-Access')));
+    });
+
+    test('restoring a plain backup leaves the stored pair alone', () async {
+      // Defect: a restore on a phone that is already set up clearing the
+      // token, so every request fails until the user types it again.
+      await seed();
+      final exported = await service.exportToString();
+      await service.importFromString(exported);
+      await expectKept();
+    });
+
+    test('restoring each legacy format leaves the stored pair alone', () async {
+      await seed();
+      final key = BackupCrypto.generateKeyBase64();
+      await secrets.write(SecretKeys.backupAesKey, key);
+
+      await service.importFromString(
+        BackupCrypto.encrypt(
+          plaintext: json.encode({
+            'app': 'MTF',
+            'variant': 'super',
+            'version': 2,
+            'prefs': {
+              'server_url': {'t': 's', 'v': 'https://old.example'},
+            },
+            'secure': {'username': 'user'},
+          }),
+          keyBase64: key,
+        ),
+      );
+      await expectKept();
+
+      await service.importFromString(
+        BackupCrypto.encrypt(
+          plaintext: json.encode({
+            'app': 'MeTube Lite',
+            'settings': {'serverUrl': 'https://old.example.com'},
+          }),
+          keyBase64: key,
+          header: BackupCrypto.headerLegacyLite,
+        ),
+      );
+      await expectKept();
+
+      await service.importFromString(
+        BackupCrypto.encrypt(
+          plaintext: json.encode({
+            'app': 'MeTube Super',
+            'prefs': {
+              'server_url': {'t': 's', 'v': 'https://truenas.local:8081'},
+            },
+          }),
+          keyBase64: key,
+          header: BackupCrypto.headerLegacySuper,
+        ),
+      );
+      await expectKept();
+    });
+  });
 }

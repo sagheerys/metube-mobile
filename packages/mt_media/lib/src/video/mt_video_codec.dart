@@ -35,6 +35,12 @@ abstract final class MTVideoCodec {
   static Future<List<int>?> Function(PlaybackSource source) readHead =
       _readHead;
 
+  /// The real reader, which `flutter_test_config.dart` replaces by a stub in
+  /// every test, for the tests that talk to a local server.
+  @visibleForTesting
+  static Future<List<int>?> realReadHead(PlaybackSource source) =>
+      _readHead(source);
+
   /// Forgets what was learned, for tests.
   @visibleForTesting
   static void reset() => _known.clear();
@@ -86,6 +92,10 @@ abstract final class MTVideoCodec {
     try {
       final request = await client.getUrl(source.uri);
       source.headers.forEach(request.headers.set);
+      // A Cloudflare service token must not follow a redirect to another
+      // host (this client re-sends custom headers on one). Without the
+      // pair the behaviour is what it always was.
+      if (_carriesAccessToken(source.headers)) request.followRedirects = false;
       request.headers.set(HttpHeaders.rangeHeader, 'bytes=0-${headBytes - 1}');
       final response = await request.close();
       if (response.statusCode != HttpStatus.partialContent &&
@@ -104,4 +114,11 @@ abstract final class MTVideoCodec {
       client.close(force: true);
     }
   }
+
+  static bool _carriesAccessToken(Map<String, String> headers) =>
+      headers.keys.any((name) {
+        final lower = name.toLowerCase();
+        return lower == 'cf-access-client-id' ||
+            lower == 'cf-access-client-secret';
+      });
 }

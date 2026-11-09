@@ -240,6 +240,81 @@ void main() {
       isFalse,
     );
   });
+
+  group('the head probe and a redirect', () {
+    late HttpServer first;
+    late HttpServer second;
+    late List<HttpHeaders> secondSaw;
+    HttpOverrides? previous;
+
+    setUp(() async {
+      // The binding hands out a client that answers 400; this needs the real
+      // one to talk to a local server.
+      previous = HttpOverrides.current;
+      HttpOverrides.global = null;
+      secondSaw = [];
+      second = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+      second.listen((request) {
+        secondSaw.add(request.headers);
+        request.response
+          ..statusCode = HttpStatus.ok
+          ..add(_head('V_AV1'));
+        request.response.close();
+      });
+      first = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+      first.listen((request) {
+        request.response
+          ..statusCode = HttpStatus.found
+          ..headers.set(
+            HttpHeaders.locationHeader,
+            'http://127.0.0.1:${second.port}/clip.webm',
+          );
+        request.response.close();
+      });
+    });
+    tearDown(() async {
+      await first.close(force: true);
+      await second.close(force: true);
+      HttpOverrides.global = previous;
+    });
+
+    PlaybackSource sourceWith(Map<String, String> headers) => PlaybackSource(
+      origin: PlaybackOrigin.stream,
+      uri: Uri.parse('http://127.0.0.1:${first.port}/download/clip.webm'),
+      headers: headers,
+    );
+
+    test('with the pair, the redirect is not followed', () async {
+      // Defect: the probe uses a plain `HttpClient`, which follows redirects
+      // by default and re-sends custom headers, so the secret would reach
+      // whatever host a redirect names. The answer is "not AV1", the path
+      // every clip took before the probe existed.
+      final head = await MTVideoCodec.realReadHead(
+        sourceWith({
+          'CF-Access-Client-Id': 'id.access',
+          'CF-Access-Client-Secret': 's3cr3t',
+        }),
+      );
+      expect(head, isNull);
+      expect(secondSaw, isEmpty, reason: 'the second server was contacted');
+    });
+
+    test('the header names are matched without regard to case', () async {
+      final head = await MTVideoCodec.realReadHead(
+        sourceWith({'cf-access-client-secret': 's3cr3t'}),
+      );
+      expect(head, isNull);
+      expect(secondSaw, isEmpty);
+    });
+
+    test('without the pair a redirect is followed as before', () async {
+      // Principle I: people who are not behind Access see no change.
+      final head = await MTVideoCodec.realReadHead(sourceWith({}));
+      expect(head, isNotNull);
+      expect(MTVideoCodec.av1InHead(head!), isTrue);
+      expect(secondSaw, hasLength(1));
+    });
+  });
 }
 
 /// A file head with [markers] somewhere among filler bytes.

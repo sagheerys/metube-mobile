@@ -316,6 +316,29 @@ class MTLocalizationsEn extends MTLocalizations {
   String get closePlayer => 'Close player';
 
   @override
+  String get cloudflareAccess => 'Cloudflare Access (optional)';
+
+  @override
+  String get cloudflareAccessHelp =>
+      'Only for a server behind Cloudflare Access. Create a service token in Cloudflare Zero Trust, allow it with a Service Auth policy on this server\'s address, and paste its two values here. They are sent to https addresses only.';
+
+  @override
+  String get cloudflareBothRequired =>
+      'Enter both the Client ID and the Client Secret, or leave both empty';
+
+  @override
+  String get cloudflareClientId => 'Client ID';
+
+  @override
+  String get cloudflareClientSecret => 'Client Secret';
+
+  @override
+  String get cloudflareHideSecret => 'Hide the secret';
+
+  @override
+  String get cloudflareShowSecret => 'Show the secret';
+
+  @override
   String get columnAdded => 'Added';
 
   @override
@@ -1795,6 +1818,10 @@ class MTLocalizationsEn extends MTLocalizations {
 
   @override
   String get enterFullscreen => 'Fullscreen';
+
+  @override
+  String get errAccessRejected =>
+      'Cloudflare refused the Client ID or the Client Secret';
 
   @override
   String get errAuth => 'Wrong username or password';

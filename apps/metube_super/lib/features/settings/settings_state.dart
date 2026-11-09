@@ -15,6 +15,7 @@ class SuperSettings {
     this.autoSwitch = true,
     this.username,
     this.password,
+    this.cloudflareAccess,
     this.quality = Quality.best,
     this.quickDownload = false,
     this.wifiOnly = false,
@@ -36,6 +37,10 @@ class SuperSettings {
   final bool autoSwitch;
   final String? username;
   final String? password;
+
+  /// The optional Cloudflare Access service token; null for everyone who is
+  /// not behind Access.
+  final CloudflareAccess? cloudflareAccess;
   final Quality quality;
 
   /// **Quick download**: a shared or pasted link downloads immediately at
@@ -86,6 +91,7 @@ class SuperSettings {
           baseUrl: activeUrl!,
           username: username,
           password: password,
+          access: cloudflareAccess,
         )
       : null;
 
@@ -102,6 +108,8 @@ class SuperSettings {
     bool? autoSwitch,
     String? username,
     String? password,
+    CloudflareAccess? cloudflareAccess,
+    bool clearCloudflareAccess = false,
     Quality? quality,
     bool? quickDownload,
     bool? wifiOnly,
@@ -124,6 +132,9 @@ class SuperSettings {
     autoSwitch: autoSwitch ?? this.autoSwitch,
     username: clearCredentials ? null : (username ?? this.username),
     password: clearCredentials ? null : (password ?? this.password),
+    cloudflareAccess: clearCloudflareAccess
+        ? null
+        : (cloudflareAccess ?? this.cloudflareAccess),
     quality: quality ?? this.quality,
     quickDownload: quickDownload ?? this.quickDownload,
     wifiOnly: wifiOnly ?? this.wifiOnly,
@@ -151,6 +162,7 @@ class SuperSettings {
       autoSwitch: await store.getBool('auto_switch_enabled') ?? true,
       username: await secrets.read(SecretKeys.username),
       password: await secrets.read(SecretKeys.password),
+      cloudflareAccess: await CloudflareAccess.load(secrets),
       quality: Quality.fromWire(await store.getString('video_quality')),
       quickDownload: await store.getBool('quick_download_enabled') ?? false,
       wifiOnly: await store.getBool('wifi_only_downloads') ?? false,
@@ -187,16 +199,18 @@ class SettingsNotifier extends Notifier<SuperSettings> {
 
   /// Rule 1: test the connection, then save. **A broken setting is never
   /// saved silently.** Throws a classified [MTApiException] for the UI to
-  /// display.
+  /// display. [access] is tested with the rest; null removes a stored pair.
   Future<void> saveServer({
     required String url,
     String? username,
     String? password,
+    CloudflareAccess? access,
   }) async {
     final config = ServerConfig(
       baseUrl: url,
       username: username,
       password: password,
+      access: access,
     );
     final client = MeTubeApiClient(config: config);
     try {
@@ -210,10 +224,13 @@ class SettingsNotifier extends Notifier<SuperSettings> {
     });
     await _writeSecret(SecretKeys.username, username);
     await _writeSecret(SecretKeys.password, password);
+    await CloudflareAccess.save(_secrets, access);
     state = state.copyWith(
       activeUrl: config.baseUrl,
       username: username,
       password: password,
+      cloudflareAccess: access,
+      clearCloudflareAccess: access == null,
     );
   }
 

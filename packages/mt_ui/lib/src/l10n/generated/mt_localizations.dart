@@ -608,6 +608,48 @@ abstract class MTLocalizations {
   /// **'Close player'**
   String get closePlayer;
 
+  /// No description provided for @cloudflareAccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Cloudflare Access (optional)'**
+  String get cloudflareAccess;
+
+  /// No description provided for @cloudflareAccessHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Only for a server behind Cloudflare Access. Create a service token in Cloudflare Zero Trust, allow it with a Service Auth policy on this server\'s address, and paste its two values here. They are sent to https addresses only.'**
+  String get cloudflareAccessHelp;
+
+  /// No description provided for @cloudflareBothRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter both the Client ID and the Client Secret, or leave both empty'**
+  String get cloudflareBothRequired;
+
+  /// No description provided for @cloudflareClientId.
+  ///
+  /// In en, this message translates to:
+  /// **'Client ID'**
+  String get cloudflareClientId;
+
+  /// No description provided for @cloudflareClientSecret.
+  ///
+  /// In en, this message translates to:
+  /// **'Client Secret'**
+  String get cloudflareClientSecret;
+
+  /// No description provided for @cloudflareHideSecret.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide the secret'**
+  String get cloudflareHideSecret;
+
+  /// No description provided for @cloudflareShowSecret.
+  ///
+  /// In en, this message translates to:
+  /// **'Show the secret'**
+  String get cloudflareShowSecret;
+
   /// No description provided for @columnAdded.
   ///
   /// In en, this message translates to:
@@ -3085,6 +3127,12 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'Fullscreen'**
   String get enterFullscreen;
+
+  /// No description provided for @errAccessRejected.
+  ///
+  /// In en, this message translates to:
+  /// **'Cloudflare refused the Client ID or the Client Secret'**
+  String get errAccessRejected;
 
   /// No description provided for @errAuth.
   ///

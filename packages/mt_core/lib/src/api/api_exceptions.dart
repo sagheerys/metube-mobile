@@ -27,6 +27,18 @@ final class AuthFailureException extends MTApiException {
   const AuthFailureException([super.detail]);
 }
 
+/// Cloudflare Access refused the service token (the Client ID or the Client
+/// Secret), or the token could not be sent at all.
+///
+/// Told apart from [AuthFailureException] because the fix is somewhere else:
+/// the server's own password is not involved, and showing "wrong password"
+/// sends the user to the wrong field. Like [AuthFailureException] it is not
+/// retryable: repeating the same token fails the same way. **Its [detail]
+/// never carries a header value**; the secret must not reach a log.
+final class AccessRejectedException extends MTApiException {
+  const AccessRejectedException([super.detail]);
+}
+
 /// A 200 response that is not JSON carrying both `done` and `queue`,
 /// usually HTML.
 final class NotMeTubeServerException extends MTApiException {

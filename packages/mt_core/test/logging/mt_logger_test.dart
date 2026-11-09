@@ -109,4 +109,56 @@ void main() {
       expect(await blocked.readAll(), isEmpty);
     },
   );
+
+  /// Cloudflare Access: the log screen shows the file
+  /// as it is, and the share button sanitises it, so the service token has
+  /// to be handled both when it is written and when it is shared.
+  group('the Cloudflare Access pair in the log', () {
+    const id = '4c1f0d7a.access';
+    const secret = '9a7e11c0b2d4f6a8';
+
+    test('sanitizeForShare replaces both values, whatever the spelling', () {
+      for (final line in [
+        'sent CF-Access-Client-Id: $id and CF-Access-Client-Secret: $secret',
+        'sent CF-Access-Client-Id=$id CF-Access-Client-Secret=$secret',
+        'sent cf-access-client-id: $id cf-access-client-secret: $secret',
+        'headers {CF-Access-Client-Id: $id, CF-Access-Client-Secret: $secret}',
+      ]) {
+        final clean = MTLogger.sanitizeForShare(line);
+        expect(clean, isNot(contains(id)), reason: line);
+        expect(clean, isNot(contains(secret)), reason: line);
+        expect(clean, contains('[AUTH]'), reason: line);
+      }
+    });
+
+    test(
+      'a line is already scrubbed in the file the log screen shows',
+      () async {
+        // Defect: the value sat in the log file for as long as the log did
+        // and was visible on the logs screen, which reads the raw file.
+        await logger.log('headers CF-Access-Client-Id: $id');
+        await logger.error(
+          'failed',
+          cause: 'CF-Access-Client-Secret: $secret rejected',
+        );
+        final shown = await logger.readAll();
+        expect(shown, isNot(contains(id)));
+        expect(shown, isNot(contains(secret)));
+        expect(shown, contains('failed'), reason: 'the rest of the line stays');
+      },
+    );
+
+    test(
+      'the write-time scrub leaves ordinary lines exactly as written',
+      () async {
+        // Principle I: only this pattern is applied at write time. URLs and
+        // addresses stay readable on the device and are removed when shared.
+        await logger.log('fetching https://metube.example.com/history ok');
+        expect(
+          await logger.readAll(),
+          contains('fetching https://metube.example.com/history ok'),
+        );
+      },
+    );
+  });
 }

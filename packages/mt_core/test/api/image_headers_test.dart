@@ -43,4 +43,30 @@ void main() {
     expect(sameOrigin('http://NAS:8086/a', 'http://nas:8086'), isTrue);
     expect(sameOrigin('/storage/a.jpg', 'http://nas:8086'), isFalse);
   });
+
+  group('the Cloudflare Access pair follows the same rule', () {
+    // Defect: covers were fetched with the streaming headers, so a
+    // service token would have gone to YouTube's image host with them.
+    final behindAccess = MeTubeApiClient(
+      config: ServerConfig(
+        baseUrl: 'https://mtube.example.com',
+        access: CloudflareAccess(clientId: 'id.access', clientSecret: 's3cr3t'),
+      ),
+    );
+
+    test('an image on the server itself carries the pair', () {
+      final headers = behindAccess.imageHeadersFor(
+        'https://mtube.example.com/download/a.jpg',
+      );
+      expect(headers['CF-Access-Client-Id'], 'id.access');
+      expect(headers['CF-Access-Client-Secret'], 's3cr3t');
+    });
+
+    test('a CDN image gets neither header', () {
+      final headers = behindAccess.imageHeadersFor(
+        'https://i.ytimg.com/vi/MfDROnE8FG8/hqdefault.jpg',
+      );
+      expect(headers, isEmpty);
+    });
+  });
 }

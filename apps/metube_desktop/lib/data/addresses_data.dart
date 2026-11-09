@@ -118,17 +118,13 @@ class AddressesNotifier extends Notifier<ServerAddresses> {
 }
 
 /// How addresses are probed; a test puts its own in. The probe signs in as
-/// the set-up account, so a refused password reads as such.
+/// the set-up account (Cloudflare pair included), so a refused password
+/// reads as such.
 final endpointResolverProvider = Provider<EndpointResolver>((ref) {
   final setup = ref.watch(serverSetupProvider);
   return EndpointResolver.withClientFactory(
-    (url) => MeTubeApiClient(
-      config: ServerConfig(
-        baseUrl: url,
-        username: setup?.username,
-        password: setup?.password,
-      ),
-    ),
+    (url) =>
+        MeTubeApiClient(config: setup?.at(url) ?? ServerConfig(baseUrl: url)),
   );
 });
 

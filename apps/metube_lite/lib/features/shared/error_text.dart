@@ -6,6 +6,8 @@ import 'package:mt_ui/mt_ui.dart';
 /// strings.
 String errorText(MTLocalizations l10n, Object error) => switch (error) {
   AuthFailureException() => l10n.errAuth,
+  // Not the password: Cloudflare turned the service token away.
+  AccessRejectedException() => l10n.errAccessRejected,
   NotMeTubeServerException() => l10n.errNotMeTube,
   // Before its parent: a file gone from a working server is not a wrong
   // address.

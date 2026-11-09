@@ -9,8 +9,8 @@ import 'addresses_data.dart';
 final secretStoreProvider = Provider<SecretStore>((ref) => MemorySecretStore());
 
 /// The server set up on this computer: its address in the settings, and
-/// its user name and password in [SecretStore], never in the settings
-/// file, a backup or a log.
+/// its user name, password and Cloudflare pair in [SecretStore], never in
+/// the settings file, a backup or a log.
 class ServerSetupStore {
   const ServerSetupStore({
     required this.store,
@@ -31,6 +31,7 @@ class ServerSetupStore {
       baseUrl: url,
       username: await secrets.read(SecretKeys.username),
       password: await secrets.read(SecretKeys.password),
+      access: await CloudflareAccess.load(secrets),
     );
   }
 
@@ -46,6 +47,7 @@ class ServerSetupStore {
         await secrets.write(key, value);
       }
     }
+    await CloudflareAccess.save(secrets, config.access);
   }
 }
 

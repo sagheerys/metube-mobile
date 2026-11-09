@@ -255,6 +255,52 @@ void main() {
       );
     });
   });
+
+  group('Cloudflare Access rejection', () {
+    test(
+      'a probe the token was rejected on is unauthorized, not unreachable',
+      () async {
+        // Defect: a rejected token read as "no network", so Super would keep
+        // hunting for another address instead of saying the pair is wrong.
+        // The bad secret has a character the platform refuses to send, which
+        // is the one rejection the client can see for certain.
+        final resolver = EndpointResolver.withClientFactory(
+          (baseUrl) => MeTubeApiClient(
+            config: ServerConfig(
+              baseUrl: baseUrl,
+              access: CloudflareAccess(
+                clientId: 'id.access',
+                clientSecret: 'abc\u00e9def',
+              ),
+            ),
+            dio: Dio()..httpClientAdapter = _RefusingAdapter(),
+          ),
+        );
+        expect(await resolver.probeAll(['https://metube.example.com']), {
+          'https://metube.example.com': MTEndpointStatus.unauthorized,
+        });
+      },
+    );
+
+    test('and it is never adopted as the active endpoint', () async {
+      final resolver = EndpointResolver.withClientFactory(
+        (baseUrl) => MeTubeApiClient(
+          config: ServerConfig(
+            baseUrl: baseUrl,
+            access: CloudflareAccess(
+              clientId: 'id.access',
+              clientSecret: 'abc\u00e9def',
+            ),
+          ),
+          dio: Dio()..httpClientAdapter = _RefusingAdapter(),
+        ),
+      );
+      expect(
+        await resolver.resolveActive(localUrl: 'https://metube.example.com'),
+        isNull,
+      );
+    });
+  });
 }
 
 /// An adapter returning one HTTP status, to test refusal classification
@@ -286,6 +332,23 @@ class _StatusAdapter implements HttpClientAdapter {
       },
     );
   }
+
+  @override
+  void close({bool force = false}) {}
+}
+
+/// Behaves like the platform on a header value it will not send.
+class _RefusingAdapter implements HttpClientAdapter {
+  @override
+  Future<ResponseBody> fetch(
+    RequestOptions options,
+    Stream<Uint8List>? requestStream,
+    Future<void>? cancelFuture,
+  ) async => throw DioException(
+    requestOptions: options,
+    type: DioExceptionType.unknown,
+    error: const FormatException('Invalid HTTP header field value: "x"'),
+  );
 
   @override
   void close({bool force = false}) {}

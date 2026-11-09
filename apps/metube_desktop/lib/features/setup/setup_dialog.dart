@@ -62,6 +62,12 @@ class _SetupDialogState extends ConsumerState<_SetupDialog> {
     text: ref.read(serverSetupProvider)?.username ?? '',
   );
   final _password = TextEditingController();
+  late final _cfId = TextEditingController(
+    text: ref.read(serverSetupProvider)?.access?.clientId ?? '',
+  );
+  late final _cfSecret = TextEditingController(
+    text: ref.read(serverSetupProvider)?.access?.clientSecret ?? '',
+  );
   final _passwordFocus = FocusNode();
   String? _error;
   var _testing = false;
@@ -71,6 +77,8 @@ class _SetupDialogState extends ConsumerState<_SetupDialog> {
     _url.dispose();
     _user.dispose();
     _password.dispose();
+    _cfId.dispose();
+    _cfSecret.dispose();
     _passwordFocus.dispose();
     super.dispose();
   }
@@ -104,10 +112,18 @@ class _SetupDialogState extends ConsumerState<_SetupDialog> {
       setState(() => _error = l.serverUrlRequired);
       return;
     }
+    final access = CloudflareAccess.typed(_cfId.text, _cfSecret.text);
+    // Both values or neither: one alone only earns a rejection that looks
+    // like a wrong address.
+    if (access != null && !access.isComplete) {
+      setState(() => _error = l.cloudflareBothRequired);
+      return;
+    }
     final config = ServerConfig(
       baseUrl: url,
       username: _user.text.trim().isEmpty ? null : _user.text.trim(),
       password: _password.text.isEmpty ? null : _password.text,
+      access: access,
     );
     setState(() {
       _testing = true;
@@ -180,6 +196,12 @@ class _SetupDialogState extends ConsumerState<_SetupDialog> {
                       onChanged: (_) => setState(() {}),
                       onSubmitted: (_) => unawaited(_connect()),
                       decoration: InputDecoration(labelText: l.password),
+                    ),
+                    const SizedBox(height: _fieldGap),
+                    MTAccessTokenFields(
+                      clientId: _cfId,
+                      clientSecret: _cfSecret,
+                      gap: _fieldGap,
                     ),
                     if (_plainPassword)
                       Padding(

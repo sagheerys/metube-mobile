@@ -31,6 +31,12 @@ class _ServerFieldsState extends ConsumerState<ServerFields> {
   late final _passController = TextEditingController(
     text: ref.read(settingsProvider).password ?? '',
   );
+  late final _cfIdController = TextEditingController(
+    text: ref.read(settingsProvider).cloudflareAccess?.clientId ?? '',
+  );
+  late final _cfSecretController = TextEditingController(
+    text: ref.read(settingsProvider).cloudflareAccess?.clientSecret ?? '',
+  );
   bool _testing = false;
 
   @override
@@ -38,6 +44,8 @@ class _ServerFieldsState extends ConsumerState<ServerFields> {
     _urlController.dispose();
     _userController.dispose();
     _passController.dispose();
+    _cfIdController.dispose();
+    _cfSecretController.dispose();
     super.dispose();
   }
 
@@ -46,6 +54,20 @@ class _ServerFieldsState extends ConsumerState<ServerFields> {
     final url = _urlController.text.trim();
     if (url.isEmpty) {
       showMTSnack(context, l10n.serverUrlRequired, type: MTSnackType.error);
+      return;
+    }
+    final access = CloudflareAccess.typed(
+      _cfIdController.text,
+      _cfSecretController.text,
+    );
+    // Both values or neither: one alone only earns a rejection that looks
+    // like a wrong address.
+    if (access != null && !access.isComplete) {
+      showMTSnack(
+        context,
+        l10n.cloudflareBothRequired,
+        type: MTSnackType.error,
+      );
       return;
     }
     setState(() => _testing = true);
@@ -58,6 +80,7 @@ class _ServerFieldsState extends ConsumerState<ServerFields> {
             url: url,
             username: _userController.text.trim(),
             password: _passController.text,
+            access: access,
           );
       ref.invalidate(serverStatusProvider);
       if (mounted) {
@@ -159,6 +182,20 @@ class _ServerFieldsState extends ConsumerState<ServerFields> {
               ),
             ),
             HelpButton(title: l10n.authentication, body: l10n.authHelper),
+          ],
+        ),
+        const SizedBox(height: MTSpace.sm),
+        // Same right edge as the fields above (see the gap note there).
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: MTAccessTokenFields(
+                clientId: _cfIdController,
+                clientSecret: _cfSecretController,
+              ),
+            ),
+            const HelpButtonGap(),
           ],
         ),
         const SizedBox(height: MTSpace.lg),

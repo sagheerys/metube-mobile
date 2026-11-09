@@ -21,6 +21,54 @@ wrong in places (one claimed an `/api` prefix that does not exist).
   Socket.IO, but both apps poll deliberately, and that stays.
 - **Authentication.** HTTP Basic on every request:
   `Authorization: Basic base64(user:pass)`, applied by a single interceptor.
+- **Cloudflare Access headers (optional).** For a server behind Cloudflare Zero
+  Trust (Access) the user pastes a service token's two values, and the apps
+  send them **in addition to** Basic, never instead of it:
+  `CF-Access-Client-Id: <id>` and `CF-Access-Client-Secret: <secret>`.
+  - **Both or none.** One value alone produces no header. Whitespace around each
+    value is trimmed. With neither value set nothing changes for anyone.
+  - **`https` only.** On an `http://` address no Cloudflare header is sent, even
+    if a pair is stored, so the secret never crosses a cleartext connection
+    (Super's local LAN address, for one, is not behind Cloudflare).
+  - **Every server request**, through `MeTubeApiClient` only: the API calls, the
+    `/socket.io/` long-polling session, pulls, the range probe `fileExists`, and
+    the players (through `streamingHeaders`). Images are covered by the same
+    origin check as Basic: a cover on a CDN gets nothing.
+  - **Never to another host.** Third-party calls (release check, page fetches,
+    CDN images) never carry them. **Measured 2026-11-03: neither Dart's
+    `HttpClient` nor Dio removes a custom header on a cross-origin redirect**
+    (only `Authorization` and cookies are dropped), so when a pair is configured
+    redirects are followed by hand and only inside the same origin, at most
+    `MTConstants.maxRedirectHops` (8):
+    `307`/`308` re-send the method and body; `301`/`302`/`303` on a `GET` or
+    `HEAD` are followed as a `GET`; on a request with a body they are not
+    followed. A cross-origin `3xx` is never followed. With no pair configured
+    Dio's redirect handling is untouched. The codec head probe in `mt_media`
+    (a plain `HttpClient`) does not follow redirects when the headers are
+    present.
+  - **Accepted residual risk.** ExoPlayer (`just_audio`), `video_player` and
+    Super's Kotlin media probes follow redirects inside the platform and cannot
+    be guarded from Dart. Only a revoked or expired token makes Access redirect,
+    and the target is Cloudflare's own login host.
+  - **A value Dart refuses to send** (a non-ASCII character, a line break or a
+    `NUL` inside the value). **Measured 2026-11-03:** `HttpClient` throws
+    `FormatException: Invalid HTTP header field value`, and Dio wraps it as a
+    `DioException` of type `unknown`; nothing leaves the device. The exception
+    text **contains the value**, so it is never copied into a message or a log.
+    With a pair configured the client reports this as `AccessRejectedException`
+    with a fixed message, and the apps show `errAccessRejected`. Without a pair
+    it stays a `NetworkException`, as before.
+  - **Never logged.** The log writer and `sanitizeForShare` both remove the two
+    header names with their values.
+  - **How Access answers a rejected token is NOT measured** (no Cloudflare
+    account was available when this was written). So the client
+    cannot tell a server-side rejection from today's responses, and a `401`,
+    `403` or redirect from Access is reported exactly as it was before this
+    option existed. The one rejection it can identify for certain is the
+    refused header value above. `EndpointResolver` maps
+    `AccessRejectedException` to `MTEndpointStatus.unauthorized`. **If the
+    responses are measured later, the table goes here and the classification
+    in `MeTubeApiClient` is extended to match.**
 - **Base URL.** Entered by the user with no prefix
   (`https://metube.example.com`); a trailing slash is stripped.
 - **Timeouts.** 30s connect · 30min receive (pulls only) · 10s connection test ·
@@ -590,10 +638,17 @@ download takes precedence over batch members.
 
 ### 5.2 Secure storage (`SecretStore` = flutter_secure_storage)
 
-`username` · `password` · `backup_aes_key` — **none of them ever enters a backup
-or a log** (§5.4). `backup_aes_key` is **a leftover**: since 2026-09-04 it is
+`username` · `password` · `backup_aes_key` · `cf_access_client_id` ·
+`cf_access_client_secret` — **none of them ever enters a backup or a log**
+(§5.4). `backup_aes_key` is **a leftover**: since 2026-09-04 it is
 never generated, exported or imported; it is read only if an earlier version
 left one behind, in order to open an `MTF1` backup **on the same device**.
+
+The two `cf_access_*` keys (§1) are the Cloudflare Access service token, one
+pair per installation. They are written only by Settings → Server, after the
+connection test passes. A restore never writes or clears them (the only secret a
+restore writes is `username`), so a restored backup keeps the pair already on
+the device.
 
 ### 5.3 The filesystem
 

@@ -5,6 +5,8 @@ import 'package:mt_ui/mt_ui.dart';
 /// apps word them. The one place an error becomes a sentence.
 String errorText(MTLocalizations l, Object error) => switch (error) {
   AuthFailureException() => l.errAuth,
+  // Not the password: Cloudflare turned the service token away.
+  AccessRejectedException() => l.errAccessRejected,
   NotMeTubeServerException() => l.errNotMeTube,
   // Before its parent: a file gone from a working server is not a wrong
   // address.

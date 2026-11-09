@@ -43,6 +43,9 @@ RangeReader serverRangeReader(MeTubeApiClient api, String serverFilename) {
     try {
       final request = await client.getUrl(uri);
       api.streamingHeaders.forEach(request.headers.set);
+      // This client re-sends custom headers to whatever host a redirect
+      // names, so a Cloudflare pair must not follow one.
+      request.followRedirects = api.config.accessHeaders.isEmpty;
       request.headers.set(
         HttpHeaders.rangeHeader,
         'bytes=$start-${start + length - 1}',

@@ -13,11 +13,8 @@ import 'setup_data.dart';
 final serverConfigProvider = Provider<ServerConfig?>((ref) {
   final setup = ref.watch(serverSetupProvider);
   if (setup == null) return null;
-  return ServerConfig(
-    baseUrl:
-        ref.watch(addressesProvider.select((a) => a.active)) ?? setup.baseUrl,
-    username: setup.username,
-    password: setup.password,
+  return setup.at(
+    ref.watch(addressesProvider.select((a) => a.active)) ?? setup.baseUrl,
   );
 });
 

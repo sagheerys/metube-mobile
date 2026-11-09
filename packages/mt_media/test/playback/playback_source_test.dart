@@ -165,4 +165,20 @@ void main() {
       expect(PlaylistItem.fromJson({'title': 'بلا رابط'}), isNull);
     });
   });
+
+  group('Cloudflare Access', () {
+    test('the stream endpoint hands the pair to the players', () {
+      // Defect: `just_audio` and `video_player` copy these headers, so a
+      // missing pair means playback fails behind Access while downloads work.
+      final api = MeTubeApiClient(
+        config: ServerConfig(
+          baseUrl: 'https://srv',
+          access: CloudflareAccess(clientId: 'id.access', clientSecret: 's3'),
+        ),
+      );
+      final endpoint = ServerStreamEndpoint.fromApi(api);
+      expect(endpoint.headers['CF-Access-Client-Id'], 'id.access');
+      expect(endpoint.headers['CF-Access-Client-Secret'], 's3');
+    });
+  });
 }

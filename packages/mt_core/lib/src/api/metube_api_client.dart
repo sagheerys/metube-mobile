@@ -13,6 +13,8 @@ import '../urls/playlist_detector.dart';
 import '../urls/server_path.dart';
 import '../urls/url_kit.dart';
 import 'api_exceptions.dart';
+import 'cloudflare_access.dart';
+import 'cloudflare_redirects.dart';
 import 'live_update.dart';
 import 'metube_api.dart';
 
@@ -21,12 +23,36 @@ part 'metube_live.dart';
 /// Connection settings for a MeTube server. The URL is normalised by
 /// stripping trailing slashes.
 class ServerConfig {
-  ServerConfig({required String baseUrl, this.username, this.password})
-    : baseUrl = normalizeBaseUrl(baseUrl);
+  ServerConfig({
+    required String baseUrl,
+    this.username,
+    this.password,
+    this.access,
+  }) : baseUrl = normalizeBaseUrl(baseUrl);
 
   final String baseUrl;
   final String? username;
   final String? password;
+
+  /// The optional Cloudflare Access service token. `null` for everyone who
+  /// does not sit behind Access, which keeps this config equal to what it
+  /// was before the field existed.
+  final CloudflareAccess? access;
+
+  /// The two Cloudflare headers for [baseUrl], or nothing (no pair, a
+  /// one-sided pair, or an address that is not https).
+  Map<String, String> get accessHeaders =>
+      access?.headersFor(baseUrl) ?? const {};
+
+  /// The same account at another of the server's addresses. Every field
+  /// travels, so an address switch can never drop the password or the
+  /// Cloudflare pair; the https rule still decides what [url] receives.
+  ServerConfig at(String url) => ServerConfig(
+    baseUrl: url,
+    username: username,
+    password: password,
+    access: access,
+  );
 
   static String normalizeBaseUrl(String raw) =>
       raw.trim().replaceFirst(RegExp(r'/+$'), '');
@@ -45,10 +71,11 @@ class ServerConfig {
       other is ServerConfig &&
       other.baseUrl == baseUrl &&
       other.username == username &&
-      other.password == password;
+      other.password == password &&
+      other.access == access;
 
   @override
-  int get hashCode => Object.hash(baseUrl, username, password);
+  int get hashCode => Object.hash(baseUrl, username, password, access);
 }
 
 /// The one MeTube client. **All** network traffic towards the server goes
@@ -68,6 +95,9 @@ class MeTubeApiClient implements MeTubeApi {
     if (auth != null) {
       _dio.options.headers['Authorization'] = auth;
     }
+    // Empty unless a complete pair is set and the address is https.
+    _dio.options.headers.addAll(config.accessHeaders);
+    guardCloudflareRedirects(_dio, config);
   }
 
   final ServerConfig config;
@@ -78,6 +108,7 @@ class MeTubeApiClient implements MeTubeApi {
   Map<String, String> get streamingHeaders => {
     if (config.basicAuthHeader != null)
       'Authorization': config.basicAuthHeader!,
+    ...config.accessHeaders,
     'Connection': 'keep-alive',
   };
 
@@ -568,7 +599,7 @@ class MeTubeApiClient implements MeTubeApi {
         ),
       );
     } on DioException catch (e) {
-      throw NetworkException('${e.message} at /download');
+      throw _networkFailure(e, '/download');
     }
     _throwIfDownloadRejected(response.statusCode ?? 0);
     final bytes = response.data ?? const <int>[];
@@ -590,7 +621,7 @@ class MeTubeApiClient implements MeTubeApi {
         ),
       );
     } on DioException catch (e) {
-      throw NetworkException('${e.message} at /download');
+      throw _networkFailure(e, '/download');
     }
     _throwIfDownloadRejected(response.statusCode ?? 0, file: false);
     final html = response.data ?? '';
@@ -689,7 +720,7 @@ class MeTubeApiClient implements MeTubeApi {
       if (e.type == DioExceptionType.cancel) {
         throw const CancelledException();
       }
-      throw NetworkException('${e.message} at /download');
+      throw _networkFailure(e, '/download');
     }
     _throwIfDownloadRejected(response.statusCode ?? 0);
   }
@@ -734,7 +765,7 @@ class MeTubeApiClient implements MeTubeApi {
     try {
       response = await send();
     } on DioException catch (e) {
-      throw NetworkException('${e.message} at ${_route(e.requestOptions)}');
+      throw _networkFailure(e, _route(e.requestOptions));
     }
     final status = response.statusCode ?? 0;
     final at = _route(response.requestOptions);
@@ -749,6 +780,16 @@ class MeTubeApiClient implements MeTubeApi {
     }
     return response;
   }
+
+  /// A transport failure as a classified error. With a Cloudflare pair set,
+  /// a header value the platform refuses to send is reported as the token
+  /// being rejected, with a **fixed message**: the platform's own text holds
+  /// the secret and must not reach the log.
+  MTApiException _networkFailure(DioException e, String at) =>
+      config.accessHeaders.isNotEmpty &&
+          CloudflareAccess.isRefusedHeaderValue(e)
+      ? AccessRejectedException('header value refused at $at')
+      : NetworkException('${e.message} at $at');
 
   /// Which of the server's endpoints a request went to, for the log:
   /// `/history`, `/add`, `/delete`. Only the first step past the server's

@@ -505,22 +505,58 @@ over Tailscale with the password, and both addresses answered 401 without
 it. Over plain HTTP at home the password crosses your own network in the
 clear; over Tailscale the traffic is already encrypted.
 
-### The way that does not work: Cloudflare Access
+### Cloudflare Access, with a service token
 
-Cloudflare Access (Zero Trust policies, the e-mail/OTP login page) cannot
-be used in front of MeTube while these apps are the client, and the failure
-is quiet rather than loud:
+Cloudflare Access (Zero Trust policies, the e-mail/OTP login page) puts a
+browser login in front of a hostname, and an app cannot fill in a browser
+page. Without help, Access answers the apps with a redirect to that login
+page, they receive HTML with a 200, and they report **"not a MeTube
+server"** — the same message a wrong URL produces.
 
-- Access answers an unauthenticated request with a redirect to a browser
-  login page. The apps follow it, receive HTML with a 200, and report
-  **"not a MeTube server"** — the same message a wrong URL produces.
-- Access **service tokens** would be the headless answer, but they are sent
-  as `CF-Access-Client-Id` and `CF-Access-Client-Secret` headers. The apps
-  send `Authorization: Basic` and nothing else; there is no field for a
-  custom header anywhere in either app.
+The way through is an Access **service token**: a pair of values the apps
+send as the headers `CF-Access-Client-Id` and `CF-Access-Client-Secret`.
+Lite, Super and Ember all have two optional fields for them.
 
-If you already run Access over your domain, add a **Bypass** policy for the
-MeTube hostname and let basic auth do the work there instead.
+1. In the Zero Trust dashboard, create a service token (Access → Service
+   Auth → Service Tokens). Cloudflare shows the **Client Secret once**; copy
+   it before you leave the page.
+2. On the MeTube hostname's Access application, add a policy with the action
+   **Service Auth** that includes that token.
+3. In **Lite or Super**, open **Settings → Server**; in **Ember**, open the
+   server setup (*Settings → Server*). Under the password, click
+   **Cloudflare Access (optional)**, paste the Client ID and the Client
+   Secret, then save. The connection is tested with them before anything is
+   stored.
+
+What to know:
+
+- **Both values or neither.** The apps refuse to save one alone, because one
+  header only earns a rejection that looks like a wrong address.
+- **HTTPS only.** The values are sent to `https://` addresses and never to
+  `http://` ones, so Super's local address on your own network never carries
+  them. They are also never sent to any other host, and a redirect to another
+  host is not followed while a pair is set.
+- **They stay on the device.** They are kept in the same protected storage as
+  the password (Windows' own encrypted store in Ember), and are not written
+  into a backup file, a sync file or the log.
+- **Basic auth still works beside it.** If you also protect MeTube with a
+  password, keep filling in the username and password; the apps send both.
+- **Super and Ember with two addresses:** the pair goes to the `https://`
+  tunnel only; the home `http://` address gets the password alone.
+- **A Worker or proxy in front must pass the two headers on untouched**, or
+  they never reach Access.
+- **A secret with a stray character** (an accent, a line break picked up by
+  copying) cannot be sent at all. The app says Cloudflare rejected the Client
+  ID or Client Secret; paste it again.
+
+This was built from how Cloudflare documents service tokens, and the app side
+was tested end to end against a fake server. It has **not yet been measured
+against a live Access hostname**, so the exact answers Access gives for a
+wrong or expired token are not recorded (see [SERVER-API.md](SERVER-API.md)).
+Until then, a token that Access refuses on its side is reported with the same
+message as before this option existed. If you would rather not use Access
+for this hostname, add a **Bypass** policy for it and let basic auth do the
+work instead.
 
 ### Two URLs, because a tunnel is slow at home
 
@@ -606,7 +642,8 @@ server at all:
 | One platform always fails with a sign-in message | `COOKIES_FILE` |
 | Super's search inside clips finds nothing in what subscriptions bring | `writesubtitles` and friends in `YTDL_OPTIONS` (optional, above) |
 | Streaming fails in Super while downloading works | HTTPS, or cleartext allowed for that host |
-| From outside: "not a MeTube server"; at home it connects | a login page in front of the API (Cloudflare Access) — use basic auth, or a Bypass policy for that hostname |
+| From outside: "not a MeTube server"; at home it connects | a login page in front of the API (Cloudflare Access) — fill in the Client ID and Client Secret under **Cloudflare Access (optional)** in Settings → Server, or use basic auth, or a Bypass policy for that hostname |
+| "Cloudflare rejected the Client ID or Client Secret" | the pair is wrong or contains a character that cannot be sent — paste both values again from the Zero Trust dashboard |
 | The password is right and the app still says wrong credentials | a non-ASCII password hashed with `btoa()` in a Worker — encode it as UTF-8 (see above) or keep the password ASCII |
 | Works at home, works away, but is far slower away | fill in `local_url` too, in Super's **Settings → Network** |
 

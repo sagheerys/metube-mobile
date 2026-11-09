@@ -58,6 +58,10 @@ class EndpointResolver {
           return MTEndpointStatus.ok;
         } on AuthFailureException {
           return MTEndpointStatus.unauthorized;
+        } on AccessRejectedException {
+          // Cloudflare turned the token away: the endpoint is alive, the
+          // credentials are the problem, which is what "unauthorized" says.
+          return MTEndpointStatus.unauthorized;
         } on NotMeTubeServerException {
           return MTEndpointStatus.notMeTube;
         } on NoApiException {

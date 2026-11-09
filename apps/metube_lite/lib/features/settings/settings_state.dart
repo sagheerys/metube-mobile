@@ -13,6 +13,7 @@ class LiteSettings {
     this.serverUrl = '',
     this.username,
     this.password,
+    this.cloudflareAccess,
     this.quality = Quality.best,
     this.quickDownload = false,
     this.wifiOnly = false,
@@ -26,6 +27,10 @@ class LiteSettings {
   final String serverUrl;
   final String? username;
   final String? password;
+
+  /// The optional Cloudflare Access service token; null for everyone who is
+  /// not behind Access.
+  final CloudflareAccess? cloudflareAccess;
   final Quality quality;
 
   /// **Quick download**: a shared or pasted link downloads immediately at
@@ -59,13 +64,20 @@ class LiteSettings {
   bool get isConfigured => serverUrl.trim().isNotEmpty;
 
   ServerConfig? get serverConfig => isConfigured
-      ? ServerConfig(baseUrl: serverUrl, username: username, password: password)
+      ? ServerConfig(
+          baseUrl: serverUrl,
+          username: username,
+          password: password,
+          access: cloudflareAccess,
+        )
       : null;
 
   LiteSettings copyWith({
     String? serverUrl,
     String? username,
     String? password,
+    CloudflareAccess? cloudflareAccess,
+    bool clearCloudflareAccess = false,
     Quality? quality,
     bool? quickDownload,
     bool? wifiOnly,
@@ -82,6 +94,9 @@ class LiteSettings {
     serverUrl: serverUrl ?? this.serverUrl,
     username: username ?? this.username,
     password: password ?? this.password,
+    cloudflareAccess: clearCloudflareAccess
+        ? null
+        : (cloudflareAccess ?? this.cloudflareAccess),
     quality: quality ?? this.quality,
     quickDownload: quickDownload ?? this.quickDownload,
     wifiOnly: wifiOnly ?? this.wifiOnly,
@@ -102,6 +117,7 @@ class LiteSettings {
       serverUrl: await store.getString('server_url') ?? '',
       username: await secrets.read(SecretKeys.username),
       password: await secrets.read(SecretKeys.password),
+      cloudflareAccess: await CloudflareAccess.load(secrets),
       quality: Quality.fromWire(await store.getString('video_quality')),
       quickDownload: await store.getBool('quick_download_enabled') ?? false,
       wifiOnly: await store.getBool('wifi_only_downloads') ?? false,
@@ -136,16 +152,18 @@ class SettingsNotifier extends Notifier<LiteSettings> {
 
   /// Rule 1: test the connection, then save. **A broken setting is never
   /// saved silently.** Throws a classified [MTApiException] for the UI to
-  /// display.
+  /// display. [access] is tested with the rest; null removes a stored pair.
   Future<void> saveServer({
     required String url,
     String? username,
     String? password,
+    CloudflareAccess? access,
   }) async {
     final config = ServerConfig(
       baseUrl: url,
       username: username,
       password: password,
+      access: access,
     );
     final client = MeTubeApiClient(config: config);
     try {
@@ -156,10 +174,13 @@ class SettingsNotifier extends Notifier<LiteSettings> {
     await _mutex.run(() => _store.setString('server_url', config.baseUrl));
     await _writeSecret(SecretKeys.username, username);
     await _writeSecret(SecretKeys.password, password);
+    await CloudflareAccess.save(_secrets, access);
     state = state.copyWith(
       serverUrl: config.baseUrl,
       username: username,
       password: password,
+      cloudflareAccess: access,
+      clearCloudflareAccess: access == null,
     );
   }
 

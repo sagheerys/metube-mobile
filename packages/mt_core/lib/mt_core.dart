@@ -4,6 +4,7 @@
 library;
 
 export 'src/api/api_exceptions.dart';
+export 'src/api/cloudflare_access.dart';
 export 'src/api/cookie_files.dart';
 export 'src/api/endpoint_resolver.dart';
 export 'src/api/lan_probe.dart';
