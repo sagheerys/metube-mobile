@@ -26,7 +26,10 @@ Future<void> shareClip(
   LibraryItem item,
 ) async {
   final local = item.localPath;
-  if (local != null) return ref.read(shareSendProvider)(local);
+  if (local != null) {
+    final send = ref.read(shareSendProvider);
+    return mtShareWithNotice(context, () => send(local));
+  }
   // The app's own navigator, not [context]: shared from a clip's menu,
   // [context] is the clip's card, which the list may rebuild while the
   // question is open. The share used to stop there in silence, so a tap on
@@ -123,6 +126,17 @@ class _ShareSheetState extends ConsumerState<ShareSheet> {
     });
     final job = ref.watch(shareFlowProvider);
     if (job == null) return const SizedBox.shrink();
+    if (job.phase == SharePhase.opening) {
+      return Padding(
+        padding: EdgeInsets.fromLTRB(
+          MTSpace.xl,
+          MTSpace.xl,
+          MTSpace.xl,
+          mtSheetBottomPad(context, MTSpace.xxl),
+        ),
+        child: const MTShareOpening(inSheet: true),
+      );
+    }
     final l10n = context.mtl;
     final p = MTThemeX.of(context).palette;
     final text = Theme.of(context).textTheme;
@@ -140,6 +154,7 @@ class _ShareSheetState extends ConsumerState<ShareSheet> {
           Text(switch (job.phase) {
             SharePhase.pulling => l10n.sharePreparing,
             SharePhase.ready => l10n.shareReady,
+            SharePhase.opening => l10n.shareOpening,
             SharePhase.failed => l10n.failed,
           }, style: text.titleMedium),
           const SizedBox(height: MTSpace.xs),
@@ -168,6 +183,7 @@ class _ShareSheetState extends ConsumerState<ShareSheet> {
               ),
               TextButton(onPressed: _flow.cancel, child: Text(l10n.cancel)),
             ],
+            SharePhase.opening => const <Widget>[],
             SharePhase.failed => [
               Text(
                 errorText(l10n, job.error!),

@@ -30,6 +30,16 @@ final shareSendProvider = Provider<Future<void> Function(String path)>(
       (path) async => Share.shareXFiles([XFile(path)]),
 );
 
+/// Waits until what was just set is on screen, but never for long: a
+/// frame that does not come (no window, a test) must not hold the share.
+final shareFrameProvider = Provider<Future<void> Function()>(
+  (ref) =>
+      () => WidgetsBinding.instance.endOfFrame.timeout(
+        const Duration(milliseconds: 250),
+        onTimeout: () {},
+      ),
+);
+
 /// A folder of its own, so a sweep never touches anything else in the
 /// cache. A provider because `path_provider` does not work in tests.
 final shareDirProvider = FutureProvider<String>(
@@ -140,8 +150,7 @@ class ShareFlow extends Notifier<ShareJob?> {
 
   Future<void> _deliver(String path) async {
     if (ref.read(shareForegroundProvider)()) {
-      _finish();
-      await ref.read(shareSendProvider)(path);
+      await _handOver(path);
       return;
     }
     // Away from the app: wait for the user to come back, and say so.
@@ -155,8 +164,29 @@ class ShareFlow extends Notifier<ShareJob?> {
   Future<void> sendReady() async {
     final path = _ready;
     if (path == null) return;
-    _finish();
-    await ref.read(shareSendProvider)(path);
+    _stopWaiting();
+    await _handOver(path);
+  }
+
+  /// The share menu opens only once Android's share plugin has copied the
+  /// file, seconds for a large clip, during which the app stands still. The
+  /// sheet says so first, and goes as soon as the menu covers the app.
+  Future<void> _handOver(String path) async {
+    final job = state;
+    if (job == null) return;
+    state = job.copyWith(phase: SharePhase.opening);
+    await ref.read(shareFrameProvider)();
+    void done() {
+      if (state?.phase == SharePhase.opening) _finish();
+    }
+
+    final life = AppLifecycleListener(onInactive: done, onHide: done);
+    try {
+      await ref.read(shareSendProvider)(path);
+    } finally {
+      life.dispose();
+      done();
+    }
   }
 
   /// Stops the share. Its own copy stops with it; an offline copy it was

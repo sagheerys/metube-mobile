@@ -19,10 +19,15 @@ class MTVideoIconButton extends StatelessWidget {
     required this.tooltip,
     this.size = 36,
     this.active = false,
+    this.onLongPress,
   });
 
   final MTIconData icon;
   final VoidCallback onTap;
+
+  /// A second action on a long press. The tooltip then no longer opens on
+  /// a long press, which would answer it instead.
+  final VoidCallback? onLongPress;
   final String tooltip;
   final double size;
   final bool active;
@@ -32,6 +37,7 @@ class MTVideoIconButton extends StatelessWidget {
     final p = MTThemeX.of(context).palette;
     return Tooltip(
       message: tooltip,
+      triggerMode: onLongPress == null ? null : TooltipTriggerMode.manual,
       child: Material(
         color: active
             ? p.accent.withValues(alpha: 0.3)
@@ -39,6 +45,7 @@ class MTVideoIconButton extends StatelessWidget {
         borderRadius: BorderRadius.circular(MTRadius.field - 1),
         child: InkWell(
           onTap: onTap,
+          onLongPress: onLongPress,
           borderRadius: BorderRadius.circular(MTRadius.field - 1),
           child: SizedBox(
             width: size,

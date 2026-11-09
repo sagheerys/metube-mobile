@@ -146,7 +146,7 @@ class _ReelsScreenState extends ConsumerState<ReelsScreen> {
   Future<void> _share(PlaylistItem item) async {
     final match = _libraryItemOf(item);
     if (match == null) return;
-    await ref.read(libraryActionsProvider).share([match]);
+    await ref.read(libraryActionsProvider).share(context, [match]);
   }
 
   /// "Continue with the rest of the list": the first non-short item opens

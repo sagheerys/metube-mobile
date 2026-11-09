@@ -362,4 +362,29 @@ void main() {
       },
     );
   });
+  group('a task waiting its turn', () {
+    test('a YouTube link shows its cover before the server has it', () async {
+      // Field report 2026-11-10: only the clip being downloaded had a
+      // picture; the rest of the queue was a column of blanks.
+      final engine = makeEngine(FakeApi(historyScript: [historyWith()]));
+      final task = engine.submit(
+        'look https://youtu.be/dQw4w9WgXcQ',
+        Quality.best,
+        isBatchMember: true,
+      );
+      expect(
+        task.thumbnail,
+        'https://i.ytimg.com/vi/dQw4w9WgXcQ/mqdefault.jpg',
+      );
+      await engine.dispose();
+    });
+
+    test('any other site invents nothing and waits for the server', () {
+      expect(
+        DownloadEngine.waitingCover('https://www.tiktok.com/@a/video/1'),
+        isNull,
+      );
+      expect(DownloadEngine.waitingCover('https://vimeo.com/76979871'), isNull);
+    });
+  });
 }

@@ -47,10 +47,13 @@ class LibraryStatsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l = context.mtl;
     final stats = ref.watch(libraryStatsProvider);
+    // **The last figures stay while new ones are counted.** The library
+    // refreshes every few seconds, and a page swapped for a spinner each
+    // time lost its height and threw the reader back to the top.
     return MTSettingsPage(
       title: l.yourLibrary,
-      child: switch (stats) {
-        AsyncData(:final value) when value.count > 0 => Column(
+      child: switch (stats.valueOrNull) {
+        final value? when value.count > 0 => Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             _figures(context, value),
@@ -60,17 +63,14 @@ class LibraryStatsScreen extends ConsumerWidget {
             ..._suggestions(context, value),
           ],
         ),
-        AsyncData() => MTEmptyState(
-          title: l.noVideosFound,
-          message: l.desktopStatsHint,
-        ),
-        AsyncError() => MTEmptyState(
+        _? => MTEmptyState(title: l.noVideosFound, message: l.desktopStatsHint),
+        null when stats.hasError => MTEmptyState(
           title: l.serverStatusOffline,
           message: l.desktopStatsHint,
           actionLabel: l.retry,
           onAction: () => ref.invalidate(libraryStatsProvider),
         ),
-        _ => const Padding(
+        null => const Padding(
           padding: EdgeInsets.all(MTSpace.xl),
           child: Center(child: MTSpinner()),
         ),

@@ -2847,6 +2847,13 @@ class MTLocalizationsEn extends MTLocalizations {
       'WhatsApp and Telegram take up to 2 GB; for larger files use Drive or Quick Share.';
 
   @override
+  String get shareOpening => 'Opening the share menu…';
+
+  @override
+  String get shareOpeningHint =>
+      'A large file takes a few seconds to hand over.';
+
+  @override
   String get sharePreparing => 'Preparing to share';
 
   @override
@@ -3021,6 +3028,10 @@ class MTLocalizationsEn extends MTLocalizations {
 
   @override
   String get subtitlesSizeSmall => 'Small';
+
+  @override
+  String get subtitlesStyleTip =>
+      'To change the size and background while you watch, long-press CC in the player.';
 
   @override
   String get syncDeviceQuiet =>

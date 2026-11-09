@@ -2921,6 +2921,12 @@ class MTLocalizationsAr extends MTLocalizations {
       'واتساب وتيليجرام يقبلان حتى 2 GB؛ وللأكبر استعمل Drive أو Quick Share.';
 
   @override
+  String get shareOpening => 'جارٍ فتح قائمة المشاركة…';
+
+  @override
+  String get shareOpeningHint => 'الملف الكبير يحتاج بضع ثوانٍ لتسليمه.';
+
+  @override
   String get sharePreparing => 'تجهيز المشاركة';
 
   @override
@@ -3094,6 +3100,10 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get subtitlesSizeSmall => 'صغير';
+
+  @override
+  String get subtitlesStyleTip =>
+      'لتغيير الحجم والخلفية أثناء المشاهدة، اضغط مطولاً على زر CC في المشغّل.';
 
   @override
   String get syncDeviceQuiet =>

@@ -150,7 +150,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
   Future<void> _share(PlaylistItem item) async {
     final match = _libraryItemOf(item);
     if (match == null) return;
-    await ref.read(libraryActionsProvider).share([match]);
+    await ref.read(libraryActionsProvider).share(context, [match]);
   }
 
   /// The question is only worth asking when there is something to carry

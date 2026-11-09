@@ -11,7 +11,9 @@ const shareKeep = Duration(hours: 1);
 /// which apps will still take the file.
 const shareMessagingBytes = 2 * 1024 * 1024 * 1024;
 
-enum SharePhase { pulling, ready, failed }
+/// [opening]: the copy is done and the system's share menu is on its way;
+/// it can take seconds for a large clip (see `mtShareWithNotice`).
+enum SharePhase { pulling, ready, opening, failed }
 
 /// The share in flight, as the sheet shows it. How far the copy has got
 /// is read from the copy itself, [kind] saying which one: the share's own,

@@ -19,6 +19,7 @@ export 'src/theme/mt_theme.dart';
 export 'src/theme/mt_theme_controls.dart';
 export 'src/tokens/tokens.dart';
 export 'src/widgets/mt_access_token_fields.dart';
+export 'src/widgets/mt_share_notice.dart';
 export 'src/widgets/mt_active_downloads_bar.dart';
 export 'src/widgets/mt_adaptive.dart';
 export 'src/widgets/mt_desktop_app.dart';

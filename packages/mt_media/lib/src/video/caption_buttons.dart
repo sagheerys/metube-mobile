@@ -28,6 +28,10 @@ class MTCaptionButtons extends StatelessWidget {
             MTVideoIconButton(
               icon: shown ? MTIcons.captions : MTIcons.captionsOff,
               onTap: () => captions.shown.value = !shown,
+              onLongPress: switch (captions.onAdjust) {
+                final adjust? => () => adjust(context),
+                null => null,
+              },
               tooltip: shown ? l10n.subtitlesHide : l10n.subtitlesShow,
               active: shown,
             ),

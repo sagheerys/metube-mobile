@@ -5,6 +5,7 @@ import 'package:mt_media/mt_media.dart';
 import 'package:mt_ui/mt_ui.dart';
 
 import '../../di.dart';
+import 'subtitle_style.dart';
 import 'transcripts_state.dart';
 
 /// Subtitles over the video, drawn from the transcripts: whether they show, how
@@ -12,6 +13,8 @@ import 'transcripts_state.dart';
 /// nothing changes for anyone who does not want them.
 class SubtitlePrefs {
   SubtitlePrefs(this._store) {
+    size.addListener(() => liveScale.value = scale);
+    background.addListener(() => liveBackground.value = backdrop);
     _load();
   }
 
@@ -48,6 +51,13 @@ class SubtitlePrefs {
   static const _chaptersFoldedKey = 'chapters_folded';
 
   double get scale => scales[size.value.clamp(0, scales.length - 1)];
+
+  /// [scale] and [backdrop] as values a playing clip follows, so a change
+  /// made over the picture (a long press on CC) shows at once.
+  late final ValueNotifier<double> liveScale = ValueNotifier(scale);
+  late final ValueNotifier<MTCaptionBackground> liveBackground = ValueNotifier(
+    backdrop,
+  );
 
   MTCaptionBackground get backdrop =>
       MTCaptionBackground.values[background.value.clamp(
@@ -93,6 +103,8 @@ class SubtitlePrefs {
     language.dispose();
     background.dispose();
     chaptersFolded.dispose();
+    liveScale.dispose();
+    liveBackground.dispose();
   }
 }
 
@@ -185,6 +197,9 @@ MTCaptions? subtitlesFor(
     shown: shown ?? prefs.shown,
     scale: prefs.scale,
     background: prefs.backdrop,
+    liveScale: prefs.liveScale,
+    liveBackground: prefs.liveBackground,
+    onAdjust: (context) => showSubtitleStyleSheet(context, prefs),
   );
 }
 
@@ -216,42 +231,9 @@ class SubtitleSettings extends ConsumerWidget {
             value: prefs.shown.value,
             onChanged: (on) => prefs.shown.value = on,
           ),
-          Text(l10n.subtitlesSize, style: text.bodyMedium),
+          SubtitleStyleChoices(prefs: prefs),
           const SizedBox(height: MTSpace.xs),
-          SegmentedButton<int>(
-            segments: [
-              ButtonSegment(value: 0, label: Text(l10n.subtitlesSizeSmall)),
-              ButtonSegment(value: 1, label: Text(l10n.subtitlesSizeMedium)),
-              ButtonSegment(value: 2, label: Text(l10n.subtitlesSizeLarge)),
-            ],
-            selected: {prefs.size.value},
-            onSelectionChanged: (selection) =>
-                prefs.size.value = selection.first,
-          ),
-          const SizedBox(height: MTSpace.lg),
-          Text(l10n.subtitlesBackground, style: text.bodyMedium),
-          const SizedBox(height: MTSpace.xs),
-          SegmentedButton<int>(
-            segments: [
-              ButtonSegment(
-                value: 0,
-                label: Text(l10n.subtitlesBackgroundSolid),
-              ),
-              ButtonSegment(
-                value: 1,
-                label: Text(l10n.subtitlesBackgroundFaint),
-              ),
-              ButtonSegment(
-                value: 2,
-                label: Text(l10n.subtitlesBackgroundNone),
-              ),
-            ],
-            selected: {prefs.background.value},
-            onSelectionChanged: (selection) =>
-                prefs.background.value = selection.first,
-          ),
-          const SizedBox(height: MTSpace.xs),
-          Text(l10n.subtitlesBackgroundHelp, style: text.bodySmall),
+          Text(l10n.subtitlesStyleTip, style: text.bodySmall),
           SwitchListTile(
             contentPadding: EdgeInsets.zero,
             title: Text(l10n.subtitlesInShorts, style: text.bodyMedium),

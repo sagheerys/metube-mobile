@@ -117,7 +117,8 @@ AppBar librarySelectionBar(
       ),
       IconButton(
         tooltip: l10n.shareSelected,
-        onPressed: () => ref.read(libraryActionsProvider).share(selected()),
+        onPressed: () =>
+            ref.read(libraryActionsProvider).share(context, selected()),
         icon: const MTIcon(MTIcons.share),
       ),
       IconButton(

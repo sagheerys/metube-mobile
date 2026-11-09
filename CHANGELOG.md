@@ -24,8 +24,23 @@ for Android, and MeTube Ember for Windows.
   and the server settings show *Cloudflare Access* where they used to say
   "no password".
 
+- **Subtitle size and background from the player** (Super). Long-press CC
+  over the video to change them while you watch; settings say so too.
+- **The floating window can be made larger** (Ember). Drag its edges to
+  grow the picture, keeping its shape, up to half the screen.
+- **YouTube covers in the download queue.** Clips waiting their turn show
+  their cover instead of a blank (other sites still show theirs once the
+  server starts on them).
+
 ### Fixed
 
+- **Library statistics jumping to the top** (Super, Ember). The page no
+  longer flickers and loses your place every time the library refreshes.
+- **A pause before the share menu with a large file** (Lite, Super). A
+  line now says the share menu is being opened, instead of the app seeming
+  to freeze while Android copies the file.
+- **Download errors cut short.** Tap a failed download's reason to read
+  all of it. All three apps.
 - **Lite: "your server doesn't delete files" on a server that does.**
   Behind a Cloudflare tunnel, the check after a cleanup could be answered
   by Cloudflare's copy of the clip instead of the server, so a correctly

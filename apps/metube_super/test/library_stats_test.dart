@@ -107,6 +107,34 @@ void main() {
     expect(first.dy, lessThan(second.dy));
   });
 
+  testWidgets('a library refresh keeps the page and where it was read', (
+    tester,
+  ) async {
+    // Defect: every refresh swapped the page for a spinner, so it flickered
+    // and a reader scrolled down was thrown back to the top.
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(411, 700);
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(host());
+    await settle(tester);
+    final scroll = tester.state<ScrollableState>(find.byType(Scrollable).first);
+    scroll.position.jumpTo(200);
+    await tester.pump();
+
+    container.invalidate(libraryItemsProvider);
+    await tester.pump();
+    expect(find.byType(MTSpinner), findsNothing);
+    expect(find.text('By site'), findsOneWidget);
+    await settle(tester);
+    expect(
+      tester
+          .state<ScrollableState>(find.byType(Scrollable).first)
+          .position
+          .pixels,
+      200,
+    );
+  });
+
   testWidgets('a site opens the library filtered to it', (tester) async {
     tester.view.devicePixelRatio = 1;
     tester.view.physicalSize = const Size(411, 2400);

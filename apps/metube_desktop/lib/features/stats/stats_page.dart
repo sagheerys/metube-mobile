@@ -46,8 +46,11 @@ class StatsPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l = context.mtl;
     final stats = ref.watch(libraryStatsProvider);
-    return switch (stats) {
-      AsyncData(:final value) when value.count > 0 => LayoutBuilder(
+    // **The last figures stay while new ones are counted.** The library
+    // refreshes every few seconds, and a page swapped for a spinner each
+    // time lost its scroll position.
+    return switch (stats.valueOrNull) {
+      final value? when value.count > 0 => LayoutBuilder(
         builder: (context, box) {
           final left = [_bySite(context, value), _byMonth(context, value)];
           final right = [
@@ -78,13 +81,13 @@ class StatsPage extends ConsumerWidget {
           );
         },
       ),
-      AsyncData() => Center(
+      _? => Center(
         child: MTEmptyFrame(
           title: l.noVideosFound,
           message: l.desktopEmptyLibraryMessage,
         ),
       ),
-      AsyncError() => Center(
+      null when stats.hasError => Center(
         child: MTEmptyFrame(
           title: l.serverStatusOffline,
           message: l.desktopServerPartMissing,
@@ -92,7 +95,7 @@ class StatsPage extends ConsumerWidget {
           onAction: () => ref.invalidate(libraryStatsProvider),
         ),
       ),
-      _ => const Center(child: MTSpinner()),
+      null => const Center(child: MTSpinner()),
     };
   }
 

@@ -114,12 +114,17 @@ class MTDownloadProgressCard extends StatelessWidget {
                   Row(
                     children: [
                       Expanded(
-                        child: Text(
-                          statusText,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: text.bodySmall!.copyWith(color: softInk),
-                        ),
+                        child: isError
+                            ? MTExpandableText(
+                                statusText,
+                                style: text.bodySmall!.copyWith(color: softInk),
+                              )
+                            : Text(
+                                statusText,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: text.bodySmall!.copyWith(color: softInk),
+                              ),
                       ),
                       // **The percentage follows every phase that knows its
                       // progress** (field report 2026-09-03: the counter did
@@ -241,4 +246,56 @@ class _Dashes extends CustomPainter {
 
   @override
   bool shouldRepaint(_Dashes old) => old.color != color;
+}
+
+/// One line that opens to its whole text on a tap, and closes on another.
+///
+/// **For a failure's reason** (field report 2026-11-10): cut to one line, the
+/// server's error read "ERROR: [youtube] dQw4w9WgXcQ: Sign in to…" and the
+/// part that said what was wrong was never seen.
+class MTExpandableText extends StatefulWidget {
+  const MTExpandableText(
+    this.text, {
+    super.key,
+    this.style,
+    this.collapsedLines = 1,
+  });
+
+  final String text;
+  final TextStyle? style;
+  final int collapsedLines;
+
+  @override
+  State<MTExpandableText> createState() => _MTExpandableTextState();
+}
+
+class _MTExpandableTextState extends State<MTExpandableText> {
+  bool _open = false;
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+    button: true,
+    expanded: _open,
+    child: GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => setState(() => _open = !_open),
+      // A pointer says it can be clicked, on the computer.
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: AnimatedSize(
+          duration: mtMotionDuration(
+            context,
+            const Duration(milliseconds: 180),
+          ),
+          alignment: AlignmentDirectional.topStart,
+          child: Text(
+            widget.text,
+            maxLines: _open ? null : widget.collapsedLines,
+            overflow: _open ? TextOverflow.visible : TextOverflow.ellipsis,
+            style: widget.style,
+          ),
+        ),
+      ),
+    ),
+  );
 }

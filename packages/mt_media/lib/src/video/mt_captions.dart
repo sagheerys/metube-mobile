@@ -7,91 +7,13 @@ import 'package:video_player/video_player.dart';
 
 import 'mt_caption_blocks.dart';
 import 'mt_caption_clock.dart';
+import 'mt_caption_data.dart';
 
 export 'mt_caption_blocks.dart' show MTCaptionBlock;
 export 'mt_caption_clock.dart';
+export 'mt_caption_data.dart';
 
 part 'mt_caption_sentence.dart';
-
-/// One word of a caption line, from the moment it is said.
-class MTCaptionWord {
-  const MTCaptionWord(this.start, this.text);
-
-  final Duration start;
-  final String text;
-}
-
-/// A timed line the app hands a player to draw over the picture. This
-/// package knows nothing of where it came from (a transcript, in Super).
-class MTCaptionLine {
-  const MTCaptionLine({
-    required this.start,
-    required this.end,
-    required this.text,
-    this.words,
-  });
-
-  final Duration start;
-  final Duration end;
-  final String text;
-
-  /// When each word is said, where the subtitles tell it; null shows the
-  /// line whole.
-  final List<MTCaptionWord>? words;
-}
-
-/// What sits behind the words: a dark capsule, a faint one, or nothing but
-/// a shadow around the letters, which keeps them legible over a bright
-/// picture.
-enum MTCaptionBackground { solid, faint, none }
-
-/// Captions for the clip on screen: its lines, whether they are shown, how
-/// large, and over what. [shown] and [language] belong to the app, which
-/// keeps the choices.
-class MTCaptions {
-  const MTCaptions({
-    required this.lines,
-    required this.shown,
-    this.scale = 1,
-    this.background = MTCaptionBackground.solid,
-    this.tracks = const {},
-    this.language,
-  });
-
-  /// The lines shown when no other language is chosen.
-  final List<MTCaptionLine> lines;
-  final ValueNotifier<bool> shown;
-  final double scale;
-  final MTCaptionBackground background;
-
-  /// Every language the clip has, by code, in the order the switch walks
-  /// them, the first being [lines]. Empty for a clip with one.
-  final Map<String, List<MTCaptionLine>> tracks;
-
-  /// The language chosen with the switch, kept by the app from clip to
-  /// clip. Null, or a language this clip lacks, shows [lines].
-  final ValueNotifier<String?>? language;
-
-  /// The language on screen, for the switch's label.
-  String? get current {
-    final chosen = language?.value;
-    if (chosen != null && tracks.containsKey(chosen)) return chosen;
-    return tracks.isEmpty ? null : tracks.keys.first;
-  }
-
-  /// The lines on screen.
-  List<MTCaptionLine> get onScreen => tracks[current] ?? lines;
-
-  /// Whether the switch has anything to switch to.
-  bool get switchable => language != null && tracks.length > 1;
-
-  /// The next language round the clip's list.
-  void nextLanguage() {
-    if (!switchable) return;
-    final codes = tracks.keys.toList();
-    language!.value = codes[(codes.indexOf(current!) + 1) % codes.length];
-  }
-}
 
 /// The captions over a playing video, above its controls when they show.
 ///
@@ -239,9 +161,9 @@ class _MTCaptionsLayerState extends State<MTCaptionsLayer>
   }
 
   @override
-  Widget build(BuildContext context) => ValueListenableBuilder<bool>(
-    valueListenable: widget.captions.shown,
-    builder: (context, shown, _) => IgnorePointer(
+  Widget build(BuildContext context) => ListenableBuilder(
+    listenable: widget.captions.restyled,
+    builder: (context, _) => IgnorePointer(
       // Only the sentence takes a touch; the space around it is empty and
       // lets taps reach the player.
       ignoring: !(widget.tapToSwitch && widget.captions.switchable),
@@ -249,7 +171,9 @@ class _MTCaptionsLayerState extends State<MTCaptionsLayer>
         builder: (context, box) {
           // In step with the picture: larger on a tablet and in full screen.
           final size =
-              (box.maxWidth * 0.038).clamp(13.0, 22.0) * widget.captions.scale;
+              (box.maxWidth * 0.038).clamp(13.0, 22.0) *
+              widget.captions.scaleNow;
+          final shown = widget.captions.shown.value;
           final line =
               MediaQuery.textScalerOf(context).scale(size) * _Sentence.height;
           var lines = _Sentence.maxLines;
@@ -284,7 +208,7 @@ class _MTCaptionsLayerState extends State<MTCaptionsLayer>
                           width: box.maxWidth,
                           size: size,
                           lines: lines,
-                          background: widget.captions.background,
+                          background: widget.captions.backgroundNow,
                         ),
                       ),
               ),

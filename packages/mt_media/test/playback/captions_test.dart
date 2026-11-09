@@ -283,6 +283,28 @@ void main() {
 
     // Owner's request 2026-10-14: the dark box behind the words can go,
     // and the letters then carry an edge of their own.
+    testWidgets('a size changed while it plays shows at once', (tester) async {
+      final scale = ValueNotifier(1.0);
+      await tester.pumpWidget(
+        host(
+          MTCaptions(
+            lines: [line(0, 9000, 'hello there')],
+            shown: ValueNotifier(true),
+            liveScale: scale,
+          ),
+        ),
+      );
+      await tester.pump(const Duration(milliseconds: 200));
+      double sizeNow() => tester
+          .widgetList<RichText>(find.byType(RichText))
+          .map((t) => t.text.style?.fontSize ?? 0)
+          .fold(0.0, (a, b) => a > b ? a : b);
+      final before = sizeNow();
+      scale.value = 1.25;
+      await tester.pump(const Duration(milliseconds: 200));
+      expect(sizeNow(), greaterThan(before));
+    });
+
     testWidgets('dark, light, or no background, with an edge when none', (
       tester,
     ) async {
@@ -429,6 +451,50 @@ void main() {
       await tester.pump(kDoubleTapTimeout + const Duration(milliseconds: 50));
       expect(shown.value, isTrue);
       expect(byWahaj(MTIcons.captions), findsOneWidget);
+      await leave(tester, session);
+    });
+
+    testWidgets("a long press on CC opens the app's size and background", (
+      tester,
+    ) async {
+      // Owner's request 2026-11-10: change the subtitles' look from the
+      // player, not from settings; the long press used to show the tooltip.
+      var adjusted = 0;
+      final session = await show(
+        tester,
+        (_) => MTCaptions(
+          lines: [line(0, 9000, 'hello')],
+          shown: ValueNotifier(true),
+          onAdjust: (_) => adjusted++,
+        ),
+      );
+      await tester.longPress(byWahaj(MTIcons.captions));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(adjusted, 1);
+      // The long press is the sheet's now, not the tooltip's.
+      expect(find.text('Hide subtitles'), findsNothing);
+      await leave(tester, session);
+    });
+
+    testWidgets("without the app's choices CC keeps its tooltip", (
+      tester,
+    ) async {
+      final session = await show(
+        tester,
+        (_) => MTCaptions(
+          lines: [line(0, 9000, 'hello')],
+          shown: ValueNotifier(true),
+        ),
+      );
+      final button = tester.widget<InkWell>(
+        find
+            .ancestor(
+              of: byWahaj(MTIcons.captions),
+              matching: find.byType(InkWell),
+            )
+            .first,
+      );
+      expect(button.onLongPress, isNull);
       await leave(tester, session);
     });
 

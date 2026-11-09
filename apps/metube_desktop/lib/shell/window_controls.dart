@@ -45,7 +45,11 @@ abstract interface class WindowControls {
   /// Makes the window the small card of [logical] size, above every other
   /// window; called again, it only resizes it. Null brings the window back
   /// as it was, maximized or not.
-  void setMini(Size? logical);
+  ///
+  /// With [stretch] its edges can be dragged to make it larger, keeping its
+  /// shape, up to half the screen: a picture worth watching bigger. The
+  /// sound strip keeps its one size.
+  void setMini(Size? logical, {bool stretch = false});
 
   /// Counts the times the window was asked to close (its button, Alt+F4,
   /// the taskbar): with the tray on, each one hides it instead.
@@ -104,13 +108,17 @@ class InertWindowControls implements WindowControls {
   @override
   final ValueNotifier<bool> mini = ValueNotifier(false);
 
+  /// Whether the last card asked for could be stretched.
+  bool stretchable = false;
+
   @override
-  void setMini(Size? logical) {
+  void setMini(Size? logical, {bool stretch = false}) {
     calls.add(
       logical == null
           ? 'mini off'
           : 'mini ${logical.width.round()}x${logical.height.round()}',
     );
+    stretchable = logical != null && stretch;
     mini.value = logical != null;
   }
 }

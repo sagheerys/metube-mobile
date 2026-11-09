@@ -87,14 +87,21 @@ class PanelLine extends ConsumerWidget {
                       const SizedBox(width: MTSpace.xxs),
                     ],
                     Flexible(
-                      child: Text(
-                        status,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: text.labelSmall?.copyWith(
-                          color: error ? p.err : p.ink3,
-                        ),
-                      ),
+                      // A failure's reason opens to its whole text on a
+                      // click: two lines cut it before the part that says
+                      // what went wrong.
+                      child: error
+                          ? MTExpandableText(
+                              status,
+                              collapsedLines: 2,
+                              style: text.labelSmall?.copyWith(color: p.err),
+                            )
+                          : Text(
+                              status,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: text.labelSmall?.copyWith(color: p.ink3),
+                            ),
                     ),
                   ],
                 ),

@@ -163,11 +163,13 @@ class DownloadEngine {
     bool isBatchMember = false,
     String? folder,
   }) {
+    final input = UrlKit.extractUrl(url);
     final task = DownloadTask(
-      inputUrl: UrlKit.extractUrl(url),
+      inputUrl: input,
       quality: quality,
       isBatchMember: isBatchMember,
       folder: folder,
+      thumbnail: waitingCover(input),
     );
     _tasks[task.id] = task;
     _queue.enqueue(task.id, isBatchMember: isBatchMember);
@@ -179,6 +181,16 @@ class DownloadEngine {
     // somebody else's copy — and pull it and delete it.
     unawaited(_pump());
     return task;
+  }
+
+  /// The cover a task shows while it waits its turn, before the server has
+  /// looked at it. **YouTube only**: its cover is known from the link
+  /// alone, with no request until the picture is drawn. Any other site
+  /// would need a lookup per link, a real cost for a queue of a hundred,
+  /// so those wait for the server's cover as before.
+  static String? waitingCover(String url) {
+    final id = UrlKit.youtubeVideoId(url);
+    return id == null ? null : 'https://i.ytimg.com/vi/$id/mqdefault.jpg';
   }
 
   /// Cancelling: a waiting task is marked at once, and a running one has

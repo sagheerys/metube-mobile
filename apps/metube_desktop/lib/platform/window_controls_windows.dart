@@ -132,21 +132,26 @@ class WindowManagerControls with WindowListener implements WindowControls {
   Size? _card;
 
   @override
-  void setMini(Size? logical) => unawaited(_setMini(logical));
+  void setMini(Size? logical, {bool stretch = false}) =>
+      unawaited(_setMini(logical, stretch: stretch));
 
   /// The card sits in the corner by the clock, over everything. The card
   /// is drawn before the window shrinks and the page after it grows back,
   /// so neither is ever laid out in the other's size.
   ///
-  /// **The card has one size.** Its edges cannot be dragged and it cannot
-  /// be maximized (Win+Up, a drag to the top edge, Snap): maximized, the
-  /// card was stretched over the whole screen, and the window that came
-  /// back from it was broken.
-  Future<void> _setMini(Size? logical) async {
+  /// **The card is never maximized** (Win+Up, a drag to the top edge,
+  /// Snap): maximized, the card was stretched over the whole screen, and
+  /// the window that came back from it was broken. **A picture card can be
+  /// stretched by its edges** (owner's request 2026-11-10), at its own
+  /// shape, from its starting size up to half the screen's width; the
+  /// sound strip keeps its one size.
+  Future<void> _setMini(Size? logical, {bool stretch = false}) async {
     if (logical == null) {
       if (!mini.value) return;
       _card = null;
       await windowManager.setAlwaysOnTop(false);
+      await windowManager.setAspectRatio(0);
+      await windowManager.setMaximumSize(_unbounded);
       await windowManager.setResizable(true);
       await windowManager.setMaximizable(true);
       await windowManager.setMinimumSize(_minimum);
@@ -161,10 +166,10 @@ class WindowManagerControls with WindowListener implements WindowControls {
       if (_wasMaximized) await windowManager.unmaximize();
       _before = await windowManager.getBounds();
       mini.value = true;
-      await windowManager.setResizable(false);
       await windowManager.setMaximizable(false);
     }
     _card = logical;
+    _stretch = stretch;
     await _placeCard(logical);
   }
 
@@ -174,6 +179,19 @@ class WindowManagerControls with WindowListener implements WindowControls {
       for (final d in await screenRetriever.getAllDisplays()) workAreaOf(d),
     ];
     final area = workAreaHolding(bounds, areas) ?? bounds;
+    await windowManager.setResizable(_stretch);
+    if (_stretch) {
+      final widest = area.width / 2 > logical.width
+          ? area.width / 2
+          : logical.width;
+      await windowManager.setAspectRatio(logical.width / logical.height);
+      await windowManager.setMaximumSize(
+        Size(widest, widest * logical.height / logical.width),
+      );
+    } else {
+      await windowManager.setAspectRatio(0);
+      await windowManager.setMaximumSize(logical);
+    }
     await windowManager.setMinimumSize(logical);
     await windowManager.setBounds(
       Rect.fromLTWH(
@@ -194,6 +212,13 @@ class WindowManagerControls with WindowListener implements WindowControls {
   }
 
   static const _cardMargin = 16.0;
+
+  /// Whether the card in place can be stretched by its edges.
+  bool _stretch = false;
+
+  /// No limit worth the name: the plugin has no way to take a maximum size
+  /// back once set, so leaving the card sets one no screen reaches.
+  static const _unbounded = Size(100000, 100000);
 
   /// Which screen the window is on, by most overlap.
   Future<void> _readWorkArea() async {

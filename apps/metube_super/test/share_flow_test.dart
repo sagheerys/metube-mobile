@@ -122,6 +122,7 @@ void main() {
     shareSendProvider.overrideWithValue(send ?? (path) async => sent.add(path)),
     shareDirProvider.overrideWith((ref) async => dir.path),
     shareForegroundProvider.overrideWithValue(() => onScreen),
+    shareFrameProvider.overrideWithValue(() async {}),
     backgroundHoldProvider.overrideWithValue(
       BackgroundHold(
         start: () async {
@@ -155,6 +156,25 @@ void main() {
       expect(sent.single, endsWith('(2).mp4'));
       expect(File(sent.single).existsSync(), isTrue, reason: 'kept a while');
       expect(box.read(shareFlowProvider), isNull);
+    });
+
+    testWidgets('the sheet says the share menu is coming while Android '
+        'copies the file', (tester) async {
+      // Field report 2026-11-10: a large clip finished, then the app stood
+      // still for seconds before the menu, with nothing on screen saying why.
+      final phases = <SharePhase?>[];
+      box.dispose();
+      box = ProviderContainer(
+        overrides: overrides(
+          send: (path) async {
+            phases.add(box.read(shareFlowProvider)?.phase);
+            sent.add(path);
+          },
+        ),
+      );
+      await tester.runAsync(() => flow().start(_clip));
+      expect(phases, [SharePhase.opening]);
+      expect(box.read(shareFlowProvider), isNull, reason: 'gone after');
     });
 
     testWidgets('**the guard**: a second tap while one runs pulls once', (

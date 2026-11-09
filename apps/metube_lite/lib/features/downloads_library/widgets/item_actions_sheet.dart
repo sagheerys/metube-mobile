@@ -123,7 +123,7 @@ class _ItemActionsSheet extends ConsumerWidget {
             tile(
               MTIcons.share,
               l10n.share,
-              () => run(() => actions.share([item])),
+              () => run(() => actions.share(host, [item])),
             ),
             // An external player gets a file path: Lite has only local
             // files, so no server URL ever leaves the app.

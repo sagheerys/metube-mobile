@@ -4832,6 +4832,18 @@ abstract class MTLocalizations {
   /// **'WhatsApp and Telegram take up to 2 GB; for larger files use Drive or Quick Share.'**
   String get shareMessagingLimit;
 
+  /// No description provided for @shareOpening.
+  ///
+  /// In en, this message translates to:
+  /// **'Opening the share menu…'**
+  String get shareOpening;
+
+  /// No description provided for @shareOpeningHint.
+  ///
+  /// In en, this message translates to:
+  /// **'A large file takes a few seconds to hand over.'**
+  String get shareOpeningHint;
+
   /// No description provided for @sharePreparing.
   ///
   /// In en, this message translates to:
@@ -5155,6 +5167,12 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'Small'**
   String get subtitlesSizeSmall;
+
+  /// No description provided for @subtitlesStyleTip.
+  ///
+  /// In en, this message translates to:
+  /// **'To change the size and background while you watch, long-press CC in the player.'**
+  String get subtitlesStyleTip;
 
   /// No description provided for @syncDeviceQuiet.
   ///
