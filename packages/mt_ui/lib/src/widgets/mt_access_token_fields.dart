@@ -60,7 +60,7 @@ class _MTAccessTokenFieldsState extends State<MTAccessTokenFields> {
         if (_open) ...[
           Text(
             l.cloudflareAccessHelp,
-            style: text.bodySmall?.copyWith(color: p.ink3),
+            style: text.bodySmall?.copyWith(color: p.ink2),
           ),
           SizedBox(height: widget.gap),
           TextField(

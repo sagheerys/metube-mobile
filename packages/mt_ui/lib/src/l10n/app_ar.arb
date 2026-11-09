@@ -250,7 +250,7 @@
   "clipboardLinkReady": "لصق الرابط",
   "closePlayer": "إغلاق المشغل",
   "cloudflareAccess": "Cloudflare Access (اختياري)",
-  "cloudflareAccessHelp": "لسيرفر خلف Cloudflare Access وحده. أنشئ رمز خدمة (Service Token) في Cloudflare Zero Trust، واسمح له بسياسة Service Auth على عنوان هذا السيرفر، ثم الصق قيمتيه هنا. لا تُرسَلان إلا إلى عناوين https.",
+  "cloudflareAccessHelp": "لسيرفر خلف Cloudflare Access وحده: أنشئ رمز خدمة Service Token في Cloudflare Zero Trust، واسمح له بسياسة Service Auth على عنوان هذا السيرفر، ثم الصق قيمتيه هنا. لا تُرسَلان إلا إلى عناوين https المشفّرة.",
   "cloudflareBothRequired": "أدخل معرّف العميل وسرّ العميل معاً، أو اتركهما فارغين",
   "cloudflareClientId": "معرّف العميل (Client ID)",
   "cloudflareClientSecret": "سرّ العميل (Client Secret)",

@@ -346,7 +346,7 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get cloudflareAccessHelp =>
-      'لسيرفر خلف Cloudflare Access وحده. أنشئ رمز خدمة (Service Token) في Cloudflare Zero Trust، واسمح له بسياسة Service Auth على عنوان هذا السيرفر، ثم الصق قيمتيه هنا. لا تُرسَلان إلا إلى عناوين https.';
+      'لسيرفر خلف Cloudflare Access وحده: أنشئ رمز خدمة Service Token في Cloudflare Zero Trust، واسمح له بسياسة Service Auth على عنوان هذا السيرفر، ثم الصق قيمتيه هنا. لا تُرسَلان إلا إلى عناوين https المشفّرة.';
 
   @override
   String get cloudflareBothRequired =>
