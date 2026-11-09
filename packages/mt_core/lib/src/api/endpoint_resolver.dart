@@ -57,10 +57,8 @@ class EndpointResolver {
           await client.testConnection(timeout: MTConstants.probeTimeout);
           return MTEndpointStatus.ok;
         } on AuthFailureException {
-          return MTEndpointStatus.unauthorized;
-        } on AccessRejectedException {
-          // Cloudflare turned the token away: the endpoint is alive, the
-          // credentials are the problem, which is what "unauthorized" says.
+          // Includes Cloudflare turning the token away: the endpoint is
+          // alive, the credentials are the problem.
           return MTEndpointStatus.unauthorized;
         } on NotMeTubeServerException {
           return MTEndpointStatus.notMeTube;

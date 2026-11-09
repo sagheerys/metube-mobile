@@ -517,11 +517,12 @@ The way through is an Access **service token**: a pair of values the apps
 send as the headers `CF-Access-Client-Id` and `CF-Access-Client-Secret`.
 Lite, Super and Ember all have two optional fields for them.
 
-1. In the Zero Trust dashboard, create a service token (Access → Service
-   Auth → Service Tokens). Cloudflare shows the **Client Secret once**; copy
-   it before you leave the page.
+1. In the Zero Trust dashboard, create a service token (**Access controls →
+   Service credentials → Service Tokens**). Cloudflare shows the **Client
+   Secret once**; copy it before you leave the page.
 2. On the MeTube hostname's Access application, add a policy with the action
-   **Service Auth** that includes that token.
+   **Service Auth** (not *Allow*, which asks for a browser login) that
+   includes the selector **Service Token** with that token.
 3. In **Lite or Super**, open **Settings → Server**; in **Ember**, open the
    server setup (*Settings → Server*). Under the password, click
    **Cloudflare Access (optional)**, paste the Client ID and the Client
@@ -549,14 +550,12 @@ What to know:
   copying) cannot be sent at all. The app says Cloudflare rejected the Client
   ID or Client Secret; paste it again.
 
-This was built from how Cloudflare documents service tokens, and the app side
-was tested end to end against a fake server. It has **not yet been measured
-against a live Access hostname**, so the exact answers Access gives for a
-wrong or expired token are not recorded (see [SERVER-API.md](SERVER-API.md)).
-Until then, a token that Access refuses on its side is reported with the same
-message as before this option existed. If you would rather not use Access
-for this hostname, add a **Bypass** policy for it and let basic auth do the
-work instead.
+**A token Access refuses** (missing, mistyped, revoked or expired) is
+reported as *Cloudflare refused the Client ID or the Client Secret*, not as a
+wrong password: measured on a live Access hostname, Access answers it with a
+`403` that names itself (see [SERVER-API.md](SERVER-API.md)). Fix it in the
+same two fields. If you would rather not use Access for this hostname, add a
+**Bypass** policy for it and let basic auth do the work instead.
 
 ### Two URLs, because a tunnel is slow at home
 

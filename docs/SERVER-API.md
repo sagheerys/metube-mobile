@@ -60,15 +60,27 @@ wrong in places (one claimed an `/api` prefix that does not exist).
     it stays a `NetworkException`, as before.
   - **Never logged.** The log writer and `sanitizeForShare` both remove the two
     header names with their values.
-  - **How Access answers a rejected token is NOT measured** (no Cloudflare
-    account was available when this was written). So the client
-    cannot tell a server-side rejection from today's responses, and a `401`,
-    `403` or redirect from Access is reported exactly as it was before this
-    option existed. The one rejection it can identify for certain is the
-    refused header value above. `EndpointResolver` maps
-    `AccessRejectedException` to `MTEndpointStatus.unauthorized`. **If the
-    responses are measured later, the table goes here and the classification
-    in `MeTubeApiClient` is extended to match.**
+  - **How Access answers a rejected token (measured 2026-11-09** on a live
+    self-hosted Access application whose only policy is **Service Auth** with
+    one service token). No token, a made-up pair, and an ID without its
+    secret all earn the same answer, on every path tried (`/`, `/history`,
+    `/version`, `/download/…` with a `Range`, `POST /add`):
+
+    | What | Value |
+    |---|---|
+    | Status | `403 Forbidden` |
+    | Body | HTML, `<title>Error ・ Cloudflare Access</title>` |
+    | Marker headers | `Cf-Access-Domain: <hostname>` · `Cf-Access-Aud: <app tag>` |
+    | Redirect | none |
+
+    So a `401` or `403` carrying either marker header is reported as
+    `AccessRejectedException`, from `_request` and from the download reads
+    alike; without them it is the server's own `AuthFailureException`, as
+    before. `AccessRejectedException` is a subtype of `AuthFailureException`,
+    so every caller that treats a rejected credential as fatal does the same
+    here; only the wording differs. A policy with the action **Allow** (a
+    browser login) answers differently, with a redirect to the login page;
+    that path is not measured and still ends as "not a MeTube server".
 - **Base URL.** Entered by the user with no prefix
   (`https://metube.example.com`); a trailing slash is stripped.
 - **Timeouts.** 30s connect · 30min receive (pulls only) · 10s connection test ·

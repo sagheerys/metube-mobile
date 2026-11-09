@@ -601,7 +601,7 @@ class MeTubeApiClient implements MeTubeApi {
     } on DioException catch (e) {
       throw _networkFailure(e, '/download');
     }
-    _throwIfDownloadRejected(response.statusCode ?? 0);
+    _throwIfDownloadRejected(response);
     final bytes = response.data ?? const <int>[];
     if (bytes.length > maxBytes) {
       throw ServerErrorException('text file over $maxBytes bytes');
@@ -623,7 +623,7 @@ class MeTubeApiClient implements MeTubeApi {
     } on DioException catch (e) {
       throw _networkFailure(e, '/download');
     }
-    _throwIfDownloadRejected(response.statusCode ?? 0, file: false);
+    _throwIfDownloadRejected(response, file: false);
     final html = response.data ?? '';
     // The same ceiling as any text read from the folder.
     if (html.length > MTConstants.maxTextFileBytes) {
@@ -722,7 +722,7 @@ class MeTubeApiClient implements MeTubeApi {
       }
       throw _networkFailure(e, '/download');
     }
-    _throwIfDownloadRejected(response.statusCode ?? 0);
+    _throwIfDownloadRejected(response);
   }
 
   /// Classifies the status of a read from the download folder. **A 404 on
@@ -731,10 +731,14 @@ class MeTubeApiClient implements MeTubeApi {
   ///
   /// The folder's own index is not a file: its 404 means a server that
   /// does not list the folder, so [file] is false there.
-  static void _throwIfDownloadRejected(int status, {bool file = true}) {
+  static void _throwIfDownloadRejected(
+    Response<dynamic> response, {
+    bool file = true,
+  }) {
+    final status = response.statusCode ?? 0;
     if (status == 200 || status == 206) return;
     if (status == 401 || status == 403) {
-      throw AuthFailureException('HTTP $status at /download');
+      throw _credentialRejected(response, '/download');
     }
     if (status == 404) {
       throw file
@@ -770,7 +774,7 @@ class MeTubeApiClient implements MeTubeApi {
     final status = response.statusCode ?? 0;
     final at = _route(response.requestOptions);
     if (status == 401 || status == 403) {
-      throw AuthFailureException('HTTP $status at $at');
+      throw _credentialRejected(response, at);
     }
     if (status == 404) throw NoApiException('HTTP 404 at $at');
     if (status < 200 || status >= 300) {
@@ -779,6 +783,18 @@ class MeTubeApiClient implements MeTubeApi {
       _throwClassified(message);
     }
     return response;
+  }
+
+  /// A 401 or 403, told apart by who sent it: Cloudflare Access turning the
+  /// service token away, or the server refusing its own password.
+  static AuthFailureException _credentialRejected(
+    Response<dynamic> response,
+    String at,
+  ) {
+    final status = response.statusCode;
+    return CloudflareAccess.isAccessRejection(response.headers)
+        ? AccessRejectedException('HTTP $status at $at from Cloudflare Access')
+        : AuthFailureException('HTTP $status at $at');
   }
 
   /// A transport failure as a classified error. With a Cloudflare pair set,

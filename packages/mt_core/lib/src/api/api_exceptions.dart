@@ -30,12 +30,15 @@ final class AuthFailureException extends MTApiException {
 /// Cloudflare Access refused the service token (the Client ID or the Client
 /// Secret), or the token could not be sent at all.
 ///
-/// Told apart from [AuthFailureException] because the fix is somewhere else:
-/// the server's own password is not involved, and showing "wrong password"
-/// sends the user to the wrong field. Like [AuthFailureException] it is not
-/// retryable: repeating the same token fails the same way. **Its [detail]
-/// never carries a header value**; the secret must not reach a log.
-final class AccessRejectedException extends MTApiException {
+/// **A kind of [AuthFailureException]**: everything that treats a rejected
+/// credential as fatal (the library's full-page error, the endpoint status
+/// "unauthorized", no fallback to a stale list) treats this the same way.
+/// Only the wording differs, because the fix is somewhere else: the
+/// server's own password is not involved, and "wrong password" sends the
+/// user to the wrong field. A message switch must therefore test this type
+/// before [AuthFailureException]. **Its [detail] never carries a header
+/// value**; the secret must not reach a log.
+final class AccessRejectedException extends AuthFailureException {
   const AccessRejectedException([super.detail]);
 }
 

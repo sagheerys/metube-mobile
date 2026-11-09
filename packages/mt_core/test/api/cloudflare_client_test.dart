@@ -309,4 +309,69 @@ void main() {
       }
     });
   });
+  group('who said no: Cloudflare Access or the server', () {
+    // Measured on a real Service Auth application: a missing, wrong or
+    // one-sided token earns a 403 HTML page marked with these two headers.
+    ResponseBody accessPage(int status) => ResponseBody.fromString(
+      '<title>Error ・ Cloudflare Access</title>Forbidden',
+      status,
+      headers: {
+        Headers.contentTypeHeader: ['text/html'],
+        'cf-access-domain': ['metube.example.com'],
+        'cf-access-aud': ['4cb70fe7d9f16b51'],
+      },
+    );
+
+    test('a 403 from Access is the token, not the password', () async {
+      // Defect: it read as "wrong username or password", sending the
+      // user to the one field that was fine.
+      final (c, _) = _client((_) => accessPage(403), access: _pair);
+      await expectLater(
+        c.testConnection(),
+        throwsA(isA<AccessRejectedException>()),
+      );
+    });
+
+    test('with no token set at all it still names Access', () async {
+      final (c, _) = _client((_) => accessPage(403));
+      await expectLater(
+        c.fetchHistory(),
+        throwsA(isA<AccessRejectedException>()),
+      );
+    });
+
+    test('a download refused by Access says so too', () async {
+      final dir = await Directory.systemTemp.createTemp('mtf_cf_');
+      addTearDown(() => dir.delete(recursive: true));
+      final (c, _) = _client((_) => accessPage(403), access: _pair);
+      await expectLater(
+        c.downloadTo('clip.mp4', '${dir.path}${Platform.pathSeparator}c.mp4'),
+        throwsA(isA<AccessRejectedException>()),
+      );
+    });
+
+    test("the server's own 401 and 403 stay a password failure", () async {
+      for (final status in [401, 403]) {
+        final (c, _) = _client(
+          (_) => _ok('unauthorized', status: status),
+          access: _pair,
+        );
+        await expectLater(
+          c.testConnection(),
+          throwsA(
+            allOf(
+              isA<AuthFailureException>(),
+              isNot(isA<AccessRejectedException>()),
+            ),
+          ),
+        );
+      }
+    });
+
+    test('Access is still a rejected credential to every caller', () {
+      // The library's full-page error and the endpoint status catch the
+      // parent type; a token refusal must not fall through to a stale list.
+      expect(const AccessRejectedException(), isA<AuthFailureException>());
+    });
+  });
 }

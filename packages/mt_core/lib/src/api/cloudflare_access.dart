@@ -94,6 +94,14 @@ final class CloudflareAccess {
         'Invalid HTTP header',
       );
 
+  /// Whether a 401 or 403 came from Cloudflare Access rather than from the
+  /// server behind it (measured on a Service Auth application): Access
+  /// answers 403 with an HTML page and marks it with `Cf-Access-Domain` and
+  /// `Cf-Access-Aud`. The server's own lock (Basic Auth) sends neither.
+  static bool isAccessRejection(Headers headers) =>
+      headers.value('cf-access-domain') != null ||
+      headers.value('cf-access-aud') != null;
+
   @override
   bool operator ==(Object other) =>
       other is CloudflareAccess &&

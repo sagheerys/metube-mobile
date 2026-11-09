@@ -222,7 +222,11 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
               child: error is AuthFailureException
                   ? MTEmptyState(
                       title: l10n.signInRequired,
-                      message: l10n.signInRequiredHint,
+                      // The saved password is not the problem when it was
+                      // Cloudflare that said no.
+                      message: error is AccessRejectedException
+                          ? l10n.errAccessRejected
+                          : l10n.signInRequiredHint,
                       actionLabel: l10n.updateCredentials,
                       onAction: () => context.go(SettingsPane.server.route),
                     )
