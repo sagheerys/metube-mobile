@@ -19,7 +19,19 @@ for Android, and MeTube Ember for Windows.
   Secret. They are sent to `https://` addresses only (a home `http://`
   address never sees them), never follow a redirect to another host, and
   are kept beside the password, out of backups and logs. Built on the work
-  by @cciprian5 in #32, thank you. All three apps.
+  by @cciprian5 in #32, thank you. All three apps. When Cloudflare turns
+  the token away, the apps say so instead of reporting a wrong password,
+  and the server settings show *Cloudflare Access* where they used to say
+  "no password".
+
+### Fixed
+
+- **Lite: "your server doesn't delete files" on a server that does.**
+  Behind a Cloudflare tunnel, the check after a cleanup could be answered
+  by Cloudflare's copy of the clip instead of the server, so a correctly
+  set up server was reported as keeping deleted files. The check now always
+  reaches the server, and the warning is cleared when you switch to another
+  server. Super's check that a file is still on the server benefits too.
 
 ## [2.7.0] - 2026-11-05
 

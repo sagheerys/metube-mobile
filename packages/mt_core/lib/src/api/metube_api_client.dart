@@ -667,11 +667,17 @@ class MeTubeApiClient implements MeTubeApi {
   /// makes the Android platform retry **ten times with an 8s timeout**,
   /// over 80 seconds that freeze the entire probe queue. Refusing here
   /// takes a fraction of a second.
+  ///
+  /// **Asked of the server, never of a cache.** A CDN in front (Cloudflare
+  /// keeps video files at its edge by default) still answers 206 for a file
+  /// the server has deleted, which made a working server look as if it kept
+  /// deleted files. A query string the server ignores makes every check a
+  /// cache miss; the pulls and streams keep using the cacheable address.
   @override
   Future<bool> fileExists(String serverFilename, {Duration? timeout}) async {
     final String url;
     try {
-      url = downloadUrl(serverFilename);
+      url = '${downloadUrl(serverFilename)}?fresh=${_freshTag()}';
     } on UnsafeFilenameException {
       return false;
     }
@@ -796,6 +802,12 @@ class MeTubeApiClient implements MeTubeApi {
         ? AccessRejectedException('HTTP $status at $at from Cloudflare Access')
         : AuthFailureException('HTTP $status at $at');
   }
+
+  static int _freshCount = 0;
+
+  /// Unique per call, even for two calls in the same microsecond.
+  static String _freshTag() =>
+      '${DateTime.now().microsecondsSinceEpoch}-${_freshCount++}';
 
   /// A transport failure as a classified error. With a Cloudflare pair set,
   /// a header value the platform refuses to send is reported as the token

@@ -129,9 +129,13 @@ class _Values {
   String server() {
     if (!s.isConfigured) return l10n.settingsValueNotSet;
     final user = s.username?.trim() ?? '';
+    // A server locked by a service token alone is not "no password".
+    final access = s.cloudflareAccess != null;
     return mtMetaLine([
       Uri.tryParse(s.serverUrl)?.authority ?? s.serverUrl,
-      user.isEmpty ? l10n.settingsValueNoPassword : user,
+      if (user.isNotEmpty) user,
+      if (access) l10n.settingsValueCloudflare,
+      if (user.isEmpty && !access) l10n.settingsValueNoPassword,
     ]);
   }
 

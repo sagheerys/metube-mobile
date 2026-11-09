@@ -650,6 +650,12 @@ abstract class MTLocalizations {
   /// **'Show the secret'**
   String get cloudflareShowSecret;
 
+  /// No description provided for @cloudflareTokenSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Service token saved'**
+  String get cloudflareTokenSaved;
+
   /// No description provided for @columnAdded.
   ///
   /// In en, this message translates to:
@@ -4705,6 +4711,12 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'{count, plural, =0{No channels yet} =1{1 channel} other{{count} channels}}'**
   String settingsValueChannels(int count);
+
+  /// No description provided for @settingsValueCloudflare.
+  ///
+  /// In en, this message translates to:
+  /// **'Cloudflare Access'**
+  String get settingsValueCloudflare;
 
   /// No description provided for @settingsValueCompatOff.
   ///

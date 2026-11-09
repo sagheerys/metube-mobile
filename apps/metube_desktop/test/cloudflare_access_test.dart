@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:metube_desktop/data/addresses_data.dart';
 import 'package:metube_desktop/data/library_data.dart';
 import 'package:metube_desktop/data/setup_data.dart';
@@ -148,6 +149,30 @@ void main() {
     expect((await store.read())!.access, pair);
     await store.write(ServerConfig(baseUrl: tunnel));
     expect((await store.read())!.access, isNull);
+  });
+
+  testWidgets('the server settings say a token guards the server', (
+    tester,
+  ) async {
+    // Defect: with no username the pane listed nothing at all, so a server
+    // locked by Cloudflare Access alone looked open.
+    Future<void> openAt(ServerConfig server) async {
+      ShellHarness.useWindow(tester, const Size(1440, 900));
+      await tester.pumpWidget(
+        ShellHarness(library: const [], server: server).app(),
+      );
+      await tester.pumpAndSettle();
+      GoRouter.of(tester.element(find.byType(EmberSidebar)))
+          .go('/settings/server');
+      await tester.pumpAndSettle();
+    }
+
+    await openAt(ServerConfig(baseUrl: tunnel, access: pair));
+    expect(find.text('Cloudflare Access'), findsOneWidget);
+    expect(find.text('Service token saved'), findsOneWidget);
+
+    await openAt(ServerConfig(baseUrl: tunnel));
+    expect(find.text('Service token saved'), findsNothing);
   });
 
   test('a refused token has its own message', () async {

@@ -156,6 +156,27 @@ void main() {
     expect(find.text(mtMetaLine([l10n.themeDark, 'English'])), findsOneWidget);
   });
 
+  testWidgets('a server locked by a token alone is not "no password"', (
+    tester,
+  ) async {
+    // Defect: the row read "no password" on a server Cloudflare Access was
+    // guarding, which looks like an open server.
+    await at(
+      tester,
+      const Size(411, 2000),
+      settings: LiteSettings(
+        serverUrl: 'https://tube.example.com',
+        cloudflareAccess: CloudflareAccess(clientId: 'i', clientSecret: 's'),
+      ),
+    );
+    final l10n = l10nOf(tester);
+    expect(
+      find.text(mtMetaLine(['tube.example.com', l10n.settingsValueCloudflare])),
+      findsOneWidget,
+    );
+    expect(find.textContaining(l10n.settingsValueNoPassword), findsNothing);
+  });
+
   testWidgets('a server not set up yet says so on its row', (tester) async {
     await at(tester, const Size(411, 914));
     expect(find.text(l10nOf(tester).settingsValueNotSet), findsOneWidget);

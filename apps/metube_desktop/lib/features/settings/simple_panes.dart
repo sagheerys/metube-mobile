@@ -156,6 +156,12 @@ class ServerPane extends ConsumerWidget {
         ),
         if (config.username case final user? when user.isNotEmpty)
           SettingLine(title: l.username, value: user),
+        // Without it, a server locked by a token alone looks unprotected.
+        if (config.access?.isComplete ?? false)
+          SettingLine(
+            title: l.settingsValueCloudflare,
+            value: l.cloudflareTokenSaved,
+          ),
         const ServerVersionLine(),
       ],
     );

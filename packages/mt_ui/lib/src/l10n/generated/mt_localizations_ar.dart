@@ -365,6 +365,9 @@ class MTLocalizationsAr extends MTLocalizations {
   String get cloudflareShowSecret => 'إظهار السرّ';
 
   @override
+  String get cloudflareTokenSaved => 'رمز الخدمة محفوظ';
+
+  @override
   String get columnAdded => 'تاريخ الإضافة';
 
   @override
@@ -2851,6 +2854,9 @@ class MTLocalizationsAr extends MTLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get settingsValueCloudflare => 'Cloudflare Access';
 
   @override
   String get settingsValueCompatOff => 'أفضل توافق: معطّل';

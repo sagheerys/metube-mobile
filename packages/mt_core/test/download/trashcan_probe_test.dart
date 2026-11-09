@@ -74,4 +74,11 @@ void main() {
       );
     },
   );
+  test('forget drops the verdict, so another server starts clean', () async {
+    // Defect: the warning learned on one server stayed after the app was
+    // pointed at another that deletes its files correctly.
+    expect(await probe.check('clip.mp4'), isTrue);
+    await TrashcanProbe.forget(store, PrefsMutex());
+    expect(await probe.serverKeepsFiles, isFalse);
+  });
 }

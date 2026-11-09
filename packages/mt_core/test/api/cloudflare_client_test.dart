@@ -131,6 +131,34 @@ void main() {
       expect(a.requests.single.headers['Range'], 'bytes=0-0');
     });
 
+    test('fileExists asks the server, never a cache', () async {
+      // Defect: Cloudflare kept the pulled clip at its edge and answered
+      // 206 after the server had deleted it, so a server set up right was
+      // reported as keeping deleted files.
+      final (c, a) = _client((_) => _ok('x', status: 206), access: _pair);
+      await c.fileExists('Kids/clip one.mp4');
+      await c.fileExists('Kids/clip one.mp4');
+      final first = a.requests[0].uri;
+      final second = a.requests[1].uri;
+      expect(first.path, '/download/Kids/clip%20one.mp4');
+      expect(first.queryParameters['fresh'], isNotEmpty);
+      expect(
+        first.queryParameters['fresh'],
+        isNot(second.queryParameters['fresh']),
+      );
+    });
+
+    test('the pull keeps the plain, cacheable address', () async {
+      final dir = await Directory.systemTemp.createTemp('mtf_cf_pull_');
+      addTearDown(() => dir.delete(recursive: true));
+      final (c, a) = _client((_) => _ok('x'), access: _pair);
+      await c.downloadTo(
+        'clip.mp4',
+        '${dir.path}${Platform.pathSeparator}clip.mp4',
+      );
+      expect(a.requests.single.uri.query, isEmpty);
+    });
+
     test('fetchText and the folder index', () async {
       final (c, a) = _client((_) => _ok('hello'), access: _pair);
       await c.fetchText('notes.txt');

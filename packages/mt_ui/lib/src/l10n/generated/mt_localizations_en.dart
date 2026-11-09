@@ -339,6 +339,9 @@ class MTLocalizationsEn extends MTLocalizations {
   String get cloudflareShowSecret => 'Show the secret';
 
   @override
+  String get cloudflareTokenSaved => 'Service token saved';
+
+  @override
   String get columnAdded => 'Added';
 
   @override
@@ -2777,6 +2780,9 @@ class MTLocalizationsEn extends MTLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get settingsValueCloudflare => 'Cloudflare Access';
 
   @override
   String get settingsValueCompatOff => 'Best compatibility: off';

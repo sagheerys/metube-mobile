@@ -171,6 +171,9 @@ class SettingsNotifier extends Notifier<LiteSettings> {
     } finally {
       client.close();
     }
+    if (config.baseUrl != state.serverUrl) {
+      await TrashcanProbe.forget(_store, _mutex);
+    }
     await _mutex.run(() => _store.setString('server_url', config.baseUrl));
     await _writeSecret(SecretKeys.username, username);
     await _writeSecret(SecretKeys.password, password);

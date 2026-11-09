@@ -33,6 +33,13 @@ class TrashcanProbe {
 
   Future<bool> get serverKeepsFiles async => await store.get(prefsKey) == true;
 
+  /// Drops what was learned about a server. Called when the app is pointed
+  /// at another one: the verdict belongs to the server it was measured on,
+  /// and a warning carried over to a correctly set up server sends its
+  /// owner to change a setting that is already right.
+  static Future<void> forget(KeyValueStore store, PrefsMutex mutex) =>
+      mutex.run(() => store.remove(prefsKey));
+
   /// Call **after a delete the app believes succeeded**, with the filename
   /// that was supposed to go.
   ///
