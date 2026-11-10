@@ -49,6 +49,11 @@ for Android, and MeTube Ember for Windows.
   set up server was reported as keeping deleted files. The check now always
   reaches the server, and the warning is cleared when you switch to another
   server. Super's check that a file is still on the server benefits too.
+- **Lite: bringing back your settings after a reinstall.** Android hides
+  the app's own backups from it once it is reinstalled, so the restore it
+  used to offer never appeared. A phone with Lite downloads and no server
+  set now offers, once, to choose a backup with the system's file picker.
+  When Google's backup has already restored the settings, nothing is asked.
 - **Pictures in "What's new"** showed as a stray `!` and their caption;
   they are now left out of the sheet. All three apps.
 - **Confirmation dialogs at the largest text size** scroll their words
@@ -76,8 +81,6 @@ as used against anyone.
   held many links, a chat or a web page shared by mistake, sent them all to
   the server straight away; now the app asks "Add 7 links?", and takes at
   most 50 from one share. A single shared link works as before.
-- **The restore offered after a reinstall names the server** in the backup
-  (Lite), so you can see where the app is about to connect.
 - **Updates are checked against GitHub's own fingerprint.** The downloaded
   APK or installer must match the SHA-256 GitHub records for it, or it is
   not installed. All three apps.

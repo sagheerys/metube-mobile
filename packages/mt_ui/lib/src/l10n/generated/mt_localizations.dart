@@ -4406,6 +4406,24 @@ abstract class MTLocalizations {
   /// **'Restore failed: the backup file is not valid'**
   String get restoreFailed;
 
+  /// No description provided for @restorePickBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This phone has MeTube Lite downloads but no settings, as after a reinstall. If you kept a backup, choose it: the app writes them to Download/MeTube_Lite/backups.'**
+  String get restorePickBody;
+
+  /// No description provided for @restorePickChoose.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a backup'**
+  String get restorePickChoose;
+
+  /// No description provided for @restorePickTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Bring back your settings?'**
+  String get restorePickTitle;
+
   /// No description provided for @restoreServerLine.
   ///
   /// In en, this message translates to:

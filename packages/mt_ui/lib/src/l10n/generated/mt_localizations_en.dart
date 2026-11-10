@@ -2572,6 +2572,16 @@ class MTLocalizationsEn extends MTLocalizations {
   String get restoreFailed => 'Restore failed: the backup file is not valid';
 
   @override
+  String get restorePickBody =>
+      'This phone has MeTube Lite downloads but no settings, as after a reinstall. If you kept a backup, choose it: the app writes them to Download/MeTube_Lite/backups.';
+
+  @override
+  String get restorePickChoose => 'Choose a backup';
+
+  @override
+  String get restorePickTitle => 'Bring back your settings?';
+
+  @override
   String restoreServerLine(String server) {
     return 'Server in this backup: $server';
   }

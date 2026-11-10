@@ -1,9 +1,6 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mt_core/mt_core.dart';
@@ -15,6 +12,7 @@ import '../downloads_library/library_providers.dart';
 import '../playlists/playlists_providers.dart';
 import '../shared/error_report.dart';
 import 'auto_backup.dart';
+import 'restore_from_file.dart';
 import 'widgets/backup_picker.dart';
 
 /// Backup and restore: **plain text, rotating, with no key** (decision
@@ -70,18 +68,6 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
     }
   }
 
-  /// **Read through the system picker (SAF):** Android 11+ refuses to read
-  /// a file the app did not create, even in the same folder (`errno 13`),
-  /// and a migration backup comes from another device by definition.
-  Future<String?> _pickFileContents() async {
-    final picked = await FilePicker.platform.pickFiles(withData: true);
-    final file = picked?.files.singleOrNull;
-    if (file == null) return null;
-    if (file.bytes case final Uint8List bytes) return utf8.decode(bytes);
-    final path = file.path;
-    return path == null ? null : File(path).readAsString();
-  }
-
   /// **An export for sharing is a separate file from the rotation**: a
   /// dated name with the share chooser opening on it immediately, which is
   /// its only purpose. Conflating it with the automatic backup made "back
@@ -96,7 +82,7 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
   }
 
   Future<String> _importPicked(MTLocalizations l10n) async {
-    final contents = await _pickFileContents();
+    final contents = await pickBackupContents();
     if (contents == null) throw const BackupCancelledException();
     return _applyRestore(l10n, await _service.importFromString(contents));
   }

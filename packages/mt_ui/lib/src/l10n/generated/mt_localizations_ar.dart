@@ -2633,6 +2633,16 @@ class MTLocalizationsAr extends MTLocalizations {
   String get restoreFailed => 'فشلت الاستعادة: ملف النسخة الاحتياطية غير صالح';
 
   @override
+  String get restorePickBody =>
+      'في هذا الجوال تنزيلات MeTube Lite بلا إعدادات، كما يحدث بعد إعادة التثبيت. إن كانت لديك نسخة احتياطية فاخترها؛ يكتبها التطبيق في Download/MeTube_Lite/backups.';
+
+  @override
+  String get restorePickChoose => 'اختر نسخة';
+
+  @override
+  String get restorePickTitle => 'استعادة إعداداتك؟';
+
+  @override
   String restoreServerLine(String server) {
     return 'السيرفر في هذه النسخة: $server';
   }

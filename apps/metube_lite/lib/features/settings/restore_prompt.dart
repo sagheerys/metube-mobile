@@ -9,6 +9,7 @@ import '../../di.dart';
 import '../downloads_library/library_providers.dart';
 import '../playlists/playlists_providers.dart';
 import 'auto_backup.dart';
+import 'restore_from_file.dart';
 
 /// Rule 1, step 4 (Lite): on the first launch after a reinstall, if an
 /// automatic backup is found on disk, it offers "restore your previous
@@ -31,7 +32,10 @@ Future<void> maybeOfferAutoRestore(BuildContext context, WidgetRef ref) async {
   // can be orphaned, and dated, so an older one can be reached from the
   // backup screen if the newest is the problem.
   final latest = await backup.latest();
-  if (latest == null) return;
+  if (latest == null) {
+    if (context.mounted) await maybeOfferPickedRestore(context, ref, store);
+    return;
+  }
 
   await ref
       .read(prefsMutexProvider)
