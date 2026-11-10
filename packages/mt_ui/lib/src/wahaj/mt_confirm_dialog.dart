@@ -75,27 +75,31 @@ class MTConfirmDialog extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(
-                MTSpace.pagePad,
-                MTSpace.pagePad,
-                MTSpace.pagePad,
-                MTSpace.md,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(title, style: text.titleLarge),
-                  const SizedBox(height: MTSpace.xs),
-                  Text(
-                    message,
-                    style: text.bodyMedium!.copyWith(color: p.ink2),
-                  ),
-                  if (preview != null) ...[
-                    const SizedBox(height: MTSpace.md),
-                    preview!,
+            // Scrolls when it cannot fit (the largest text on a small
+            // phone), so the buttons below always stay on screen.
+            Flexible(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(
+                  MTSpace.pagePad,
+                  MTSpace.pagePad,
+                  MTSpace.pagePad,
+                  MTSpace.md,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(title, style: text.titleLarge),
+                    const SizedBox(height: MTSpace.xs),
+                    Text(
+                      message,
+                      style: text.bodyMedium!.copyWith(color: p.ink2),
+                    ),
+                    if (preview != null) ...[
+                      const SizedBox(height: MTSpace.md),
+                      preview!,
+                    ],
                   ],
-                ],
+                ),
               ),
             ),
             Divider(height: 1, color: p.line),

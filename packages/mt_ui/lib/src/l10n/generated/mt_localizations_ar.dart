@@ -2633,6 +2633,11 @@ class MTLocalizationsAr extends MTLocalizations {
   String get restoreFailed => 'فشلت الاستعادة: ملف النسخة الاحتياطية غير صالح';
 
   @override
+  String restoreServerLine(String server) {
+    return 'السيرفر في هذه النسخة: $server';
+  }
+
+  @override
   String get restoreSettings => 'استعادة جميع البيانات';
 
   @override
@@ -2939,6 +2944,31 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get shareSelected => 'مشاركة المحدد';
+
+  @override
+  String get sharedLinksAdd => 'أضفها';
+
+  @override
+  String get sharedLinksBody => 'يذهب كل رابط منها إلى السيرفر لتنزيله.';
+
+  @override
+  String sharedLinksCapped(int max) {
+    return 'أُضيف أول $max رابطاً فقط.';
+  }
+
+  @override
+  String sharedLinksTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'إضافة $count رابط؟',
+      many: 'إضافة $count رابطاً؟',
+      few: 'إضافة $count روابط؟',
+      two: 'إضافة رابطين؟',
+      one: 'إضافة رابط واحد؟',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get shortsFilter => 'قِصار';

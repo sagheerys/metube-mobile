@@ -4406,6 +4406,12 @@ abstract class MTLocalizations {
   /// **'Restore failed: the backup file is not valid'**
   String get restoreFailed;
 
+  /// No description provided for @restoreServerLine.
+  ///
+  /// In en, this message translates to:
+  /// **'Server in this backup: {server}'**
+  String restoreServerLine(String server);
+
   /// No description provided for @restoreSettings.
   ///
   /// In en, this message translates to:
@@ -4867,6 +4873,30 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'Share selected'**
   String get shareSelected;
+
+  /// No description provided for @sharedLinksAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Add them'**
+  String get sharedLinksAdd;
+
+  /// No description provided for @sharedLinksBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Each one goes to your server to download.'**
+  String get sharedLinksBody;
+
+  /// No description provided for @sharedLinksCapped.
+  ///
+  /// In en, this message translates to:
+  /// **'Only the first {max} links were added.'**
+  String sharedLinksCapped(int max);
+
+  /// No description provided for @sharedLinksTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Add 1 link?} other{Add {count} links?}}'**
+  String sharedLinksTitle(int count);
 
   /// No description provided for @shortsFilter.
   ///

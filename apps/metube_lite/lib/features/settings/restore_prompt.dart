@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mt_core/mt_core.dart';
@@ -36,12 +38,25 @@ Future<void> maybeOfferAutoRestore(BuildContext context, WidgetRef ref) async {
       .run(() => store.setBool('auto_restore_offered', true));
   if (!context.mounted) return;
 
+  // The server the copy points at, said before it is accepted: the newest
+  // file in a public folder is not always one this app wrote.
+  final server = switch (await _read(latest.path)) {
+    final contents? => BackupService.serverOf(contents),
+    null => null,
+  };
+  if (!context.mounted) return;
+
   final l10n = context.mtl;
   final accepted = await showMTDialog<bool>(
     context: context,
     builder: (dialogContext) => AlertDialog(
       title: Text(l10n.restoreSettings),
-      content: Text(l10n.restoreConfirm),
+      content: Text(
+        server == null
+            ? l10n.restoreConfirm
+            : '${l10n.restoreConfirm}\n\n'
+                  '${l10n.restoreServerLine(mtLtrRun(ServerConfig.hostLabel(server)))}',
+      ),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(dialogContext, false),
@@ -68,5 +83,13 @@ Future<void> maybeOfferAutoRestore(BuildContext context, WidgetRef ref) async {
     if (context.mounted) {
       showMTSnack(context, l10n.restoreFailed, type: MTSnackType.error);
     }
+  }
+}
+
+Future<String?> _read(String path) async {
+  try {
+    return await File(path).readAsString();
+  } on FileSystemException {
+    return null;
   }
 }

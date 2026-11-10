@@ -31,6 +31,7 @@ import '../update/update_state.dart';
 import '../update/whats_new_prompt.dart';
 import '../shared/notification_permission.dart';
 import 'share_landing.dart';
+import 'shared_links.dart';
 
 /// The shell: three bottom destinations plus the floating layer holding
 /// the smart add button, which appears in the library and the playlists
@@ -167,8 +168,10 @@ class _ShellScreenState extends ConsumerState<ShellScreen>
     // single clip and the server expanded it into twenty with no selection
     // screen. A link that is not short costs no wait.
     final resolver = ref.read(shortLinkResolverProvider);
+    final capped = shared.length > maxSharedLinks;
     final urls = [
-      for (final url in shared) await resolver.resolveForRouting(url),
+      for (final url in shared.take(maxSharedLinks))
+        await resolver.resolveForRouting(url),
     ];
     note(
       'share checked in ${DateTime.now().difference(started).inMilliseconds}ms',
@@ -193,22 +196,7 @@ class _ShellScreenState extends ConsumerState<ShellScreen>
       openAddSheet(context, ref, initialUrl: urls.first);
       return;
     }
-    final engine = ref.read(downloadEngineProvider);
-    if (engine == null) return note('share dropped: no server');
-    note('share of ${urls.length} links');
-    final quality = ref.read(settingsProvider).quality;
-    for (final url in urls) {
-      if (PlaylistDetector.isPlaylist(url)) {
-        GoRouter.of(context).push('/batch', extra: url);
-      } else {
-        engine.submit(url, quality, isBatchMember: true);
-      }
-    }
-    showMTSnack(
-      context,
-      context.mtl.downloadStarted,
-      type: MTSnackType.success,
-    );
+    await submitSharedLinks(context, ref, urls, capped: capped, note: note);
   }
 
   /// A playlist **in its own right**, not a video inside a playlist.

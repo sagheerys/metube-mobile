@@ -262,6 +262,38 @@ void main() {
       expect(tester.takeException(), isNull);
       expect(find.text('Keep it for now'), findsOneWidget);
     });
+
+    testWidgets('**the guard**: at the largest text on a small phone the '
+        'words scroll and the buttons stay on screen', (tester) async {
+      // Found 2026-11-10 by the new shared-links question: the dialog
+      // overflowed by 100 pixels at Android's largest text.
+      tester.view.devicePixelRatio = 1;
+      tester.view.physicalSize = const Size(320, 568);
+      addTearDown(tester.view.reset);
+      tester.platformDispatcher.textScaleFactorTestValue = 2;
+      addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+      await tester.pumpWidget(
+        host(
+          Builder(
+            builder: (context) => TextButton(
+              onPressed: () => showMTConfirm(
+                context,
+                title: 'Add 50 links?',
+                message: 'Each one goes to your server to download. ' * 4,
+                confirmLabel: 'Add them',
+                cancelLabel: 'Cancel',
+              ),
+              child: const Text('open'),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('open'));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+      final add = tester.getRect(find.text('Add them'));
+      expect(add.bottom, lessThanOrEqualTo(568));
+    });
   });
 
   group('MTBoxedRow', () {

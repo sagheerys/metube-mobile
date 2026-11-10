@@ -76,6 +76,20 @@ class BackupService {
   static String stripUrlCredentials(String raw) =>
       BackupAddresses.stripCredentials(raw);
 
+  /// The server a plain backup points at, or null (no address, or not the
+  /// plain format). Shown before a restore, so the user sees where the app
+  /// will connect, and a file planted by someone else names its server.
+  static String? serverOf(String contents) {
+    try {
+      final decoded = json.decode(contents);
+      if (decoded is! Map || decoded['app'] != 'MTF') return null;
+      final prefs = decoded['prefs'];
+      return prefs is Map ? BackupAddresses.serverIn(prefs) : null;
+    } on FormatException {
+      return null;
+    }
+  }
+
   /// The key that decrypts legacy backups **if one exists**. It is never
   /// generated.
   ///

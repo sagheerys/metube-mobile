@@ -594,6 +594,17 @@ void main() {
       expect(await secrets.read(SecretKeys.cfAccessClientSecret), 's3cr3t');
     });
 
+    test('serverOf names the server a plain backup points at', () async {
+      await store.setString('active_url', 'https://u:p@metube.example.com');
+      expect(
+        BackupService.serverOf(await service.exportToString()),
+        'https://metube.example.com',
+      );
+      expect(BackupService.serverOf('{"app":"MTF","prefs":{}}'), isNull);
+      expect(BackupService.serverOf('not json'), isNull);
+      expect(BackupService.serverOf('{"app":"other"}'), isNull);
+    });
+
     test('a username written into a plain file is ignored', () async {
       await seed();
       await service.importFromString(

@@ -28,11 +28,17 @@ small and worth naming:
   that escapes it and reaches the filesystem or a media player is a real issue.
 - **The backup file.** It is deliberately plain text and deliberately holds no
   secret: no password, no username, and credentials embedded in a URL are
-  stripped. A secret found inside one is a real issue.
-- **The self-update path.** The downloaded APK is checked for the ZIP magic
-  bytes and for the size the release announced, then handed to the system
-  installer as a `content://` URI. Anything that gets a different file
-  installed is a real issue.
+  stripped. It does hold the server's addresses, which is how a restore
+  reconnects, and on the phones it sits in the shared Download folder so it
+  survives a reinstall. Restoring a plain backup that names a server the
+  device did not know drops the stored password and Cloudflare token instead
+  of sending them there. A secret found inside one, or a restore that sends
+  a credential to a server the file chose, is a real issue.
+- **The self-update path.** The downloaded APK or installer is checked for
+  its first bytes, for the size the release announced and for the SHA-256
+  GitHub records for it, then handed to the system installer (on Android as
+  a `content://` URI). Anything that gets a different file installed is a
+  real issue.
 - **The diagnostic log.** It is scrubbed before it can be shared, of
   credentials, URLs, paths and addresses. A secret surviving the scrub is a
   real issue.
@@ -46,6 +52,10 @@ small and worth naming:
   server anyone can reach; see [docs/SERVER-SETUP.md](docs/SERVER-SETUP.md).
 - **An attacker who already has your unlocked phone.** Android's own protection
   is the boundary; the apps do not add one.
+- **Another user on the same Windows computer** taking MeTube Ember's
+  single-instance channel first. The worst it does is stop links from the
+  browser button reaching that user's Ember; nothing is read or run. A
+  known limitation, not hardened.
 
 ## Supported versions
 

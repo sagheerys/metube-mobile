@@ -2572,6 +2572,11 @@ class MTLocalizationsEn extends MTLocalizations {
   String get restoreFailed => 'Restore failed: the backup file is not valid';
 
   @override
+  String restoreServerLine(String server) {
+    return 'Server in this backup: $server';
+  }
+
+  @override
   String get restoreSettings => 'Restore all data';
 
   @override
@@ -2866,6 +2871,28 @@ class MTLocalizationsEn extends MTLocalizations {
 
   @override
   String get shareSelected => 'Share selected';
+
+  @override
+  String get sharedLinksAdd => 'Add them';
+
+  @override
+  String get sharedLinksBody => 'Each one goes to your server to download.';
+
+  @override
+  String sharedLinksCapped(int max) {
+    return 'Only the first $max links were added.';
+  }
+
+  @override
+  String sharedLinksTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Add $count links?',
+      one: 'Add 1 link?',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get shortsFilter => 'Shorts';

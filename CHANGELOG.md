@@ -51,6 +51,8 @@ for Android, and MeTube Ember for Windows.
   server. Super's check that a file is still on the server benefits too.
 - **Pictures in "What's new"** showed as a stray `!` and their caption;
   they are now left out of the sheet. All three apps.
+- **Confirmation dialogs at the largest text size** scroll their words
+  instead of pushing the buttons off a small screen. All three apps.
 - **Long subtitle files are read off the main thread**, so catching up on
   a library's transcripts no longer competes with scrolling (Super, Ember).
 
@@ -70,6 +72,12 @@ as used against anyone.
   that server. Your own backup, or the other address of the same server,
   keeps everything. Addresses written as `user:pass@host` are cleaned on the
   way in as on the way out. All three apps.
+- **Sharing several links at once asks first** (Lite, Super). A share that
+  held many links, a chat or a web page shared by mistake, sent them all to
+  the server straight away; now the app asks "Add 7 links?", and takes at
+  most 50 from one share. A single shared link works as before.
+- **The restore offered after a reinstall names the server** in the backup
+  (Lite), so you can see where the app is about to connect.
 - **Updates are checked against GitHub's own fingerprint.** The downloaded
   APK or installer must match the SHA-256 GitHub records for it, or it is
   not installed. All three apps.

@@ -40,6 +40,25 @@ abstract final class BackupAddresses {
     return servers;
   }
 
+  /// The address a backup's typed prefs connect to: the active one first,
+  /// then the saved one, then the computer's; credentials stripped.
+  static String? serverIn(Map<dynamic, dynamic> prefs) {
+    for (final key in const [
+      'active_url',
+      'server_url',
+      'ember_server_active',
+      'ember_server_url',
+      'local_url',
+    ]) {
+      final cell = prefs[key];
+      final value = cell is Map ? cell['v'] : null;
+      if (value is String && value.trim().isNotEmpty) {
+        return stripCredentials(value.trim());
+      }
+    }
+    return null;
+  }
+
   /// **Strip credentials embedded in a URL.** Excluding the password from
   /// the backup is correct, but someone who pastes `https://user:pass@host`
   /// as the server URL puts it in an ordinary string key, so it entered the

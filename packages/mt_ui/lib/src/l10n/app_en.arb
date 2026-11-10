@@ -257,6 +257,13 @@
       }
     }
   },
+  "@restoreServerLine": {
+    "placeholders": {
+      "server": {
+        "type": "String"
+      }
+    }
+  },
   "@resultsFound": {
     "placeholders": {
       "count": {
@@ -334,6 +341,20 @@
       },
       "total": {
         "type": "String"
+      }
+    }
+  },
+  "@sharedLinksCapped": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "@sharedLinksTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
       }
     }
   },
@@ -1257,6 +1278,7 @@
   "restoreConfirm": "Restore data from the backup file? This overwrites current playlists, tags and settings.",
   "restoreData": "Restore",
   "restoreFailed": "Restore failed: the backup file is not valid",
+  "restoreServerLine": "Server in this backup: {server}",
   "restoreSettings": "Restore all data",
   "restoreSuccess": "Data restored successfully",
   "resultsFound": "{count, plural, =1{1 result} other{{count} results}}",
@@ -1334,6 +1356,10 @@
   "shareProgressOf": "{received} of {total}",
   "shareReady": "Ready to share",
   "shareSelected": "Share selected",
+  "sharedLinksAdd": "Add them",
+  "sharedLinksBody": "Each one goes to your server to download.",
+  "sharedLinksCapped": "Only the first {max} links were added.",
+  "sharedLinksTitle": "{count, plural, =1{Add 1 link?} other{Add {count} links?}}",
   "shortsFilter": "Shorts",
   "showChannel": "Everything from {channel}",
   "shuffle": "Shuffle",
