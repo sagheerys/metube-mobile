@@ -30,6 +30,54 @@ void main() {
     expect(segments, hasLength(1));
   });
 
+  test('cues out of order are put in order; broken timings are dropped', () {
+    // Security review 2026-11-05: a file listing its cues backwards, or
+    // with ends before starts, fed every later step nonsense.
+    const srt = """
+1
+00:00:20,000 --> 00:00:22,000
+third
+
+2
+00:00:00,000 --> 00:00:02,000
+first
+
+3
+00:00:10,000 --> 00:00:12,000
+second
+
+4
+00:00:30,000 --> 00:00:25,000
+backwards
+
+5
+1000:00:00,000 --> 1000:00:01,000
+a thousand hours in
+""";
+    final segments = SubtitleParser.parse(srt);
+    expect(segments.map((s) => s.text), ['first', 'second', 'third']);
+  });
+
+  test('a large file read on another thread reads the same', () async {
+    // The catch-up read every clip's subtitles on the thread that draws the
+    // app (security review 2026-11-05).
+    final srt = StringBuffer();
+    for (var i = 0; i < 3000; i++) {
+      final s = i * 2;
+      String t(int x) =>
+          '00:${(x ~/ 60 % 60).toString().padLeft(2, '0')}:'
+          '${(x % 60).toString().padLeft(2, '0')},000';
+      srt.write('${i + 1}\n${t(s)} --> ${t(s + 1)}\nline number $i\n\n');
+    }
+    final text = srt.toString();
+    expect(text.length, greaterThan(SubtitleParser.awayFrom));
+    final away = await SubtitleParser.parseAway(text);
+    final here = SubtitleParser.parse(text);
+    expect(away.length, here.length);
+    expect(away.last.text, here.last.text);
+    expect(away.last.start, here.last.start);
+  });
+
   test('tags are still taken out around stray brackets', () {
     const vtt =
         'WEBVTT\n\n00:01.000 --> 00:02.000\n'

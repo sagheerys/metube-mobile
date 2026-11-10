@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'search_text.dart';
 import 'transcript.dart';
 
@@ -188,15 +190,25 @@ class TranscriptIndex {
     return '$line $next'.contains(phrase);
   }
 
-  /// The first line past [nearby] from line [i].
+  /// The first line past [nearby] from line [i], and never more than
+  /// [maxWindowLines] on.
+  ///
+  /// Bounded by count as well as by time: a file whose lines all carry the
+  /// same timestamp (broken, or made to hurt) put every line inside every
+  /// window, and twenty thousand of them took close to a minute on each
+  /// keystroke of a search. Real speech holds a few lines in [nearby].
   static int _windowEnd(List<TranscriptSegment> segments, int i) {
     final limit = segments[i].start + nearby;
+    final last = math.min(segments.length, i + 1 + maxWindowLines);
     var end = i + 1;
-    while (end < segments.length && segments[end].start <= limit) {
+    while (end < last && segments[end].start <= limit) {
       end++;
     }
     return end;
   }
+
+  /// The most lines one "nearby" window spans.
+  static const int maxWindowLines = 64;
 
   /// A translated track shares its timings with the original, so a word
   /// found in both at the same second is one moment, kept at its closest

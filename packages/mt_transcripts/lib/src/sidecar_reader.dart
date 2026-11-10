@@ -119,7 +119,7 @@ class SidecarReader {
       } on MTApiException {
         return const SidecarResult(SidecarOutcome.failed);
       }
-      final segments = SubtitleParser.parse(text);
+      final segments = await SubtitleParser.parseAway(text);
       if (segments.isEmpty) continue;
       return SidecarResult(
         SidecarOutcome.found,

@@ -52,6 +52,53 @@ void main() {
     expect(prefs.liveBackground.value, MTCaptionBackground.none);
   });
 
+  testWidgets('on its side, the choices leave the subtitle line in view', (
+    tester,
+  ) async {
+    // Visual check 2026-11-10: in the landscape player a bottom sheet hid
+    // the subtitle being adjusted, and pushed the background row below the
+    // edge of the screen.
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(914, 411);
+    addTearDown(tester.view.reset);
+    final prefs = SubtitlePrefs(MemoryKeyValueStore());
+    addTearDown(prefs.dispose);
+    for (final language in ['en', 'ar']) {
+      await tester.pumpWidget(host(prefs, language: language));
+      await tester.tap(find.text('OPEN'));
+      await tester.pumpAndSettle();
+      final panel = tester.getRect(
+        find.byKey(const ValueKey('subtitle-style-panel')),
+      );
+      // The subtitle sits in the lowest third of the picture.
+      expect(panel.bottom, lessThan(411 * 2 / 3), reason: language);
+      expect(panel.top, lessThan(411 / 3), reason: language);
+      // Both rows are reachable without scrolling.
+      final none = language == 'en' ? 'None' : null;
+      if (none != null) {
+        await tester.tap(find.text(none));
+        await tester.pumpAndSettle();
+        expect(prefs.liveBackground.value, MTCaptionBackground.none);
+      }
+      await tester.tapAt(const Offset(457, 400));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('subtitle-style-panel')), findsNothing);
+    }
+    // The largest text Android allows still fits, by scrolling.
+    await tester.pumpWidget(
+      MediaQuery(
+        data: const MediaQueryData(
+          size: Size(914, 411),
+          textScaler: TextScaler.linear(2),
+        ),
+        child: host(prefs, language: 'ar'),
+      ),
+    );
+    await tester.tap(find.text('OPEN'));
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('the sheet holds on every device, language and theme', (
     tester,
   ) async {

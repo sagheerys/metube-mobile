@@ -2735,7 +2735,7 @@ class MTLocalizationsAr extends MTLocalizations {
 
   @override
   String get serverHttpWarning =>
-      'العنوان الذي يبدأ بـ http:// خارج شبكة البيت يُرسل كلمة المرور دون تشفير. استعمل عنواناً يبدأ بـ https:// حين تتصل من خارجه.';
+      'العنوان الذي يبدأ بـ ‎http://‎ خارج شبكة البيت يُرسل كلمة المرور دون تشفير. استعمل عنواناً يبدأ بـ ‎https://‎ حين تتصل من خارجه.';
 
   @override
   String get serverKeepsFilesBody =>

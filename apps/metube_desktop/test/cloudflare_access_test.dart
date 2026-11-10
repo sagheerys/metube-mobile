@@ -76,6 +76,33 @@ void main() {
     expect(field('Client Secret'), findsOneWidget);
   });
 
+  testWidgets('the plain-http warning follows the shared home-network rule', (
+    tester,
+  ) async {
+    // The phones now warn too, from one rule in the core; Ember's own list
+    // also flagged VPN-mesh addresses, whose traffic the mesh encrypts.
+    const warning =
+        'An http:// address outside your home network sends the password '
+        'unencrypted. From outside, use an https:// address.';
+    await open(tester);
+    await tester.enterText(field('Password'), 'secret');
+    await tester.enterText(
+      field('Server URL (MeTube)'),
+      'http://my-nas.duckdns.org:8081',
+    );
+    await tester.pump();
+    expect(find.text(warning), findsOneWidget);
+    await tester.enterText(
+      field('Server URL (MeTube)'),
+      'http://100.101.102.103:8081',
+    );
+    await tester.pump();
+    expect(find.text(warning), findsNothing);
+    await tester.enterText(field('Server URL (MeTube)'), 'http://nas.lan');
+    await tester.pump();
+    expect(find.text(warning), findsNothing);
+  });
+
   testWidgets('one value alone is refused before any test, nothing kept', (
     tester,
   ) async {

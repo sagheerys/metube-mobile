@@ -85,6 +85,32 @@ void main() {
       expect(out, contains('/history'));
     });
 
+    test('the Windows player\'s lines, IPv6 and forward-slash paths are '
+        'masked too', () {
+      // Security review 2026-11-05: these passed through a shared log as
+      // they were.
+      final out = MTLogger.sanitizeForShare(
+        '[ffmpeg] tcp: Failed to resolve hostname my-nas.duckdns.org: no '
+        'address\n'
+        '[ffmpeg] tcp: address = mtube.example.org, port 443\n'
+        'connect to 2001:db8:85a3::8a2e:370:7334 and [fe80::1]:8081 failed\n'
+        'saved to C:/Users/Yasir Sg/Videos/clip.mp4',
+      );
+      expect(out, isNot(contains('my-nas')));
+      expect(out, isNot(contains('mtube.example')));
+      expect(out, isNot(contains('2001:db8')));
+      expect(out, isNot(contains('fe80')));
+      expect(out, isNot(contains('Yasir')));
+      expect(out, contains('[HOST]'));
+      expect(out, contains('[IP]'));
+      expect(out, contains('[FILE]'));
+    });
+
+    test('a clock time is not taken for an address', () {
+      const line = '2026-11-10T14:34:30.123 INFO [player] position 01:02:03';
+      expect(MTLogger.sanitizeForShare(line), line);
+    });
+
     test('readForShare passes through the scrubbing automatically', () async {
       await logger.log('probe https://secret.example.com ok');
       expect(await logger.readForShare(), isNot(contains('secret.example')));

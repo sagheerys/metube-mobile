@@ -179,7 +179,7 @@ class _Values {
     // A server locked by a service token alone is not "no password".
     final access = s.cloudflareAccess != null;
     return mtMetaLine([
-      Uri.tryParse(s.activeUrl!)?.authority ?? s.activeUrl,
+      ServerConfig.hostLabel(s.activeUrl!),
       if (user.isNotEmpty) user,
       if (access) l10n.settingsValueCloudflare,
       if (user.isEmpty && !access) l10n.settingsValueNoPassword,

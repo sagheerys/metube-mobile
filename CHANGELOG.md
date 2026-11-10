@@ -25,7 +25,9 @@ for Android, and MeTube Ember for Windows.
   "no password".
 
 - **Subtitle size and background from the player** (Super). Long-press CC
-  over the video to change them while you watch; settings say so too.
+  over the video to change them while you watch; settings say so too. On
+  a phone held sideways the choices open along the top of the picture, so
+  the subtitle you are adjusting stays in view.
 - **The floating window can be made larger** (Ember). Drag its edges to
   grow the picture, keeping its shape, up to half the screen.
 - **YouTube covers in the download queue.** Clips waiting their turn show
@@ -47,6 +49,41 @@ for Android, and MeTube Ember for Windows.
   set up server was reported as keeping deleted files. The check now always
   reaches the server, and the warning is cleared when you switch to another
   server. Super's check that a file is still on the server benefits too.
+- **Pictures in "What's new"** showed as a stray `!` and their caption;
+  they are now left out of the sheet. All three apps.
+- **Long subtitle files are read off the main thread**, so catching up on
+  a library's transcripts no longer competes with scrolling (Super, Ember).
+
+### Security
+
+From an independent review of all three apps. None of these was reported
+as used against anyone.
+
+- **A warning when the password would travel unencrypted** (Lite, Super).
+  An `http://` address outside the home network sends the password as
+  plain text; the server settings now say so as you type, as Ember always
+  did. Home addresses, `.local`/`.lan` names and VPN meshes such as
+  Tailscale do not warn (Ember stopped warning about those too).
+- **A backup that points somewhere new no longer takes your password
+  there.** Restoring a plain backup that names a server this device did not
+  know drops the stored password and Cloudflare token; type them again for
+  that server. Your own backup, or the other address of the same server,
+  keeps everything. Addresses written as `user:pass@host` are cleaned on the
+  way in as on the way out. All three apps.
+- **Updates are checked against GitHub's own fingerprint.** The downloaded
+  APK or installer must match the SHA-256 GitHub records for it, or it is
+  not installed. All three apps.
+- **A server cannot fill the device's memory** by sending an endless
+  subtitle file or folder index: reading stops at 5 MB. Transcript search
+  stays quick on a file whose lines all share one time, and subtitle files
+  with broken timings are put in order or skipped (Super, Ember).
+- **`user:pass@host` addresses** are split into the user and password
+  fields when saved, and settings show only the host and port.
+- **Shared logs hide more**: host names in the Windows player's lines, IPv6
+  addresses and `C:/` paths.
+- **Ember**: a file the server names `CON`, `NUL`, `COM1`… or longer than
+  Windows allows is saved under a safe name instead of failing, and the
+  "Start with Windows" entry quotes the program's path.
 
 ## [2.7.0] - 2026-11-05
 

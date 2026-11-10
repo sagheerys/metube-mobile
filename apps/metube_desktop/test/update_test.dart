@@ -10,27 +10,32 @@ import 'package:mt_core/mt_core.dart';
 
 /// `releases/latest` as GitHub answers it, for a release of all three
 /// apps whose installer is served by [setupUrl].
-String latest(String version, String setupUrl, {int size = 4000}) =>
-    jsonEncode({
-      'tag_name': 'v$version',
-      'draft': false,
-      'prerelease': false,
-      'body': '## Fixed\n- Faster.',
-      'html_url': 'https://github.com/x/y/releases/tag/v$version',
-      'assets': [
-        {
-          'name': 'MeTube-Super-v$version.apk',
-          'browser_download_url':
-              'https://github.com/x/y/releases/download/v1/super.apk',
-          'size': 1,
-        },
-        {
-          'name': installerNameFor(version),
-          'browser_download_url': setupUrl,
-          'size': size,
-        },
-      ],
-    });
+String latest(
+  String version,
+  String setupUrl, {
+  int size = 4000,
+  String? digest,
+}) => jsonEncode({
+  'tag_name': 'v$version',
+  'draft': false,
+  'prerelease': false,
+  'body': '## Fixed\n- Faster.',
+  'html_url': 'https://github.com/x/y/releases/tag/v$version',
+  'assets': [
+    {
+      'name': 'MeTube-Super-v$version.apk',
+      'browser_download_url':
+          'https://github.com/x/y/releases/download/v1/super.apk',
+      'size': 1,
+    },
+    {
+      'name': installerNameFor(version),
+      'browser_download_url': setupUrl,
+      'size': size,
+      'digest': ?digest,
+    },
+  ],
+});
 
 void main() {
   late HttpServer server;
@@ -134,6 +139,20 @@ void main() {
       installerNameFor('2.7.0'),
       'MeTube-Ember-2.7.0-windows-x64-setup.exe',
     );
+  });
+
+  test('**the guard**: an installer that is not the one GitHub fingerprinted '
+      'is never started', () async {
+    // Security review 2026-11-05: its first bytes and its size were all
+    // that was checked before Windows ran it.
+    final c = containerFor(
+      latest('0.2.0', setupUrl(), digest: 'sha256:${'0' * 64}'),
+    );
+    final update = c.read(updateProvider.notifier);
+    await update.checkNow();
+    expect(c.read(updateProvider).release!.sha256, '0' * 64);
+    await update.install();
+    expect(started, isEmpty);
   });
 
   test('what is not an installer is never started', () async {

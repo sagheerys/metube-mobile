@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mt_core/mt_core.dart';
 import 'package:mt_ui/mt_ui.dart';
 
 import '../data/addresses_data.dart';
@@ -32,7 +33,7 @@ class SidebarServerLine extends ConsumerWidget {
     final text = Theme.of(context).textTheme;
     final addresses = ref.watch(addressesProvider);
     final active = addresses.active ?? config.baseUrl;
-    final host = Uri.tryParse(active)?.authority ?? active;
+    final host = ServerConfig.hostLabel(active);
     final history = ref.watch(historyProvider);
     final (status, color) = switch (history) {
       AsyncData() => (l.serverStatusConnected, p.ok),
@@ -133,7 +134,7 @@ class SidebarServerLine extends ConsumerWidget {
         EmberMenuEntry(
           url,
           url == active ? MTIcons.check : MTIcons.server,
-          Uri.tryParse(url)?.authority ?? url,
+          ServerConfig.hostLabel(url),
         ),
     ]);
     if (chosen != null && chosen != active) {

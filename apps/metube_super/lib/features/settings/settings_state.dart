@@ -222,13 +222,13 @@ class SettingsNotifier extends Notifier<SuperSettings> {
       await _store.setString('server_url', config.baseUrl);
       await _store.setString('active_url', config.baseUrl);
     });
-    await _writeSecret(SecretKeys.username, username);
-    await _writeSecret(SecretKeys.password, password);
+    await _writeSecret(SecretKeys.username, config.username);
+    await _writeSecret(SecretKeys.password, config.password);
     await CloudflareAccess.save(_secrets, access);
     state = state.copyWith(
       activeUrl: config.baseUrl,
-      username: username,
-      password: password,
+      username: config.username,
+      password: config.password,
       cloudflareAccess: access,
       clearCloudflareAccess: access == null,
     );

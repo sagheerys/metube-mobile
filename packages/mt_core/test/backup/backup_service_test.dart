@@ -521,6 +521,105 @@ void main() {
   /// something people send to themselves by e-mail or keep in a cloud drive,
   /// so the service token must not be in it, and restoring a file must not
   /// wipe a token the phone already holds.
+  group('a backup that points somewhere new', () {
+    // Security review 2026-11-05: the password and the token stay in the
+    // secret store through a restore, and went to whatever address the
+    // file named. A "backup" from someone else was enough to have them
+    // sent to that person's server.
+    String plain(Map<String, Object> prefs, {Map<String, Object>? secure}) =>
+        json.encode({
+          'app': 'MTF',
+          'variant': 'super',
+          'version': 3,
+          'prefs': prefs,
+          'secure': ?secure,
+        });
+
+    Future<void> seed() async {
+      await store.setString('active_url', 'http://192.168.1.20:8081');
+      await store.setString('local_url', 'http://192.168.1.20:8081');
+      await store.setStringList('external_urls', [
+        'https://metube.example.com',
+      ]);
+      await secrets.write(SecretKeys.username, 'me');
+      await secrets.write(SecretKeys.password, 'sirri');
+      await secrets.write(SecretKeys.cfAccessClientId, 'id.access');
+      await secrets.write(SecretKeys.cfAccessClientSecret, 's3cr3t');
+    }
+
+    test('**the guard**: an address this install never knew drops the '
+        'password and the token', () async {
+      await seed();
+      final result = await service.importFromString(
+        plain({
+          'active_url': {'t': 's', 'v': 'https://evil.example'},
+        }),
+      );
+      expect(await store.getString('active_url'), 'https://evil.example');
+      expect(result.signInCleared, isTrue);
+      expect(await secrets.read(SecretKeys.password), isNull);
+      expect(await secrets.read(SecretKeys.cfAccessClientId), isNull);
+      expect(await secrets.read(SecretKeys.cfAccessClientSecret), isNull);
+    });
+
+    test("the same in the Windows app's own keys", () async {
+      await store.setStringList('ember_server_addresses', [
+        'http://192.168.1.20:8081',
+      ]);
+      await secrets.write(SecretKeys.password, 'sirri');
+      await service.importFromString(
+        plain({
+          'ember_server_addresses': {
+            't': 'l',
+            'v': ['http://192.168.1.20:8081', 'https://evil.example'],
+          },
+        }),
+      );
+      expect(await secrets.read(SecretKeys.password), isNull);
+    });
+
+    test("one's own backup, or the other address of the same server, "
+        'keeps everything', () async {
+      await seed();
+      final mine = await service.exportToString();
+      expect((await service.importFromString(mine)).signInCleared, isFalse);
+      // Taken while on the outside address, restored while at home.
+      final result = await service.importFromString(
+        plain({
+          'active_url': {'t': 's', 'v': 'https://metube.example.com/'},
+        }),
+      );
+      expect(result.signInCleared, isFalse);
+      expect(await secrets.read(SecretKeys.password), 'sirri');
+      expect(await secrets.read(SecretKeys.cfAccessClientSecret), 's3cr3t');
+    });
+
+    test('a username written into a plain file is ignored', () async {
+      await seed();
+      await service.importFromString(
+        plain(const {}, secure: {'username': 'someone-else'}),
+      );
+      expect(await secrets.read(SecretKeys.username), 'me');
+    });
+
+    test('credentials inside an address are stripped on the way in', () async {
+      await service.importFromString(
+        plain({
+          'server_url': {'t': 's', 'v': 'https://u:p@metube.example.com'},
+          'external_urls': {
+            't': 'l',
+            'v': ['https://u:p@a.example', 'plain text'],
+          },
+        }),
+      );
+      expect(await store.getString('server_url'), 'https://metube.example.com');
+      expect(await store.getStringList('external_urls'), [
+        'https://a.example',
+        'plain text',
+      ]);
+    });
+  });
+
   group('the Cloudflare Access pair and backups', () {
     const id = '4c1f0d7a.access';
     const secret = '9a7e11c0b2d4f6a8';

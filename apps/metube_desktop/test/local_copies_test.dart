@@ -7,6 +7,7 @@ import 'package:metube_desktop/data/folders_data.dart';
 import 'package:metube_desktop/data/library_data.dart';
 import 'package:metube_desktop/data/local_copies.dart';
 import 'package:metube_desktop/di.dart';
+import 'package:metube_desktop/platform/startup.dart';
 import 'package:mt_core/mt_core.dart';
 import 'package:mt_media/library.dart';
 
@@ -259,5 +260,25 @@ void main() {
     expect(windowsSafeName('a:b?c*.mp4'), 'a_b_c_.mp4');
     expect(windowsSafeName('trailing. '), 'trailing');
     expect(windowsSafeName('...'), '_');
+  });
+
+  test('**the guard**: a device name or an endless name from the server '
+      'still makes a copy', () {
+    // Security review 2026-11-05: `CON.mp4` is a device to Windows, not a
+    // file, and a name past 255 characters is refused outright.
+    expect(windowsSafeName('CON.mp4'), '_CON.mp4');
+    expect(windowsSafeName('nul'), '_nul');
+    expect(windowsSafeName('com1.part.mp4'), '_com1.part.mp4');
+    expect(windowsSafeName('Console.mp4'), 'Console.mp4');
+    final long = windowsSafeName('${'a' * 400}.mp4');
+    expect(long.length, maxNameLength);
+    expect(long, endsWith('.mp4'));
+  });
+
+  test('the start-up list names the program in quotes', () {
+    expect(
+      WindowsStartup.program(r'C:\Programs\MeTube Ember\metube_desktop.exe'),
+      r'"C:\Programs\MeTube Ember\metube_desktop.exe"',
+    );
   });
 }

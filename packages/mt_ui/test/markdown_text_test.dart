@@ -129,7 +129,10 @@ Full list: [CHANGELOG](https://github.com/x/y/blob/main/CHANGELOG.md)
     });
 
     test('an exclamation in a sentence is still a sentence', () {
-      expect(mtParseMarkdown('Done! [see](https://x)').single.text, 'Done! see');
+      expect(
+        mtParseMarkdown('Done! [see](https://x)').single.text,
+        'Done! see',
+      );
     });
 
     test('empty in, empty out', () {

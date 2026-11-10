@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:mt_core/mt_core.dart';
+import 'package:pointycastle/digests/sha256.dart';
 import 'package:test/test.dart';
 
 /// A fake APK body: the ZIP signature followed by padding. The downloader
@@ -59,6 +60,51 @@ void main() {
     // **No leftovers**: a surviving `.part` makes the next launch believe
     // an update is ready.
     expect(part().existsSync(), isFalse);
+  });
+
+  String sha256Of(Uint8List bytes) => [
+    for (final b in SHA256Digest().process(bytes))
+      b.toRadixString(16).padLeft(2, '0'),
+  ].join();
+
+  test(
+    "**the guard**: a file whose hash is not the release's is refused",
+    () async {
+      // Security review 2026-11-05: the file was checked for its first bytes
+      // and its size, both of which an altered installer keeps.
+      final body = fakeApk(40000);
+      final altered = fakeApk(40000)..[39999] = 1;
+      handler = (r) async {
+        r.response.headers.contentLength = altered.length;
+        r.response.add(altered);
+      };
+      await expectLater(
+        ApkDownloader().download(
+          url: url(),
+          savePath: savePath,
+          expectedSize: body.length,
+          sha256: sha256Of(body),
+        ),
+        throwsA(isA<UpdateDownloadException>()),
+      );
+      expect(File(savePath).existsSync(), isFalse);
+      expect(part().existsSync(), isFalse);
+    },
+  );
+
+  test('the right hash, in either case, passes', () async {
+    final body = fakeApk(40000);
+    handler = (r) async {
+      r.response.headers.contentLength = body.length;
+      r.response.add(body);
+    };
+    final path = await ApkDownloader().download(
+      url: url(),
+      savePath: savePath,
+      expectedSize: body.length,
+      sha256: sha256Of(body).toUpperCase(),
+    );
+    expect(File(path).lengthSync(), body.length);
   });
 
   test('**the guard**: an HTML page with status 200 is refused and never handed to the installer', () async {

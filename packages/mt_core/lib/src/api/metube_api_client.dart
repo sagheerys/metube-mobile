@@ -13,70 +13,16 @@ import '../urls/playlist_detector.dart';
 import '../urls/server_path.dart';
 import '../urls/url_kit.dart';
 import 'api_exceptions.dart';
+import 'capped_body.dart';
 import 'cloudflare_access.dart';
 import 'cloudflare_redirects.dart';
 import 'live_update.dart';
 import 'metube_api.dart';
+import 'server_config.dart';
+
+export 'server_config.dart';
 
 part 'metube_live.dart';
-
-/// Connection settings for a MeTube server. The URL is normalised by
-/// stripping trailing slashes.
-class ServerConfig {
-  ServerConfig({
-    required String baseUrl,
-    this.username,
-    this.password,
-    this.access,
-  }) : baseUrl = normalizeBaseUrl(baseUrl);
-
-  final String baseUrl;
-  final String? username;
-  final String? password;
-
-  /// The optional Cloudflare Access service token. `null` for everyone who
-  /// does not sit behind Access, which keeps this config equal to what it
-  /// was before the field existed.
-  final CloudflareAccess? access;
-
-  /// The two Cloudflare headers for [baseUrl], or nothing (no pair, a
-  /// one-sided pair, or an address that is not https).
-  Map<String, String> get accessHeaders =>
-      access?.headersFor(baseUrl) ?? const {};
-
-  /// The same account at another of the server's addresses. Every field
-  /// travels, so an address switch can never drop the password or the
-  /// Cloudflare pair; the https rule still decides what [url] receives.
-  ServerConfig at(String url) => ServerConfig(
-    baseUrl: url,
-    username: username,
-    password: password,
-    access: access,
-  );
-
-  static String normalizeBaseUrl(String raw) =>
-      raw.trim().replaceFirst(RegExp(r'/+$'), '');
-
-  bool get hasCredentials =>
-      (username?.isNotEmpty ?? false) || (password?.isNotEmpty ?? false);
-
-  /// The `Authorization` header value, or null when there are no
-  /// credentials.
-  String? get basicAuthHeader => hasCredentials
-      ? 'Basic ${base64Encode(utf8.encode('${username ?? ''}:${password ?? ''}'))}'
-      : null;
-
-  @override
-  bool operator ==(Object other) =>
-      other is ServerConfig &&
-      other.baseUrl == baseUrl &&
-      other.username == username &&
-      other.password == password &&
-      other.access == access;
-
-  @override
-  int get hashCode => Object.hash(baseUrl, username, password, access);
-}
 
 /// The one MeTube client. **All** network traffic towards the server goes
 /// through here (rule 1). Every endpoint follows `docs/SERVER-API.md` §2
@@ -587,49 +533,58 @@ class MeTubeApiClient implements MeTubeApi {
   Future<String> fetchText(
     String serverFilename, {
     int maxBytes = MTConstants.maxTextFileBytes,
-  }) async {
-    final url = downloadUrl(serverFilename);
-    final Response<List<int>> response;
-    try {
-      response = await _dio.get<List<int>>(
-        url,
-        options: Options(
-          responseType: ResponseType.bytes,
-          receiveTimeout: MTConstants.textFileTimeout,
-        ),
-      );
-    } on DioException catch (e) {
-      throw _networkFailure(e, '/download');
-    }
-    _throwIfDownloadRejected(response);
-    final bytes = response.data ?? const <int>[];
-    if (bytes.length > maxBytes) {
-      throw ServerErrorException('text file over $maxBytes bytes');
-    }
-    return utf8.decode(bytes, allowMalformed: true);
-  }
+  }) async => utf8.decode(
+    await _fetchCapped(downloadUrl(serverFilename), maxBytes, 'text file'),
+    allowMalformed: true,
+  );
 
   @override
-  Future<String> fetchDownloadIndex() async {
-    final Response<String> response;
+  Future<String> fetchDownloadIndex() async => utf8.decode(
+    // The same ceiling as any text read from the folder.
+    await _fetchCapped(
+      '${config.baseUrl}/download/',
+      MTConstants.maxTextFileBytes,
+      'folder index',
+      file: false,
+    ),
+    allowMalformed: true,
+  );
+
+  /// A text body from the downloads folder, read no further than [maxBytes]
+  /// (see [readCappedBody]).
+  Future<List<int>> _fetchCapped(
+    String url,
+    int maxBytes,
+    String what, {
+    bool file = true,
+  }) async {
+    final cancel = CancelToken();
+    final Response<ResponseBody> response;
     try {
-      response = await _dio.get<String>(
-        '${config.baseUrl}/download/',
+      response = await _dio.get<ResponseBody>(
+        url,
+        cancelToken: cancel,
         options: Options(
-          responseType: ResponseType.plain,
+          responseType: ResponseType.stream,
           receiveTimeout: MTConstants.textFileTimeout,
         ),
       );
     } on DioException catch (e) {
       throw _networkFailure(e, '/download');
     }
-    _throwIfDownloadRejected(response, file: false);
-    final html = response.data ?? '';
-    // The same ceiling as any text read from the folder.
-    if (html.length > MTConstants.maxTextFileBytes) {
-      throw const ServerErrorException('folder index too large');
+    try {
+      _throwIfDownloadRejected(response, file: file);
+    } on Object {
+      cancel.cancel();
+      rethrow;
     }
-    return html;
+    final body = response.data;
+    if (body == null) return const [];
+    try {
+      return await readCappedBody(body, maxBytes, cancel, what: what);
+    } on DioException catch (e) {
+      throw _networkFailure(e, '/download');
+    }
   }
 
   /// §2.5: deletion uses the canonicalUrl that came from `/history`, and

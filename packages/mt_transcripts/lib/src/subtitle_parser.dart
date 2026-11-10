@@ -1,3 +1,5 @@
+import 'dart:isolate';
+
 import 'transcript.dart';
 
 /// Reads SRT and WebVTT into [TranscriptSegment]s.
@@ -26,6 +28,21 @@ abstract final class SubtitleParser {
   /// The moment inside an automatic caption's line at which the next word
   /// is said: `over, <00:00:01.693><c>which</c>`.
   static final _wordStamp = RegExp(r'<((?:\d+:)?\d{1,2}:\d{2}[,.]\d{1,3})>');
+
+  /// [parse], away from the thread that draws the app once [content] is
+  /// large enough to be felt there.
+  ///
+  /// The library's catch-up reads every clip's subtitles in turn, and an
+  /// hour of speech is about 100KB to read; on the drawing thread that is a
+  /// stutter per clip while the user scrolls. A short file costs less to
+  /// read than to hand to another thread, and stays here.
+  static Future<List<TranscriptSegment>> parseAway(String content) =>
+      content.length < awayFrom
+      ? Future.value(parse(content))
+      : Isolate.run(() => parse(content));
+
+  /// The size, in characters, from which [parseAway] reads elsewhere.
+  static const int awayFrom = 64 * 1024;
 
   /// One reader for both: they differ only in the timing separator and
   /// the WebVTT header, which comes before any timing line and is skipped.
@@ -82,7 +99,10 @@ abstract final class SubtitleParser {
         flush();
         final start = _duration(match.group(1)!);
         final end = _duration(match.group(2)!);
-        if (start != null && end != null) timing = (start, end);
+        // A cue that ends before it starts is broken, not a moment.
+        if (start != null && end != null && end >= start) {
+          timing = (start, end);
+        }
         continue;
       }
       // A cue number or WebVTT identifier names the cue below it.
@@ -95,7 +115,24 @@ abstract final class SubtitleParser {
       if (timing != null) texts.add(line);
     }
     flush();
-    return segments;
+    return _inOrder(segments);
+  }
+
+  /// The cues by start time. Search, chapters and the line under the
+  /// picture all walk them forward; a file listing them out of order (its
+  /// writer's fault) is put right once here. Ties keep the file's order.
+  static List<TranscriptSegment> _inOrder(List<TranscriptSegment> cues) {
+    for (var i = 1; i < cues.length; i++) {
+      if (cues[i].start < cues[i - 1].start) {
+        final indexed = [...cues.indexed]
+          ..sort((a, b) {
+            final byStart = a.$2.start.compareTo(b.$2.start);
+            return byStart != 0 ? byStart : a.$1.compareTo(b.$1);
+          });
+        return [for (final (_, cue) in indexed) cue];
+      }
+    }
+    return cues;
   }
 
   /// The words of one line, each from the moment it is said. A word before
@@ -174,6 +211,8 @@ abstract final class SubtitleParser {
     final (h, m, s, ms) = n.length == 4
         ? (n[0], n[1], n[2], n[3])
         : (0, n[0], n[1], n[2]);
+    // No clip runs a thousand hours; a stamp that says so is not a time.
+    if (h > 999) return null;
     return Duration(hours: h, minutes: m, seconds: s, milliseconds: ms);
   }
 }

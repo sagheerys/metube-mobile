@@ -85,6 +85,48 @@ void main() {
       );
     });
 
+    test('**the guard**: a body that never ends is cut at the ceiling, not '
+        'held in memory', () async {
+      // Security review 2026-11-05: the whole body was buffered before its
+      // size was compared, so a server streaming gigabytes under a
+      // subtitle's name filled the phone's memory.
+      var sent = 0;
+      // A megabyte stands in for "never ends": a reader with no ceiling
+      // takes all of it and fails the count below instead of hanging.
+      Stream<Uint8List> endless() async* {
+        while (sent < 1024 * 1024) {
+          await Future<void>.delayed(Duration.zero);
+          sent += 1024;
+          yield Uint8List(1024);
+        }
+      }
+
+      final api = client((_) => ResponseBody(endless(), 200));
+      await expectLater(
+        api.fetchText('huge.en.vtt', maxBytes: 10 * 1024),
+        throwsA(isA<ServerErrorException>()),
+      );
+      expect(sent, lessThanOrEqualTo(12 * 1024));
+    });
+
+    test('a declared length over the ceiling is refused at once', () async {
+      // Four bytes follow, well under the ceiling: only the declared length
+      // can refuse them, before a gigabyte would have been waited for.
+      final api = client(
+        (_) => ResponseBody(
+          Stream.value(Uint8List(4)),
+          200,
+          headers: {
+            Headers.contentLengthHeader: ['999999999'],
+          },
+        ),
+      );
+      await expectLater(
+        api.fetchText('huge.en.vtt'),
+        throwsA(isA<ServerErrorException>()),
+      );
+    });
+
     test('never builds a URL for an unsafe filename', () async {
       final api = client((_) => bytes(const []));
       expect(

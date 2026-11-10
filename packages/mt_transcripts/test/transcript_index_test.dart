@@ -22,6 +22,38 @@ void main() {
 
   setUp(() => index = TranscriptIndex());
 
+  test('**the guard**: lines that all share one timestamp do not make a '
+      'search take minutes', () {
+    // Security review 2026-11-05: every line fell inside every "nearby"
+    // window, and twenty thousand of them took 58 s for a two-word query,
+    // on the thread that draws the app, at every keystroke.
+    index.add(
+      Transcript(
+        canonicalUrl: 'flat',
+        language: 'en',
+        source: 'captions',
+        fetchedAt: DateTime.utc(2026, 11, 10),
+        segments: [
+          for (var i = 0; i < 20000; i++)
+            const TranscriptSegment(
+              start: Duration.zero,
+              end: Duration(seconds: 1),
+              text: 'alpha',
+            ),
+        ],
+      ),
+    );
+    final watch = Stopwatch()..start();
+    expect(index.search('alpha beta'), isEmpty);
+    expect(watch.elapsed, lessThan(const Duration(seconds: 3)));
+  });
+
+  test('a moment a few lines long is still found nearby', () {
+    index.add(clip('a', ['the long', 'and winding', 'road home']));
+    final hits = index.search('long road').single.hits;
+    expect(hits.single.kind, MatchKind.nearby);
+  });
+
   test('finds the clip and the second it was said at', () {
     index
       ..add(clip('a', ['the weather', 'long trunks here']))

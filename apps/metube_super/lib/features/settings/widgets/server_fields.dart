@@ -198,9 +198,8 @@ class _ServerFieldsState extends ConsumerState<ServerFields> {
               padding: const EdgeInsetsDirectional.only(top: MTSpace.xs),
               child: Text(
                 l10n.serverHttpWarning,
-                style: Theme.of(context).textTheme.labelSmall!.copyWith(
-                  color: MTThemeX.of(context).palette.err,
-                ),
+                style: Theme.of(context).textTheme.labelSmall!
+                    .copyWith(color: MTThemeX.of(context).palette.err),
               ),
             );
           },

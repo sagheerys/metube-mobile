@@ -12,6 +12,28 @@ void main() {
   final real = File('test/fixtures/github_release_2_6_0.json')
       .readAsStringSync();
 
+  test("each app reads its own file's hash from a real release, and a "
+      'release without hashes still updates', () {
+    // GitHub's API, as it answered for v2.7.0 on 2026-11-10.
+    final v270 = File('test/fixtures/github_release_2_7_0.json')
+        .readAsStringSync();
+    String? hash(String marker, String ending) => UpdateRelease.tryParse(
+      v270,
+      assetMarker: marker,
+      extension: ending,
+    )?.sha256;
+    expect(
+      hash('Ember', '.exe'),
+      'a39d2db355eeb092b661b3eca15e4c6acb19913ec3579d5e769c21d1df1bc78c',
+    );
+    expect(hash('Lite', '.apk'), startsWith('6181aaf5'));
+    expect(hash('Super', '.apk'), startsWith('a61db2b1'));
+    // v2.6.0 was read before GitHub listed hashes: no hash, same update.
+    final old = UpdateRelease.tryParse(real, assetMarker: 'Lite');
+    expect(old, isNotNull);
+    expect(old!.sha256, isNull);
+  });
+
   String moved(String Function(String url) to, {String? page}) {
     final json = jsonDecode(real) as Map<String, dynamic>;
     for (final asset in json['assets'] as List) {

@@ -70,7 +70,22 @@ class NetworkScreen extends ConsumerWidget {
         MTEndpointStatus.notMeTube => l10n.errNotMeTube,
         _ => null,
       };
-      if (message == null) return null;
+      if (message == null) {
+        // An address that works can still send the password in the clear.
+        final password = settings.password ?? '';
+        if (password.isEmpty || !HomeAddress.sendsPasswordInTheClear(url)) {
+          return null;
+        }
+        return Padding(
+          key: ValueKey('plain-http-$url'),
+          padding: const EdgeInsets.only(top: MTSpace.xs),
+          child: Text(
+            l10n.serverHttpWarning,
+            style: Theme.of(context).textTheme.bodySmall
+                ?.copyWith(color: p.err),
+          ),
+        );
+      }
       final text = Padding(
         padding: const EdgeInsets.only(top: MTSpace.xs),
         child: Text(

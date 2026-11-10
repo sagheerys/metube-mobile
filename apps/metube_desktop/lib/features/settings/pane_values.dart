@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mt_core/mt_core.dart';
 import 'package:mt_ui/mt_ui.dart';
 
 import '../../data/appearance_data.dart';
@@ -21,7 +22,7 @@ String? paneValue(BuildContext context, WidgetRef ref, EmberSettingsPane pane) {
     case EmberSettingsPane.server:
       final config = ref.watch(serverConfigProvider);
       if (config == null) return l.settingsValueNotSet;
-      return Uri.tryParse(config.baseUrl)?.authority ?? config.baseUrl;
+      return ServerConfig.hostLabel(config.baseUrl);
     case EmberSettingsPane.subscriptions:
       final channels = ref.watch(channelsProvider).valueOrNull?.subscriptions;
       return channels == null ? null : l.settingsValueChannels(channels.length);

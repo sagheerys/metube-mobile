@@ -140,7 +140,9 @@ class CaptionsFetcher {
       if (filename == null) {
         return const CaptionsResult(CaptionsOutcome.none);
       }
-      final segments = SubtitleParser.parse(await api.fetchText(filename));
+      final segments = await SubtitleParser.parseAway(
+        await api.fetchText(filename),
+      );
       if (segments.isEmpty) return const CaptionsResult(CaptionsOutcome.none);
       return CaptionsResult(
         CaptionsOutcome.fetched,

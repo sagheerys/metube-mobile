@@ -49,17 +49,31 @@ class MTLogger {
   );
   // A file name has spaces in it, so a path runs to the end of the line or
   // to a quote or bracket; stopping at the first space left the title.
-  // Android's storage and app folders, and Windows' drive paths.
+  // Android's storage and app folders, and Windows' drive paths, written
+  // with either slash (the Windows player writes forward ones).
   static final RegExp _filePattern = RegExp(
-    r'''(?:/storage/|/data/|/sdcard/|\b[A-Za-z]:\\)[^\n'"\]|)]+''',
+    r'''(?:/storage/|/data/|/sdcard/|\b[A-Za-z]:[\\/])[^\n'"\]|)]+''',
   );
   // A host name has no scheme of its own here: the socket's own words.
   static final RegExp _hostLookupPattern = RegExp(
     r"(host lookup: ')[^']+'",
     caseSensitive: false,
   );
+  // The Windows player's own words for a server it reached or failed to.
+  static final RegExp _hostWordsPattern = RegExp(
+    r'((?:\baddress\s*=|resolve hostname)\s*)[^\s,;]+',
+    caseSensitive: false,
+  );
   static final RegExp _ipPattern = RegExp(
     r'\b\d{1,3}(?:\.\d{1,3}){3}(?::\d+)?\b',
+  );
+  // Five groups or more, or a `::`: a clock time ("14:34:30") has three
+  // groups and no `::`, and stays as it is.
+  static final RegExp _ipv6Pattern = RegExp(
+    r'\[?(?:\b[0-9a-f]{1,4}(?::[0-9a-f]{1,4}){4,7}\b'
+    r'|(?:\b[0-9a-f]{1,4})?(?::[0-9a-f]{1,4})*::'
+    r'(?:[0-9a-f]{1,4}(?::[0-9a-f]{1,4})*)?)\]?(?::\d+)?',
+    caseSensitive: false,
   );
 
   Future<void> log(
@@ -138,5 +152,7 @@ class MTLogger {
           .replaceAll(_urlPattern, '[URL]')
           .replaceAll(_filePattern, '[FILE]')
           .replaceAllMapped(_hostLookupPattern, (m) => "${m[1]}[HOST]'")
-          .replaceAll(_ipPattern, '[IP]');
+          .replaceAllMapped(_hostWordsPattern, (m) => '${m[1]}[HOST]')
+          .replaceAll(_ipPattern, '[IP]')
+          .replaceAll(_ipv6Pattern, '[IP]');
 }

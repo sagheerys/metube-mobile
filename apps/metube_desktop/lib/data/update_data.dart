@@ -245,6 +245,7 @@ class UpdateNotifier extends Notifier<UpdateState> {
             url: release.apkUrl,
             savePath: path,
             expectedSize: release.apkSize,
+            sha256: release.sha256,
             cancel: token,
             onProgress: (p) {
               if (!identical(_cancel, token)) return;

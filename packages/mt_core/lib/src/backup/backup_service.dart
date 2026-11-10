@@ -7,8 +7,10 @@ import '../storage/artwork_index.dart';
 import '../storage/key_value_store.dart';
 import '../storage/secret_store.dart';
 import '../update/update_prefs.dart';
+import 'backup_addresses.dart';
 import 'backup_crypto.dart';
 
+part 'backup_cells.dart';
 part 'backup_legacy.dart';
 
 /// `plain` is the format written today; the other three are **read-only**,
@@ -16,9 +18,18 @@ part 'backup_legacy.dart';
 enum BackupFormat { plain, v2, legacyLite, legacySuper }
 
 class ImportResult {
-  const ImportResult({required this.format, required this.keysRestored});
+  const ImportResult({
+    required this.format,
+    required this.keysRestored,
+    this.signInCleared = false,
+  });
   final BackupFormat format;
   final int keysRestored;
+
+  /// The file pointed the app at a server address it did not know, so the
+  /// password and the Cloudflare token kept here were dropped rather than
+  /// sent there; the user types them again for the new address.
+  final bool signInCleared;
 }
 
 /// The backup service (§5.4): writes v2 `MTF1` and reads all three formats
@@ -60,35 +71,10 @@ class BackupService {
     UpdatePrefs.notesKey,
   };
 
-  /// **Strip credentials embedded in a URL before backing it up.**
-  /// Excluding the password from the backup is correct, but someone
-  /// who pastes `https://user:pass@host` as the server URL puts it in an
-  /// ordinary string key, so it entered the backup despite the rule.
-  /// **Any key whose value is a web address**, not a list of known ones:
-  /// the Windows app keeps its addresses under keys of its own, and a list
-  /// of names missed them.
-  static Object? _sanitize(Object? value) {
-    if (value is String) return _stripIfUrl(value);
-    if (value is List) {
-      return [for (final v in value) v is String ? _stripIfUrl(v) : v];
-    }
-    return value;
-  }
-
-  static String _stripIfUrl(String value) {
-    final lower = value.trimLeft().toLowerCase();
-    return lower.startsWith('http://') || lower.startsWith('https://')
-        ? stripUrlCredentials(value)
-        : value;
-  }
-
   /// Returns the URL without `user:pass@`, and anything that is not a URL
   /// unchanged.
-  static String stripUrlCredentials(String raw) {
-    final uri = Uri.tryParse(raw.trim());
-    if (uri == null || uri.userInfo.isEmpty) return raw;
-    return uri.replace(userInfo: '').toString();
-  }
+  static String stripUrlCredentials(String raw) =>
+      BackupAddresses.stripCredentials(raw);
 
   /// The key that decrypts legacy backups **if one exists**. It is never
   /// generated.
@@ -126,7 +112,7 @@ class BackupService {
     final prefsMap = <String, dynamic>{};
     for (final key in await store.keys()) {
       if (_deviceOnlyKeys.contains(key)) continue;
-      final cell = _encodeCell(_sanitize(await store.get(key)));
+      final cell = _encodeCell(BackupAddresses.sanitize(await store.get(key)));
       if (cell != null) prefsMap[key] = cell;
     }
     return const JsonEncoder.withIndent('  ').convert({
@@ -194,7 +180,9 @@ class BackupService {
   ) async {
     final prefs = (payload['prefs'] as Map?) ?? const {};
     var restored = 0;
+    var newServer = false;
     await mutex.run(() async {
+      final before = await BackupAddresses.knownServers(store);
       // **All-or-nothing restore.** A failure on key 40 of 200
       // used to leave a **hybrid device**: an offline index from another
       // phone pointing at missing titles, with no rollback and no message
@@ -214,6 +202,13 @@ class BackupService {
             format == BackupFormat.legacySuper) {
           await _migrateLegacyShapes();
         }
+        // Only the plain format can come from someone else: the encrypted
+        // ones open with this device's own key. Switching between the home
+        // and the outside address of one server is not a new server either:
+        // both were known before.
+        newServer =
+            format == BackupFormat.plain &&
+            !before.containsAll(await BackupAddresses.knownServers(store));
       } on Object {
         for (final entry in rollback.entries) {
           entry.value == null
@@ -223,11 +218,29 @@ class BackupService {
         rethrow;
       }
     });
-    await _restoreUsername(
-      ((payload['secure'] as Map?) ?? const {})['username']?.toString() ??
-          (payload['settings'] as Map?)?['username']?.toString(),
+    if (newServer) {
+      for (final key in const [
+        SecretKeys.password,
+        SecretKeys.cfAccessClientId,
+        SecretKeys.cfAccessClientSecret,
+      ]) {
+        await secrets.delete(key);
+      }
+    }
+    // Only the old encrypted formats carried a username, and they open only
+    // with this device's key; the plain format never writes one, so one
+    // found there was put in by hand.
+    if (format != BackupFormat.plain) {
+      await _restoreUsername(
+        ((payload['secure'] as Map?) ?? const {})['username']?.toString() ??
+            (payload['settings'] as Map?)?['username']?.toString(),
+      );
+    }
+    return ImportResult(
+      format: format,
+      keysRestored: restored,
+      signInCleared: newServer,
     );
-    return ImportResult(format: format, keysRestored: restored);
   }
 
   static const int _secondsInDay = 86400;
@@ -247,46 +260,4 @@ class BackupService {
     List v => {'t': 'l', 'v': v.map((e) => e.toString()).toList()},
     _ => null,
   };
-
-  /// Puts a value back as it was, to roll back a restore that failed
-  /// halfway.
-  Future<void> _restoreRaw(String key, Object value) async {
-    switch (value) {
-      case String v:
-        await store.setString(key, v);
-      case bool v:
-        await store.setBool(key, v);
-      case int v:
-        await store.setInt(key, v);
-      case double v:
-        await store.setDouble(key, v);
-      case List v:
-        await store.setStringList(key, [for (final e in v) e.toString()]);
-      default:
-        await store.remove(key);
-    }
-  }
-
-  Future<bool> _applyCell(String key, dynamic cell) async {
-    if (cell is! Map) return false;
-    final v = cell['v'];
-    switch (cell['t']) {
-      case 's':
-        await store.setString(key, v.toString());
-      case 'b':
-        await store.setBool(key, v == true);
-      case 'i':
-        if (v is! num) return false;
-        await store.setInt(key, v.toInt());
-      case 'd':
-        if (v is! num) return false;
-        await store.setDouble(key, v.toDouble());
-      case 'l':
-        if (v is! List) return false;
-        await store.setStringList(key, v.map((e) => e.toString()).toList());
-      default:
-        return false;
-    }
-    return true;
-  }
 }

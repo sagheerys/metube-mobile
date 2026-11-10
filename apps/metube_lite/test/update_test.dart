@@ -385,6 +385,7 @@ class _StuckDownloader extends ApkDownloader {
     required String url,
     required String savePath,
     int expectedSize = 0,
+    String? sha256,
     void Function(double progress)? onProgress,
     DownloadCancelToken? cancel,
   }) {
