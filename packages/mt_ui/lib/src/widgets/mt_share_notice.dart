@@ -6,6 +6,7 @@ import '../l10n/l10n.dart';
 import '../theme/mt_theme.dart';
 import '../tokens/tokens.dart';
 import '../wahaj/mt_progress.dart';
+import 'mt_route_motion.dart';
 
 /// Hands a file to the system share menu with a line on screen saying so.
 ///
@@ -30,9 +31,8 @@ Future<void> mtShareWithNotice(
   }
 
   unawaited(
-    showDialog<void>(
+    showMTDialog<void>(
       context: context,
-      useRootNavigator: true,
       barrierDismissible: false,
       builder: (_) => const PopScope(canPop: false, child: MTShareOpening()),
     ).whenComplete(() => open = false),
