@@ -93,16 +93,9 @@ class _SetupDialogState extends ConsumerState<_SetupDialog> {
 
   /// An http:// address that is not on the home network sends the
   /// password as plain text across the internet.
-  bool get _plainPassword {
-    final uri = Uri.tryParse(_url.text.trim());
-    if (uri == null || uri.scheme != 'http' || _password.text.isEmpty) {
-      return false;
-    }
-    final host = uri.host;
-    final home = RegExp(r'^(10\.|192\.168\.|127\.|172\.(1[6-9]|2\d|3[01])\.)')
-        .hasMatch(host);
-    return !home && host.contains('.') && !host.endsWith('.local');
-  }
+  bool get _plainPassword =>
+      _password.text.isNotEmpty &&
+      HomeAddress.sendsPasswordInTheClear(_url.text);
 
   Future<void> _connect() async {
     final l = context.mtl;
@@ -207,7 +200,7 @@ class _SetupDialogState extends ConsumerState<_SetupDialog> {
                       Padding(
                         padding: const EdgeInsets.only(top: MTSpace.xs),
                         child: Text(
-                          l.desktopSetupHttpWarning,
+                          l.serverHttpWarning,
                           style: text.labelSmall?.copyWith(color: p.err),
                         ),
                       ),

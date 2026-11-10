@@ -2426,12 +2426,6 @@ abstract class MTLocalizations {
   /// **'No MeTube server answered on these ports.'**
   String get desktopSetupFoundNone;
 
-  /// No description provided for @desktopSetupHttpWarning.
-  ///
-  /// In en, this message translates to:
-  /// **'An http:// address outside your home network sends the password unencrypted.'**
-  String get desktopSetupHttpWarning;
-
   /// No description provided for @desktopSetupImport.
   ///
   /// In en, this message translates to:
@@ -4537,6 +4531,12 @@ abstract class MTLocalizations {
   /// In en, this message translates to:
   /// **'{count, plural, =0{No files on the server} =1{1 file on the server} other{{count} files on the server}}'**
   String serverFilesCount(int count);
+
+  /// No description provided for @serverHttpWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'An http:// address outside your home network sends the password unencrypted. From outside, use an https:// address.'**
+  String get serverHttpWarning;
 
   /// No description provided for @serverKeepsFilesBody.
   ///

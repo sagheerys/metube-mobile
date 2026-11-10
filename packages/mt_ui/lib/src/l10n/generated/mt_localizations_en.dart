@@ -1414,10 +1414,6 @@ class MTLocalizationsEn extends MTLocalizations {
       'No MeTube server answered on these ports.';
 
   @override
-  String get desktopSetupHttpWarning =>
-      'An http:// address outside your home network sends the password unencrypted.';
-
-  @override
   String get desktopSetupImport => 'Import from the phone';
 
   @override
@@ -2667,6 +2663,10 @@ class MTLocalizationsEn extends MTLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get serverHttpWarning =>
+      'An http:// address outside your home network sends the password unencrypted. From outside, use an https:// address.';
 
   @override
   String get serverKeepsFilesBody =>

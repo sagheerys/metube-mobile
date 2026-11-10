@@ -64,6 +64,14 @@ class MTMdBlock {
   String toString() => '$kind($level): $text';
 }
 
+// Pictures: a sheet of text cannot show them, and the link reader below
+// turned `![screen](…)` into a stray `!screen`. A picture wrapped in a link
+// (a badge) goes whole, or its empty label would leave the address behind.
+final RegExp _picture = RegExp(
+  r'\[!\[[^\]]*\]\([^)]*\)\]\([^)]*\)|!\[[^\]]*\]\([^)]*\)|<img\b[^>]*>',
+  caseSensitive: false,
+);
+final RegExp _gap = RegExp(r'[ \t]{2,}');
 final RegExp _link = RegExp(r'\[([^\]]*)\]\(([^)\s]*)\)');
 final RegExp _emphasis = RegExp(r'\*\*(.+?)\*\*|`([^`]+)`');
 final RegExp _heading = RegExp(r'^(#{1,6})\s+(.*)$');
@@ -110,7 +118,10 @@ List<MTMdBlock> mtParseMarkdown(String source) {
   }
 
   for (final raw in source.replaceAll('\r\n', '\n').split('\n')) {
-    final line = raw.trimRight();
+    final cut = raw.replaceAll(_picture, '');
+    // A picture inside a sentence leaves its two spaces behind.
+    final line = (cut.length == raw.length ? raw : cut.replaceAll(_gap, ' '))
+        .trimRight();
     if (line.trim().isEmpty || _rule.hasMatch(line)) {
       flush();
       continue;

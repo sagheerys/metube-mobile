@@ -1456,10 +1456,6 @@ class MTLocalizationsAr extends MTLocalizations {
       'لم يستجب أي سيرفر MeTube على هذه المنافذ.';
 
   @override
-  String get desktopSetupHttpWarning =>
-      'العنوان الذي يبدأ بـ http:// خارج شبكة البيت يُرسل كلمة المرور دون تشفير.';
-
-  @override
   String get desktopSetupImport => 'استيراد من الجوال';
 
   @override
@@ -2736,6 +2732,10 @@ class MTLocalizationsAr extends MTLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get serverHttpWarning =>
+      'العنوان الذي يبدأ بـ http:// خارج شبكة البيت يُرسل كلمة المرور دون تشفير. استعمل عنواناً يبدأ بـ https:// حين تتصل من خارجه.';
 
   @override
   String get serverKeepsFilesBody =>

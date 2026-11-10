@@ -167,6 +167,27 @@ class _ServerFieldsState extends ConsumerState<ServerFields> {
             HelpButton(title: l10n.authentication, body: l10n.authHelper),
           ],
         ),
+        // Said as it is typed, before saving: the connection test passes
+        // over plain http, so nothing else would ever mention it.
+        ListenableBuilder(
+          listenable: Listenable.merge([_urlController, _passController]),
+          builder: (context, _) {
+            final clear =
+                _passController.text.isNotEmpty &&
+                HomeAddress.sendsPasswordInTheClear(_urlController.text);
+            if (!clear) return const SizedBox.shrink();
+            return Padding(
+              key: const ValueKey('plain-http-warning'),
+              padding: const EdgeInsetsDirectional.only(top: MTSpace.xs),
+              child: Text(
+                l10n.serverHttpWarning,
+                style: Theme.of(context).textTheme.labelSmall!.copyWith(
+                  color: MTThemeX.of(context).palette.err,
+                ),
+              ),
+            );
+          },
+        ),
         const SizedBox(height: MTSpace.sm),
         // Same right edge as the fields above (see the gap note there).
         Row(
