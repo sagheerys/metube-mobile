@@ -108,10 +108,46 @@ abstract final class MTOrientation {
 
   /// How the phone is held, from its motion sensor: "portrait" or
   /// "landscape". Replaced in tests.
-  static Stream<String> Function() physical = () =>
-      const EventChannel('mt/orientation')
-          .receiveBroadcastStream()
-          .map((held) => held as String);
+  static Stream<String> Function() physical = _sensor;
+
+  /// The event channel's protocol by hand, rather than `EventChannel`:
+  /// that one reports a missing native side as an app error, where here it
+  /// is only a phone that cannot tell, an error on the stream.
+  static Stream<String> _sensor() {
+    const name = 'mt/orientation';
+    const codec = StandardMethodCodec();
+    const control = MethodChannel(name);
+    final messenger = ServicesBinding.instance.defaultBinaryMessenger;
+    late final StreamController<String> readings;
+    readings = StreamController<String>(
+      onListen: () async {
+        messenger.setMessageHandler(name, (data) async {
+          if (data == null) return null;
+          try {
+            readings.add(codec.decodeEnvelope(data) as String);
+          } on PlatformException catch (e) {
+            readings.addError(e);
+          }
+          return null;
+        });
+        try {
+          await control.invokeMethod<void>('listen');
+        } on Object catch (e) {
+          messenger.setMessageHandler(name, null);
+          readings.addError(e);
+        }
+      },
+      onCancel: () async {
+        messenger.setMessageHandler(name, null);
+        try {
+          await control.invokeMethod<void>('cancel');
+        } on Object {
+          // Nothing listens on the other side: nothing to stop.
+        }
+      },
+    );
+    return readings.stream;
+  }
 
   static StreamSubscription<String>? _waiting;
 
