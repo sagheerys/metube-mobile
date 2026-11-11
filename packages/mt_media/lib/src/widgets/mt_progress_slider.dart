@@ -17,6 +17,8 @@ class MTProgressSlider extends StatefulWidget {
     this.dark = false,
     this.showRemaining = true,
     this.marks = const [],
+    this.showTimes = true,
+    this.thin = false,
   });
 
   final Duration position;
@@ -33,6 +35,15 @@ class MTProgressSlider extends StatefulWidget {
 
   /// Where chapters begin: the track is cut there.
   final List<Duration> marks;
+
+  /// The two times under the track; off where the bar shows the time in
+  /// a row of its own.
+  final bool showTimes;
+
+  /// A hairline track with a small handle that grows under the finger:
+  /// the video held sideways, where the bar runs along the bottom edge of
+  /// the picture instead of over it.
+  final bool thin;
 
   @override
   State<MTProgressSlider> createState() => _MTProgressSliderState();
@@ -55,6 +66,11 @@ class _MTProgressSliderState extends State<MTProgressSlider> {
         ? p.miniInk.withValues(alpha: 0.25)
         : p.ink.withValues(alpha: 0.1);
     final timeColor = onDark ? p.miniInkMuted : p.ink3;
+    final dragging = _dragValue != null;
+    final trackHeight = widget.thin ? 3.0 : (onDark ? 4.0 : 5.0);
+    final thumbRadius = widget.thin
+        ? (dragging ? 7.0 : 5.0)
+        : (onDark ? 5.5 : 7.5);
 
     // **Media time runs left to right in every language** (field report
     // 2026-09-25). A timeline is a tape moving past, not a sentence being read:
@@ -70,7 +86,7 @@ class _MTProgressSliderState extends State<MTProgressSlider> {
         children: [
           SliderTheme(
             data: SliderThemeData(
-              trackHeight: onDark ? 4 : 5,
+              trackHeight: trackHeight,
               activeTrackColor: p.accent,
               inactiveTrackColor: trackInactive,
               secondaryActiveTrackColor: trackInactive,
@@ -78,7 +94,7 @@ class _MTProgressSliderState extends State<MTProgressSlider> {
               // A neutral veil under the finger, not an orange halo.
               overlayColor: p.ink.withValues(alpha: mtPressVeil),
               thumbShape: RoundSliderThumbShape(
-                enabledThumbRadius: onDark ? 5.5 : 7.5,
+                enabledThumbRadius: thumbRadius,
               ),
               overlayShape: const RoundSliderOverlayShape(overlayRadius: 16),
               trackShape: MTChapterTrackShape([
@@ -103,27 +119,28 @@ class _MTProgressSliderState extends State<MTProgressSlider> {
               },
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: MTSpace.sm),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  mtFormatDuration(Duration(milliseconds: value.round())),
-                  style: _timeStyle(context, timeColor),
-                ),
-                Text(
-                  widget.showRemaining
-                      ? mtFormatRemaining(
-                          Duration(milliseconds: value.round()),
-                          widget.duration,
-                        )
-                      : mtFormatDuration(total),
-                  style: _timeStyle(context, timeColor),
-                ),
-              ],
+          if (widget.showTimes)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: MTSpace.sm),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    mtFormatDuration(Duration(milliseconds: value.round())),
+                    style: _timeStyle(context, timeColor),
+                  ),
+                  Text(
+                    widget.showRemaining
+                        ? mtFormatRemaining(
+                            Duration(milliseconds: value.round()),
+                            widget.duration,
+                          )
+                        : mtFormatDuration(total),
+                    style: _timeStyle(context, timeColor),
+                  ),
+                ],
+              ),
             ),
-          ),
         ],
       ),
     );

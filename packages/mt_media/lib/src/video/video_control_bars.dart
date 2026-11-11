@@ -133,7 +133,10 @@ class MTVideoTopBar extends StatelessWidget {
   }
 }
 
-/// The bottom bar: progress, times, play modes and the queue button.
+/// The bottom bar: the time, play modes and the queue button in one row,
+/// then a thin bar along the bottom edge of the picture, so less of the
+/// picture and the subtitle above it is covered (owner's request
+/// 2026-11-11, in full screen and under the video alike).
 class MTVideoBottomBar extends StatelessWidget {
   const MTVideoBottomBar({
     super.key,
@@ -164,87 +167,94 @@ class MTVideoBottomBar extends StatelessWidget {
     final inkMuted = MTPalette.serverCardInk.withValues(alpha: 0.85);
     final value = session.controller?.value;
 
-    return Column(
-      mainAxisSize: MainAxisSize.min,
+    final slider = MTProgressSlider(
+      position: session.position,
+      duration: session.duration,
+      buffered: value == null || value.buffered.isEmpty
+          ? null
+          : value.buffered.last.end,
+      dark: true,
+      showRemaining: false,
+      // The row above already says "0:12 / 0:36"; the slider's own pair
+      // said it a second time.
+      showTimes: false,
+      thin: true,
+      marks: [for (final chapter in chapters) chapter.start],
+      onSeek: session.seek,
+    );
+    final row = _row(context, l10n, text, inkMuted);
+    return Column(mainAxisSize: MainAxisSize.min, children: [row, slider]);
+  }
+
+  Widget _row(
+    BuildContext context,
+    MTLocalizations l10n,
+    TextTheme text,
+    Color inkMuted,
+  ) => Padding(
+    padding: const EdgeInsets.symmetric(horizontal: MTSpace.sm),
+    child: Row(
       children: [
-        MTProgressSlider(
-          position: session.position,
-          duration: session.duration,
-          buffered: value == null || value.buffered.isEmpty
-              ? null
-              : value.buffered.last.end,
-          dark: true,
-          showRemaining: false,
-          marks: [for (final chapter in chapters) chapter.start],
-          onSeek: session.seek,
+        Text(
+          // Isolated left to right: in an Arabic line the pair read
+          // "3:02 / 1:20", the length before the position (field
+          // report 2026-10-04).
+          mtLtrRun(
+            '${mtFormatDuration(session.position)} / '
+            '${mtFormatDuration(session.duration ?? Duration.zero)}',
+          ),
+          // A counter live on every frame. Without fixed-width digits
+          // the text stretches and shrinks and the whole line dances
+          // (review 2026-09-02).
+          style: text.labelSmall!.copyWith(color: inkMuted).tabular,
         ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: MTSpace.sm),
-          child: Row(
-            children: [
-              Text(
-                // Isolated left to right: in an Arabic line the pair read
-                // "3:02 / 1:20", the length before the position (field
-                // report 2026-10-04).
-                mtLtrRun(
-                  '${mtFormatDuration(session.position)} / '
-                  '${mtFormatDuration(session.duration ?? Duration.zero)}',
-                ),
-                // A counter live on every frame. Without fixed-width digits
-                // the text stretches and shrinks and the whole line dances
-                // (review 2026-09-02).
-                style: text.labelSmall!.copyWith(color: inkMuted).tabular,
-              ),
-              Expanded(
-                child: Align(
-                  alignment: AlignmentDirectional.centerStart,
-                  child: chapters.isEmpty || onChapters == null
-                      ? null
-                      : MTChapterLabel(
-                          chapters: chapters,
-                          position: session.position,
-                          onTap: onChapters!,
-                        ),
-                ),
-              ),
-              MTVideoIconButton(
-                icon: mtPlayModeIcon(session.playMode),
-                onTap: () => session.setPlayMode(session.playMode.next),
-                tooltip: mtPlayModeLabel(context, session.playMode),
-                size: 32,
-                active: session.playMode != PlayMode.autoNext,
-              ),
-              const SizedBox(width: MTSpace.xxs + 2),
-              MTVideoIconButton(
-                icon: MTIcons.shuffle,
-                onTap: () => session.setShuffle(!session.shuffleEnabled),
-                tooltip: l10n.shuffle,
-                size: 32,
-                active: session.shuffleEnabled,
-              ),
-              if (extra case final extra?) ...[
-                const SizedBox(width: MTSpace.xxs + 2),
-                // In the style of its neighbours: beside repeat and shuffle,
-                // which light up when on, a filled button read as switched
-                // on (field report 2026-09-30).
-                MTVideoIconButton(
-                  icon: extra.icon,
-                  onTap: extra.onTap,
-                  tooltip: extra.label,
-                  size: 32,
-                ),
-              ],
-              const SizedBox(width: MTSpace.xxs + 2),
-              MTVideoIconButton(
-                icon: MTIcons.queue,
-                onTap: onQueue,
-                tooltip: l10n.queueLabel,
-                size: 32,
-              ),
-            ],
+        Expanded(
+          child: Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: chapters.isEmpty || onChapters == null
+                ? null
+                : MTChapterLabel(
+                    chapters: chapters,
+                    position: session.position,
+                    onTap: onChapters!,
+                  ),
           ),
         ),
+        MTVideoIconButton(
+          icon: mtPlayModeIcon(session.playMode),
+          onTap: () => session.setPlayMode(session.playMode.next),
+          tooltip: mtPlayModeLabel(context, session.playMode),
+          size: 32,
+          active: session.playMode != PlayMode.autoNext,
+        ),
+        const SizedBox(width: MTSpace.xxs + 2),
+        MTVideoIconButton(
+          icon: MTIcons.shuffle,
+          onTap: () => session.setShuffle(!session.shuffleEnabled),
+          tooltip: l10n.shuffle,
+          size: 32,
+          active: session.shuffleEnabled,
+        ),
+        if (extra case final extra?) ...[
+          const SizedBox(width: MTSpace.xxs + 2),
+          // In the style of its neighbours: beside repeat and shuffle,
+          // which light up when on, a filled button read as switched
+          // on (field report 2026-09-30).
+          MTVideoIconButton(
+            icon: extra.icon,
+            onTap: extra.onTap,
+            tooltip: extra.label,
+            size: 32,
+          ),
+        ],
+        const SizedBox(width: MTSpace.xxs + 2),
+        MTVideoIconButton(
+          icon: MTIcons.queue,
+          onTap: onQueue,
+          tooltip: l10n.queueLabel,
+          size: 32,
+        ),
       ],
-    );
-  }
+    ),
+  );
 }

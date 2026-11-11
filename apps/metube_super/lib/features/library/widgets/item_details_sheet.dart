@@ -31,19 +31,32 @@ class _DetailsSheet extends ConsumerWidget {
     final text = Theme.of(context).textTheme;
     final p = MTThemeX.of(context).palette;
 
-    Widget row(String label, String value) => Padding(
-      padding: const EdgeInsets.symmetric(vertical: MTSpace.xs),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 110,
-            child: Text(label, style: text.bodySmall!.copyWith(color: p.ink3)),
+    Widget row(String label, String value, {bool selectable = false}) =>
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: MTSpace.xs),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(
+                width: 110,
+                child: Text(
+                  label,
+                  style: text.bodySmall!.copyWith(color: p.ink3),
+                ),
+              ),
+              Expanded(
+                child: selectable
+                    ? MTForeignText(
+                        value,
+                        overflow: null,
+                        selectable: true,
+                        style: text.bodyMedium,
+                      )
+                    : Text(value, style: text.bodyMedium),
+              ),
+            ],
           ),
-          Expanded(child: Text(value, style: text.bodyMedium)),
-        ],
-      ),
-    );
+        );
 
     return SafeArea(
       child: Padding(
@@ -62,7 +75,8 @@ class _DetailsSheet extends ConsumerWidget {
             // **Row labels** (full review 2026-09-02): "details" was the
             // label of the title row and "MB" the label of the size row, a
             // hard-coded string and a wrong meaning at once (rule 5).
-            row(l10n.titleLabel, item.title),
+            // Selectable, to copy it (owner's request 2026-11-11).
+            row(l10n.titleLabel, item.title, selectable: true),
             if (item.sizeBytes case final int bytes)
               row(l10n.fileSize, mtFormatSize(bytes)),
             // **What the file actually is** (asked 2026-09-25): the server

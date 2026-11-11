@@ -278,12 +278,13 @@ class _ClipLayout extends ConsumerWidget {
               children: [
                 AspectRatio(aspectRatio: 16 / 9, child: stage),
                 const SizedBox(height: MTSpace.lg),
-                Text(
+                // Its own direction, the interface's side: the line is as
+                // wide as the stage. Selectable, to copy it (owner's
+                // request 2026-11-11).
+                MTForeignText(
                   item.title,
-                  // Its own direction, the interface's side: the line is
-                  // as wide as the stage.
-                  textDirection: mtForeignLine(context, item.title).$1,
-                  textAlign: mtForeignLine(context, item.title).$2,
+                  overflow: null,
+                  selectable: true,
                   style: text.titleLarge?.copyWith(color: p.ink),
                 ),
                 const SizedBox(height: MTSpace.xxs),

@@ -4,6 +4,7 @@ import 'package:file_selector/file_selector.dart' as selector;
 import 'package:path_provider_windows/path_provider_windows.dart';
 
 import '../data/folders_data.dart';
+import 'open_with_windows.dart';
 
 /// The Windows folders: the known Videos and Downloads (wherever OneDrive
 /// or the user moved them), Windows' own folder dialog, and Explorer.
@@ -89,6 +90,11 @@ class WindowsFolders extends DesktopFolders {
   Future<void> reveal(String path) async {
     if (!File(path).existsSync()) return open(File(path).parent.path);
     await Process.start('explorer.exe', ['/select,', path]);
+  }
+
+  @override
+  Future<void> openWith(String path) async {
+    if (File(path).existsSync()) await showOpenWith(path);
   }
 
   @override

@@ -34,19 +34,32 @@ class _DetailsSheet extends ConsumerWidget {
     final text = Theme.of(context).textTheme;
     final p = MTThemeX.of(context).palette;
 
-    Widget row(String label, String value) => Padding(
-      padding: const EdgeInsets.symmetric(vertical: MTSpace.xs),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 110,
-            child: Text(label, style: text.bodySmall!.copyWith(color: p.ink3)),
+    Widget row(String label, String value, {bool selectable = false}) =>
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: MTSpace.xs),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(
+                width: 110,
+                child: Text(
+                  label,
+                  style: text.bodySmall!.copyWith(color: p.ink3),
+                ),
+              ),
+              Expanded(
+                child: selectable
+                    ? MTForeignText(
+                        value,
+                        overflow: null,
+                        selectable: true,
+                        style: text.bodyMedium,
+                      )
+                    : Text(value, style: text.bodyMedium),
+              ),
+            ],
           ),
-          Expanded(child: Text(value, style: text.bodyMedium)),
-        ],
-      ),
-    );
+        );
 
     return SafeArea(
       child: Padding(
@@ -64,7 +77,8 @@ class _DetailsSheet extends ConsumerWidget {
             const SizedBox(height: MTSpace.sm),
             // The same correction as Super: two wrong labels, one of them a
             // hard-coded string.
-            row(l10n.titleLabel, item.title),
+            // Selectable, to copy it (owner's request 2026-11-11).
+            row(l10n.titleLabel, item.title, selectable: true),
             row(l10n.fileSize, mtFormatSize(item.sizeBytes)),
             // **What the file actually is** (asked 2026-09-25), read from
             // its header.

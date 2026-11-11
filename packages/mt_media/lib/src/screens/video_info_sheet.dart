@@ -106,9 +106,11 @@ class MTVideoInfoSheet extends StatelessWidget {
     final p = MTThemeX.of(context).palette;
     final text = Theme.of(context).textTheme;
     return [
+      // Copied to search for it elsewhere (owner's request 2026-11-11).
       MTForeignText(
         item.title,
         maxLines: 2,
+        selectable: true,
         style: text.titleMedium!.copyWith(fontSize: 16),
       ),
       if (subtitleBuilder != null) ...[

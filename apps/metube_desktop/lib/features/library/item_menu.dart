@@ -26,6 +26,7 @@ enum ItemChoice {
   copyLink,
   copyFile,
   showInFolder,
+  openWith,
   openOriginal,
   addToList,
   tags,
@@ -88,12 +89,16 @@ List<EmberMenuEntry<ItemChoice>> itemMenuEntries(
         l.desktopCopyFile,
         shortcut: ClipKeys.copyFile,
       ),
-    if (hasFile)
+    if (hasFile) ...[
       EmberMenuEntry(
         ItemChoice.showInFolder,
         MTIcons.folder,
         l.desktopShowInFolder,
       ),
+      // The phone's external player: a file on this computer only, never
+      // a server address (see DesktopFolders.openWith).
+      EmberMenuEntry(ItemChoice.openWith, MTIcons.playback, l.desktopOpenWith),
+    ],
     EmberMenuEntry(
       ItemChoice.openOriginal,
       MTIcons.external,
@@ -163,6 +168,8 @@ Future<void> showItemMenu(
       await copyFileOf(context, item);
     case ItemChoice.showInFolder:
       if (file != null) await ref.read(desktopFoldersProvider).reveal(file);
+    case ItemChoice.openWith:
+      if (file != null) await ref.read(desktopFoldersProvider).openWith(file);
     case ItemChoice.openOriginal:
       await ref.read(clipActionsProvider).openOriginal(item.canonicalUrl);
     case ItemChoice.addToList:

@@ -41,6 +41,14 @@ abstract class DesktopFolders {
 
   /// Opens Explorer on the folder [path].
   Future<void> open(String path);
+
+  /// Windows' "Open with" for the file at [path], so the user plays it in
+  /// a player of their own (VLC, say); nothing where there is no Windows.
+  ///
+  /// **For a file on this computer only**: a server address handed to
+  /// another player would carry the password in it, and could not carry a
+  /// Cloudflare Access token at all.
+  Future<void> openWith(String path) async {}
 }
 
 class NoFolders extends DesktopFolders {

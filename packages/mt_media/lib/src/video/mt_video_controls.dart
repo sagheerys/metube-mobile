@@ -121,8 +121,16 @@ class _MTVideoControlsState extends State<MTVideoControls> {
   /// Clear of the bottom bar while it shows, near the edge when it hides:
   /// above the light sheet, which overlaps the small player by 14px.
   double get _captionLift => _visible && !_locked
-      ? (widget.fullscreen ? MTSpace.xs : MTSpace.xl) + 76
+      ? _barBottom + _barHeight + MTSpace.xs
       : (widget.fullscreen ? MTSpace.lg : MTSpace.xxl);
+
+  /// The slider's track sits in the middle of its 32: from here it is 20
+  /// above the video's bottom, 6 clear of the light sheet over it.
+  double get _barBottom => widget.fullscreen ? 0 : MTSpace.xxs;
+
+  /// The bottom bar's row of 32-high buttons and its 32-high slider, the
+  /// time no longer printed a second time under the track.
+  static const double _barHeight = 64;
 
   /// In a corner of the screen the picture shows alone: no control fits
   /// there, and the system draws its own.
@@ -206,9 +214,10 @@ class _MTVideoControlsState extends State<MTVideoControls> {
         child: Center(child: MTVideoCenterControls(session: widget.session)),
       ),
       PositionedDirectional(
-        // Above the rounded edge of the light sheet, which overlaps the
-        // video by 14px.
-        bottom: widget.fullscreen ? MTSpace.xs : MTSpace.xl,
+        // The thin bar rests on the bottom edge: of the screen in full
+        // screen, and just above the rounded edge of the light sheet,
+        // which overlaps the video by 14px, under it.
+        bottom: _barBottom,
         start: MTSpace.md,
         end: MTSpace.md,
         child: MTVideoBottomBar(

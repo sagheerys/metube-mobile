@@ -36,6 +36,17 @@ for Android, and MeTube Ember for Windows.
 - **The search opens where you click it** (Ember). The search box in the
   title bar now grows into the search in its own place, instead of a
   separate box appearing at the top of the window.
+- **A slimmer video bar** (Lite, Super). Under the video and in full
+  screen, the time and buttons sit in one row with a thin progress bar
+  under them along the bottom edge, so less of the picture and its
+  subtitles is covered. The time is no longer shown twice.
+- **Copy a clip's title.** Press and hold the title under the video, or in
+  the clip's details, to select and copy it. In Ember, select it on the
+  clip's page or in the details panel. All three apps.
+- **Open in another player** (Ember). A clip kept on this computer can be
+  opened in VLC or any player you have, from its right-click menu, as the
+  phones already offer. Clips on the server are not handed to other
+  players, which could not sign in to it.
 
 ### Fixed
 

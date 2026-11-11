@@ -508,6 +508,7 @@
   "desktopOfflineProgress": "دون اتصال · {percent}٪",
   "desktopOpenChannels": "افتح القنوات",
   "desktopOpenInExplorer": "فتح في مستكشف الملفات",
+  "desktopOpenWith": "فتح بمشغّل آخر…",
   "desktopPaletteClose": "للإغلاق",
   "desktopPaletteCommands": "الأوامر",
   "desktopPaletteHint": "ابحث في العناوين وما قيل، أو اكتب > للأوامر",

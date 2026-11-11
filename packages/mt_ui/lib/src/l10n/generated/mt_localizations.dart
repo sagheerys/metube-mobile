@@ -2120,6 +2120,12 @@ abstract class MTLocalizations {
   /// **'Open in Explorer'**
   String get desktopOpenInExplorer;
 
+  /// No description provided for @desktopOpenWith.
+  ///
+  /// In en, this message translates to:
+  /// **'Open in another player…'**
+  String get desktopOpenWith;
+
   /// No description provided for @desktopPaletteClose.
   ///
   /// In en, this message translates to:

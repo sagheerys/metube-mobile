@@ -849,6 +849,7 @@
   "@desktopOfflineProgress": {"placeholders": {"percent": {"type": "int"}}},
   "desktopOpenChannels": "Open channels",
   "desktopOpenInExplorer": "Open in Explorer",
+  "desktopOpenWith": "Open in another player…",
   "desktopPaletteClose": "to close",
   "desktopPaletteCommands": "Commands",
   "desktopPaletteHint": "Search titles and what was said, or type > for commands",

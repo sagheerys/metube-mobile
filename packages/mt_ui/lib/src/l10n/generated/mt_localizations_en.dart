@@ -1230,6 +1230,9 @@ class MTLocalizationsEn extends MTLocalizations {
   String get desktopOpenInExplorer => 'Open in Explorer';
 
   @override
+  String get desktopOpenWith => 'Open in another player…';
+
+  @override
   String get desktopPaletteClose => 'to close';
 
   @override

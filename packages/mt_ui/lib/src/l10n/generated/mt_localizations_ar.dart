@@ -1269,6 +1269,9 @@ class MTLocalizationsAr extends MTLocalizations {
   String get desktopOpenInExplorer => 'فتح في مستكشف الملفات';
 
   @override
+  String get desktopOpenWith => 'فتح بمشغّل آخر…';
+
+  @override
   String get desktopPaletteClose => 'للإغلاق';
 
   @override

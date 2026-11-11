@@ -52,7 +52,8 @@ class DetailsView extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          row(l.titleLabel, item.title),
+          // Selectable, to copy it (owner's request 2026-11-11).
+          _Row(label: l.titleLabel, value: item.title, selectable: true),
           if (item.uploader case final who?) row(l.desktopChannel, who),
           row(l.platform, platformLabel(l, MediaPlatform.detect(url))),
           if (item.duration case final length?)
@@ -96,15 +97,25 @@ class DetailsView extends ConsumerWidget {
 }
 
 class _Row extends StatelessWidget {
-  const _Row({required this.label, required this.value});
+  const _Row({
+    required this.label,
+    required this.value,
+    this.selectable = false,
+  });
 
   final String label;
   final String value;
+  final bool selectable;
 
   @override
   Widget build(BuildContext context) {
     final p = MTThemeX.of(context).palette;
     final text = Theme.of(context).textTheme;
+    final line = Text(
+      value,
+      textDirection: mtTextDirectionOf(value, Directionality.of(context)),
+      style: text.bodySmall?.copyWith(color: p.ink),
+    );
     return Container(
       padding: const EdgeInsets.symmetric(vertical: MTSpace.sm),
       decoration: BoxDecoration(
@@ -122,16 +133,7 @@ class _Row extends StatelessWidget {
             width: MTSpace.xxl * 3,
             child: Text(label, style: text.labelSmall?.copyWith(color: p.ink3)),
           ),
-          Expanded(
-            child: Text(
-              value,
-              textDirection: mtTextDirectionOf(
-                value,
-                Directionality.of(context),
-              ),
-              style: text.bodySmall?.copyWith(color: p.ink),
-            ),
-          ),
+          Expanded(child: selectable ? MTSelectable(child: line) : line),
         ],
       ),
     );

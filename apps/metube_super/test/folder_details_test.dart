@@ -66,5 +66,19 @@ void main() {
       await open(tester, 'Me at the zoo [jNQXAC9IVRw].webm');
       expect(find.text('Folder'), findsNothing);
     });
+
+    // Owner's request 2026-11-11: copied to look it up elsewhere.
+    testWidgets('**the guard**: the title can be selected and copied', (
+      tester,
+    ) async {
+      await open(tester, 'Me at the zoo [jNQXAC9IVRw].webm');
+      expect(
+        find.ancestor(
+          of: find.text('Me at the zoo'),
+          matching: find.byType(SelectionArea),
+        ),
+        findsOneWidget,
+      );
+    });
   });
 }
