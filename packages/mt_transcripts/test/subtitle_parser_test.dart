@@ -59,7 +59,7 @@ a thousand hours in
   });
 
   test('a large file read on another thread reads the same', () async {
-    // The catch-up read every clip's subtitles on the thread that draws the
+    // The library backfill read every clip's subtitles on the thread that draws the
     // app (security review 2026-11-05).
     final srt = StringBuffer();
     for (var i = 0; i < 3000; i++) {

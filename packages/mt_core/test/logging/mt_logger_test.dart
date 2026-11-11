@@ -177,7 +177,7 @@ void main() {
     test(
       'the write-time scrub leaves ordinary lines exactly as written',
       () async {
-        // Principle I: only this pattern is applied at write time. URLs and
+        // Nothing else changes: only this pattern is applied at write time. URLs and
         // addresses stay readable on the device and are removed when shared.
         await logger.log('fetching https://metube.example.com/history ok');
         expect(

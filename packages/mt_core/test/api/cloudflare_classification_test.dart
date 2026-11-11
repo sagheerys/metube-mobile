@@ -142,7 +142,7 @@ void main() {
 
   group('with no pair the same failure is what it always was', () {
     test('a non-header failure stays a network failure', () async {
-      // Principle I: the translation is only for people who set a pair.
+      // No pair set, no change: the translation is only for people who set one.
       final adapter = _PlatformLikeAdapter();
       final client = MeTubeApiClient(
         config: ServerConfig(baseUrl: 'https://metube.example.com'),

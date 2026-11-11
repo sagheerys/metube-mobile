@@ -308,7 +308,7 @@ void main() {
     });
 
     test('without the pair a redirect is followed as before', () async {
-      // Principle I: people who are not behind Access see no change.
+      // People who are not behind Access must see no change.
       final head = await MTVideoCodec.realReadHead(sourceWith({}));
       expect(head, isNotNull);
       expect(MTVideoCodec.av1InHead(head!), isTrue);

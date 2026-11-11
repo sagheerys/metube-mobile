@@ -5,8 +5,8 @@ import 'package:mt_ui/mt_ui.dart';
 /// **The only place** errors are translated; there are no scattered error
 /// strings.
 String errorText(MTLocalizations l10n, Object error) => switch (error) {
-  // Before its parent, and not the password: Cloudflare turned the
-  // service token away.
+  // Matched before its parent AuthFailureException: a Cloudflare Access
+  // refusal of the service token is not a wrong password.
   AccessRejectedException() => l10n.errAccessRejected,
   AuthFailureException() => l10n.errAuth,
   NotMeTubeServerException() => l10n.errNotMeTube,

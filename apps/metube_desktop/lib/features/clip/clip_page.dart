@@ -278,9 +278,9 @@ class _ClipLayout extends ConsumerWidget {
               children: [
                 AspectRatio(aspectRatio: 16 / 9, child: stage),
                 const SizedBox(height: MTSpace.lg),
-                // Its own direction, the interface's side: the line is as
-                // wide as the stage. Selectable, to copy it (owner's
-                // request 2026-11-11).
+                // The title reads in its own text's direction but aligns to the
+                // interface's start edge, across the player's full width.
+                // Selectable, to copy it (owner's request 2026-11-11).
                 MTForeignText(
                   item.title,
                   overflow: null,

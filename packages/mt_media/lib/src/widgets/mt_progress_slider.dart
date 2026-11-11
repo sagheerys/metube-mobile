@@ -40,9 +40,9 @@ class MTProgressSlider extends StatefulWidget {
   /// a row of its own.
   final bool showTimes;
 
-  /// A hairline track with a small handle that grows under the finger:
-  /// the video held sideways, where the bar runs along the bottom edge of
-  /// the picture instead of over it.
+  /// A hairline track with a small handle that grows under the finger,
+  /// for a bar that runs along the bottom edge of the picture instead of
+  /// over it.
   final bool thin;
 
   @override

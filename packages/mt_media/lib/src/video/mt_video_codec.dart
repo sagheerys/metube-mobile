@@ -35,8 +35,8 @@ abstract final class MTVideoCodec {
   static Future<List<int>?> Function(PlaybackSource source) readHead =
       _readHead;
 
-  /// The real reader, which `flutter_test_config.dart` replaces by a stub in
-  /// every test, for the tests that talk to a local server.
+  /// The real reader. `flutter_test_config.dart` stubs [readHead] in every
+  /// test; a test that talks to a local server puts this one back.
   @visibleForTesting
   static Future<List<int>?> realReadHead(PlaybackSource source) =>
       _readHead(source);

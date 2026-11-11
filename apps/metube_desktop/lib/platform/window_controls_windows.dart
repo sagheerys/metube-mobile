@@ -140,8 +140,8 @@ class WindowManagerControls with WindowListener implements WindowControls {
   /// so neither is ever laid out in the other's size.
   ///
   /// **The card is never maximized** (Win+Up, a drag to the top edge,
-  /// Snap): maximized, the card was stretched over the whole screen, and
-  /// the window that came back from it was broken. **A picture card can be
+  /// Snap): maximized, the card was stretched over the whole screen and
+  /// was no longer a card in the corner. **A picture card can be
   /// stretched by its edges** (owner's request 2026-11-10), at its own
   /// shape, from its starting size up to half the screen's width; the
   /// sound strip keeps its one size.

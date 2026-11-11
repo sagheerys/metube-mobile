@@ -267,8 +267,8 @@ void main() {
 
   group('with no pair configured nothing changes', () {
     test('the redirect behaviour is the platform default', () async {
-      // Defect (principle I): a guard that also altered people who are not
-      // behind Access.
+      // Defect: a guard that also changed the behaviour for people who are
+      // not behind Access.
       final (c, a) = _client((o) => _redirect(302, '$_other/history'));
       await expectLater(c.fetchHistory(), throwsA(isA<MTApiException>()));
       expect(a.requests, hasLength(1));

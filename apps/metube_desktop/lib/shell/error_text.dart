@@ -4,8 +4,8 @@ import 'package:mt_ui/mt_ui.dart';
 /// The core's classified failures in the user's language, as the phone
 /// apps word them. The one place an error becomes a sentence.
 String errorText(MTLocalizations l, Object error) => switch (error) {
-  // Before its parent, and not the password: Cloudflare turned the
-  // service token away.
+  // Matched before its parent AuthFailureException: a Cloudflare Access
+  // refusal of the service token is not a wrong password.
   AccessRejectedException() => l.errAccessRejected,
   AuthFailureException() => l.errAuth,
   NotMeTubeServerException() => l.errNotMeTube,

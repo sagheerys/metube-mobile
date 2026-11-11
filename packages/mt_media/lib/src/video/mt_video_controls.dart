@@ -128,8 +128,8 @@ class _MTVideoControlsState extends State<MTVideoControls> {
   /// above the video's bottom, 6 clear of the light sheet over it.
   double get _barBottom => widget.fullscreen ? 0 : MTSpace.xxs;
 
-  /// The bottom bar's row of 32-high buttons and its 32-high slider, the
-  /// time no longer printed a second time under the track.
+  /// The bottom bar's row of 32-high buttons and its 32-high slider, which
+  /// prints no times of its own: the row above shows them.
   static const double _barHeight = 64;
 
   /// In a corner of the screen the picture shows alone: no control fits
@@ -214,9 +214,9 @@ class _MTVideoControlsState extends State<MTVideoControls> {
         child: Center(child: MTVideoCenterControls(session: widget.session)),
       ),
       PositionedDirectional(
-        // The thin bar rests on the bottom edge: of the screen in full
-        // screen, and just above the rounded edge of the light sheet,
-        // which overlaps the video by 14px, under it.
+        // In full screen the thin bar rests on the screen's bottom edge;
+        // under the video, just above the details sheet, whose rounded
+        // top overlaps the video by 14px.
         bottom: _barBottom,
         // Under the video the bar runs edge to edge, as the picture does;
         // full screen keeps a margin, so a phone's rounded corners do not

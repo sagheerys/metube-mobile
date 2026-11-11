@@ -95,8 +95,8 @@ List<EmberMenuEntry<ItemChoice>> itemMenuEntries(
         MTIcons.folder,
         l.desktopShowInFolder,
       ),
-      // The phone's external player: a file on this computer only, never
-      // a server address (see DesktopFolders.openWith).
+      // Another player of the user's choice (VLC, ...): a file on this
+      // computer only, never a server address (see DesktopFolders.openWith).
       EmberMenuEntry(ItemChoice.openWith, MTIcons.playback, l.desktopOpenWith),
     ],
     EmberMenuEntry(

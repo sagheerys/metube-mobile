@@ -32,7 +32,8 @@ abstract final class SubtitleParser {
   /// [parse], away from the thread that draws the app once [content] is
   /// large enough to be felt there.
   ///
-  /// The library's catch-up reads every clip's subtitles in turn, and an
+  /// The library backfill (`library_backfill.dart`) reads every clip's
+  /// subtitles in turn, and an
   /// hour of speech is about 100KB to read; on the drawing thread that is a
   /// stutter per clip while the user scrolls. A short file costs less to
   /// read than to hand to another thread, and stays here.

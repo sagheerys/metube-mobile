@@ -265,7 +265,7 @@ void main() {
 
     testWidgets('**the guard**: at the largest text on a small phone the '
         'words scroll and the buttons stay on screen', (tester) async {
-      // Found 2026-11-10 by the new shared-links question: the dialog
+      // Found 2026-11-10 by the shared-links confirmation: the dialog
       // overflowed by 100 pixels at Android's largest text.
       tester.view.devicePixelRatio = 1;
       tester.view.physicalSize = const Size(320, 568);
