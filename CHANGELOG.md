@@ -10,6 +10,8 @@ for Android, and MeTube Ember for Windows.
 
 ## [Unreleased]
 
+## [2.7.1] - 2026-11-11
+
 ### Added
 
 - **Servers behind Cloudflare Access.** A server protected by Cloudflare
@@ -23,7 +25,6 @@ for Android, and MeTube Ember for Windows.
   the token away, the apps say so instead of reporting a wrong password,
   and the server settings show *Cloudflare Access* where they used to say
   "no password".
-
 - **Subtitle size and background from the player** (Super). Long-press CC
   over the video to change them while you watch; settings say so too. On
   a phone held sideways the choices open along the top of the picture, so
@@ -53,7 +54,6 @@ for Android, and MeTube Ember for Windows.
 - **The last clip in a batch download could not be unticked** (Lite,
   Super). The "Download selected" button covered its checkbox; the list now
   scrolls clear of it.
-
 - **Library statistics jumping to the top** (Super, Ember). The page no
   longer flickers and loses your place every time the library refreshes.
 - **A pause before the share menu with a large file** (Lite, Super). A
@@ -942,7 +942,9 @@ each one left behind a test that fails on the old code.
 - An album pasted as one link expanding into twenty downloads on the server,
   with only one of them pulled.
 
-[Unreleased]: https://github.com/sagheerys/metube-mobile/compare/v2.6.0...HEAD
+[Unreleased]: https://github.com/sagheerys/metube-mobile/compare/v2.7.1...HEAD
+[2.7.1]: https://github.com/sagheerys/metube-mobile/compare/v2.7.0...v2.7.1
+[2.7.0]: https://github.com/sagheerys/metube-mobile/compare/v2.6.0...v2.7.0
 [2.6.0]: https://github.com/sagheerys/metube-mobile/compare/v2.5.1...v2.6.0
 [2.5.1]: https://github.com/sagheerys/metube-mobile/compare/v2.5.0...v2.5.1
 [2.5.0]: https://github.com/sagheerys/metube-mobile/compare/v2.4.0...v2.5.0

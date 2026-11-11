@@ -135,6 +135,21 @@ void main() {
     // The track, in the middle of the slider, above the sheet's 14px.
     expect(bar.center.dy, lessThan(picture.bottom - 14));
     expect(bar.bottom, greaterThan(picture.bottom - MTSpace.xl));
+    // Edge to edge, as the picture is, with no margin kept for the handle
+    // (owner's report 2026-11-11).
+    expect(bar.left, picture.left);
+    expect(bar.right, picture.right);
+    final track = tester
+        .widget<SliderTheme>(
+          find
+              .ancestor(
+                of: find.byType(Slider),
+                matching: find.byType(SliderTheme),
+              )
+              .first,
+        )
+        .data;
+    expect(track.padding, EdgeInsets.zero);
     await leave(tester, session);
   });
 }

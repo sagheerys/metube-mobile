@@ -218,9 +218,13 @@ class _MTVideoControlsState extends State<MTVideoControls> {
         // screen, and just above the rounded edge of the light sheet,
         // which overlaps the video by 14px, under it.
         bottom: _barBottom,
-        start: MTSpace.md,
-        end: MTSpace.md,
+        // Under the video the bar runs edge to edge, as the picture does;
+        // full screen keeps a margin, so a phone's rounded corners do not
+        // cut its ends.
+        start: widget.fullscreen ? MTSpace.md : 0,
+        end: widget.fullscreen ? MTSpace.md : 0,
         child: MTVideoBottomBar(
+          rowInset: widget.fullscreen ? 0 : MTSpace.md,
           session: widget.session,
           onQueue: widget.onQueue,
           extra: widget.extra,

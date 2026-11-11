@@ -146,6 +146,7 @@ class MTVideoBottomBar extends StatelessWidget {
     this.extra,
     this.chapters = const [],
     this.onChapters,
+    this.rowInset = 0,
   });
 
   final MTVideoSession session;
@@ -159,6 +160,10 @@ class MTVideoBottomBar extends StatelessWidget {
   /// the time, which opens the list through [onChapters].
   final List<MTChapter> chapters;
   final VoidCallback? onChapters;
+
+  /// Room at each end of the row only, where the bar under it runs to the
+  /// edges of the picture.
+  final double rowInset;
 
   @override
   Widget build(BuildContext context) {
@@ -182,7 +187,10 @@ class MTVideoBottomBar extends StatelessWidget {
       marks: [for (final chapter in chapters) chapter.start],
       onSeek: session.seek,
     );
-    final row = _row(context, l10n, text, inkMuted);
+    final row = Padding(
+      padding: EdgeInsets.symmetric(horizontal: rowInset),
+      child: _row(context, l10n, text, inkMuted),
+    );
     return Column(mainAxisSize: MainAxisSize.min, children: [row, slider]);
   }
 

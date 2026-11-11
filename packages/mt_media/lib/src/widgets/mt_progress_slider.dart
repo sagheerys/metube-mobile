@@ -87,6 +87,9 @@ class _MTProgressSliderState extends State<MTProgressSlider> {
           SliderTheme(
             data: SliderThemeData(
               trackHeight: trackHeight,
+              // The thin track runs to both ends of what holds it, with no
+              // margin kept for the handle (owner's request 2026-11-11).
+              padding: widget.thin ? EdgeInsets.zero : null,
               activeTrackColor: p.accent,
               inactiveTrackColor: trackInactive,
               secondaryActiveTrackColor: trackInactive,
@@ -104,19 +107,24 @@ class _MTProgressSliderState extends State<MTProgressSlider> {
                       mark.inMilliseconds / maxMs,
               ]),
             ),
-            child: Slider(
-              value: maxMs < 1 ? 0 : value.clamp(0, maxMs),
-              max: maxMs < 1 ? 1 : maxMs,
-              secondaryTrackValue: widget.buffered?.inMilliseconds
-                  .clamp(0, maxMs < 1 ? 1 : maxMs.toInt())
-                  .toDouble(),
-              onChanged: maxMs < 1
-                  ? null
-                  : (v) => setState(() => _dragValue = v),
-              onChangeEnd: (v) {
-                widget.onSeek(Duration(milliseconds: v.round()));
-                setState(() => _dragValue = null);
-              },
+            child: SizedBox(
+              // As tall as the slider with its margins was, so a finger
+              // still finds the thin track easily.
+              height: widget.thin ? _thinHeight : null,
+              child: Slider(
+                value: maxMs < 1 ? 0 : value.clamp(0, maxMs),
+                max: maxMs < 1 ? 1 : maxMs,
+                secondaryTrackValue: widget.buffered?.inMilliseconds
+                    .clamp(0, maxMs < 1 ? 1 : maxMs.toInt())
+                    .toDouble(),
+                onChanged: maxMs < 1
+                    ? null
+                    : (v) => setState(() => _dragValue = v),
+                onChangeEnd: (v) {
+                  widget.onSeek(Duration(milliseconds: v.round()));
+                  setState(() => _dragValue = null);
+                },
+              ),
             ),
           ),
           if (widget.showTimes)
@@ -151,6 +159,8 @@ class _MTProgressSliderState extends State<MTProgressSlider> {
   /// (binary inspection 2026-09-02), so the feature was silently ignored
   /// and the counter kept dancing. `.tabular` moves it to the heading font,
   /// which genuinely supports it.
+  static const double _thinHeight = 32;
+
   TextStyle _timeStyle(BuildContext context, Color color) =>
       Theme.of(context).textTheme.bodySmall!.copyWith(color: color).tabular;
 }
