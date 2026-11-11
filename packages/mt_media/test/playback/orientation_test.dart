@@ -222,7 +222,14 @@ void main() {
   });
 
   group('the real player: the reported defect', () {
-    setUp(() => VideoPlayerPlatform.instance = FakeVideoPlatform());
+    // A phone held upright, unless a test holds it otherwise.
+    late Stream<String> Function() sensor;
+    setUp(() {
+      VideoPlayerPlatform.instance = FakeVideoPlatform();
+      sensor = MTOrientation.physical;
+      MTOrientation.physical = () => Stream.value('portrait');
+    });
+    tearDown(() => MTOrientation.physical = sensor);
 
     MTVideoSession newSession() {
       final store = MemoryKeyValueStore();
@@ -337,6 +344,45 @@ void main() {
       // Leaving gives rotation back to the player, as for landscape.
       expect(locks.last, predicate<List<String>>(isFree));
       await closeAll(tester, opened);
+    });
+
+    // Owner's report 2026-11-11: left with the button while the phone was
+    // still held sideways, the portrait page lay on its side until the phone
+    // was turned by hand.
+    testWidgets('**the guard**: leaving full screen stands the player upright, '
+        'and rotation comes back once the phone is held upright', (
+      tester,
+    ) async {
+      final held = StreamController<String>.broadcast();
+      MTOrientation.physical = () => held.stream;
+      addTearDown(() => unawaited(held.close()));
+      final opened = await openFullscreen(tester, const Size(1920, 1080));
+      expect(locks.last, predicate<List<String>>(isLandscapeLock));
+
+      opened.$1.currentState!.pop();
+      await tester.pump();
+      expect(locks.last, predicate<List<String>>(isPortraitLock));
+
+      // Still sideways in the hand: it stays upright.
+      held.add('landscape');
+      await settle(tester);
+      expect(locks.last, predicate<List<String>>(isPortraitLock));
+
+      // Turned upright: a later tilt may open full screen again.
+      held.add('portrait');
+      await settle(tester);
+      expect(locks.last, predicate<List<String>>(isFree));
+
+      // Leaving the player puts the app's own lock back, and an old reading
+      // does not undo it.
+      final count = locks.length;
+      opened.$1.currentState!.popUntil((route) => route.isFirst);
+      await settle(tester);
+      held.add('portrait');
+      await settle(tester);
+      expect(locks.skip(count).last, predicate<List<String>>(isPortraitLock));
+      await tester.pump(const Duration(seconds: 10));
+      await tester.runAsync(opened.$2.dispose);
     });
 
     testWidgets('leaving fullscreen does not pin the app to portrait', (

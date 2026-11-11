@@ -51,6 +51,11 @@ for Android, and MeTube Ember for Windows.
 
 ### Fixed
 
+- **Leaving full screen stands the player upright** (Lite, Super). Left
+  while the phone was still held sideways, the player page lay on its side
+  until the phone was turned by hand. It now returns to portrait at once,
+  as YouTube does, and turning the phone sideways opens full screen again
+  once it has been held upright.
 - **The last clip in a batch download could not be unticked** (Lite,
   Super). The "Download selected" button covered its checkbox; the list now
   scrolls clear of it.

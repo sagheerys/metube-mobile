@@ -21,6 +21,7 @@ class MainActivity : AudioServiceActivity() {
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
         PictureInPicture.register(this, flutterEngine.dartExecutor.binaryMessenger)
+        PhysicalOrientation.register(this, flutterEngine.dartExecutor.binaryMessenger)
         UpdateInstaller.register(this, flutterEngine)
         ShareInbox.register(flutterEngine.dartExecutor.binaryMessenger)
         MethodChannel(

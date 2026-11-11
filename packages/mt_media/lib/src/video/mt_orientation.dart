@@ -70,11 +70,56 @@ abstract final class MTOrientation {
     DeviceOrientation.landscapeRight,
   ];
 
-  static Future<void> lockPortrait() =>
-      SystemChrome.setPreferredOrientations(portrait);
-  static Future<void> lockLandscape() =>
-      SystemChrome.setPreferredOrientations(landscape);
-  static Future<void> allow() => SystemChrome.setPreferredOrientations(free);
+  static Future<void> lockPortrait() {
+    _stopWaiting();
+    return SystemChrome.setPreferredOrientations(portrait);
+  }
+
+  static Future<void> lockLandscape() {
+    _stopWaiting();
+    return SystemChrome.setPreferredOrientations(landscape);
+  }
+
+  static Future<void> allow() {
+    _stopWaiting();
+    return SystemChrome.setPreferredOrientations(free);
+  }
+
+  /// **Leaving full screen stands the player upright at once**, as YouTube
+  /// does, and gives rotation back only once the phone itself is held
+  /// upright (owner's report 2026-11-11). Given back at once, a phone still
+  /// held sideways kept the portrait page lying on its side until it was
+  /// turned by hand. Given back never, a tilt would no longer open full
+  /// screen.
+  ///
+  /// A phone that cannot tell how it is held gets rotation back at once,
+  /// as before: never pinned to portrait.
+  static Future<void> afterFullscreen() async {
+    if (largeScreen) return allow();
+    await lockPortrait();
+    _waiting = physical().listen(
+      (held) {
+        if (held == 'portrait') unawaited(allow());
+      },
+      onError: (Object _) => unawaited(allow()),
+      cancelOnError: true,
+    );
+  }
+
+  /// How the phone is held, from its motion sensor: "portrait" or
+  /// "landscape". Replaced in tests.
+  static Stream<String> Function() physical = () =>
+      const EventChannel('mt/orientation')
+          .receiveBroadcastStream()
+          .map((held) => held as String);
+
+  static StreamSubscription<String>? _waiting;
+
+  /// Any decision taken since replaces the wait for an upright phone.
+  static void _stopWaiting() {
+    unawaited(_waiting?.cancel());
+    _waiting = null;
+  }
 }
 
 /// **The rotation scope around the portrait player**: it unlocks portrait
