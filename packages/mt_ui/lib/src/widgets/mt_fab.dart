@@ -8,6 +8,19 @@ import 'mt_polish.dart';
 import '../icons/mt_icon_data.dart';
 import '../icons/mt_icons.dart';
 
+/// The room a scrolling list keeps under its last row on a screen with a
+/// floating button, so that row can be scrolled clear of the button and
+/// still be tapped.
+///
+/// The button stands its margin above the system's navigation inset and is
+/// at most Material's 56 high, so the list ends a margin above its top.
+double mtFabClearance(BuildContext context) =>
+    _fabHeight +
+    2 * kFloatingActionButtonMargin +
+    MediaQuery.paddingOf(context).bottom;
+
+const double _fabHeight = 56;
+
 /// The approved "add link" button: a rounded rectangular FAB in the accent
 /// colour with a translucent icon box. Its label and icon change when a
 /// link is waiting in the clipboard.

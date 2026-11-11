@@ -175,11 +175,13 @@ class _BatchScreenState extends ConsumerState<BatchScreen> {
           ),
         Expanded(
           child: ListView.builder(
-            padding: const EdgeInsets.fromLTRB(
+            // The last item scrolls clear of "Download selected", which
+            // used to sit on its checkbox.
+            padding: EdgeInsets.fromLTRB(
               MTSpace.pagePad,
               0,
               MTSpace.pagePad,
-              MTSpace.xxl,
+              mtFabClearance(context),
             ),
             itemCount: preview.tracks.length,
             itemBuilder: (context, index) {

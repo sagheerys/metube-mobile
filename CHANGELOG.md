@@ -33,8 +33,15 @@ for Android, and MeTube Ember for Windows.
 - **YouTube covers in the download queue.** Clips waiting their turn show
   their cover instead of a blank (other sites still show theirs once the
   server starts on them).
+- **The search opens where you click it** (Ember). The search box in the
+  title bar now grows into the search in its own place, instead of a
+  separate box appearing at the top of the window.
 
 ### Fixed
+
+- **The last clip in a batch download could not be unticked** (Lite,
+  Super). The "Download selected" button covered its checkbox; the list now
+  scrolls clear of it.
 
 - **Library statistics jumping to the top** (Super, Ember). The page no
   longer flickers and loses your place every time the library refreshes.

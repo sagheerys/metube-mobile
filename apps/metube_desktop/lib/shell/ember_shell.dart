@@ -28,6 +28,7 @@ import '../features/library/library_state.dart';
 import '../features/notices/copied_links_wiring.dart';
 import '../features/notices/notices_wiring.dart';
 import '../features/palette/palette_entry.dart';
+import '../features/palette/palette_grow.dart';
 import '../features/settings/backup_actions.dart';
 import '../features/discover/discover_once.dart';
 import '../router.dart';
@@ -218,8 +219,12 @@ class _EmberShellState extends ConsumerState<EmberShell> {
       ref,
       onAdd: () => unawaited(_addFromButton()),
       initial: initial,
+      from: paletteAnchor(_searchBox, context),
     ),
   );
+
+  /// The title bar's search box, which the palette opens out of.
+  final _searchBox = GlobalKey();
 
   void _toggleMini() => toggleMiniWindow(ref, GoRouter.of(context));
 
@@ -290,6 +295,7 @@ class _EmberShellState extends ConsumerState<EmberShell> {
                   EmberContentBar(
                     history: _history!,
                     onSearch: _openPalette,
+                    searchKey: _searchBox,
                     panelShown: panelShown,
                     onTogglePanel: () => _togglePanel(arranged, layout),
                     downloads: const DownloadsButton(),

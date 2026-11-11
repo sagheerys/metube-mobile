@@ -105,13 +105,13 @@ class SubscriptionsScreen extends ConsumerWidget {
     return MTPullRefresh(
       onRefresh: () async => ref.invalidate(subscriptionsProvider),
       child: ListView(
-        padding: const EdgeInsets.fromLTRB(
+        padding: EdgeInsets.fromLTRB(
           MTSpace.pagePad,
           MTSpace.md,
           MTSpace.pagePad,
           // Clear of the floating button, which would otherwise sit on the
           // last card's menu.
-          MTSpace.xxl * 2,
+          mtFabClearance(context),
         ),
         children: [
           // Moved here from the settings' preferences: it is about these

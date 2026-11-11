@@ -13,6 +13,7 @@ import '../../data/transcripts_data.dart';
 import '../../di.dart';
 import '../../router.dart';
 import '../../shell/focus_regions.dart';
+import 'palette_grow.dart';
 import 'palette_model.dart';
 import 'palette_rows.dart';
 import '../../shell/search_lens.dart';
@@ -25,19 +26,25 @@ import 'palette_keys.dart';
 ///
 /// Never two at once: Ctrl+K is ignored while a dialog is over the window,
 /// and the barrier keeps the search box and sidebar from being clicked.
+///
+/// It opens out of the search box at [from] when the box is shown.
 Future<void> showCommandPalette(
   BuildContext context, {
   required List<PaletteCommand> commands,
   String initial = '',
+  Rect? from,
 }) => showGeneralDialog<void>(
   context: context,
   barrierDismissible: true,
   barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
   barrierColor: MTThemeX.of(context).palette.ink.withValues(alpha: 0.18),
-  transitionDuration: mtMotionDuration(context, MTMotion.fast),
+  transitionDuration: mtMotionDuration(
+    context,
+    from == null ? MTMotion.fast : MTMotion.reveal,
+  ),
   pageBuilder: (_, _, _) => _Palette(commands: commands, initial: initial),
-  transitionBuilder: (_, animation, _, child) =>
-      FadeTransition(opacity: animation, child: child),
+  transitionBuilder: (context, animation, _, child) =>
+      paletteTransition(context, animation, from, child),
 );
 
 /// Plays [item] from [start], the moment the words were said, and opens
@@ -77,9 +84,6 @@ class _PaletteState extends ConsumerState<_Palette> {
   /// What each row says to a screen reader when the arrows reach it.
   final _spoken = <int, String>{};
   var _selected = 0;
-
-  static const double _width = 640;
-  static const double _topGap = 64;
 
   /// Rows before this open a page (titles, then lines said), entered once
   /// the palette is fully gone: any sooner, the closing route takes focus.
@@ -179,117 +183,103 @@ class _PaletteState extends ConsumerState<_Palette> {
     }
 
     final query = _query.text.trim();
-    return Align(
-      alignment: Alignment.topCenter,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(
-          MTSpace.lg,
-          _topGap,
-          MTSpace.lg,
-          MTSpace.lg,
-        ),
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: _width),
-          child: Material(
-            color: p.card,
-            elevation: 0,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(MTCorners.desktop.card),
-              side: BorderSide(
-                color: p.line2,
-                width: MTThemeX.of(context).hairline,
+    // Placed by `paletteTransition`: out of the search box, or at the top.
+    return Material(
+      color: p.card,
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(MTCorners.desktop.card),
+        side: BorderSide(color: p.line2, width: MTThemeX.of(context).hairline),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Enter is taken here as a key, before the text field's
+          // own submit, so it opens the chosen row exactly once.
+          CallbackShortcuts(
+            bindings: {
+              const SingleActivator(LogicalKeyboardKey.arrowDown): () =>
+                  _move(1, actions.length),
+              const SingleActivator(LogicalKeyboardKey.arrowUp): () =>
+                  _move(-1, actions.length),
+              const SingleActivator(LogicalKeyboardKey.enter): open,
+              const SingleActivator(LogicalKeyboardKey.numpadEnter): open,
+            },
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(
+                MTSpace.md,
+                PaletteFieldTop.of(context),
+                MTSpace.md,
+                MTSpace.md,
+              ),
+              child: TextField(
+                controller: _query,
+                autofocus: true,
+                onChanged: (_) => setState(() => _selected = 0),
+                decoration: InputDecoration(
+                  hintText: l.desktopPaletteHint,
+                  prefixIcon: searchLens(p),
+                ),
               ),
             ),
-            clipBehavior: Clip.antiAlias,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // Enter is taken here as a key, before the text field's
-                // own submit, so it opens the chosen row exactly once.
-                CallbackShortcuts(
-                  bindings: {
-                    const SingleActivator(LogicalKeyboardKey.arrowDown): () =>
-                        _move(1, actions.length),
-                    const SingleActivator(LogicalKeyboardKey.arrowUp): () =>
-                        _move(-1, actions.length),
-                    const SingleActivator(LogicalKeyboardKey.enter): open,
-                    const SingleActivator(LogicalKeyboardKey.numpadEnter): open,
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.all(MTSpace.md),
-                    child: TextField(
-                      controller: _query,
-                      autofocus: true,
-                      onChanged: (_) => setState(() => _selected = 0),
-                      decoration: InputDecoration(
-                        hintText: l.desktopPaletteHint,
-                        prefixIcon: searchLens(p),
-                      ),
-                    ),
-                  ),
-                ),
-                Flexible(
-                  child: results.isEmpty
-                      ? const PaletteEmpty()
-                      : ListView(
-                          controller: _scroll,
-                          shrinkWrap: true,
-                          padding: const EdgeInsets.only(bottom: MTSpace.sm),
-                          children: [
-                            if (results.titles.isNotEmpty)
-                              PaletteHeader(l.desktopPaletteTitles),
-                            for (final item in results.titles)
-                              pick(
-                                TitleRow.spoken(l, item),
-                                (on) => TitleRow(item: item, selected: on),
-                              ),
-                            if (results.said.isNotEmpty)
-                              PaletteHeader(l.desktopPaletteSaid),
-                            for (final match in results.said)
-                              pick(
-                                SaidRow.spoken(l, match),
-                                (on) => SaidRow(
-                                  match: match,
-                                  query: query,
-                                  selected: on,
-                                ),
-                              ),
-                            if (results.commands.isNotEmpty)
-                              PaletteHeader(l.desktopPaletteCommands),
-                            for (final command in results.commands)
-                              pick(
-                                command.label,
-                                (on) => CommandRow(
-                                  icon: command.icon,
-                                  label: command.label,
-                                  selected: on,
-                                ),
-                              ),
-                            if (results.canSave)
-                              pick(
-                                l.desktopPaletteSave,
-                                (on) => CommandRow(
-                                  icon: MTIcons.plus,
-                                  label: l.desktopPaletteSave,
-                                  selected: on,
-                                ),
-                              ),
-                          ],
-                        ),
-                ),
-                Divider(height: 1, color: p.line),
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: MTSpace.md,
-                    vertical: MTSpace.xs,
-                  ),
-                  child: const PaletteKeys(),
-                ),
-              ],
-            ),
           ),
-        ),
+          Flexible(
+            child: results.isEmpty
+                ? const PaletteEmpty()
+                : ListView(
+                    controller: _scroll,
+                    shrinkWrap: true,
+                    padding: const EdgeInsets.only(bottom: MTSpace.sm),
+                    children: [
+                      if (results.titles.isNotEmpty)
+                        PaletteHeader(l.desktopPaletteTitles),
+                      for (final item in results.titles)
+                        pick(
+                          TitleRow.spoken(l, item),
+                          (on) => TitleRow(item: item, selected: on),
+                        ),
+                      if (results.said.isNotEmpty)
+                        PaletteHeader(l.desktopPaletteSaid),
+                      for (final match in results.said)
+                        pick(
+                          SaidRow.spoken(l, match),
+                          (on) =>
+                              SaidRow(match: match, query: query, selected: on),
+                        ),
+                      if (results.commands.isNotEmpty)
+                        PaletteHeader(l.desktopPaletteCommands),
+                      for (final command in results.commands)
+                        pick(
+                          command.label,
+                          (on) => CommandRow(
+                            icon: command.icon,
+                            label: command.label,
+                            selected: on,
+                          ),
+                        ),
+                      if (results.canSave)
+                        pick(
+                          l.desktopPaletteSave,
+                          (on) => CommandRow(
+                            icon: MTIcons.plus,
+                            label: l.desktopPaletteSave,
+                            selected: on,
+                          ),
+                        ),
+                    ],
+                  ),
+          ),
+          Divider(height: 1, color: p.line),
+          Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: MTSpace.md,
+              vertical: MTSpace.xs,
+            ),
+            child: const PaletteKeys(),
+          ),
+        ],
       ),
     );
   }

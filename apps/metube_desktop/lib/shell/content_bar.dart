@@ -17,10 +17,15 @@ class EmberContentBar extends StatelessWidget {
     required this.panelShown,
     required this.onTogglePanel,
     this.downloads,
+    this.searchKey,
   });
 
   final NavHistory history;
   final VoidCallback onSearch;
+
+  /// Marks the search box, which the palette opens out of; a narrow bar
+  /// shows a button instead and leaves it unattached.
+  final GlobalKey? searchKey;
   final bool panelShown;
   final VoidCallback onTogglePanel;
 
@@ -87,6 +92,7 @@ class EmberContentBar extends StatelessWidget {
                           maxWidth: MTBreakpoint.readable / 2,
                         ),
                         child: _SearchBox(
+                          key: searchKey,
                           hint: l.desktopSearchHint,
                           onTap: onSearch,
                         ),
@@ -160,7 +166,7 @@ class _BarButton extends StatelessWidget {
 /// Looks like a field and opens the search place; the real search, with
 /// its command palette, comes with the search screen.
 class _SearchBox extends StatelessWidget {
-  const _SearchBox({required this.hint, required this.onTap});
+  const _SearchBox({super.key, required this.hint, required this.onTap});
 
   final String hint;
   final VoidCallback onTap;

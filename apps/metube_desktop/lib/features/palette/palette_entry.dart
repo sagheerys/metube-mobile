@@ -16,12 +16,14 @@ import 'command_palette.dart';
 import 'palette_model.dart';
 
 /// Opens the palette with every command this window can run: adding a
-/// link, each place, each saved list and each settings section.
+/// link, each place, each saved list and each settings section. It opens
+/// out of the search box at [from] when the title bar shows one.
 Future<void> openPalette(
   BuildContext context,
   WidgetRef ref, {
   required VoidCallback onAdd,
   String initial = '',
+  Rect? from,
 }) {
   final l = context.mtl;
   final router = GoRouter.of(context);
@@ -31,6 +33,7 @@ Future<void> openPalette(
   return showCommandPalette(
     context,
     initial: initial,
+    from: from,
     commands: [
       PaletteCommand(label: l.addLinkFab, icon: MTIcons.addlink, run: onAdd),
       go(l.navLibrary, MTIcons.library, EmberRoutes.library),
