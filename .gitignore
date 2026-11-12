@@ -110,3 +110,20 @@ __pycache__/
 # Pages saved while investigating (a YouTube watch page, 2026-10-28) are
 # never source; the repository root holds no HTML of its own.
 /*.html
+
+# The root publishes only the documents listed here, so a stray working note
+# never becomes part of the repository. Add `!/<NAME>.md` to publish a new
+# one; private notes belong in docs/reports/, which is ignored above.
+/*.md
+!/README.md
+!/README.ar.md
+!/CHANGELOG.md
+!/CONTRIBUTING.md
+!/CODE_OF_CONDUCT.md
+!/SECURITY.md
+/*.txt
+/*.pdf
+/*.docx
+/*.xlsx
+*.private.*
+private/
