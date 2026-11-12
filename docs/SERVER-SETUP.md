@@ -61,8 +61,9 @@ over Tailscale as well, see
 
 **Recommended: one server for Lite, another for Super.**
 
-The two apps treat the same server in opposite ways. Lite deletes each file
-from the server once the phone has it; Super keeps everything. Sharing one
+The two phone apps treat the same server in opposite ways. Lite deletes each
+file from the server once the phone has it; Super keeps everything, and so does
+Ember on Windows. Sharing one
 instance puts those two habits in the same place, and they collide in three:
 
 - **A link you both want.** MeTube's history holds one entry per URL. Lite
@@ -154,8 +155,8 @@ Nothing already downloaded moves; new files follow the new rule.
 
 **Without it, nothing plays and nothing pulls.**
 
-Both apps fetch files over `GET /download/<filename>`. Super also streams from
-that same URL. If the server does not serve the download directory, adding a
+All three apps fetch files over `GET /download/<filename>`. Super and Ember
+also stream from that same URL. If the server does not serve the download directory, adding a
 link still works and everything after it fails.
 
 ### `YTDL_OPTIONS_PRESETS` with `compat_h264`

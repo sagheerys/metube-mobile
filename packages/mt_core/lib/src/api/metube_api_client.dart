@@ -133,9 +133,11 @@ class MeTubeApiClient implements MeTubeApi {
   /// options, so `ALLOW_YTDL_OPTIONS_OVERRIDES` never has to be opened.
   static const compatPreset = 'compat_h264';
 
-  /// §2.2: adding a link. **The quality rule is applied here**, so a
-  /// numeric quality can never escape to a non-YouTube link whatever the
-  /// caller does.
+  /// §2.2: adding a link. **The quality rule is applied here**, whatever
+  /// the caller does: an audio-only site is always sent as `audio`. A
+  /// numeric quality goes through as a height ceiling on any video site;
+  /// when a site outside YouTube cannot meet it, the download engine
+  /// retries once at `best`.
   ///
   /// **Playback compatibility ([compatibleVideo])**, from field report
   /// 2026-09-03: "YouTube clips in reels look torn and unclear". Measured

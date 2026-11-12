@@ -8,21 +8,22 @@ The Arabic version of this document follows the English one.
 
 ---
 
-## 1. Two apps, one repository
+## 1. Three apps, one repository
 
-| | **MeTube Lite** | **MeTube Super** |
-|---|---|---|
-| Audience | Family and friends | The person who runs the server |
-| After a download finishes | Pulls the file to the phone, then **deletes it from the server** | **Keeps it on the server**, does not pull |
-| Library | A scan of the local folder | `/history` and the local index, merged |
-| Playback | Local files | Streams from the server, plus local |
-| Exclusive | An optional Wi-Fi-only rule, server cleanup | Tags, server switching, offline pinning, batch downloads |
-| Accent colour | Petrol bay `#2F6D74` | Ember `#C25E2E` |
+| | **MeTube Lite** (Android) | **MeTube Super** (Android) | **MeTube Ember** (Windows) |
+|---|---|---|---|
+| Audience | Family and friends | The person who runs the server | The person who runs the server, at a computer |
+| After a download finishes | Pulls the file to the phone, then **deletes it from the server** | **Keeps it on the server**, does not pull | **Keeps it on the server**; a clip can be kept on the computer too |
+| Library | A scan of the local folder | `/history` and the local index, merged | `/history` and the local index, merged |
+| Playback | Local files | Streams from the server, plus local | Streams from the server, plus local (`media_kit`) |
+| Exclusive | An optional Wi-Fi-only rule, server cleanup | Tags, server switching, offline pinning, batch downloads | Super's features in a desktop layout: side panel, keyboard, floating player window |
+| Accent colour | Petrol bay `#2F6D74` | Ember `#C25E2E` | Ember `#C25E2E`, as Super |
 
-They are separate apps, not build flavours. They share three packages and
-diverge in behaviour on purpose. Before changing anything in a shared
-package, ask: **does this change the other app?** The delete policy and
-the pull policy both run through the same engine.
+They are separate apps, not build flavours, and they diverge in behaviour
+on purpose. Before changing anything in a shared package, ask: **does
+this change the other apps?** The delete policy and the pull policy both
+run through the same engine. A feature added to one app is matched in the
+other two in the same change, or the change says why it does not apply.
 
 ## 2. Packages and the dependency rule
 
@@ -32,7 +33,14 @@ apps/metube_lite ─┐
 apps/metube_super ┘            │                 ▲
         │                      └─► packages/mt_ui│
         └─► packages/mt_transcripts ─────────────┘
+
+apps/metube_desktop ─► mt_core · mt_ui · mt_transcripts · mt_media
 ```
+
+`apps/metube_desktop` is Ember. With Super it also uses
+`package:mt_media/library.dart`, the merged library of the server owner's
+apps. That entry is kept out of `mt_media.dart` because Lite has its own
+library types with the same names.
 
 | Package | Contains | Hard rule |
 |---|---|---|
@@ -40,7 +48,8 @@ apps/metube_super ┘            │                 ▲
 | `mt_media` | Audio handler, video playback, playback stores | Knows the server only through `mt_core` |
 | `mt_ui` | Design tokens, themes, shared widgets, localisation | **Does not know the server exists** |
 | `mt_transcripts` | Subtitle parsing, Arabic-aware search, the transcript store, fetching subtitles without disturbing the library | **Pure Dart. Super only**: Lite does not depend on it, so the family app cannot reach it |
-| `apps/*` | Screens, routing, dependency injection | May depend on the packages above; only Super on `mt_transcripts` |
+| `apps/*` | Screens, routing, dependency injection | May depend on the packages above; Super and Ember on `mt_transcripts`, never Lite |
+| `apps/metube_desktop/lib/platform/` | Everything specific to Windows | **The only place** that knows it runs on Windows; `mt_ui` learns it only through `MTDesktopApp` |
 
 Three consequences worth remembering:
 
@@ -73,11 +82,12 @@ Rules of thumb:
 
 - Logic that does not need Flutter goes to `mt_core` and gets a
   `dart test`. That is where it can be tested exhaustively and cheaply.
-- A widget used by both apps goes to `mt_ui`. A widget used by one app,
+- A widget used by more than one app goes to `mt_ui`. A widget used by one app,
   or one that reads app providers, stays in the app.
-- Some files are deliberately duplicated between the two apps
-  (`settings_state.dart`, `library_screen.dart`, `about_screen.dart`).
-  When you edit one, edit the other or say in the commit why not.
+- Some files are deliberately duplicated between the two phone apps
+  (`settings_state.dart`, `library_screen.dart`, `about_screen.dart`),
+  and Ember has its own versions of most screens. When you edit one, edit
+  its counterparts or say in the commit why not.
 - **Size limits: 400 lines for a screen, 300 for anything else**,
   counting code and excluding comments. Passing the limit means the file
   should be split before the work is finished.
@@ -105,8 +115,10 @@ flutter pub get                      # once, at the repository root
 flutter analyze --no-pub             # zero issues is the gate
 cd packages/mt_core && dart test     # pure Dart core
 cd packages/mt_transcripts && dart test
-flutter test --no-pub                # in mt_media, mt_ui and both apps
+flutter test --no-pub                # in mt_media, mt_ui and the three apps
 flutter build apk --debug            # in apps/metube_lite or apps/metube_super
+flutter build windows --debug        # in apps/metube_desktop (Ember)
+flutter test integration_test -d windows   # Ember's real player engine
 ```
 
 After editing an `.arb` file, run `cd packages/mt_ui && flutter gen-l10n`.
@@ -127,16 +139,19 @@ server. Enter its address in Settings on first launch.
 
 ## 6. Testing conventions
 
-There are 80 test files. Four conventions matter:
+There are 436 test files. Four conventions matter:
 
 - **Every fixed bug leaves a guard test** that fails on the old code.
   The proof is to reintroduce the broken code briefly and watch the test
   fall. Tests are never weakened to let a change through.
 - **The device matrix.** `apps/*/test/device_matrix.dart` renders a
-  widget across five screen sizes and three text scales and catches
+  widget across 16 screen sizes (phones, tablets upright and sideways, a
+  foldable) and three text scales (1.0, 1.3, 2.0) and catches
   `RenderFlex overflowed` from the engine. Every new screen or sheet
   passes through `expectNoOverflow`. Layout is what breaks on other
-  people's phones, and it does not show on the developer's.
+  people's phones, and it does not show on the developer's. Ember has its
+  own, `apps/metube_desktop/test/desktop_matrix.dart`: six window sizes
+  from 960×600 to 2560×1440, the same text scales, in Arabic and English.
 - **Localisation parity.** `packages/mt_ui/test/arb_parity_test.dart`
   fails if the two `.arb` files diverge in key count, translation or
   placeholders.
@@ -160,20 +175,21 @@ inferred from the server's own documentation.
 خريطة المستودع لمن استنسخه للتو: ما القطع، وما القواعد التي تربطها، وأين
 يقع أي تغيير.
 
-## ١ · تطبيقان في مستودع واحد
+## ١ · ثلاثة تطبيقات في مستودع واحد
 
-| | **MeTube Lite** | **MeTube Super** |
-|---|---|---|
-| لمن | العائلة والأصدقاء | من يدير الخادم |
-| بعد اكتمال التحميل | يسحب الملف للهاتف ثم **يحذفه من الخادم** | **يبقيه على الخادم** ولا يسحب |
-| المكتبة | مسح المجلد المحلي | `/history` والفهرس المحلي موحَّدين |
-| التشغيل | ملفات محلية | بث من الخادم ومحلي |
-| الحصري | خيار الاقتصار على Wi‑Fi، تنظيف الخادم | الوسوم، تبديل الخادم، الإتاحة دون اتصال، الدفعي |
-| لون الفعل | خليج بترولي `#2F6D74` | وهج `#C25E2E` |
+| | **MeTube Lite** (أندرويد) | **MeTube Super** (أندرويد) | **MeTube Ember** (ويندوز) |
+|---|---|---|---|
+| لمن | العائلة والأصدقاء | من يدير الخادم | من يدير الخادم، على الحاسوب |
+| بعد اكتمال التحميل | يسحب الملف للهاتف ثم **يحذفه من الخادم** | **يبقيه على الخادم** ولا يسحب | **يبقيه على الخادم**، ويمكن حفظ المقطع على الحاسوب أيضاً |
+| المكتبة | مسح المجلد المحلي | `/history` والفهرس المحلي موحَّدين | `/history` والفهرس المحلي موحَّدين |
+| التشغيل | ملفات محلية | بث من الخادم ومحلي | بث من الخادم ومحلي (`media_kit`) |
+| الحصري | خيار الاقتصار على Wi‑Fi، تنظيف الخادم | الوسوم، تبديل الخادم، الإتاحة دون اتصال، الدفعي | مزايا Super بتخطيط الحاسوب: لوحة جانبية، ولوحة مفاتيح، ونافذة مشغّل عائمة |
+| لون الفعل | خليج بترولي `#2F6D74` | وهج `#C25E2E` | وهج `#C25E2E` كـSuper |
 
-تطبيقان مستقلان لا نكهتا بناء. يتقاسمان ثلاث حزم ويفترقان في السلوك
-بقصد. وقبل أي تعديل في حزمة مشتركة اسأل: **هل يغيّر هذا سلوك التطبيق
-الآخر؟** سياسة الحذف وسياسة السحب تمرّان من المحرّك نفسه.
+تطبيقات مستقلة لا نكهات بناء، وتفترق في السلوك بقصد. وقبل أي تعديل في
+حزمة مشتركة اسأل: **هل يغيّر هذا سلوك التطبيقين الآخرين؟** سياسة الحذف
+وسياسة السحب تمرّان من المحرّك نفسه. والميزة التي تُضاف إلى تطبيق تُطابَق
+في الآخرَين في التعديل نفسه، أو يُذكر لماذا لا تنطبق.
 
 ## ٢ · الحزم وقاعدة الاعتماد
 
@@ -183,7 +199,14 @@ apps/metube_lite ─┐
 apps/metube_super ┘            │                 ▲
         │                      └─► packages/mt_ui│
         └─► packages/mt_transcripts ─────────────┘
+
+apps/metube_desktop ─► mt_core · mt_ui · mt_transcripts · mt_media
 ```
+
+`apps/metube_desktop` هو Ember. ويستعمل مع Super أيضاً
+`package:mt_media/library.dart`، المكتبة الموحَّدة لتطبيقَي مالك الخادم.
+وهذا المدخل خارج `mt_media.dart` لأن لـLite أنواع مكتبة خاصة بالأسماء
+نفسها.
 
 | الحزمة | تحتوي | القاعدة الصارمة |
 |---|---|---|
@@ -191,7 +214,8 @@ apps/metube_super ┘            │                 ▲
 | `mt_media` | مشغّل الصوت والفيديو ومخازن التشغيل | لا يعرف الخادم إلا عبر `mt_core` |
 | `mt_ui` | الرموز التصميمية والثيمات والودجات والترجمة | **لا يعرف أن للخادم وجوداً** |
 | `mt_transcripts` | قراءة الترجمات، والبحث المراعي للعربية، ومخزن النصوص، وجلب الترجمة دون المساس بالمكتبة | **Dart خالص، وSuper وحده**: Lite لا يعتمد عليه فلا يصل إليه تطبيق العائلة |
-| `apps/*` | الشاشات والتوجيه وحقن الاعتماديات | يعتمد على الحزم أعلاه، وSuper وحده على `mt_transcripts` |
+| `apps/*` | الشاشات والتوجيه وحقن الاعتماديات | يعتمد على الحزم أعلاه، وSuper وEmber على `mt_transcripts`، لا Lite أبداً |
+| `apps/metube_desktop/lib/platform/` | كل ما يخص ويندوز | **المكان الوحيد** الذي يعرف أنه على ويندوز، و`mt_ui` لا يعرفه إلا عبر `MTDesktopApp` |
 
 ثلاث نتائج تستحق الحفظ:
 
@@ -210,10 +234,10 @@ apps/metube_super ┘            │                 ▲
 
 - ما لا يحتاج Flutter ينزل إلى `mt_core` ويأخذ `dart test`، فهناك
   يُختبر استقصاءً وبثمن زهيد.
-- الودجت الذي يستعمله التطبيقان يذهب إلى `mt_ui`. وما يقرأ مزوّدات
+- الودجت الذي يستعمله أكثر من تطبيق يذهب إلى `mt_ui`. وما يقرأ مزوّدات
   التطبيق يبقى في التطبيق.
-- ملفات مكرَّرة بين التطبيقين بقصد. إن عدّلت إحداها فعدّل أختها أو علّل
-  في الإيداع لماذا لا.
+- ملفات مكرَّرة بين تطبيقَي الجوال بقصد، ولـEmber نسخه الخاصة من أغلب
+  الشاشات. إن عدّلت إحداها فعدّل نظيراتها أو علّل في الإيداع لماذا لا.
 - **الحدّ: 400 سطر للشاشة و300 لغيرها**، كوداً بلا تعليقات. التجاوز
   يعني أن الملف يُفكَّك قبل إغلاق العمل.
 
@@ -236,8 +260,10 @@ flutter pub get                      # مرة واحدة من الجذر
 flutter analyze --no-pub             # صفر مشاكل هي البوابة
 cd packages/mt_core && dart test     # النواة Dart خالص
 cd packages/mt_transcripts && dart test
-flutter test --no-pub                # في mt_media وmt_ui والتطبيقين
-flutter build apk --debug            # داخل أحد التطبيقين
+flutter test --no-pub                # في mt_media وmt_ui والتطبيقات الثلاثة
+flutter build apk --debug            # داخل أحد تطبيقَي الجوال
+flutter build windows --debug        # داخل apps/metube_desktop (Ember)
+flutter test integration_test -d windows   # محرك تشغيل Ember الحقيقي
 ```
 
 بعد تعديل أي `.arb`: `cd packages/mt_ui && flutter gen-l10n`. تخطّيها
@@ -252,14 +278,17 @@ flutter build apk --debug            # داخل أحد التطبيقين
 
 ## ٦ · أعراف الاختبار
 
-ثمانون ملف اختبار، وأربعة أعراف تهمّ:
+436 ملف اختبار، وأربعة أعراف تهمّ:
 
 - **كل عطل يُصلَح يترك حارساً** يفشل على الكود القديم، ويُثبَت بإعادة
   الكود المعطوب مؤقتاً ومشاهدة الحارس يسقط. ولا يُضعَّف اختبار قائم
   لتمرير تعديل.
-- **مصفوفة الأجهزة** في `apps/*/test/device_matrix.dart`: خمسة مقاسات ×
-  ثلاثة مقاييس خط، تلتقط تجاوز الإطار من المحرّك. التخطيط هو ما ينكسر
-  على هواتف الناس ولا يظهر على جهاز المطوّر.
+- **مصفوفة الأجهزة** في `apps/*/test/device_matrix.dart`: 16 مقاساً
+  (جوالات، وتابلت قائماً وعرضياً، وقابل للطي) × ثلاثة مقاييس خط (1.0 و1.3
+  و2.0)، تلتقط تجاوز الإطار من المحرّك. التخطيط هو ما ينكسر على هواتف
+  الناس ولا يظهر على جهاز المطوّر. ولـEmber مصفوفته
+  `apps/metube_desktop/test/desktop_matrix.dart`: ستة مقاسات نوافذ من
+  960×600 إلى 2560×1440، بمقاييس الخط نفسها، بالعربية والإنجليزية.
 - **تماثل الترجمة**: حارس يفشل إن اختلف الملفان في العدد أو الترجمة أو
   المعاملات.
 - **fixtures حقيقية** معمّاة: النصّ المُعرِّف مُشوَّش، والطول وصنف

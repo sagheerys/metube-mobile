@@ -32,8 +32,6 @@ Future<void> main() async {
   const secrets = SecureSecretStore();
   final initialSettings = await LiteSettings.load(store, secrets);
 
-  // One lock for all storage (rule 3), passed to everyone rather than
-  // created twice. It was created above, before the seeding.
   final logsDir = await getApplicationSupportDirectory();
   final logger = MTLogger(filePath: '${logsDir.path}/logs/metube_lite.log');
   logEveryError(logger);
@@ -85,10 +83,6 @@ Future<void> main() async {
   handler.squareArt = squareArtFor;
   await handler.loadPreferences();
 
-  // **Sweeping orphaned partials:** killing the app mid-way
-  // through a large pull leaves a `.part` nobody cleans, and the library
-  // scan ignores it on purpose, so the space is lost unseen. We do not
-  // await it: startup never waits on a cleanup.
   unawaited(logger.log('app started (lite)', tag: 'app'));
 
   // **Sweeping orphaned partials:** killing the app mid-way

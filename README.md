@@ -117,10 +117,14 @@ are plain text holding no secret, written by themselves after every change,
 keeping the last seven by date, restorable by picking a date, and exportable;
 the three older encrypted formats can still be read. A diagnostic log viewer
 can be shared only after URLs, IP addresses, credentials and storage paths are
-stripped out.
+stripped out. The server settings warn as you type when an `http://` address
+outside the home network would send the password unencrypted, and a server
+behind Cloudflare Access takes a service token's Client ID and Client Secret,
+which are sent to `https://` addresses only.
 
 **Updating itself.** Each app checks this repository for its own newer
-release, downloads the APK, and hands it to the system installer. Nothing
+release, downloads the APK, checks it against the SHA-256 fingerprint GitHub
+records for it, and hands it to the system installer. Nothing
 installs without your confirmation, and a version can be skipped. The first
 launch after an update shows what is new in it, and Settings → Updates opens
 that again at any time.
@@ -146,6 +150,9 @@ MeTube Super:
 - **To this computer**: download a clip, keep an offline copy, or drag a clip
   out to Explorer or the desktop; Ctrl+C copies its link and Ctrl+Shift+C
   the file itself.
+- **Open in another player**: a clip kept on this computer opens in VLC or
+  any player you have, from its right-click menu.
+- **Servers behind Cloudflare Access** work, as on the phones.
 - **A "To Ember" button for your browser**: one click on a video's page opens
   the add dialog with that link; links from the MeTube browser extensions
   open it too.
@@ -348,16 +355,16 @@ code, and Lite does not use `mt_transcripts`.
 ## Tests
 
 ```bash
-cd packages/mt_core        && dart test        # 701
-cd packages/mt_transcripts && dart test        # 116
-cd packages/mt_media       && flutter test     # 415
-cd packages/mt_ui          && flutter test     # 274
-cd apps/metube_lite        && flutter test     # 173
-cd apps/metube_super       && flutter test     # 495
-cd apps/metube_desktop     && flutter test     # 741
+cd packages/mt_core        && dart test        # 805
+cd packages/mt_transcripts && dart test        # 120
+cd packages/mt_media       && flutter test     # 426
+cd packages/mt_ui          && flutter test     # 285
+cd apps/metube_lite        && flutter test     # 196
+cd apps/metube_super       && flutter test     # 522
+cd apps/metube_desktop     && flutter test     # 762
 ```
 
-**2,915 tests** at the time of writing, and `flutter analyze` is expected to be
+**3,116 tests** at the time of writing, and `flutter analyze` is expected to be
 clean. Fixtures come from real server JSON, and every fixed defect leaves behind
 a test that fails on the old code.
 

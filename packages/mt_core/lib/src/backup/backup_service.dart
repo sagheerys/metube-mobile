@@ -32,10 +32,13 @@ class ImportResult {
   final bool signInCleared;
 }
 
-/// The backup service (§5.4): writes v2 `MTF1` and reads all three formats
-/// (the two legacy ones **read-only**, for migration). The payload is every
-/// key in §5.1 plus `username`; **the password never goes in**. It works on
-/// strings, since files on disk are the app's business.
+/// The backup service (§5.4): writes the plain format (v3), which holds the
+/// keys in §5.1 and **no secret at all**: no password, no username, no
+/// Cloudflare Access token. It reads all four formats; the three encrypted
+/// ones (`MTF1` and the two legacy apps') are **read-only**, for migration.
+/// A plain backup that names a server this device did not know clears the
+/// password and the Cloudflare pair, so they never travel to someone else's
+/// server. It works on strings, since files on disk are the app's business.
 class BackupService {
   BackupService({
     required this.store,

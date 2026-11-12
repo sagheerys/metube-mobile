@@ -32,6 +32,8 @@ Future<void> main() async {
   final prefs = await SharedPreferences.getInstance();
   final store = SharedPrefsKeyValueStore(prefs);
   const secrets = SecureSecretStore();
+  // One lock for all storage (rule 3), passed to everyone rather than
+  // created twice. Created this early because the seeding below needs it.
   final mutex = PrefsMutex();
   var initialSettings = await SuperSettings.load(store, secrets);
   // An installation configured with a single URL has no candidates to
@@ -40,14 +42,10 @@ Future<void> main() async {
   await seedEndpointsFromActive(store, mutex, initialSettings);
   initialSettings = await SuperSettings.load(store, secrets);
 
-  // One lock for all storage (rule 3), passed to everyone rather than
-  // created twice. It was created above, before the seeding.
   final logsDir = await getApplicationSupportDirectory();
   final logger = MTLogger(filePath: '${logsDir.path}/logs/metube_super.log');
   logEveryError(logger);
 
-  // One lock for all storage (rule 3), passed to everyone rather than
-  // created twice. It was created above, before the seeding.
   final resolver = PlaybackSourceResolver(
     endpoint: ServerStreamEndpoint.none, // set by playbackWiringProvider
   );
@@ -103,10 +101,6 @@ Future<void> main() async {
   handler.squareArt = squareArtFor;
   await handler.loadPreferences();
 
-  // **Sweeping orphaned partials:** killing the app mid-way
-  // through a large pull leaves a `.part` nobody cleans, and the library
-  // scan ignores it on purpose, so the space is lost unseen. We do not
-  // await it: startup never waits on a cleanup.
   unawaited(logger.log('app started (super)', tag: 'app'));
 
   // **Sweeping orphaned partials:** killing the app mid-way

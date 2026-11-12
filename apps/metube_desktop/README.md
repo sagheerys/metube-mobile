@@ -1,17 +1,17 @@
-# metube_desktop
+# MeTube Ember
 
-A new Flutter project.
+The server owner's edition for Windows 10 and 11 (x64): Super's library,
+streaming, tags, subscriptions, folders and transcripts in a desktop layout,
+with a side panel, the keyboard and a floating player window. Playback uses
+`media_kit`.
 
-## Getting Started
+Built on `mt_core`, `mt_media`, `mt_ui` and `mt_transcripts`.
+Everything specific to Windows lives in `lib/platform/`.
 
-This project is a starting point for a Flutter application.
+```bash
+flutter test --no-pub
+flutter build windows --debug
+flutter test integration_test -d windows   # the real player engine
+```
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+See [docs/ARCHITECTURE.md](../../docs/ARCHITECTURE.md) for how the pieces fit. Releases and screenshots are in the [main README](../../README.md).

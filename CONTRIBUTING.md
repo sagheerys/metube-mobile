@@ -14,7 +14,7 @@ security problem, do not open an issue — see [SECURITY.md](SECURITY.md).
 
 ## The one rule above the others
 
-**What works must not break.** Both apps are in daily use. An addition — however
+**What works must not break.** All three apps are in daily use. An addition — however
 small — is not worth the cost of breaking something that already works. New
 behaviour goes behind a setting or a new path; it does not change an existing
 path unless that change is asked for explicitly.
@@ -24,14 +24,16 @@ path unless that change is asked for explicitly.
 ```bash
 cd packages/mt_ui && flutter gen-l10n     # only if you touched an .arb file
 flutter analyze --no-pub                  # must be clean
-cd packages/mt_core  && dart test
-cd packages/mt_media && flutter test --no-pub
-cd packages/mt_ui    && flutter test --no-pub
-cd apps/metube_lite  && flutter test --no-pub
-cd apps/metube_super && flutter test --no-pub
+cd packages/mt_core        && dart test
+cd packages/mt_transcripts && dart test
+cd packages/mt_media       && flutter test --no-pub
+cd packages/mt_ui          && flutter test --no-pub
+cd apps/metube_lite        && flutter test --no-pub
+cd apps/metube_super       && flutter test --no-pub
+cd apps/metube_desktop     && flutter test --no-pub   # Windows
 ```
 
-All five suites must be green, and the total must not go **down**. A test that
+All seven suites must be green, and the total must not go **down**. A test that
 starts failing means either the code is wrong or a contract changed on purpose —
 the second case needs saying so in the pull request, not deleting the test.
 
@@ -44,9 +46,10 @@ There are zero hardcoded strings in the UI, and an automated guard
 Arabic is right-to-left: check numbers, percentages and directional icons in
 both directions.
 
-**Both apps.** Anything in `mt_core`, `mt_media` or `mt_ui` touches Lite and
-Super at once. Some files are deliberately duplicated per app; a change to one
-copy is applied to the other, or the pull request says why not.
+**All three apps.** Anything in `mt_core`, `mt_media`, `mt_ui` or
+`mt_transcripts` touches Lite, Super and Ember (Windows) at once. Some files are
+deliberately duplicated per app, and Ember has its own versions of most screens;
+a change to one copy is applied to the others, or the pull request says why not.
 
 **Both themes.** Every colour is read from `MTPalette` through the context —
 never a literal. A hardcoded colour works in daylight and breaks at night. Any
@@ -62,8 +65,10 @@ adds nothing; the ones worth writing record what a defect was, what was measured
 and on which device. That is most of what this file is asking you to preserve.
 
 **Device matrix.** Every new screen or sheet passes through `expectNoOverflow`
-in `apps/*/test/device_matrix.dart`: five screen sizes and three text scales.
-Layout is what breaks on other people's phones and it does not show on yours.
+in `apps/*/test/device_matrix.dart`: 16 screen sizes, tablets included, and
+three text scales. In Ember, `apps/metube_desktop/test/desktop_matrix.dart` does
+the same across six window sizes. Layout is what breaks on other people's
+devices and it does not show on yours.
 
 **Layers.** `apps → mt_media → mt_core`. `mt_core` is pure Dart with no Flutter
 import. `mt_ui` knows nothing about the server. All networking lives in
@@ -75,8 +80,8 @@ cost real debugging time. Deletion is keyed by the canonical URL from
 `/history`, never by the URL the user typed.
 
 **Each app keeps its role.** Lite pulls to the device and cleans the server;
-Super keeps files on the server. Before changing anything shared, ask whether it
-changes the *other* app's behaviour — the download and delete policies run
+Super and Ember keep files on the server. Before changing anything shared, ask
+whether it changes the *other* apps' behaviour — the download and delete policies run
 through the same engine.
 
 ## Fixing a defect

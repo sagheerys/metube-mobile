@@ -1,39 +1,15 @@
-<!--
-This README describes the package. If you publish this package to pub.dev,
-this README's contents appear on the landing page for your package.
+# mt_media
 
-For information about how to write a good package README, see the guide for
-[writing package pages](https://dart.dev/tools/pub/writing-package-pages).
+Shared playback: the `audio_service` handler, video playback, playback sources,
+position and state stores, and the mini player. It knows the server only
+through `mt_core`.
 
-For general information about developing packages, see the Dart guide for
-[creating packages](https://dart.dev/guides/libraries/create-packages)
-and the Flutter guide for
-[developing packages and plugins](https://flutter.dev/to/develop-packages).
--->
+`package:mt_media/library.dart` is a second entry: the merged library that
+Super and Ember share. It stays out of `mt_media.dart` because Lite has its own
+library types with the same names.
 
-TODO: Put a short description of the package here that helps potential users
-know whether this package might be useful for them.
-
-## Features
-
-TODO: List what your package can do. Maybe include images, gifs, or videos.
-
-## Getting started
-
-TODO: List prerequisites and provide or point to information on how to
-start using the package.
-
-## Usage
-
-TODO: Include short and useful examples for package users. Add longer examples
-to `/example` folder.
-
-```dart
-const like = 'sample';
+```bash
+flutter test --no-pub
 ```
 
-## Additional information
-
-TODO: Tell users more about the package: where to find more information, how to
-contribute to the package, how to file issues, what response they can expect
-from the package authors, and more.
+See [docs/ARCHITECTURE.md](../../docs/ARCHITECTURE.md) for how the pieces fit.

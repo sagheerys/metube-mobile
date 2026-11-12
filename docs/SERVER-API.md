@@ -17,8 +17,11 @@ wrong in places (one claimed an `/api` prefix that does not exist).
 
 ## 1. Talking to the server
 
-- **Transport.** HTTP/HTTPS through Dio. **No WebSocket** — the server offers
-  Socket.IO, but both apps poll deliberately, and that stays.
+- **Transport.** HTTP/HTTPS through Dio. **No WebSocket.** Polling `/history`
+  (§2.3) is the foundation and stays. The server's Socket.IO channel
+  (`/socket.io/`) is read too, as Engine.IO 4 **long-polling over plain HTTP**,
+  for two extras only: live download progress and the folder list (§2.7). Any
+  failure there ends it quietly, and polling carries on alone.
 - **Authentication.** HTTP Basic on every request:
   `Authorization: Basic base64(user:pass)`, applied by a single interceptor.
 - **Cloudflare Access headers (optional).** For a server behind Cloudflare Zero
@@ -112,8 +115,12 @@ POST {base}/add          Content-Type: application/json
 ```
 
 Success is 200. An error arrives in `error` or `msg` (a string or a map).
-**Quality rule:** the numeric qualities are **YouTube only**; everything else is
-forced to `best`; `audio` works everywhere.
+**Quality rule** (since 2026-11-04): a numeric quality is **a height ceiling on
+every video site**, not YouTube alone. Outside YouTube, when the server answers
+`Requested format is not available`, the add is retried **once** at `best`, so
+the clip still arrives at the best the site has. An audio-only site
+(SoundCloud) is always sent as `audio`, whatever was chosen: `best` there went
+as a video download and lost the track's cover. `360` is offered by Lite alone.
 
 #### Why the three codec fields exist (measured 2026-09-03)
 
@@ -658,9 +665,11 @@ left one behind, in order to open an `MTF1` backup **on the same device**.
 
 The two `cf_access_*` keys (§1) are the Cloudflare Access service token, one
 pair per installation. They are written only by Settings → Server, after the
-connection test passes. A restore never writes or clears them (the only secret a
-restore writes is `username`), so a restored backup keeps the pair already on
-the device.
+connection test passes. A restore never writes them. It **clears** them, with
+the password, when a plain backup names a server this device did not know
+(§5.4), so the device's secrets never go to someone else's server. Otherwise a
+restored backup keeps the pair already on the device. The only secret a restore
+can write is `username`, and only from the old encrypted formats.
 
 ### 5.3 The filesystem
 
@@ -694,6 +703,12 @@ Rules:
 - **No secret in the file, ever.** No password (as before) and **no username**
   (new) — a username without a password opens nothing anyway. Credentials
   embedded in URLs are stripped.
+- **A backup that names a new server signs the device out of it.** When a plain
+  backup adds a server address this device did not know before, the restore
+  deletes `password`, `cf_access_client_id` and `cf_access_client_secret`, and
+  the user types them again. Moving between the home and the outside address of
+  a server already known does not count. The encrypted formats are exempt: they
+  open only on the device that wrote them.
 - Never `json.decode` a file before checking its header: a known header means
   decrypt, its absence together with a leading `{` means plain, and anything
   else raises `BackupFormatException`.
@@ -715,9 +730,11 @@ Rules:
   seven moments.
 - Restoring shows the dates and lets the user choose — never a blind restore of
   the newest file.
-- **Automatic backups run in both apps** (they used to be Lite's alone). Two
-  choke points — `PlaylistsStore.onChanged` and `UrlKeyedIndex.onChanged` —
-  request a backup after every write, debounced by 3 seconds.
+- **Automatic backups run in both phone apps** (they used to be Lite's alone).
+  Two choke points — `PlaylistsStore.onChanged` and `UrlKeyedIndex.onChanged` —
+  request a backup after every write, debounced by 3 seconds. Ember backs up
+  once at each start instead (skipped when nothing changed), into a `backup`
+  folder in its own roaming app data, with the same rotation.
 
 **Android's own automatic backup** is enabled, but `backup_rules.xml` and
 `data_extraction_rules.xml` exclude `FlutterSecureStorage.xml`: its contents are
